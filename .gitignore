@@ -1,7 +1,8 @@
 node_modules/
 dist/
-.env
-.env.*
+.env.backend
+.env.local
+.env.*.local
 src/.env
 .DS_Store
 npm-debug.log*
