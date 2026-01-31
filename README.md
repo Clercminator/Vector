@@ -58,13 +58,13 @@ This document explains **what the app does**, **how it’s built**, **how the pi
   You pick a framework (e.g. Pareto 80/20). The app asks you a few questions in a chat-style flow. When you’re done, it uses **AI** (when configured) to turn your answers into a structured blueprint—for example “Vital Few” vs “Trivial Many” for Pareto, or four quadrants for Eisenhower. You can then **save** the blueprint, **export** it to Google Calendar (or download an .ics file), or **restart** with a new goal.
 
 - **My Blueprints**  
-  All blueprints you save appear here. You can open one to see the result again, export it, or delete it. Data is stored in your browser and, if you’re signed in, in the cloud (Supabase).
+  All blueprints you save appear here (with "Load more" when signed in). You can open one to see the result again, export it, delete it, publish as template, or bulk-export to PDF (Max tier). Data is stored in your browser and, if you’re signed in, in the cloud (Supabase).
 
 - **Profile**  
   When you’re signed in, you get a profile page: display name, bio, avatar image URL, level (gamification), and credits (used for AI-generated blueprints). You can edit your info and see how many credits you have left.
 
 - **Community**  
-  Users can publish blueprints as **templates**. On the Community page you see those templates, can **vote** on them, **use** one (import it into your blueprints), or **gift points** to the author.
+  Users can publish blueprints as **templates**. On the Community page you see those templates (with "Load more" and sort by recent/top), can **vote** on them, **use** one (import it into your blueprints), or **gift points** to the author.
 
 - **Pricing**  
   Four tiers: **Architect** (free), **Standard** (15 credits, all frameworks, one-time), **Max** (40 credits, calendar/PDF export, priority AI, one-time), **Enterprise** (contact). Standard and Max use MercadoPago checkout when configured; prices are one-time (no subscription yet).
@@ -79,7 +79,7 @@ This document explains **what the app does**, **how it’s built**, **how the pi
   The first time you visit, a short onboarding modal appears: welcome, “choose a mental model,” and a tip (e.g. save blueprints, export to calendar). Completing or skipping it is remembered so it doesn’t show again.
 
 - **SEO & social sharing**  
-  The app’s HTML includes a short description and Open Graph / Twitter tags so links look good when shared on social media or in search results.
+  The app’s HTML includes a short description and Open Graph / Twitter tags so links look good when shared. Per-framework pages at `/frameworks/:id` have their own title, description, and OG meta (via react-helmet-async) for better discovery and sharing.
 
 ---
 
@@ -113,7 +113,7 @@ This document explains **what the app does**, **how it’s built**, **how the pi
    Create a `.env` file in the **project root** with at least:
    - `VITE_SUPABASE_URL` (or `VITE_supabase_url`) — your Supabase project URL  
    - `VITE_ANON_PUBLIC_KEY` — Supabase anon (public) key  
-   Optional: `VITE_OPENROUTER_PROXY_URL` (recommended for production — see BACKEND.md) or `VITE_OPENROUTER_API_KEY` for AI; `VITE_GOOGLE_OAUTH_CLIENT_ID` for Google Calendar export; `VITE_MERCADOPAGO_PUBLIC_KEY` for pricing checkout. Backend-only keys (e.g. MercadoPago Access Token, Open Router API key) go in Supabase Secrets or `.env.backend` — see **BACKEND.md**.
+   Optional: `VITE_OPENROUTER_PROXY_URL` (recommended for production) or `VITE_OPENROUTER_API_KEY` for AI; `VITE_GOOGLE_OAUTH_CLIENT_ID` for Google Calendar export; `VITE_MERCADOPAGO_PUBLIC_KEY` for pricing checkout. Backend-only keys (e.g. MercadoPago Access Token, Open Router API key) go in Supabase Secrets or `.env.backend`.
 
 3. **Start the app**  
    Run:  
@@ -121,15 +121,15 @@ This document explains **what the app does**, **how it’s built**, **how the pi
    Open the URL shown (usually http://localhost:5173).
 
 4. **Database**  
-   In the Supabase dashboard, run the SQL in `supabase.sql` and `supabase_new_features.sql` so tables (blueprints, profiles, community_templates, template_votes, waitlist, etc.) and security (RLS) exist.
+   In the Supabase dashboard, run the migrations in **`supabase/migrations/`** in order: `20240131000000_create_analytics_events.sql`, `20260131_chat_history.sql`, `20260131_admin_updates.sql`. Ensure your project also has base tables (blueprints, profiles, community_templates, template_votes, waitlist, etc.) and RLS from your initial setup. The app expects **`decrement_credits`** and **`increment_credits`** RPCs and a **`tier`** column on `profiles`; add these in Supabase if not present (see Edge Function webhook and GoalWizard usage).
 
 5. **Backend (payments, secure AI, credits/levels)**  
    The app uses **Supabase Edge Functions** for backend logic:
    - **openrouter-proxy** — Proxies AI requests; API key stays server-side.
    - **mercado-pago-preference** — Creates MercadoPago checkout; returns `init_point` URL.
-   - **mercado-pago-webhook** — Handles payment notifications; updates `profiles.credits` and `profiles.tier`.
+   - **mercado-pago-webhook** — Handles payment notifications; updates `profiles.credits` and `profiles.tier` via `increment_credits` RPC.
    
-   **Already deployed:** Edge Functions, Supabase Secrets (`OPENROUTER_API_KEY`, `MERCADOPAGO_ACCESS_TOKEN`), frontend env vars (`VITE_OPENROUTER_PROXY_URL`, `VITE_MERCADOPAGO_PUBLIC_KEY`), MercadoPago webhook configured, and `supabase_rpc.sql` executed (tier column + credit RPCs).
+   **Already deployed:** Edge Functions, Supabase Secrets (`OPENROUTER_API_KEY`, `MERCADOPAGO_ACCESS_TOKEN`), frontend env vars (`VITE_OPENROUTER_PROXY_URL`, `VITE_MERCADOPAGO_PUBLIC_KEY`), MercadoPago webhook configured. Ensure `profiles.tier` and the credit RPCs exist in your database.
    
    **Stripe** (future US implementation): See **[integrations/pending/stripe/](integrations/pending/stripe/)**.
 
@@ -211,8 +211,8 @@ Relevant code: `src/lib/openrouter.ts` (API client, system prompts, JSON parsing
 ## How Levels and Credits Work
 
 - **Where they live:** In the Supabase `profiles` table: `level` (integer, default 1), `credits` (integer, default 5), `points` (integer, default 0).
-- **Level:** Gamification. Displayed on the Profile screen (e.g. “Level 1”). Intended to increase with activity (e.g. blueprints saved, templates published). The schema supports it; the exact “level up” rules (e.g. 5 blueprints = level 2) are not yet implemented in the app. You can extend Profile or backend logic to increment `level` when certain actions are completed.
-- **Credits:** Intended to limit AI usage per user. Each AI-generated blueprint could consume one credit; when credits reach zero, the app could force the rule-based fallback. The UI shows “Credits” on the Profile page; deducting credits on each AI call is not yet implemented. To implement: before calling Open Router, check `profiles.credits > 0`; after a successful AI result, decrement `credits` in Supabase.
+- **Level:** Gamification. Displayed on the Profile screen. **Implemented:** when a user saves a blueprint (signed in), they earn +10 points and level is computed as `floor(points / 100) + 1`; level-up toast and confetti are shown. Achievements and streak tracking (see `src/lib/gamification.ts`) also run on save.
+- **Credits:** Limit AI usage per user. **Implemented:** GoalWizard checks credits before calling AI; when credits are zero it falls back to rule-based generation. On successful AI result (initial blueprint or refine), the app calls `decrement_credits` RPC. Profile page shows current credits.
 - **Points:** Used for community (e.g. voting, gifting). Stored in `profiles.points` and can be awarded when others vote for your templates or when you gift points to authors. The Community screen uses this for “gift points” and display.
 
 Summary: **Level** = progression / gamification; **Credits** = AI usage budget; **Points** = community reputation. All are stored in `profiles` and can be wired to real behavior in the app and/or Supabase functions.
@@ -320,43 +320,44 @@ Other deps: `canvas-confetti`, `date-fns`, `react-hook-form`, `recharts`, etc., 
 
 - **TOC deep links:** Use explicit anchor IDs (as in this README) so “Table of Contents” links work in every viewer.
 - **Levels and credits:** Level and points are updated when saving blueprints; Goal Wizard checks credits and calls `decrement_credits` when AI is used (RPC must exist in Supabase).
-- **Routing:** React Router is in place; screens have URLs (`/`, `/dashboard`, `/community`, `/pricing`, `/profile`, `/wizard`).
+- **Routing:** React Router is in place; routes include `/`, `/dashboard`, `/community`, `/pricing`, `/profile`, `/wizard`, `/frameworks/:id`, `/analytics`, `/admin`.
 - **Offline / retry:** Offline banner and retry helper with exponential backoff for Supabase auth and blueprint sync.
 - **Framework detail modal:** “Learn more“ on framework cards opens FrameworkDetail with author, pros, cons, example.
 - **Publish template:** “Publish as template” from Dashboard inserts into community_templates.
-- **Performance:** Goal Wizard, Pricing, Dashboard, Community, Profile are lazy-loaded with React.lazy and Suspense.
+- **Performance:** GoalWizard, Pricing, Dashboard, Community, Profile, AdminDashboard are lazy-loaded with React.lazy and Suspense.
 - **Nav active state, footer alignment, Community fetch:** Current-route highlighting, footer/Share alignment, Community loading from Supabase.
 - **Pricing structure:** Four tiers (Architect / Standard / Max / Enterprise) with shared config in `src/lib/tiers.ts`. Standard (15 credits, all frameworks) and Max (40 credits, calendar/PDF, priority AI) use **one-time** pricing; MercadoPago checkout is wired for both when configured.
 - **Tier enforcement:** Framework cards show locked state for frameworks not in user's tier; GoalWizard checks `canUseFramework(tier, framework)` and disables Calendar/PDF export buttons based on `canExportCalendar` / `canExportPdf` for the user's tier. User tier is fetched from `profiles.tier` on auth.
-- **Credits & tier RPC:** `supabase_rpc.sql` defines `decrement_credits` and `increment_credits` RPCs, and adds `tier` column to `profiles`. GoalWizard calls `decrement_credits` when AI is used.
+- **Credits & tier RPC:** GoalWizard calls `decrement_credits` when AI is used; webhook uses `increment_credits`. Ensure these RPCs and `profiles.tier` exist in your Supabase project (e.g. via migrations or SQL).
 - **MercadoPago webhook:** `supabase/functions/mercado-pago-webhook/index.ts` handles payment notifications, updates `profiles.credits` and `profiles.tier` using `increment_credits` RPC and tier amounts from `TIER_CONFIGS`.
 - **PDF export:** `src/lib/pdfExport.ts` exports blueprints to PDF (Max tier feature); GoalWizard shows locked PDF button for lower tiers.
-- **SEO:** Meta and Open Graph in `index.html`.
+- **SEO:** Meta and Open Graph in `index.html`; per-framework pages at `/frameworks/:id` use `react-helmet-async` for title/description/OG.
+- **Admin dashboard:** Route `/admin` for users with `profiles.is_admin`; `AdminDashboard`; RLS in `supabase/migrations/20260131_admin_updates.sql`.
+- **User analytics page:** Route `/analytics`; `AnalyticsPage` and `analytics_events` table; `trackEvent` in `src/lib/analytics.ts`.
+- **Help Me Choose (AI-suggested framework):** `HelpMeChooseModal`; `suggestFramework` in `openrouter.ts`; prompt `prompts/suggest-framework.txt`.
+- **Blueprint refinement:** GoalWizard refine flow; `refineBlueprint` in `openrouter.ts`; `decrement_credits`; `blueprint_messages` table (migration `20260131_chat_history.sql`).
+- **Achievements and streaks:** `src/lib/gamification.ts`; milestones and streak; `AchievementsList` on Profile.
+- **Bulk export:** `BulkExportModal` in Dashboard; tier-gated (Max); branding from profile.
+- **Framework SEO pages:** `/frameworks/:id` with `FrameworkPage` and `frameworkContent.ts`; Helmet for title, description, og:title, og:description, keywords per framework.
+- **Vercel Speed Insights:** `injectSpeedInsights()` in `main.tsx`.
+- **Dashboard pagination:** Remote blueprints loaded in pages via `loadRemoteBlueprints(uid, page)` with `.range(from, to)`; "Load More" button and `hasMore` / `isLoadingMore` in `Dashboard.tsx`.
+- **Community pagination:** Templates loaded in pages via `fetchTemplates(pageToLoad)` with `.range(from, to)`; "Load More" button and `hasMore` / `isLoadingMore` in `Community.tsx`; sort by recent/top.
 
 ### Suggested improvements
 
-- **Expand test coverage:** Add unit tests (Vitest) for `openrouter`, `blueprints`, `calendarExport`, `pdfExport`; integration tests for `GoalWizard` and `Dashboard`. (`src/lib/tiers.test.ts` exists as a starting example.)
-- **Pagination / virtual lists:** For large datasets (hundreds of blueprints or templates), add pagination or virtual scrolling to Dashboard and Community.
+- **Expand test coverage:** Add unit tests (Vitest) for `openrouter`, `blueprints`, `calendarExport`, `pdfExport`, `gamification`; integration tests for `GoalWizard` and `Dashboard`. (`src/lib/tiers.test.ts` exists as a starting example.)
+- **Virtual scrolling (optional):** For very large lists (hundreds of items), consider virtual scrolling; pagination is already implemented for Dashboard and Community.
 - **Email notifications:** Send confirmation emails when users purchase a tier or when credits are low.
-- **Analytics dashboard:** Track user engagement (frameworks used, blueprints created, tier conversions) using Supabase or a third-party service.
+- **Admin analytics:** Admin dashboard could show aggregate usage (tier conversions, payments, framework usage) beyond per-user data.
 - **Collaborative blueprints:** Allow users to share blueprints with others for real-time collaboration (requires WebSockets or Supabase Realtime).
 - **Mobile app:** Build React Native or PWA version for iOS/Android with offline-first sync.
-- **Advanced AI features:** 
-  - Multi-turn conversations in Goal Wizard (follow-up questions based on answers).
-  - AI-suggested frameworks based on user's goal description.
-  - Blueprint refinement (user can ask AI to improve or adjust the plan).
-- **Gamification enhancements:**
-  - Achievements/badges for milestones (e.g., "Created 10 blueprints," "Used all frameworks").
-  - Leaderboard for community contributions (most voted templates).
-  - Streak tracking (consecutive days using the app).
-- **Export enhancements:**
-  - Export to Notion, Trello, Asana, or other project management tools.
-  - Bulk export (multiple blueprints to PDF or calendar at once).
-  - Custom PDF branding (white-label for Max tier).
+- **Advanced AI features:** Multi-turn conversations in Goal Wizard (follow-up questions based on answers). (AI-suggested framework and blueprint refinement are already implemented.)
+- **Gamification:** Leaderboard for community contributions (most voted templates). (Achievements/badges and streak tracking are already implemented.)
+- **Export enhancements:** Export to Notion, Trello, Asana, or other project management tools; bulk calendar export; custom PDF branding (Max tier branding from profile is already used in bulk PDF export).
 - **Subscription model:** Convert one-time pricing to recurring subscriptions (monthly/yearly) for sustained revenue. Requires Stripe or MercadoPago subscriptions API.
-- **Admin dashboard:** View all users, tiers, credits, payments, and usage analytics. Manage community templates (approve/reject/feature).
+- **Admin enhancements:** Approve/reject/feature community templates from Admin UI; bulk user/tier management.
 - **Internationalization expansion:** Add more languages (French, German, Portuguese) to `translations.ts`.
-- **SEO improvements:** Add blog/content pages for each framework (e.g., `/frameworks/first-principles`) with detailed guides; implement SSR or prerendering for better SEO.
+- **SEO improvements:** Per-framework pages and meta are already in place. Optional: link framework cards or "Learn more" to `/frameworks/:id` from the landing page for discoverability; implement SSR or prerendering for better indexing.
 
 **Stripe (future, US):** See [integrations/pending/stripe/](integrations/pending/stripe/).
 
@@ -373,12 +374,11 @@ Vector/
 ├── index.html                    # The single HTML page; <title>, SEO meta, Open Graph
 ├── package.json                  # List of dependencies and scripts (e.g. npm run dev)
 ├── .env                          # Frontend keys (Supabase URL/anon key, MercadoPago Public Key, etc.). Safe to commit placeholders.
-├── .env.backend.example          # Backend-only vars (MercadoPago Access Token, Open Router key). Copy to .env.backend; never commit.
-├── supabase.sql                  # Database: blueprints, waitlist, RLS
-├── supabase_new_features.sql     # Database: profiles, community_templates, template_votes
+├── .env.backend (optional)       # Backend-only vars; never commit. See env docs for Supabase Secrets.
+├── supabase/migrations/         # Database: run in order (analytics_events, chat_history, admin_updates); ensure base tables + credit RPCs exist
 │
 ├── src/
-│   ├── main.tsx                  # Entry: wraps the app with Theme, Language, ErrorBoundary
+│   ├── main.tsx                  # Entry: Theme, Language, ErrorBoundary, BrowserRouter, HelmetProvider, Speed Insights
 │   ├── styles/                   # Global CSS (Tailwind, theme variables, fonts)
 │   │   ├── index.css
 │   │   ├── tailwind.css
@@ -390,11 +390,15 @@ Vector/
 │   │       ├── OnboardingModal.tsx   # First-time welcome + steps
 │   │       ├── FrameworkCard.tsx    # One framework tile (title, description, “Learn more”)
 │   │       ├── FrameworkDetail.tsx   # Modal: full framework info (author, pros, cons, example)
-│   │       ├── GoalWizard.tsx        # Chat flow + result view + save/export
-│   │       ├── Dashboard.tsx         # My Blueprints list + delete
-│   │       ├── Profile.tsx           # Profile form + level + credits
-│   │       ├── Community.tsx        # Templates list + vote + use + gift
+│   │       ├── GoalWizard.tsx        # Chat flow + result view + save/export + refine
+│   │       ├── Dashboard.tsx         # My Blueprints list + delete + bulk export
+│   │       ├── Profile.tsx           # Profile form + level + credits + achievements + streak
+│   │       ├── Community.tsx         # Templates list + vote + use + gift
 │   │       ├── PricingSection.tsx    # Four pricing tiers (Architect, Standard, Max, Enterprise)
+│   │       ├── HelpMeChooseModal.tsx # AI-suggested framework from goal description
+│   │       ├── BulkExportModal.tsx   # Multi-blueprint PDF export (Max tier)
+│   │       ├── AdminDashboard.tsx    # Admin: users, templates (route /admin)
+│   │       ├── AchievementsList.tsx  # Profile achievements display
 │   │       ├── InspirationalQuote.tsx # Rotating quote bubble on landing
 │   │       ├── ShareButton.tsx       # Share / copy link in footer
 │   │       ├── AuthModal.tsx         # Sign in with email (magic link)
@@ -405,21 +409,30 @@ Vector/
 │   │       ├── theme-toggle.tsx     # Light / dark switcher
 │   │       └── ui/                    # Reusable UI (buttons, dialogs, inputs, etc.)
 │   │
+│   ├── pages/
+│   │   ├── FrameworkPage.tsx     # Per-framework SEO page at /frameworks/:id (Helmet meta)
+│   │   └── AnalyticsPage.tsx    # User analytics at /analytics (framework usage, activity)
 │   └── lib/                      # Non-UI logic: API clients, data, translations
 │       ├── supabase.ts           # Supabase client (auth + DB)
-│       ├── openrouter.ts         # AI: generate blueprint from answers
+│       ├── openrouter.ts         # AI: generateBlueprintResultAI, suggestFramework, refineBlueprint
 │       ├── blueprints.ts         # Blueprint type, local load/save (localStorage)
+│       ├── frameworks.ts         # Framework list (id, title, description, author, pros, cons, example)
+│       ├── frameworkContent.ts   # Extended content for FrameworkPage (longDescription, etc.)
 │       ├── tiers.ts              # Tier config: credits, frameworks, features (Architect/Standard/Max/Enterprise)
 │       ├── calendarExport.ts     # Turn blueprint into events; Google Calendar or .ics
+│       ├── pdfExport.ts          # Blueprint to PDF; branding from profile
 │       ├── mercadoPago.ts        # MercadoPago checkout (calls Edge Function, redirects)
-│       └── translations.ts       # All copy: en + es (and keys for t(key))
+│       ├── gamification.ts       # Achievements, streaks; checkAndAwardAchievements
+│       ├── analytics.ts          # trackEvent; analytics_events table
+│       ├── translations.ts       # All copy: en + es (and keys for t(key))
+│       └── prompts/               # AI prompts (e.g. suggest-framework.txt, refine-blueprint.txt)
 ```
 
 - **Content and copy**  
-  - Framework **names and descriptions** shown on cards: `App.tsx` (the `frameworks` array).  
+  - Framework **names and descriptions** on cards: `src/lib/frameworks.ts` (imported in App); translations via `t('fw.<id>.title')`, `t('fw.<id>.desc')`.  
   - **All other user-facing text** (nav, buttons, wizard, profile, community, etc.): `src/lib/translations.ts` under keys like `nav.frameworks`, `onboarding.welcome.title`, `quote.1.text`, etc.  
-- **Screens**  
-  - The “current screen” is one of: `landing` | `wizard` | `pricing` | `dashboard` | `profile` | `community`. It’s stored in `App.tsx` state; nav buttons and actions call `navTo('...')` or `setScreen('...')`.  
+- **Screens / routes**  
+  - Routes: `/`, `/wizard`, `/dashboard`, `/community`, `/pricing`, `/profile`, `/frameworks/:id`, `/analytics`, `/admin`. Nav uses `navigate(path)`; current route from `useLocation().pathname`.
 - **Data**  
   - Blueprints: in memory in `App.tsx`, persisted to `localStorage` and (when signed in) to Supabase `blueprints` table.  
   - Profile: Supabase `profiles` table.  
@@ -454,7 +467,7 @@ Vector/
 - **Translations**  
   - `translations.ts` exports an object `{ en: { ... }, es: { ... } }`.  
   - `LanguageProvider` stores the current language and exposes `t(key)`.  
-  - Components use `t('nav.frameworks')`, `t('fw.pareto.title')`, etc. So changing or adding text is done in `translations.ts` (and optionally in the `frameworks` array in `App.tsx` for card title/description).
+  - Components use `t('nav.frameworks')`, `t('fw.pareto.title')`, etc. Changing or adding text is done in `translations.ts` and in `frameworks.ts` (or `frameworkContent.ts`) for framework card/detail content.
 
 - **Database**  
   - Supabase stores: users (auth), blueprints (per user), profiles (display name, bio, avatar, level, credits), community_templates, template_votes, waitlist.  
@@ -469,7 +482,7 @@ These steps are written so a non-developer can follow the map; a developer can d
 
 ### Add or edit a framework
 
-- **Where:** `src/app/App.tsx` — find the `frameworks` array (starts around line 26).  
+- **Where:** `src/lib/frameworks.ts` — the `frameworks` array is defined there and imported in `App.tsx`.  
 - **What:** Each item has: `id`, `title`, `description`, `icon`, `color`, and (for the detail modal) `author`, `definition`, `pros` (array of strings), `cons` (array of strings), `example`.  
 - **Add:** Copy an existing block, change `id` (e.g. `'new-framework'`), and fill in title, description, author, definition, pros, cons, example.  
 - **“Learn more” / framework detail modal:** Each framework card can open a detail view (author, definition, pros, cons, example). The modal is implemented in `FrameworkDetail.tsx`. To wire it in `App.tsx`: add state like `const [viewingFramework, setViewingFramework] = useState<typeof frameworks[0] | null>(null)`, pass `onLearnMore={() => setViewingFramework(fw)}` to each `FrameworkCard`, and render `{viewingFramework && <FrameworkDetail framework={viewingFramework} onClose={() => setViewingFramework(null)} onStart={() => { setViewingFramework(null); handleStartWizard(viewingFramework.id); }} />}`.  
@@ -533,8 +546,8 @@ These steps are written so a non-developer can follow the map; a developer can d
 - **Data:** Blueprints in memory + `localStorage` + Supabase `blueprints`. Profiles, community_templates, template_votes, waitlist in Supabase. Tier config in `src/lib/tiers.ts`.
 - **i18n:** Custom: `LanguageProvider` + `translations.ts` + `t(key)` in components.  
 - **AI:** Open Router in `src/lib/openrouter.ts`; GoalWizard calls it after the last answer and falls back to rule-based `generateResult` on failure or missing key.  
-- **Schema:** Run `supabase.sql` and `supabase_new_features.sql` in Supabase SQL editor for tables and RLS.
-- **Backend:** See **BACKEND.md** for MercadoPago, Supabase Edge Functions (Open Router proxy, mercado-pago-preference), and Vercel. Stripe is isolated in **integrations/pending/stripe/** for future implementation.
+- **Schema:** Run migrations in `supabase/migrations/`; ensure base tables and RPCs `decrement_credits` / `increment_credits` and `profiles.tier` exist.
+- **Backend:** Supabase Edge Functions (openrouter-proxy, mercado-pago-preference, mercado-pago-webhook). Stripe is in **integrations/pending/stripe/** for future implementation.
 
 ---
 

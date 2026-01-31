@@ -21,83 +21,105 @@ export const ParticleBackground: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     let particles: Particle[] = [];
     let animationFrameId: number;
+    let dpr = window.devicePixelRatio || 1;
 
     const init = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      ctx.scale(dpr, dpr);
+      
       particles = [];
-
-      const numberOfParticles = Math.floor((canvas.width * canvas.height) / 8000);
+      const numberOfParticles = Math.floor((window.innerWidth * window.innerHeight) / 9000);
+      
       for (let i = 0; i < numberOfParticles; i++) {
-        const x = Math.random() * canvas.width;
-        const y = Math.random() * canvas.height;
+        const x = Math.random() * window.innerWidth;
+        const y = Math.random() * window.innerHeight;
         particles.push({
           x,
           y,
           originalX: x,
           originalY: y,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
-          size: Math.random() * 3 + 1,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          size: Math.random() * 2.5 + 1.0,
           color: COLORS[Math.floor(Math.random() * COLORS.length)],
         });
       }
     };
 
     const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-      particles.forEach((p) => {
+      const mouseX = mouse.current.x;
+      const mouseY = mouse.current.y;
+      const maxDistSq = 200 * 200;
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        
         // Subtle drift/gravity
-        p.vy += 0.02; 
+        p.vy += 0.01; 
 
         // Move towards original position (elasticity)
         const dxOrig = p.originalX - p.x;
         const dyOrig = p.originalY - p.y;
-        p.vx += dxOrig * 0.005;
-        p.vy += dyOrig * 0.005;
+        p.vx += dxOrig * 0.003;
+        p.vy += dyOrig * 0.003;
 
-        // Mouse interaction
-        const dxMouse = mouse.current.x - p.x;
-        const dyMouse = mouse.current.y - p.y;
-        const dist = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
-        const maxDist = 200;
+        // Mouse interaction using squared distance (faster)
+        const dxMouse = mouseX - p.x;
+        const dyMouse = mouseY - p.y;
+        const distSq = dxMouse * dxMouse + dyMouse * dyMouse;
 
-        if (dist < maxDist) {
-          const force = (maxDist - dist) / maxDist;
+        if (distSq < maxDistSq) {
+          const dist = Math.sqrt(distSq);
+          const force = (200 - dist) / 200;
           const angle = Math.atan2(dyMouse, dxMouse);
-          p.vx -= Math.cos(angle) * force * 5;
-          p.vy -= Math.sin(angle) * force * 5;
+          p.vx -= Math.cos(angle) * force * 4;
+          p.vy -= Math.sin(angle) * force * 4;
         }
 
         // Friction
-        p.vx *= 0.95;
-        p.vy *= 0.95;
+        p.vx *= 0.94;
+        p.vy *= 0.94;
 
         // Update position
         p.x += p.vx;
         p.y += p.vy;
 
-        // Bounce off bottom/sides with energy loss
-        if (p.y > canvas.height) {
-          p.y = canvas.height;
-          p.vy *= -0.5;
+        // Bounce off bottom/sides
+        if (p.y > window.innerHeight) {
+          p.y = window.innerHeight;
+          p.vy *= -0.4;
+        } else if (p.y < 0) {
+          p.y = 0;
+          p.vy *= -0.4;
         }
-        if (p.x > canvas.width || p.x < 0) {
-          p.vx *= -0.5;
+        
+        if (p.x > window.innerWidth) {
+          p.x = window.innerWidth;
+          p.vx *= -0.4;
+        } else if (p.x < 0) {
+          p.x = 0;
+          p.vx *= -0.4;
         }
 
         // Draw
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
+        ctx.globalAlpha = 0.8;
         ctx.fill();
-      });
+      }
+      ctx.globalAlpha = 1.0;
 
       animationFrameId = requestAnimationFrame(animate);
     };
