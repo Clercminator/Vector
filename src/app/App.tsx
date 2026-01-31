@@ -1,6 +1,7 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Button } from '@/app/components/ui/button';
 import { ParticleBackground } from '@/app/components/ParticleBackground';
 import { FrameworkCard } from '@/app/components/FrameworkCard';
 import { Toaster } from '@/app/components/ui/sonner';
@@ -10,6 +11,10 @@ import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 import { Blueprint, loadLocalBlueprints, saveLocalBlueprints, upsertBlueprint, removeBlueprint } from '@/lib/blueprints';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { createCheckout, isMercadoPagoConfigured } from '@/lib/mercadoPago';
+
+import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, canUseFramework } from '@/lib/tiers';
+import { checkAndAwardAchievements } from '@/lib/gamification';
 
 import { useLanguage } from '@/app/components/language-provider';
 import { ShareButton } from '@/app/components/ShareButton';
@@ -18,6 +23,8 @@ import { ThemeToggle } from '@/app/components/theme-toggle';
 import { InspirationalQuote } from '@/app/components/InspirationalQuote';
 import { FrameworkDetail } from '@/app/components/FrameworkDetail';
 import { OnboardingModal } from '@/app/components/OnboardingModal';
+import { HelpMeChooseModal } from '@/app/components/HelpMeChooseModal';
+import { Sparkles } from 'lucide-react';
 
 // Lazy load screens
 const GoalWizard = React.lazy(() => import('@/app/components/GoalWizard').then(module => ({ default: module.GoalWizard })));
@@ -25,71 +32,16 @@ const PricingSection = React.lazy(() => import('@/app/components/PricingSection'
 const Dashboard = React.lazy(() => import('@/app/components/Dashboard').then(module => ({ default: module.Dashboard })));
 const Community = React.lazy(() => import('@/app/components/Community').then(module => ({ default: module.Community })));
 const Profile = React.lazy(() => import('@/app/components/Profile').then(module => ({ default: module.Profile })));
+const AdminDashboard = React.lazy(() => import('@/app/components/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
+import { FrameworkPage } from '@/pages/FrameworkPage';
+import { AnalyticsPage } from '@/pages/AnalyticsPage';
+import { trackEvent } from '@/lib/analytics';
 
-type Framework = 'first-principles' | 'pareto' | 'rpm' | 'eisenhower' | 'okr';
+// ...
 
-const frameworks = [
-  {
-    id: 'first-principles' as Framework,
-    title: 'Elon Musk First Principles',
-    description: 'Break down complex problems into basic elements and then reassemble them from the ground up.',
-    icon: Brain,
-    color: '#4285F4', // Blue
-    author: 'Elon Musk / Aristotle',
-    definition: 'A problem-solving mental model that involves breaking a problem down into its basic elements (fundamental truths) and then reassembling them from the ground up, rather than reasoning by analogy.',
-    pros: ['Encourages innovation', 'Removes assumptions', 'Creates unique solutions'],
-    cons: ['Time-consuming', 'Mentally taxing', 'Requires deep understanding'],
-    example: 'SpaceX lowered rocket costs by calculating the raw material cost of a rocket instead of buying pre-assembled parts.'
-  },
-  {
-    id: 'pareto' as Framework,
-    title: 'Pareto Principle (80/20)',
-    description: 'Identify the 20% of efforts that lead to 80% of your results to achieve radical efficiency.',
-    icon: Layers,
-    color: '#34A853', // Green
-    author: 'Vilfredo Pareto',
-    definition: 'The concept that for many outcomes, roughly 80% of consequences come from 20% of causes.',
-    pros: ['Increases efficiency', 'Focuses resources', 'Simple to apply'],
-    cons: ['Oversimplifies complex systems', '80/20 ratio is an estimate', 'May ignore small but crucial details'],
-    example: 'A software company fixes the top 20% of reported bugs to solve 80% of user crashes.'
-  },
-  {
-    id: 'rpm' as Framework,
-    title: 'Tony Robbins RPM',
-    description: 'A results-focused planning system: Result, Purpose, and Massive Action Plan.',
-    icon: Target,
-    color: '#EA4335', // Red
-    author: 'Tony Robbins',
-    definition: 'Rapid Planning Method (RPM) focuses on the outcome (Result), the "why" (Purpose), and the "how" (Massive Action Plan).',
-    pros: ['Highly motivating', 'Aligns actions with values', 'Reduces busy work'],
-    cons: ['Can be overwhelming initially', 'Requires emotional buy-in', 'Less rigid structure'],
-    example: 'Instead of "Go to gym", the goal is "Vibrant Health" (Result) because "I want energy for my kids" (Purpose) by "Running 3x/week" (Map).'
-  },
-  {
-    id: 'eisenhower' as Framework,
-    title: 'Eisenhower Matrix',
-    description: 'Categorize tasks by urgency and importance to master prioritization.',
-    icon: Layers,
-    color: '#FBBC05', // Yellow
-    author: 'Dwight D. Eisenhower',
-    definition: 'A decision-making tool that splits tasks into four quadrants based on urgency and importance.',
-    pros: ['Clear prioritization', 'Reduces procrastination', 'Delegation framework'],
-    cons: ['Subjective categorization', 'Does not account for effort', 'Can become a procrastination tool itself'],
-    example: 'Urgent & Important: "Server crash". Important not Urgent: "Strategic planning". Urgent not Important: "Most emails".'
-  },
-  {
-    id: 'okr' as Framework,
-    title: 'OKR Goal System',
-    description: 'Set ambitious Objectives and define measurable Key Results to track progress.',
-    icon: Rocket,
-    color: '#9333EA', // Purple
-    author: 'John Doerr / Andy Grove',
-    definition: 'Objectives and Key Results (OKR) is a goal-setting framework for defining and tracking objectives and their outcomes.',
-    pros: ['Aligns teams', 'Measurable progress', 'Encourages ambition'],
-    cons: ['Can be too rigid', 'Hard to set correct metrics', 'Can demotivate if targets are missed'],
-    example: 'Objective: "Increase brand awareness". Key Result: "Achieve 10,000 active monthly users".'
-  },
-];
+
+
+import { frameworks, Framework } from '@/lib/frameworks';
 
 const LoadingFallback = () => (
     <div className="flex items-center justify-center min-h-[50vh]">
@@ -124,7 +76,15 @@ function App() {
   const [blueprintsLoading, setBlueprintsLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [viewingFramework, setViewingFramework] = useState<typeof frameworks[0] | null>(null);
+  const [tier, setTier] = useState<TierId>(DEFAULT_TIER_ID);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [showHelpChoose, setShowHelpChoose] = useState(false);
+  
+  const PAGE_SIZE = 12;
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   useEffect(() => {
     // Check for onboarding
@@ -133,19 +93,64 @@ function App() {
       setShowOnboarding(true);
     }
     
-    // Load local cache immediately.
-    setBlueprints(loadLocalBlueprints());
-
     // Offline listener
-    const handleOnline = () => { setIsOffline(false); toast.success("Back online!"); };
-    const handleOffline = () => { setIsOffline(true); toast.error("You are offline. Changes saved locally."); };
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-
     return () => {
-        window.removeEventListener('online', handleOnline);
-        window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
+  }, []);
+
+  useEffect(() => {
+    // Check initial session
+    supabase?.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUserId(session.user.id);
+        setUserEmail(session.user.email || null);
+        loadRemoteBlueprints(session.user.id, 0);
+        
+        // Load profile data (tier + is_admin)
+        supabase.from('profiles').select('tier, is_admin').eq('user_id', session.user.id).single()
+        .then(({ data }) => {
+            if (data?.tier) setTier(data.tier as TierId);
+            if (data?.is_admin) setIsAdmin(true);
+        });
+      } else {
+        setBlueprints(loadLocalBlueprints());
+        setTier(DEFAULT_TIER_ID);
+        setHasMore(false); // Local blueprints don't support pagination yet
+      }
+    });
+
+    const { data: { subscription } } = supabase!.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+         setUserId(session.user.id);
+         setUserEmail(session.user.email || null);
+         setIsOffline(false);
+         setPage(0);
+         setHasMore(true);
+         loadRemoteBlueprints(session.user.id, 0);
+
+         // Load profile data (tier + is_admin)
+         supabase!.from('profiles').select('tier, is_admin').eq('user_id', session.user.id).single()
+          .then(({ data }) => {
+              if (data?.tier) setTier(data.tier as TierId);
+              if (data?.is_admin) setIsAdmin(true);
+          });
+      } else if (event === 'SIGNED_OUT') {
+         setUserId(null);
+         setUserEmail(null);
+         setBlueprints(loadLocalBlueprints());
+         setTier(DEFAULT_TIER_ID);
+         setIsAdmin(false);
+         setHasMore(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleOnboardingComplete = () => {
@@ -156,45 +161,44 @@ function App() {
   const navTo = (path: string) => navigate(path);
 
   // Auth & Data effects
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return;
+  
 
-    // Get session
-    retryOperation(() => supabase!.auth.getSession())
-    .then(({ data: { session } }) => {
-      setUserEmail(session?.user?.email ?? null);
-      setUserId(session?.user?.id ?? null);
-      if (session?.user?.id) loadRemoteBlueprints(session.user.id);
-    })
-    .catch(err => console.error("Failed to get session", err));
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserEmail(session?.user?.email ?? null);
-      setUserId(session?.user?.id ?? null);
-      if (session?.user?.id) loadRemoteBlueprints(session.user.id);
-      else setBlueprints(loadLocalBlueprints());
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const loadRemoteBlueprints = async (uid: string) => {
+  const loadRemoteBlueprints = async (uid: string, pageToLoad: number = 0) => {
     if (!supabase) return;
-    setBlueprintsLoading(true);
+    
+    if (pageToLoad === 0) setBlueprintsLoading(true);
+    else setIsLoadingMore(true);
+
     try {
+        const from = pageToLoad * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
+
         const { data } = await retryOperation(async () => {
-            const res = await supabase!.from('blueprints').select('*').eq('user_id', uid).order('updated_at', { ascending: false });
+            const res = await supabase!.from('blueprints')
+                .select('*')
+                .eq('user_id', uid)
+                .order('updated_at', { ascending: false })
+                .range(from, to);
             if (res.error) throw res.error;
             return res;
         });
+        
         if (data) {
-           setBlueprints(data as Blueprint[]);
+           if (data.length < PAGE_SIZE) setHasMore(false);
+           else setHasMore(true);
+
+           if (pageToLoad === 0) setBlueprints(data as Blueprint[]);
+           else setBlueprints(prev => [...prev, ...data as Blueprint[]]);
+        } else {
+           if (pageToLoad === 0) setBlueprints([]);
+           setHasMore(false);
         }
     } catch (e) {
         console.error("Failed to load blueprints", e);
-        toast.error("Could not sync blueprints");
+        toast.error(t('app.sync.error'));
     } finally {
         setBlueprintsLoading(false);
+        setIsLoadingMore(false);
     }
   };
 
@@ -203,9 +207,10 @@ function App() {
     await supabase.auth.signOut();
     setUserEmail(null);
     setUserId(null);
+    setIsAdmin(false);
     setBlueprints(loadLocalBlueprints()); // revert to local
     navTo('/');
-    toast.success("Signed out");
+    toast.success(t('app.auth.signedOut'));
   };
 
   const handleStartWizard = (fwId: Framework) => {
@@ -254,15 +259,26 @@ function App() {
                       toast.success(`🎉 Level Up! You are now Level ${newLevel}!`, { duration: 5000 });
                       confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
                   }
+
               }
+
+              // Check achievements
+              await checkAndAwardAchievements(supabase!, userId);
           });
       } catch (e) {
           console.error("Sync failed", e);
-          toast.error("Sync failed, saved locally");
+          toast.error(t('app.sync.failed'));
       }
     }
     
-    toast.success("Blueprint saved!");
+    toast.success(t('app.blueprint.saved'));
+  };
+
+  const handleLoadMore = () => {
+      if (!userId) return;
+      const nextPage = page + 1;
+      setPage(nextPage);
+      loadRemoteBlueprints(userId, nextPage);
   };
   
   const handleDeleteBlueprint = async (id: string) => {
@@ -272,16 +288,30 @@ function App() {
      if (userId && supabase && !isOffline) {
        await removeBlueprint(supabase, id);
      }
-     toast.success("Blueprint deleted");
+     toast.success(t('app.blueprint.deleted'));
   };
 
-  const handlePricingTier = (tier: string) => {
+  const handlePricingTier = async (tierName: string, tierId?: string) => {
     if (!userEmail) {
       setAuthOpen(true);
       return;
     }
-    console.log("Selected tier:", tier);
-    toast.info(`Selected ${tier} tier`);
+    if ((tierId === 'standard' || tierId === 'max') && isMercadoPagoConfigured()) {
+      const config = TIER_CONFIGS[tierId as 'standard' | 'max'];
+      if (config.priceUsd <= 0) return;
+      try {
+        await createCheckout({ tier: tierName, amount: config.priceUsd, currency: 'USD' });
+      } catch (e) {
+        console.error(e);
+        toast.error(e instanceof Error ? e.message : t('common.error'));
+      }
+      return;
+    }
+    if (tierId === 'enterprise') {
+      toast.info(t('app.pricing.enterprise'));
+      return;
+    }
+    toast.info(t('app.tier.selected').replace('{0}', tierName));
   };
 
   const handleImportTemplate = (templateData: any) => {
@@ -293,7 +323,7 @@ function App() {
       const updated = [newBlueprint, ...blueprints];
       setBlueprints(updated);
       saveLocalBlueprints(updated);
-      toast.success("Template imported!");
+      toast.success(t('app.template.imported'));
       navigate('/dashboard');
   };
 
@@ -302,7 +332,7 @@ function App() {
       setAuthOpen(true);
       return;
     }
-    const description = window.prompt("Enter a description for this template:", "Analysis based on " + bp.framework);
+    const description = window.prompt(t('app.publish.prompt'), t('app.publish.defaultDesc').replace('{0}', bp.framework));
     if (description === null) return;
 
     try {
@@ -315,11 +345,11 @@ function App() {
         result: bp.result
       });
       if (error) throw error;
-      toast.success("Template published!");
+      toast.success(t('app.template.published'));
       navigate('/community');
     } catch (e) {
       console.error(e);
-      toast.error("Failed to publish template");
+      toast.error(t('app.publish.failed'));
     }
   };
 
@@ -338,7 +368,7 @@ function App() {
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 text-gray-900 dark:text-gray-50 font-sans selection:bg-blue-100 dark:selection:bg-blue-900 selection:text-blue-900 dark:selection:text-blue-100 overflow-x-hidden transition-colors duration-300">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-black focus:text-white focus:rounded-lg focus:outline-none">
-        Skip to main content
+        {t('app.skipToMain')}
       </a>
       <ParticleBackground />
       <Toaster />
@@ -347,7 +377,7 @@ function App() {
       {isOffline && (
           <div className="fixed bottom-4 left-4 z-50 bg-red-500 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
               <WifiOff size={16} />
-              <span className="text-sm font-medium">Offline Mode</span>
+              <span className="text-sm font-medium">{t('app.offline')}</span>
           </div>
       )}
 
@@ -366,6 +396,15 @@ function App() {
 
       <AnimatePresence>
         {showOnboarding && <OnboardingModal onComplete={handleOnboardingComplete} />}
+        {showHelpChoose && (
+            <HelpMeChooseModal 
+                onClose={() => setShowHelpChoose(false)} 
+                onSelect={(fw) => {
+                    setShowHelpChoose(false);
+                    handleStartWizard(fw);
+                }}
+            />
+        )}
       </AnimatePresence>
 
       {/* Navigation */}
@@ -393,6 +432,12 @@ function App() {
             {userEmail && (
                  <button onClick={() => navigate('/profile')} className={`text-sm font-medium transition-colors ${location.pathname === '/profile' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/profile' ? 'page' : undefined}>
                     {t('nav.profile')}
+                 </button>
+            )}
+
+            {isAdmin && (
+                 <button onClick={() => navigate('/admin')} className={`text-sm font-medium transition-colors ${location.pathname === '/admin' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/admin' ? 'page' : undefined}>
+                    {t('nav.admin')}
                  </button>
             )}
 
@@ -439,6 +484,9 @@ function App() {
             {userEmail && (
                <button onClick={() => navigate('/profile')} className="text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white">{t('nav.profile')}</button>
             )}
+            {isAdmin && (
+               <button onClick={() => navigate('/admin')} className="text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white">{t('nav.admin')}</button>
+            )}
             <button
               onClick={() => {
                 setIsMenuOpen(false);
@@ -473,28 +521,28 @@ function App() {
                           transition={{ duration: 0.8, ease: "easeOut" }}
                         >
                           <h1 className="text-6xl md:text-9xl font-bold tracking-tighter text-gray-900 mb-8 leading-[0.9]">
-                            Architect Your <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-red-500 to-yellow-500">Ambition.</span>
+                            {t('landing.hero.architectYour')} <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-red-500 to-yellow-500">{t('landing.hero.ambition')}</span>
                           </h1>
                           
                           <InspirationalQuote />
 
                           <p className="text-xl md:text-2xl text-gray-500 font-light max-w-2xl mx-auto mb-12 leading-relaxed">
-                            Vector uses first-principles thinking to turn abstract goals into precise architectural blueprints.
+                            {t('landing.hero.subtitle')}
                           </p>
                           <div className="flex flex-col md:flex-row items-center justify-center gap-4">
                             <button 
                               onClick={() => handleStartWizard('first-principles')}
                               className="group px-10 py-5 bg-black text-white rounded-full text-lg font-bold flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-black/20"
                             >
-                              Start Building Now
+                              {t('landing.hero.startBuilding')}
                               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                             </button>
                             <button 
                               onClick={() => navigate('/pricing')}
                               className="px-10 py-5 bg-white border border-gray-200 text-gray-900 rounded-full text-lg font-bold hover:bg-gray-50 transition-colors"
                             >
-                              View Pricing
+                              {t('landing.hero.viewPricing')}
                             </button>
                           </div>
                         </motion.div>
@@ -510,6 +558,14 @@ function App() {
                                 {t('frameworks.subtitle')}
                               </p>
                             </div>
+                            <Button 
+                                onClick={() => setShowHelpChoose(true)}
+                                variant="outline" 
+                                className="gap-2 dark:text-white dark:border-zinc-700"
+                            >
+                                <Sparkles size={16} className="text-purple-500" />
+                                {t('frameworks.helpMeChoose')}
+                            </Button>
                           </div>
 
                           <div className="grid md:grid-cols-3 gap-8">
@@ -521,6 +577,7 @@ function App() {
                                 description={t(`fw.${fw.id}.desc`) || fw.description} 
                                 onClick={() => handleStartWizard(fw.id)}
                                 onLearnMore={() => setViewingFramework(fw)}
+                                isLocked={!canUseFramework(tier, fw.id)}
                               />
                             ))}
                           </div>
@@ -536,11 +593,8 @@ function App() {
                           transition={{ duration: 1 }}
                         >
                           <p className="text-xl md:text-2xl font-light text-gray-400 mb-6 uppercase tracking-[0.4em]">{t('footer.liftoff')}</p>
-                          <h2 className="text-[12vw] md:text-[15vw] font-bold tracking-tighter leading-none text-gray-900 dark:text-white opacity-[0.03] select-none pointer-events-none absolute left-1/2 -translate-x-1/2 -bottom-20">
-                            ANTIGRAVITY
-                          </h2>
                           <p className="text-5xl md:text-8xl font-bold tracking-tighter text-gray-900 dark:text-white">
-                            Vector
+                            {t('landing.liftoff.vector')}
                           </p>
                         </motion.div>
                       </section>
@@ -575,8 +629,11 @@ function App() {
                         loading={blueprintsLoading}
                         onOpenBlueprint={handleOpenBlueprint}
                         onDeleteBlueprint={handleDeleteBlueprint}
-                        onStartWizard={() => handleStartWizard("first-principles")}
+                        onStartWizard={() => navigate('/')}
                         onPublishBlueprint={handlePublishBlueprint}
+                        onLoadMore={handleLoadMore}
+                        hasMore={hasMore}
+                        isLoadingMore={isLoadingMore}
                       />
                     </motion.div>
                  } />
@@ -598,6 +655,28 @@ function App() {
                     </motion.div>
                  } />
 
+                 <Route path="/frameworks/:id" element={
+                     <motion.div
+                       key="framework-detail"
+                       initial={{ opacity: 0, x: 20 }}
+                       animate={{ opacity: 1, x: 0 }}
+                       exit={{ opacity: 0, x: -20 }}
+                     >
+                       <FrameworkPage />
+                     </motion.div>
+                 } />
+
+                 <Route path="/analytics" element={
+                     <motion.div
+                       key="analytics"
+                       initial={{ opacity: 0, y: 20 }}
+                       animate={{ opacity: 1, y: 0 }}
+                       exit={{ opacity: 0, y: -20 }}
+                     >
+                        <AnalyticsPage />
+                     </motion.div>
+                 } />
+
                  <Route path="/profile" element={
                     userId ? (
                          <motion.div key="profile" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
@@ -605,6 +684,16 @@ function App() {
                          </motion.div>
                     ) : (
                          <div className="flex items-center justify-center h-screen">Loading...</div>
+                    )
+                 } />
+
+                 <Route path="/admin" element={
+                    isAdmin ? (
+                         <motion.div key="admin" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                           <AdminDashboard onBack={() => navigate('/')} />
+                         </motion.div>
+                    ) : (
+                         <div className="flex items-center justify-center h-screen text-xl font-medium">{t('admin.accessDenied')}</div>
                     )
                  } />
 

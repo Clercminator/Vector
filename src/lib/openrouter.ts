@@ -1,4 +1,11 @@
 import type { BlueprintResult, FrameworkId } from "@/lib/blueprints";
+import fpPrompt from "@/lib/prompts/first-principles.txt?raw";
+import paretoPrompt from "@/lib/prompts/pareto.txt?raw";
+import rpmPrompt from "@/lib/prompts/rpm.txt?raw";
+import eisenhowerPrompt from "@/lib/prompts/eisenhower.txt?raw";
+import okrPrompt from "@/lib/prompts/okr.txt?raw";
+import suggestPrompt from "@/lib/prompts/suggest-framework.txt?raw";
+import refinePrompt from "@/lib/prompts/refine-blueprint.txt?raw";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_MODEL = "openai/gpt-4o-mini";
@@ -27,7 +34,7 @@ interface ChatMessage {
  */
 export async function chat(
   messages: ChatMessage[],
-  options?: { model?: string; max_tokens?: number }
+  options?: { model?: string; max_tokens?: number; retryCount?: number }
 ): Promise<string> {
   const proxyUrl = getProxyUrl().trim();
   const payload = {
@@ -37,91 +44,94 @@ export async function chat(
     temperature: 0.3,
   };
 
-  if (proxyUrl) {
-    const res = await fetch(proxyUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(`Proxy API error (${res.status}): ${text || res.statusText}`);
+  const maxRetries = options?.retryCount ?? 0;
+  let attempt = 0;
+  let lastError: any;
+
+  while (attempt <= maxRetries) {
+    try {
+      if (proxyUrl) {
+        const res = await fetch(proxyUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          throw new Error(`Proxy API error (${res.status}): ${text || res.statusText}`);
+        }
+        const data = (await res.json()) as {
+          choices?: Array<{ message?: { content?: string } }>;
+          error?: { message?: string };
+        };
+        if (data.error?.message) throw new Error(data.error.message);
+        const content = data.choices?.[0]?.message?.content;
+        if (content == null) throw new Error("Proxy returned no content.");
+        return content.trim();
+      }
+
+      const key = getApiKey();
+      if (!key) throw new Error("VITE_OPENROUTER_API_KEY or VITE_OPENROUTER_PROXY_URL is not set.");
+
+      const res = await fetch(OPENROUTER_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": typeof window !== "undefined" ? window.location.origin : "",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`Open Router API error (${res.status}): ${text || res.statusText}`);
+      }
+
+      const data = (await res.json()) as {
+        choices?: Array<{ message?: { content?: string }; finish_reason?: string }>;
+        error?: { message?: string };
+      };
+
+      if (data.error?.message) throw new Error(data.error.message);
+      const content = data.choices?.[0]?.message?.content;
+      if (content == null) throw new Error("Open Router returned no content.");
+      return content.trim();
+
+    } catch (e) {
+      lastError = e;
+      attempt++;
+      if (attempt <= maxRetries) {
+        console.warn(`Chat attempt ${attempt} failed, retrying...`, e);
+        await new Promise(r => setTimeout(r, 1000 * attempt)); // Exponential backoffish
+      }
     }
-    const data = (await res.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-      error?: { message?: string };
-    };
-    if (data.error?.message) throw new Error(data.error.message);
-    const content = data.choices?.[0]?.message?.content;
-    if (content == null) throw new Error("Proxy returned no content.");
-    return content.trim();
   }
-
-  const key = getApiKey();
-  if (!key) throw new Error("VITE_OPENROUTER_API_KEY or VITE_OPENROUTER_PROXY_URL is not set.");
-
-  const res = await fetch(OPENROUTER_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": typeof window !== "undefined" ? window.location.origin : "",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Open Router API error (${res.status}): ${text || res.statusText}`);
-  }
-
-  const data = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string }; finish_reason?: string }>;
-    error?: { message?: string };
-  };
-
-  if (data.error?.message) throw new Error(data.error.message);
-  const content = data.choices?.[0]?.message?.content;
-  if (content == null) throw new Error("Open Router returned no content.");
-  return content.trim();
+  throw lastError;
 }
 
-function buildSystemPrompt(framework: FrameworkId): string {
-  const base = `You are a goal-architect assistant. The user has answered a short questionnaire for the "${framework}" framework. Your task is to return a single JSON object that structures their answers. Return ONLY valid JSON, no markdown code fence, no explanation.`;
+function buildSystemPrompt(framework: FrameworkId, userName?: string): string {
+  let prompt = "";
   switch (framework) {
     case "first-principles":
-      return `${base}
-Schema: { "type": "first-principles", "truths": string[], "newApproach": string }
-- truths: array of non-empty strings (fundamental facts the user gave)
-- newApproach: one string (their new way to build from the ground up)`;
+      prompt = fpPrompt; break;
     case "pareto":
-      return `${base}
-Schema: { "type": "pareto", "vital": string[], "trivial": string[] }
-- vital: the 20% activities that move the needle (from their answer)
-- trivial: the remaining activities`;
+      prompt = paretoPrompt; break;
     case "rpm":
-      return `${base}
-Schema: { "type": "rpm", "result": string, "purpose": string, "plan": string[] }
-- result: their stated result/goal
-- purpose: their "why"
-- plan: array of action items (strings) from their Massive Action Plan`;
+      prompt = rpmPrompt; break;
     case "eisenhower":
-      return `${base}
-Schema: { "type": "eisenhower", "q1": string[], "q2": string[], "q3": string[], "q4": string[] }
-- q1: Urgent & Important (Do first)
-- q2: Important, not urgent (Schedule)
-- q3: Urgent, not important (Delegate) — can be empty
-- q4: Neither (Eliminate) — can be empty
-Split the user's listed tasks into these four arrays based on their answers.`;
+      prompt = eisenhowerPrompt; break;
     case "okr":
-      return `${base}
-Schema: { "type": "okr", "objective": string, "keyResults": string[], "initiative": string }
-- objective: their 90-day objective
-- keyResults: 3 measurable key results (strings)
-- initiative: first major initiative they'll launch`;
+      prompt = okrPrompt; break;
     default:
-      return base;
+      prompt = fpPrompt;
   }
+  
+  if (userName) {
+    // Inject user name into the persona
+    prompt = prompt.replace("You are a world-class", `You are a world-class architectural strategist assisting ${userName}. You are a world-class`);
+  }
+  return prompt;
 }
 
 function parseJsonBlock(raw: string): unknown {
@@ -187,27 +197,113 @@ function validateAndSanitize(framework: FrameworkId, obj: unknown): BlueprintRes
 
 /**
  * Use Open Router to turn the user's answers into a structured BlueprintResult.
- * Returns null if the API is not configured, the request fails, or the response is invalid.
+ * With auto-retry on validation failure.
  */
 export async function generateBlueprintResult(
   framework: FrameworkId,
-  answers: string[]
+  answers: string[],
+  userName?: string
 ): Promise<BlueprintResult | null> {
   if (!isOpenRouterConfigured()) return null;
 
   const userContent = `Framework: ${framework}\n\nAnswers (in order):\n${answers.map((a, i) => `${i + 1}. ${a}`).join("\n")}\n\nReturn the JSON object only.`;
+  const systemContent = buildSystemPrompt(framework, userName);
 
-  try {
-    const content = await chat(
-      [
-        { role: "system", content: buildSystemPrompt(framework) },
-        { role: "user", content: userContent },
-      ],
-      { max_tokens: 1024 }
-    );
-    const obj = parseJsonBlock(content);
-    return validateAndSanitize(framework, obj);
-  } catch {
-    return null;
+  let attempts = 0;
+  const maxAttempts = 2; // 1 initial + 1 retry
+  let currentMessages: ChatMessage[] = [
+    { role: "system", content: systemContent },
+    { role: "user", content: userContent },
+  ];
+
+  while (attempts < maxAttempts) {
+    try {
+      const content = await chat(currentMessages, { max_tokens: 1024, retryCount: 1 }); // Network retry inside chat
+      const obj = parseJsonBlock(content);
+      const valid = validateAndSanitize(framework, obj);
+      if (valid) return valid;
+      
+      // If valid is null, logic error in JSON schema
+      throw new Error("Invalid JSON schema returned");
+
+    } catch (e: any) {
+        console.warn("Generation attempt failed", e);
+        attempts++;
+        if (attempts < maxAttempts) {
+             // Feed error back to AI
+             currentMessages.push({ role: "system", content: `Error: ${e.message}. You MUST return valid JSON matching the schema.` });
+        }
+    }
   }
+  return null;
+}
+
+/**
+ * Suggest a framework based on the user's problem description.
+ */
+export async function suggestFramework(problem: string, userName?: string): Promise<FrameworkId | null> {
+    if (!isOpenRouterConfigured()) return null;
+
+    try {
+        const content = await chat([
+            { role: "system", content: suggestPrompt },
+            { role: "user", content: `Problem: "${problem}" ${userName ? `(User: ${userName})` : ''}` }
+        ]);
+        const obj = parseJsonBlock(content) as any;
+        if (obj && obj.framework && ["first-principles", "pareto", "rpm", "eisenhower", "okr"].includes(obj.framework)) {
+            return obj.framework as FrameworkId;
+        }
+        return null;
+    } catch (e) {
+        console.error("Framework suggestion failed", e);
+        return null;
+    }
+}
+
+/**
+ * Refine an existing blueprint result based on user chat input.
+ */
+export async function refineBlueprint(
+    framework: FrameworkId, 
+    currentResult: BlueprintResult, 
+    chatHistory: { role: 'ai' | 'user', content: string }[], 
+    lastUserMessage: string,
+    userName?: string
+): Promise<BlueprintResult | null> {
+    if (!isOpenRouterConfigured()) return null;
+
+    let systemPrompt = `${refinePrompt}
+    Current JSON: ${JSON.stringify(currentResult)}
+    Framework: ${framework}`;
+
+    if (userName) {
+        systemPrompt += `\nUser Name: ${userName}`;
+    }
+
+    // Convert history format
+    const messages: ChatMessage[] = [
+        { role: "system", content: systemPrompt },
+        ...chatHistory.map(m => ({ role: m.role === 'ai' ? 'assistant' as const : 'user' as const, content: m.content })),
+        { role: "user", content: lastUserMessage }
+    ];
+
+    let attempts = 0;
+    const maxAttempts = 2; // 1 initial + 1 retry
+
+    while (attempts < maxAttempts) {
+        try {
+            const content = await chat(messages, { max_tokens: 1500, retryCount: 1 });
+            const obj = parseJsonBlock(content);
+            const valid = validateAndSanitize(framework, obj);
+            if (valid) return valid;
+             throw new Error("Invalid JSON schema returned");
+        } catch (e: any) {
+            console.warn("Refinement attempt failed", e);
+             attempts++;
+             if (attempts < maxAttempts) {
+                 messages.push({ role: "system", content: `Error: ${e.message}. Please fix the JSON.` });
+             }
+        }
+    }
+    return null;
 }

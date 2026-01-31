@@ -1,113 +1,74 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Check, Rocket } from 'lucide-react';
+import { Check } from 'lucide-react';
 import confetti from 'canvas-confetti';
-
-const tiers = [
-  {
-    name: 'Architect',
-    price: '$0',
-    description: 'Perfect for exploring fundamental frameworks.',
-    features: [
-      'Access to 3 standard frameworks',
-      'Save up to 5 goal blueprints',
-      'Dynamic particle background',
-      'Basic AI assistant',
-    ],
-    cta: 'Get Started',
-    popular: false,
-    color: '#4285F4',
-  },
-  {
-    name: 'Master Builder',
-    price: '$19',
-    description: 'Advanced tools for serious high-performers.',
-    features: [
-      'Unlimited goal blueprints',
-      'Complex frameworks (OKRs, Eisenhower)',
-      'Calendar exports (Google/Outlook)',
-      'High-priority AI reasoning',
-      'Strategic roadmap visualization',
-    ],
-    cta: 'Go Pro',
-    popular: true,
-    color: '#EA4335',
-  },
-  {
-    name: 'Enterprise',
-    price: 'Custom',
-    description: 'Scale organizational goals with team-wide alignment.',
-    features: [
-      'Team shared workspaces',
-      'Admin dashboard & analytics',
-      'Custom framework integration',
-      'Dedicated support architect',
-    ],
-    cta: 'Contact Sales',
-    popular: false,
-    color: '#FBBC05',
-  },
-];
-
 import { useLanguage } from '@/app/components/language-provider';
+import { TIER_CONFIGS, type TierId } from '@/lib/tiers';
 
-export const PricingSection: React.FC<{ onSelectTier?: (tierName: string) => void }> = ({ onSelectTier }) => {
+export const PricingSection: React.FC<{ onSelectTier?: (tierName: string, tierId?: string) => void }> = ({ onSelectTier }) => {
   const { t } = useLanguage();
 
-  const tiers = [
-    {
-      name: t('pricing.tier.architect'),
-      price: '$0',
-      description: t('pricing.tier.architect.desc'),
-      features: [
-        'Access to 3 standard frameworks',
-        'Save up to 5 goal blueprints',
-        'Dynamic particle background',
-        'Basic AI assistant',
-      ],
-      cta: t('pricing.cta.start'),
-      popular: false,
-      color: '#4285F4',
-    },
-    {
-      name: t('pricing.tier.master'),
-      price: '$19',
-      description: t('pricing.tier.master.desc'),
-      features: [
-        'Unlimited goal blueprints',
-        'Complex frameworks (OKRs, Eisenhower)',
-        'Calendar exports (Google/Outlook)',
-        'High-priority AI reasoning',
-        'Strategic roadmap visualization',
-      ],
-      cta: t('pricing.cta.pro'),
-      popular: true,
-      color: '#EA4335',
-    },
-    {
-      name: t('pricing.tier.enterprise'),
-      price: 'Custom',
-      description: t('pricing.tier.enterprise.desc'),
-      features: [
-        'Team shared workspaces',
-        'Admin dashboard & analytics',
-        'Custom framework integration',
-        'Dedicated support architect',
-      ],
-      cta: t('pricing.cta.contact'),
-      popular: false,
-      color: '#FBBC05',
-    },
-  ];
+  const tierIds: TierId[] = ['architect', 'standard', 'max', 'enterprise'];
+  const tiers = tierIds.map((id) => {
+    const config = TIER_CONFIGS[id];
+    const isFree = config.priceUsd === 0;
+    const isCustom = config.priceUsd < 0;
+    const priceStr = isFree ? '$0' : isCustom ? t('pricing.custom') || 'Custom' : `$${config.priceUsd}`;
+    const nameKey = `pricing.tier.${id}`;
+    const descKey = `pricing.tier.${id}.desc`;
+    const ctaKey = id === 'architect' ? 'pricing.cta.start' : id === 'enterprise' ? 'pricing.cta.contact' : `pricing.cta.${id}`;
+    
+    const features: string[] =
+      id === 'architect'
+        ? [
+            t('pricing.feature.architect.frameworks').replace('{0}', String(config.allowedFrameworks.length)),
+            t('pricing.feature.architect.blueprints').replace('{0}', String(config.maxBlueprints)),
+            t('pricing.feature.architect.credits').replace('{0}', String(config.credits)),
+            t('pricing.feature.architect.ai'),
+          ]
+        : id === 'standard'
+          ? [
+              t('pricing.feature.standard.credits').replace('{0}', String(config.credits)),
+              t('pricing.feature.standard.frameworks'),
+              t('pricing.feature.standard.blueprints').replace('{0}', String(config.maxBlueprints)),
+              t('pricing.feature.standard.ai'),
+            ]
+          : id === 'max'
+            ? [
+                t('pricing.feature.max.credits').replace('{0}', String(config.credits)),
+                t('pricing.feature.max.frameworks'),
+                t('pricing.feature.max.calendar'),
+                t('pricing.feature.max.pdf'),
+                t('pricing.feature.max.priority'),
+                t('pricing.feature.max.blueprints').replace('{0}', String(config.maxBlueprints)),
+              ]
+            : [
+                t('pricing.feature.enterprise.workspaces'),
+                t('pricing.feature.enterprise.admin'),
+                t('pricing.feature.enterprise.integration'),
+                t('pricing.feature.enterprise.support'),
+              ];
+    return {
+      id,
+      name: t(nameKey),
+      price: priceStr,
+      description: t(descKey),
+      features: features.filter(Boolean),
+      cta: t(ctaKey),
+      popular: id === 'max',
+      color: id === 'architect' ? '#4285F4' : id === 'standard' ? '#34A853' : id === 'max' ? '#EA4335' : '#FBBC05',
+      oneTime: !isFree && !isCustom,
+    };
+  });
 
-  const handleCta = (tierName: string) => {
+  const handleCta = (tierName: string, tierId: string) => {
     confetti({
       particleCount: 150,
       spread: 70,
       origin: { y: 0.6 },
       colors: ['#4285F4', '#EA4335', '#FBBC05', '#34A853']
     });
-    onSelectTier?.(tierName);
+    onSelectTier?.(tierName, tierId);
   };
 
   return (
@@ -119,7 +80,7 @@ export const PricingSection: React.FC<{ onSelectTier?: (tierName: string) => voi
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
         {tiers.map((tier) => (
           <motion.div
             key={tier.name}
@@ -139,9 +100,9 @@ export const PricingSection: React.FC<{ onSelectTier?: (tierName: string) => voi
             
             <div className="mb-8">
               <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{tier.name}</h3>
-              <div className="flex items-baseline gap-1">
+              <div className="flex items-baseline gap-1 flex-wrap">
                 <span className="text-4xl font-bold text-gray-900 dark:text-white">{tier.price}</span>
-                {tier.price !== 'Custom' && <span className="text-gray-400">/mo</span>}
+                {tier.oneTime && <span className="text-gray-400 text-sm">({t('pricing.oneTime')})</span>}
               </div>
               <p className="text-gray-500 dark:text-gray-400 text-sm mt-4 leading-relaxed">{tier.description}</p>
             </div>
@@ -156,7 +117,7 @@ export const PricingSection: React.FC<{ onSelectTier?: (tierName: string) => voi
             </ul>
 
             <button
-              onClick={() => handleCta(tier.name)}
+              onClick={() => handleCta(tier.name, tier.id)}
               className={`w-full py-4 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] ${
                 tier.popular
                   ? 'bg-black dark:bg-white text-white dark:text-black shadow-xl shadow-black/20 dark:shadow-white/10'

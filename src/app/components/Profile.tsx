@@ -7,6 +7,8 @@ import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { AchievementsList } from '@/app/components/AchievementsList';
+import { Flame } from 'lucide-react';
 
 interface ProfileProps {
   userId: string;
@@ -21,7 +23,14 @@ interface ProfileData {
   level: number;
   credits: number;
   points: number;
+  streak_count: number;
+  branding_logo_url?: string;
+  branding_color?: string;
+  tier?: string;
 }
+
+import { TIER_CONFIGS, TierId } from '@/lib/tiers';
+import { Lock } from 'lucide-react';
 
 import { useLanguage } from '@/app/components/language-provider';
 
@@ -38,9 +47,47 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
     level: 1,
     credits: 5,
     points: 0,
+    streak_count: 0,
+    branding_logo_url: '',
+    branding_color: '#000000',
+    tier: 'free',
   });
 
-  // ... useEffect logic ...
+  useEffect(() => {
+    async function fetchProfile() {
+      if (!supabase) return;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('display_name, bio, avatar_url, level, credits, points, streak_count, branding_logo_url, branding_color, tier')
+            .eq('user_id', user.id)
+            .single();
+
+          if (profile) {
+            setData({
+              display_name: profile.display_name || '',
+              bio: profile.bio || '',
+              avatar_url: profile.avatar_url || '',
+              level: profile.level || 1,
+              credits: profile.credits || 0,
+              points: profile.points || 0,
+              streak_count: profile.streak_count || 0,
+              branding_logo_url: profile.branding_logo_url || '',
+              branding_color: profile.branding_color || '#000000',
+              tier: profile.tier || 'free',
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Error fetching profile:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProfile();
+  }, [userId]);
 
   const handleSave = async () => {
     if (!supabase) return;
@@ -53,6 +100,8 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
           display_name: data.display_name,
           bio: data.bio,
           avatar_url: data.avatar_url,
+          branding_logo_url: data.branding_logo_url,
+          branding_color: data.branding_color,
           updated_at: new Date().toISOString(),
         });
 
@@ -93,18 +142,23 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
              <h2 className="text-xl font-bold truncate w-full text-black dark:text-white">{data.display_name || 'Architect'}</h2>
              <p className="text-sm text-gray-400 mb-6">{userEmail}</p>
 
-             <div className="grid grid-cols-2 gap-4 w-full">
-               <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-2xl flex flex-col items-center">
-                 <Award className="text-blue-500 mb-2" size={20} />
-                 <span className="text-2xl font-bold text-blue-900 dark:text-blue-200">{data.level}</span>
-                 <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">{t('profile.level')}</span>
-               </div>
-               <div className="bg-yellow-50 dark:bg-yellow-900/10 p-4 rounded-2xl flex flex-col items-center">
-                 <Zap className="text-yellow-500 mb-2" size={20} />
-                 <span className="text-2xl font-bold text-yellow-900 dark:text-yellow-200">{data.credits}</span>
-                 <span className="text-xs font-bold text-yellow-500 uppercase tracking-wider">{t('profile.credits')}</span>
-               </div>
-             </div>
+              <div className="grid grid-cols-3 gap-2 w-full">
+                <div className="bg-blue-50 dark:bg-blue-900/10 p-3 rounded-2xl flex flex-col items-center">
+                  <Award className="text-blue-500 mb-1" size={18} />
+                  <span className="text-xl font-bold text-blue-900 dark:text-blue-200">{data.level}</span>
+                  <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">{t('profile.level')}</span>
+                </div>
+                <div className="bg-yellow-50 dark:bg-yellow-900/10 p-3 rounded-2xl flex flex-col items-center">
+                  <Zap className="text-yellow-500 mb-1" size={18} />
+                  <span className="text-xl font-bold text-yellow-900 dark:text-yellow-200">{data.credits}</span>
+                  <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-wider">{t('profile.credits')}</span>
+                </div>
+                <div className="bg-orange-50 dark:bg-orange-900/10 p-3 rounded-2xl flex flex-col items-center">
+                  <Flame className="text-orange-500 mb-1" size={18} />
+                  <span className="text-xl font-bold text-orange-900 dark:text-orange-200">{data.streak_count}</span>
+                  <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">{t('profile.streak') || 'Streak'}</span>
+                </div>
+              </div>
           </div>
         </div>
 
@@ -165,6 +219,58 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
                 )}
               </Button>
             </div>
+          </div>
+
+          {/* Branding Section (Max Tier Only) */}
+          <div className={`mt-8 pt-8 border-t border-gray-100 dark:border-zinc-800 ${data.tier !== 'max' ? 'opacity-50 pointer-events-none relative' : ''}`}>
+             
+             {data.tier !== 'max' && (
+                 <div className="absolute inset-0 flex items-center justify-center z-10">
+                     <div className="bg-black/80 text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-bold">
+                        <Lock size={14} /> Max Tier Only
+                     </div>
+                 </div>
+             )}
+
+             <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-black dark:text-white">
+                <Award className="text-gray-400" /> 
+                PDF Branding
+             </h3>
+
+             <div className="space-y-6">
+                 <div className="space-y-2">
+                    <Label htmlFor="logoUrl" className="text-black dark:text-white">Logo URL</Label>
+                    <Input 
+                        id="logoUrl" 
+                        value={data.branding_logo_url} 
+                        onChange={(e) => setData({ ...data, branding_logo_url: e.target.value })}
+                        placeholder="https://your-company.com/logo.png"
+                        className="bg-transparent dark:text-white dark:border-zinc-700"
+                    />
+                 </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="brandColor" className="text-black dark:text-white">Primary Color</Label>
+                    <div className="flex gap-4">
+                        <Input 
+                            id="brandColor" 
+                            type="color"
+                            value={data.branding_color} 
+                            onChange={(e) => setData({ ...data, branding_color: e.target.value })}
+                            className="w-16 h-10 p-1 bg-transparent dark:border-zinc-700"
+                        />
+                        <Input 
+                            value={data.branding_color} 
+                            onChange={(e) => setData({ ...data, branding_color: e.target.value })}
+                            placeholder="#000000"
+                            className="bg-transparent dark:text-white dark:border-zinc-700 flex-1"
+                        />
+                    </div>
+                 </div>
+             </div>
+          </div>
+          
+          <div className="mt-8 border-t border-gray-100 dark:border-zinc-800 pt-8">
+            <AchievementsList userId={userId} />
           </div>
         </div>
       </div>

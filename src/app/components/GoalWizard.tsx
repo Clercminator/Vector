@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Send, ArrowLeft, RefreshCcw, CheckCircle2, Calendar, Target, Zap, Layers, Share2, Rocket, Clock, Star } from 'lucide-react';
+import { Send, ArrowLeft, RefreshCcw, CheckCircle2, Calendar, Target, Zap, Layers, Share2, Rocket, Clock, Star, Download, Lock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
-import { Blueprint, BlueprintResult, blueprintTitleFromAnswers } from '@/lib/blueprints';
+import { Blueprint, BlueprintResult, blueprintTitleFromAnswers, fetchBlueprintMessages, saveBlueprintMessage, saveBlueprintMessages } from '@/lib/blueprints';
 import { blueprintToEvents, downloadIcs, exportEventsToGoogleCalendar, getGoogleAccessToken } from '@/lib/calendarExport';
-import { generateBlueprintResult as generateBlueprintResultAI } from '@/lib/openrouter';
+import { generateBlueprintResult as generateBlueprintResultAI, refineBlueprint } from '@/lib/openrouter';
+import { exportToPdf } from '@/lib/pdfExport';
+import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, canUseFramework } from '@/lib/tiers';
 import { useLanguage } from '@/app/components/language-provider';
 import { supabase } from '@/lib/supabase';
 import { useTheme } from 'next-themes';
@@ -33,15 +35,22 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   const [isSynthesizing, setIsSynthesizing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [credits, setCredits] = useState<number | null>(null);
+  const [tier, setTier] = useState<TierId>(DEFAULT_TIER_ID);
+  const [userName, setUserName] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     // Fetch credits
     if (supabase) {
         supabase.auth.getUser().then(({ data: { user } }) => {
             if (user) {
-                supabase.from('profiles').select('credits').eq('user_id', user.id).single()
+                // Fetch full_name along with credits and tier
+                supabase.from('profiles').select('credits, tier, full_name').eq('user_id', user.id).single()
                 .then(({ data }) => {
-                    if (data) setCredits(data.credits);
+                    if (data) {
+                        setCredits(data.credits);
+                        if (data.tier) setTier(data.tier as TierId);
+                        if (data.full_name) setUserName(data.full_name);
+                    }
                 });
             } else {
                 // Anonymous / Demo user: give 3 "virtual" credits for session
@@ -50,6 +59,9 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         });
     }
   }, []);
+
+  // Check function needs to be imported or defined, for now I'll just check the env var check wrapper
+  const isOpenRouterConfigured = () => !!import.meta.env.VITE_OPENROUTER_API_KEY || !!import.meta.env.VITE_OPENROUTER_PROXY_URL;
 
   const frameworkConfig = {
     'first-principles': {
@@ -136,15 +148,26 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
   useEffect(() => {
     if (initialBlueprint) {
-      setMessages([
+      const baseMessages: Message[] = [
         { role: 'ai', content: t('wizard.reopening').replace('{0}', currentConfig.title) },
         { role: 'user', content: initialBlueprint.title },
         { role: 'ai', content: t('wizard.loaded') },
-      ]);
+      ];
+      setMessages(baseMessages);
       setResult(initialBlueprint.result);
       setFinalAnswers(initialBlueprint.answers ?? []);
       setStep(currentConfig.questions.length);
       setIsTyping(false);
+
+      if (supabase && initialBlueprint.id) {
+          fetchBlueprintMessages(supabase, initialBlueprint.id)
+            .then((history: any[]) => {
+                if (history && history.length > 0) {
+                     setMessages([...baseMessages, ...history as Message[]]);
+                }
+            })
+            .catch((err: any) => console.error("Failed to load chat history", err));
+      }
       return;
     }
 
@@ -167,6 +190,64 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     e.preventDefault();
     if (!inputValue.trim() || isTyping) return;
 
+    // Phase 2: Refinement Chat (after result is generated)
+    if (result) {
+        if (!isOpenRouterConfigured()) {
+             toast.error(t('wizard.configError'));
+             return;
+        }
+
+        const instruction = inputValue;
+        const newMessages = [...messages, { role: 'user' as const, content: instruction }];
+        setMessages(newMessages);
+        setInputValue('');
+        setIsTyping(true);
+
+        // Persist user message if blueprint is saved
+        if (supabase && initialBlueprint?.id) {
+            saveBlueprintMessage(supabase, initialBlueprint.id, 'user', instruction).catch(console.error);
+        }
+
+        (async () => {
+             // Deduct credit check
+             if (credits !== null && credits <= 0) {
+                 setIsTyping(false);
+                 setMessages(prev => [...prev, { role: 'ai', content: t('wizard.noCredits') }]);
+                 return;
+             }
+
+             const refinedResult = await refineBlueprint(framework, result, newMessages, instruction, userName);
+             
+             if (refinedResult) {
+                 setResult(refinedResult);
+                 const aiMsg = t('wizard.refineSuccess');
+                 setMessages(prev => [...prev, { role: 'ai', content: aiMsg }]);
+                 
+                 if (supabase && initialBlueprint?.id) {
+                     saveBlueprintMessage(supabase, initialBlueprint.id, 'ai', aiMsg).catch(console.error);
+                 }
+                 
+                 // Deduct credit
+                 if (supabase && credits !== null) {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                        await supabase.rpc('decrement_credits', { user_id: user.id });
+                        setCredits(c => (c ? c - 1 : 0));
+                    }
+                 }
+             } else {
+                 const errMsg = t('wizard.refineError');
+                 setMessages(prev => [...prev, { role: 'ai', content: errMsg }]);
+                 if (supabase && initialBlueprint?.id) {
+                     saveBlueprintMessage(supabase, initialBlueprint.id, 'ai', errMsg).catch(console.error);
+                 }
+             }
+             setIsTyping(false);
+        })();
+        return;
+    }
+
+    // Phase 1: Initial Questionnaire
     const newMessages: Message[] = [...messages, { role: 'user', content: inputValue }];
     setMessages(newMessages);
     setInputValue('');
@@ -185,14 +266,14 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       
       // Credit Check
       if (credits !== null && credits <= 0) {
-          toast.error("You have 0 credits. Upgrade to continue!");
+          toast.error(t('wizard.creditError'));
           // Fallback to non-AI or stop? 
           // For now, let's stop but maybe in future we allow rule-based fallback
           // Force fallback to rule based:
           const res = currentConfig.generateResult(answers) as BlueprintResult;
           setResult(res);
           setFinalAnswers(answers);
-          setMessages(prev => [...prev, { role: 'ai', content: t('wizard.ai.complete') + " (Rule-based due to low credits)" }]);
+          setMessages(prev => [...prev, { role: 'ai', content: t('wizard.ai.complete') + t('wizard.ruleBased') }]);
           return; 
       }
 
@@ -201,7 +282,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       (async () => {
         let res: BlueprintResult | null = null;
         try {
-          res = await generateBlueprintResultAI(framework, answers);
+          res = await generateBlueprintResultAI(framework, answers, userName);
           
           // Deduct credit if AI was successful
           if (res && supabase && credits !== null) {
@@ -257,9 +338,9 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         loading: t('common.loading'),
         success: (res) =>
           res.mode === "google"
-            ? "Exported to Google Calendar!"
-            : "Downloaded a .ics file.",
-        error: 'Failed to export calendar events.',
+            ? t('wizard.exportSuccess')
+            : t('wizard.exportIcs'),
+        error: t('wizard.exportError'),
       }
     );
 
@@ -279,11 +360,17 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
     try {
       await onSaveBlueprint?.(bp);
-      toast.success(t('common.save') + " successful");
+      
+      // If this is a new blueprint, persist the chat history
+      if (!initialBlueprint && supabase) {
+          saveBlueprintMessages(supabase, bp.id, messages).catch((err: any) => console.error("Failed to save chat history", err));
+      }
+
+      toast.success(t('wizard.saveSuccess'));
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.75 } });
       onBack();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to save blueprint.");
+      toast.error(e instanceof Error ? e.message : t('common.error'));
     }
   };
 
@@ -497,10 +584,16 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         {renderResult()}
       </div>
 
-      {!result && !initialBlueprint && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent dark:from-zinc-950 dark:via-zinc-950 pt-12">
+      {!initialBlueprint && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent dark:from-zinc-950 dark:via-zinc-950 pt-12 z-20">
           <form onSubmit={handleSubmit} className="max-w-4xl mx-auto relative">
-            <input autoFocus value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder={t('wizard.typePlaceholder')} className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-full py-4 pl-6 pr-16 shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-lg dark:text-white dark:placeholder-zinc-500" />
+            <input 
+                autoFocus 
+                value={inputValue} 
+                onChange={(e) => setInputValue(e.target.value)} 
+                placeholder={result ? t('wizard.refinePlaceholder') : t('wizard.typePlaceholder')} 
+                className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-full py-4 pl-6 pr-16 shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-lg dark:text-white dark:placeholder-zinc-500" 
+            />
             <button
               type="submit"
               aria-label="Send message"
@@ -514,11 +607,55 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       )}
 
       {result && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-4">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-4 items-center">
           <button onClick={() => { setMessages([]); setStep(0); setResult(null); setFinalAnswers([]); }} className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium"><RefreshCcw size={18} />{t('wizard.restart')}</button>
-          <button onClick={handleExport} className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all font-medium"><Calendar size={18} />{t('wizard.export')}</button>
+          
+          {/* Calendar Export */}
+          <button 
+             onClick={handleExport} 
+             disabled={!TIER_CONFIGS[tier].canExportCalendar}
+             className={`flex items-center gap-2 px-6 py-3 rounded-full shadow-lg transition-all font-medium ${
+                 !TIER_CONFIGS[tier].canExportCalendar 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-blue-600 text-white hover:shadow-xl'
+             }`}
+          >
+             {TIER_CONFIGS[tier].canExportCalendar ? <Calendar size={18} /> : <Lock size={16} />}
+             {t('wizard.export')}
+          </button>
+
+          {/* PDF Export */}
+          <button 
+             onClick={() => {
+                 if (!result) return;
+                  const bp: Blueprint = {
+                    id: initialBlueprint?.id ?? crypto.randomUUID(),
+                    framework,
+                    title: initialBlueprint?.title ?? blueprintTitleFromAnswers(finalAnswers),
+                    answers: finalAnswers,
+                    result,
+                    createdAt: initialBlueprint?.createdAt ?? new Date().toISOString(),
+                  };
+                  exportToPdf(bp);
+                  toast.success(t('wizard.pdfSuccess'));
+             }}
+             disabled={!TIER_CONFIGS[tier].canExportPdf}
+             className={`flex items-center gap-2 px-6 py-3 rounded-full shadow-lg transition-all font-medium ${
+                 !TIER_CONFIGS[tier].canExportPdf 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-red-600 text-white hover:shadow-xl'
+             }`}
+          >
+             {TIER_CONFIGS[tier].canExportPdf ? <Download size={18} /> : <Lock size={16} />}
+             PDF
+          </button>
+
           <button onClick={handleSave} className="flex items-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-full shadow-lg hover:shadow-xl transition-all font-medium"><CheckCircle2 size={18} />{t('wizard.save')}</button>
         </div>
+      )}
+
+      {result && (
+          <div className="h-32" /> // Spacer for the fixed input
       )}
     </div>
   );

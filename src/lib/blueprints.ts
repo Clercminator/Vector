@@ -35,17 +35,88 @@ export function saveLocalBlueprints(blueprints: Blueprint[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(blueprints));
 }
 
-export function upsertBlueprint(list: Blueprint[], bp: Blueprint): Blueprint[] {
-  const idx = list.findIndex((x) => x.id === bp.id);
-  if (idx === -1) return [bp, ...list];
-  const next = [...list];
-  next[idx] = bp;
-  return next;
+
+import { SupabaseClient } from '@supabase/supabase-js';
+
+// ... (existing exports)
+
+/**
+ * Upsert blueprint to Supabase.
+ * Note: App.tsx uses an overload name. We export this as a distinct function
+ * or we can use function overloading if we want to mimic the current usage.
+ * Since I cannot change App.tsx easily in one go without errors, I will export this
+ * separate function first, then check App.tsx usage.
+ * Wait, App.tsx imports `upsertBlueprint`. If I change the signature here, I break it.
+ * But currently `upsertBlueprint` calls in App.tsx (Line 258) DO NOT MATCH this file.
+ * So I will add the Overload implementation.
+ */
+
+export function upsertBlueprint(list: Blueprint[], bp: Blueprint): Blueprint[];
+export function upsertBlueprint(client: SupabaseClient, bp: Blueprint, userId: string): Promise<any>;
+export function upsertBlueprint(arg1: any, bp: Blueprint, arg3?: string): any {
+  // Local Usage
+  if (Array.isArray(arg1)) {
+    const list = arg1 as Blueprint[];
+    const idx = list.findIndex((x) => x.id === bp.id);
+    if (idx === -1) return [bp, ...list];
+    const next = [...list];
+    next[idx] = bp;
+    return next;
+  }
+  
+  // Remote Usage
+  const supabase = arg1 as SupabaseClient;
+  const userId = arg3 as string;
+  return supabase.from('blueprints').upsert({
+      id: bp.id,
+      user_id: userId,
+      framework: bp.framework,
+      title: bp.title,
+      answers: bp.answers,
+      result: bp.result,
+      updated_at: new Date().toISOString()
+  });
 }
 
-export function removeBlueprint(list: Blueprint[], id: string): Blueprint[] {
-  return list.filter((x) => x.id !== id);
+// Same for removeBlueprint
+export function removeBlueprint(list: Blueprint[], id: string): Blueprint[];
+export function removeBlueprint(client: SupabaseClient, id: string): Promise<any>;
+export function removeBlueprint(arg1: any, id: string): any {
+  if (Array.isArray(arg1)) {
+    return (arg1 as Blueprint[]).filter((x) => x.id !== id);
+  }
+  return (arg1 as SupabaseClient).from('blueprints').delete().eq('id', id);
 }
+
+// Chat Persistence
+export async function fetchBlueprintMessages(supabase: SupabaseClient, blueprintId: string) {
+    const { data, error } = await supabase
+        .from('blueprint_messages')
+        .select('*')
+        .eq('blueprint_id', blueprintId)
+        .order('created_at', { ascending: true });
+    
+    if (error) throw error;
+    return data as { role: 'user' | 'ai'; content: string }[];
+}
+
+export async function saveBlueprintMessage(supabase: SupabaseClient, blueprintId: string, role: 'user' | 'ai', content: string) {
+    return supabase.from('blueprint_messages').insert({
+        blueprint_id: blueprintId,
+        role,
+        content
+    });
+}
+
+export async function saveBlueprintMessages(supabase: SupabaseClient, blueprintId: string, messages: { role: 'user' | 'ai'; content: string }[]) {
+    const toInsert = messages.map(m => ({
+        blueprint_id: blueprintId,
+        role: m.role,
+        content: m.content
+    }));
+    return supabase.from('blueprint_messages').insert(toInsert);
+}
+
 
 export function blueprintTitleFromAnswers(answers: string[], fallback = "Untitled blueprint") {
   const first = (answers[0] ?? "").trim();

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LucideIcon, ArrowRight, Info } from 'lucide-react';
+import { LucideIcon, ArrowRight, Info, Lock } from 'lucide-react';
 
 interface FrameworkCardProps {
   id: string;
@@ -9,13 +9,18 @@ interface FrameworkCardProps {
   color: string;
   onClick: () => void;
   onLearnMore?: () => void; // Optional for now
+  isLocked?: boolean;
 }
 
-export const FrameworkCard = React.memo(function FrameworkCard({ title, description, icon: Icon, color, onClick, onLearnMore }: FrameworkCardProps) {
+export const FrameworkCard = React.memo(function FrameworkCard({ title, description, icon: Icon, color, onClick, onLearnMore, isLocked = false }: FrameworkCardProps) {
   return (
     <div 
-      className="group relative bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-8 hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-300 cursor-pointer overflow-hidden"
-      onClick={onClick}
+      className={`group relative bg-white dark:bg-zinc-900 border transition-all duration-300 overflow-hidden ${
+        isLocked 
+          ? 'border-gray-100 dark:border-zinc-800 opacity-60 grayscale cursor-not-allowed' 
+          : 'border-gray-100 dark:border-zinc-800 rounded-3xl p-8 hover:shadow-xl hover:shadow-blue-900/5 cursor-pointer'
+      }`}
+      onClick={isLocked ? undefined : onClick}
     >
       <div 
         className="absolute top-0 right-0 w-32 h-32 opacity-5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700" 
@@ -33,9 +38,18 @@ export const FrameworkCard = React.memo(function FrameworkCard({ title, descript
         <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{title}</h3>
         <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">{description}</p>
         
-        <div className="flex items-center gap-2 font-bold text-sm" style={{ color }}>
-          <span>Start Architecting</span>
-          <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+        <div className="flex items-center gap-2 font-bold text-sm" style={{ color: isLocked ? '#9ca3af' : color }}>
+          {isLocked ? (
+             <>
+               <Lock size={16} />
+               <span>Included in Standard</span>
+             </>
+          ) : (
+             <>
+               <span>Start Architecting</span>
+               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+             </>
+          )}
         </div>
         
         {onLearnMore && (
