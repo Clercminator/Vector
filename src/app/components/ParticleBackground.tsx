@@ -81,18 +81,19 @@ export const ParticleBackground: React.FC = () => {
           p.vy -= Math.sin(angle) * force * 0.5;
         }
 
-        // Limit velocity so they don't speed up infinitely from mouse interactions
+        // Limit velocity but ensure constant movement
         const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-        const maxSpeed = 2; 
-        const minSpeed = 0.2; // Ensure they don't stop
+        const maxSpeed = 3; 
+        const minSpeed = 0.5; // Higher minimum speed
 
         if (speed > maxSpeed) {
             p.vx = (p.vx / speed) * maxSpeed;
             p.vy = (p.vy / speed) * maxSpeed;
-        } else if (speed < minSpeed && speed > 0) {
-            // Give them a little normalized boost if they get too slow
-             p.vx = (p.vx / speed) * minSpeed;
-             p.vy = (p.vy / speed) * minSpeed;
+        } else if (speed < minSpeed) {
+             // Force them to speed up if they get too slow
+             const angle = Math.atan2(p.vy, p.vx) || Math.random() * Math.PI * 2;
+             p.vx = Math.cos(angle) * minSpeed;
+             p.vy = Math.sin(angle) * minSpeed;
         }
         
         // Update position

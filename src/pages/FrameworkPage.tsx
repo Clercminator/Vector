@@ -2,15 +2,31 @@ import React, { useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { frameworks, Framework } from '@/lib/frameworks';
-import { frameworkContent } from '@/lib/frameworkContent';
+// Import markdown content
+import firstPrinciplesMd from '@/content/frameworks/first-principles.md?raw';
+import paretoMd from '@/content/frameworks/pareto.md?raw';
+import rpmMd from '@/content/frameworks/rpm.md?raw';
+import eisenhowerMd from '@/content/frameworks/eisenhower.md?raw';
+import okrMd from '@/content/frameworks/okr.md?raw';
+import ReactMarkdown from 'react-markdown';
 import { Button } from '@/app/components/ui/button';
 import { ArrowLeft, Brain, Layers, Target, Rocket, Check, X as XIcon, Quote, User } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLanguage } from '@/app/components/language-provider';
 import { trackEvent } from '@/lib/analytics';
 
+const markdownMap: Record<string, string> = {
+  'first-principles': firstPrinciplesMd,
+  'pareto': paretoMd,
+  'rpm': rpmMd,
+  'eisenhower': eisenhowerMd,
+  'okr': okrMd,
+};
+
+// Start of component
 export function FrameworkPage() {
   const { id } = useParams<{ id: string }>();
+  // ... existing hooks
   const navigate = useNavigate();
   const { t } = useLanguage();
 
@@ -21,7 +37,18 @@ export function FrameworkPage() {
   }, [id]);
 
   const frameworkBasic = frameworks.find(f => f.id === id);
-  const frameworkDetailed = id ? frameworkContent[id as string] : null;
+  // We prioritize markdown content over frameworkContent.ts for the "longDescription" part, 
+  // but we might still use frameworkContent.ts for structured steps/pros/cons if we didn't migrate them fully to MD blocks 
+  // or if we want to keep using the UI components for them.
+  // The plan implies replacing content with markdown. 
+  // Let's use the markdown for the main "About" section.
+  
+  const markdownContent = id ? markdownMap[id] : '';
+
+  // Extract frontmatter-like data if needed, or just render the whole body.
+  // Since we have title/desc in frontmatter, we could parse it.
+  // For now, let's just strip the frontmatter for display and use existing metadata for header.
+  const contentBody = markdownContent.replace(/^---[\s\S]*?---/, '').trim();
 
   if (!frameworkBasic) {
      return (
@@ -37,8 +64,7 @@ export function FrameworkPage() {
   // Combine data
   const fw = {
      ...frameworkBasic,
-     ...frameworkDetailed,
-     // Overwrite title/desc with translations if available
+     // title: t(...) || frameworkBasic.title, // keep existing logic
      title: t(`fw.${frameworkBasic.id}.title`) || frameworkBasic.title,
      description: t(`fw.${frameworkBasic.id}.desc`) || frameworkBasic.description,
   };
@@ -92,72 +118,9 @@ export function FrameworkPage() {
             {/* Main Column */}
             <div className="space-y-12">
                
-               {/* What is it */}
-               <section>
-                  <h2 className="text-2xl font-bold mb-4">{t('common.about') || "Deep Dive"}</h2>
-                  <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
-                     {fw.longDescription || fw.description}
-                  </p>
-               </section>
-
-               {/* History */}
-               {fw.history && (
-                   <section>
-                       <h2 className="text-2xl font-bold mb-4">Origins & History</h2>
-                       <p className="text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-zinc-900/50 p-6 rounded-2xl border border-gray-100 dark:border-zinc-800">
-                          {fw.history}
-                       </p>
-                   </section>
-               )}
-
-               {/* Steps */}
-                {fw.steps && fw.steps.length > 0 && (
-                   <section>
-                       <h2 className="text-2xl font-bold mb-6">How to Apply It</h2>
-                       <div className="flex flex-col gap-4">
-                          {fw.steps.map((step: string, i: number) => (
-                              <div key={i} className="flex gap-4 items-start group">
-                                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-bold text-sm mt-1">
-                                      {i + 1}
-                                  </div>
-                                  <div className="pt-1.5 text-lg text-gray-800 dark:text-gray-200 border-b border-gray-100 dark:border-zinc-800 w-full pb-4 group-last:border-0 group-last:pb-0">
-                                      {step}
-                                  </div>
-                              </div>
-                          ))}
-                       </div>
-                   </section>
-               )}
-
-               {/* Pros/Cons */}
-               <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-green-50/50 dark:bg-green-900/10 p-6 rounded-2xl border border-green-100 dark:border-green-900/30">
-                        <h3 className="font-bold text-green-800 dark:text-green-400 mb-4 flex items-center gap-2">
-                             <Check size={18} /> Pros
-                        </h3>
-                        <ul className="space-y-3">
-                            {fw.pros.map((p: string, i: number) => (
-                                <li key={i} className="text-sm text-green-900 dark:text-green-300 flex items-start gap-2">
-                                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full mt-1.5 shrink-0" />
-                                    {p}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                    <div className="bg-red-50/50 dark:bg-red-900/10 p-6 rounded-2xl border border-red-100 dark:border-red-900/30">
-                         <h3 className="font-bold text-red-800 dark:text-red-400 mb-4 flex items-center gap-2">
-                             <XIcon size={18} /> Cons
-                        </h3>
-                        <ul className="space-y-3">
-                            {fw.cons.map((c: string, i: number) => (
-                                <li key={i} className="text-sm text-red-900 dark:text-red-300 flex items-start gap-2">
-                                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full mt-1.5 shrink-0" />
-                                    {c}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-               </section>
+               <article className="prose prose-lg dark:prose-invert max-w-none">
+                   <ReactMarkdown>{contentBody}</ReactMarkdown>
+               </article>
 
             </div>
 

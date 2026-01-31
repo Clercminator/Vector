@@ -342,6 +342,12 @@ Other deps: `canvas-confetti`, `date-fns`, `react-hook-form`, `recharts`, etc., 
 - **Vercel Speed Insights:** `injectSpeedInsights()` in `main.tsx`.
 - **Dashboard pagination:** Remote blueprints loaded in pages via `loadRemoteBlueprints(uid, page)` with `.range(from, to)`; "Load More" button and `hasMore` / `isLoadingMore` in `Dashboard.tsx`.
 - **Community pagination:** Templates loaded in pages via `fetchTemplates(pageToLoad)` with `.range(from, to)`; "Load More" button and `hasMore` / `isLoadingMore` in `Community.tsx`; sort by recent/top.
+- **Leaderboard:** Community leaderboard showing top contributors by total votes; `get_leaderboard` RPC; `Leaderboard.tsx` component.
+- **Gamification:**
+    - **Levels & XP:** Earn points by saving blueprints; level up as you grow.
+    - **Streaks:** Maintain a daily streak by being active.
+    - **Achievements:** Unlock badges (e.g., "First Steps", "Architect", "Dedicated") for reaching milestones.
+
 
 ### Suggested improvements
 

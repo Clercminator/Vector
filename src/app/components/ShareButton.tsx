@@ -33,7 +33,7 @@ export function ShareButton() {
   return (
     <button
       onClick={handleShare}
-      className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors rounded px-1 py-0.5 hover:bg-gray-100 dark:hover:bg-zinc-800"
+      className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors rounded px-1 hover:bg-gray-100 dark:hover:bg-zinc-800 h-6"
       aria-label={t('share.button')}
     >
       <Share2 size={16} className="shrink-0" />

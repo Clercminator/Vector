@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Heart, Upload, Gift, Download, Loader2, ArrowLeft } from 'lucide-react';
+import { Heart, Upload, Gift, Download, Loader2, ArrowLeft, Trophy, LayoutGrid } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { Leaderboard } from './Leaderboard';
 
 interface CommunityProps {
   userId: string | null;
@@ -26,6 +27,7 @@ import { useLanguage } from '@/app/components/language-provider';
 
 export function Community({ userId, onBack, onImport }: CommunityProps) {
   const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState<'templates' | 'leaderboard'>('templates');
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -110,8 +112,8 @@ export function Community({ userId, onBack, onImport }: CommunityProps) {
       setError(null);
     } catch (e) {
       console.error(e);
-      if (isInitial) {
-         setError(t('community.error') || 'Failed to load templates');
+       if (isInitial) {
+         setError(e instanceof Error ? e.message : t('community.error') || 'Failed to load templates');
       } else {
          toast.error(t('community.errorMore') || 'Failed to load more');
       }
@@ -199,96 +201,123 @@ export function Community({ userId, onBack, onImport }: CommunityProps) {
           </div>
         </div>
         
-        <div className="flex bg-gray-100 dark:bg-zinc-800 p-1 rounded-lg self-start">
-            <button 
-                onClick={() => setSortBy('recent')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${sortBy === 'recent' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
-            >
-                {t('community.sort.recent')}
-            </button>
-            <button 
-                 onClick={() => setSortBy('top')}
-                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${sortBy === 'top' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
-            >
-                {t('community.sort.top')}
-            </button>
+        <div className="flex gap-2">
+           <div className="flex bg-gray-100 dark:bg-zinc-800 p-1 rounded-lg">
+              <button 
+                  onClick={() => setActiveTab('templates')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'templates' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
+              >
+                  <LayoutGrid size={16} />
+                  {t('community.title')}
+              </button>
+              <button 
+                   onClick={() => setActiveTab('leaderboard')}
+                   className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'leaderboard' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
+              >
+                  <Trophy size={16} />
+                  {t('leaderboard.title')}
+              </button>
+           </div>
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="animate-spin text-gray-300 dark:text-gray-600" size={40} />
-        </div>
-      ) : error ? (
-        <div className="text-center py-20 bg-red-50 dark:bg-red-900/10 rounded-3xl border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400">
-          <p>{error}</p>
-        </div>
+      {activeTab === 'leaderboard' ? (
+        <Leaderboard />
       ) : (
         <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedTemplates.length === 0 ? (
-                <div className="col-span-full text-center py-20 bg-gray-50 dark:bg-zinc-900 rounded-3xl border border-dashed border-gray-200 dark:border-zinc-800 text-gray-400">
-                    <p>{t('community.empty')}</p>
-                </div>
-            ) : (
-                sortedTemplates.map((template) => (
-                    <div key={template.id} className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-                    <div className="flex justify-between items-start mb-4">
-                        <div>
-                        <h3 className="font-bold text-lg text-gray-900 dark:text-white">{template.title}</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('community.by')} {template.author_name || t('community.author.anonymous')}</p>
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); handleVote(template.id); }}
-                                className="bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 p-2 rounded-xl transition-colors flex flex-col items-center min-w-[50px]"
-                            >
-                                <Heart size={20} className={template.votes > 0 ? "fill-current" : ""} />
-                                <span className="text-xs font-bold">{template.votes}</span>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-6 line-clamp-3 flex-grow">
-                        {template.description || t('community.desc.empty')}
-                    </p>
-
-                    <div className="flex items-center gap-3 mt-auto pt-4 border-t border-gray-100 dark:border-zinc-800">
-                        <Button 
-                            onClick={() => handleImport(template)} 
-                            className="flex-1 dark:text-white dark:border-zinc-700 dark:hover:bg-zinc-800"
-                            variant="outline"
-                        >
-                            <Download size={16} className="mr-2" />
-                            {t('community.useTemplate')}
-                        </Button>
-                        <Button 
-                            onClick={(e) => { e.stopPropagation(); handleGift(template.author_id); }}
-                            variant="ghost" 
-                            size="icon"
-                            title={t('community.gift')}
-                        >
-                            <Gift size={20} className="text-yellow-500" />
-                        </Button>
-                    </div>
-                    </div>
-                ))
-            )}
+          <div className="flex justify-end mb-6">
+             <div className="flex bg-gray-100 dark:bg-zinc-800 p-1 rounded-lg">
+                <button 
+                    onClick={() => setSortBy('recent')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${sortBy === 'recent' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
+                >
+                    {t('community.sort.recent')}
+                </button>
+                <button 
+                     onClick={() => setSortBy('top')}
+                     className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${sortBy === 'top' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
+                >
+                    {t('community.sort.top')}
+                </button>
             </div>
+          </div>
 
-            {hasMore && sortedTemplates.length > 0 && (
-                <div className="flex justify-center mt-12">
-                     <Button 
-                        onClick={handleLoadMore} 
-                        disabled={isLoadingMore}
-                        variant="ghost"
-                        className="gap-2"
-                     >
-                        {isLoadingMore ? <Loader2 className="animate-spin" size={16} /> : null}
-                        {t('community.loadMore')}
-                     </Button>
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="animate-spin text-gray-300 dark:text-gray-600" size={40} />
+            </div>
+          ) : error ? (
+            <div className="text-center py-20 bg-red-50 dark:bg-red-900/10 rounded-3xl border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400">
+              <p>{error}</p>
+            </div>
+          ) : (
+            <>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sortedTemplates.length === 0 ? (
+                    <div className="col-span-full text-center py-20 bg-gray-50 dark:bg-zinc-900 rounded-3xl border border-dashed border-gray-200 dark:border-zinc-800 text-gray-400">
+                        <p>{t('community.empty')}</p>
+                    </div>
+                ) : (
+                    sortedTemplates.map((template) => (
+                        <div key={template.id} className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                        <div className="flex justify-between items-start mb-4">
+                            <div>
+                            <h3 className="font-bold text-lg text-gray-900 dark:text-white">{template.title}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{t('community.by')} {template.author_name || t('community.author.anonymous')}</p>
+                            </div>
+                            <div className="flex flex-col items-center gap-1">
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); handleVote(template.id); }}
+                                    className="bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 p-2 rounded-xl transition-colors flex flex-col items-center min-w-[50px]"
+                                >
+                                    <Heart size={20} className={template.votes > 0 ? "fill-current" : ""} />
+                                    <span className="text-xs font-bold">{template.votes}</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <p className="text-gray-600 dark:text-gray-300 text-sm mb-6 line-clamp-3 flex-grow">
+                            {template.description || t('community.desc.empty')}
+                        </p>
+
+                        <div className="flex items-center gap-3 mt-auto pt-4 border-t border-gray-100 dark:border-zinc-800">
+                            <Button 
+                                onClick={() => handleImport(template)} 
+                                className="flex-1 dark:text-white dark:border-zinc-700 dark:hover:bg-zinc-800"
+                                variant="outline"
+                            >
+                                <Download size={16} className="mr-2" />
+                                {t('community.useTemplate')}
+                            </Button>
+                            <Button 
+                                onClick={(e) => { e.stopPropagation(); handleGift(template.author_id); }}
+                                variant="ghost" 
+                                size="icon"
+                                title={t('community.gift')}
+                            >
+                                <Gift size={20} className="text-yellow-500" />
+                            </Button>
+                        </div>
+                        </div>
+                    ))
+                )}
                 </div>
-            )}
+
+                {hasMore && sortedTemplates.length > 0 && (
+                    <div className="flex justify-center mt-12">
+                         <Button 
+                            onClick={handleLoadMore} 
+                            disabled={isLoadingMore}
+                            variant="ghost"
+                            className="gap-2"
+                         >
+                            {isLoadingMore ? <Loader2 className="animate-spin" size={16} /> : null}
+                            {t('community.loadMore')}
+                         </Button>
+                    </div>
+                )}
+            </>
+          )}
         </>
       )}
     </motion.div>

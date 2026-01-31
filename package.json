@@ -7,7 +7,8 @@
     "build": "vite build",
     "dev": "vite",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "prerender": "node scripts/prerender.js"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
@@ -42,6 +43,7 @@
     "@radix-ui/react-toggle-group": "1.1.2",
     "@radix-ui/react-tooltip": "1.1.8",
     "@supabase/supabase-js": "^2.93.2",
+    "@tailwindcss/typography": "^0.5.19",
     "@types/canvas-confetti": "^1.9.0",
     "@types/file-saver": "^2.0.7",
     "@vercel/analytics": "^1.6.1",
@@ -64,6 +66,7 @@
     "react-dnd-html5-backend": "16.0.1",
     "react-helmet-async": "^2.0.5",
     "react-hook-form": "7.55.0",
+    "react-markdown": "^10.1.0",
     "react-popper": "2.3.0",
     "react-resizable-panels": "2.1.7",
     "react-responsive-masonry": "2.7.1",
@@ -80,6 +83,7 @@
   "devDependencies": {
     "@tailwindcss/vite": "4.1.12",
     "@vitejs/plugin-react": "4.7.0",
+    "puppeteer": "^24.36.1",
     "tailwindcss": "4.1.12",
     "vite": "6.3.5",
     "vite-plugin-sitemap": "^0.8.2",

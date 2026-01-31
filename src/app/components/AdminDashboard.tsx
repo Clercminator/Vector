@@ -1,4 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { AdminAnalytics } from './admin/AdminAnalytics';
+import { AdminPayments } from './admin/AdminPayments';
+import { UserDetailModal } from './admin/UserDetailModal';
+
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { 
   Users, 
@@ -35,7 +39,6 @@ import { Badge } from '@/app/components/ui/badge';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/app/components/language-provider';
 import { toast } from 'sonner';
-import { TIER_CONFIGS, TierId } from '@/lib/tiers';
 
 interface AdminDashboardProps {
   onBack: () => void;
@@ -44,6 +47,7 @@ interface AdminDashboardProps {
 export function AdminDashboard({ onBack }: AdminDashboardProps) {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('stats');
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
   
   // Stats State
   const [stats, setStats] = useState({
@@ -57,10 +61,15 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
   const [users, setUsers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [usersPage, setUsersPage] = useState(0);
+  const PAGE_SIZE = 10;
+
 
   // Templates State
   const [templates, setTemplates] = useState<any[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
+  const [templatesPage, setTemplatesPage] = useState(0);
+
 
   useEffect(() => {
     fetchStats();
@@ -90,10 +99,21 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
     if (!supabase) return;
     setLoadingUsers(true);
     try {
-      const { data, error } = await supabase
+      const from = usersPage * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      let query = supabase
         .from('profiles')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
+      
+      if (searchQuery) {
+          query = query.ilike('display_name', `%${searchQuery}%`);
+      }
+
+      const { data, error } = await query;
+
       
       if (error) throw error;
       setUsers(data || []);
@@ -109,10 +129,15 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
     if (!supabase) return;
     setLoadingTemplates(true);
     try {
+      const from = templatesPage * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
       const { data, error } = await supabase
         .from('community_templates')
         .select('*, profiles(display_name)')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
       
       if (error) throw error;
       setTemplates(data || []);
@@ -126,8 +151,12 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
 
   useEffect(() => {
     if (activeTab === 'users') fetchUsers();
+  }, [activeTab, usersPage, searchQuery]); // Re-fetch on page/search change
+
+  useEffect(() => {
     if (activeTab === 'templates') fetchTemplates();
-  }, [activeTab]);
+  }, [activeTab, templatesPage]); // Re-fetch on page change
+
 
   const handleUpdateUser = async (userId: string, updates: any) => {
     if (!supabase) return;
@@ -153,10 +182,8 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
     }
   };
 
-  const filteredUsers = users.filter(u => 
-    u.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    u.user_id?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filtered users (server-side now, so just identity)
+  const filteredUsers = users; 
 
   return (
     <motion.div
@@ -164,6 +191,11 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
       animate={{ opacity: 1, scale: 1 }}
       className="max-w-7xl mx-auto px-6 py-12"
     >
+      {/* ... Header ... */}
+      
+      {/* Add UserDetailModal */}
+      <UserDetailModal userId={selectedUser} onClose={() => setSelectedUser(null)} />
+
       <div className="flex items-center justify-between mb-8 gap-4">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={onBack} className="dark:text-white dark:hover:bg-zinc-800">
@@ -208,26 +240,7 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
         </TabsList>
 
         <TabsContent value="stats" className="space-y-6">
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card className="dark:bg-zinc-900 border-none shadow-sm">
-              <CardHeader className="pb-2">
-                <CardDescription>{t('admin.stats.totalUsers')}</CardDescription>
-                <CardTitle className="text-4xl font-bold">{stats.users}</CardTitle>
-              </CardHeader>
-            </Card>
-            <Card className="dark:bg-zinc-900 border-none shadow-sm">
-              <CardHeader className="pb-2">
-                <CardDescription>{t('admin.stats.totalBlueprints')}</CardDescription>
-                <CardTitle className="text-4xl font-bold">{stats.blueprints}</CardTitle>
-              </CardHeader>
-            </Card>
-            <Card className="dark:bg-zinc-900 border-none shadow-sm">
-              <CardHeader className="pb-2">
-                <CardDescription>{t('admin.stats.totalTemplates')}</CardDescription>
-                <CardTitle className="text-4xl font-bold">{stats.templates}</CardTitle>
-              </CardHeader>
-            </Card>
-          </div>
+           <AdminAnalytics />
         </TabsContent>
 
         <TabsContent value="users" className="space-y-6">
@@ -260,14 +273,14 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
                     <TableRow><TableCell colSpan={5} className="text-center py-8">{t('admin.search.noResults')}</TableCell></TableRow>
                   ) : (
                     filteredUsers.map((user) => (
-                      <TableRow key={user.user_id} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/50">
+                      <TableRow key={user.user_id} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/50 cursor-pointer" onClick={() => setSelectedUser(user.user_id)}>
                         <TableCell>
                           <div className="flex flex-col">
                             <span className="font-medium">{user.display_name || 'Anonymous'}</span>
                             <span className="text-xs text-gray-400 font-mono">{user.user_id.slice(0, 16)}...</span>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <select 
                             value={user.tier || 'architect'} 
                             onChange={(e) => handleUpdateUser(user.user_id, { tier: e.target.value })}
@@ -279,7 +292,7 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
                             <option value="enterprise">{t('tier.enterprise')}</option>
                           </select>
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <Input 
                             type="number" 
                             className="w-20 h-8 text-center"
@@ -287,7 +300,7 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
                             onBlur={(e) => handleUpdateUser(user.user_id, { credits: parseInt(e.target.value) })}
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                             <Button 
                                 variant="ghost" 
                                 size="sm" 
@@ -298,8 +311,8 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
                             </Button>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal size={16} />
+                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSelectedUser(user.user_id); }}>
+                             <MoreHorizontal size={16} />
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -307,12 +320,33 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
                   )}
                 </TableBody>
               </Table>
+              {/* Pagination controls */}
+              <div className="flex items-center justify-end gap-2 p-4 border-t border-gray-100 dark:border-zinc-800">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setUsersPage(p => Math.max(0, p - 1))}
+                    disabled={usersPage === 0 || loadingUsers}
+                  >
+                    Previous
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setUsersPage(p => p + 1)}
+                    disabled={users.length < PAGE_SIZE || loadingUsers}
+                  >
+                    Next
+                  </Button>
+              </div>
+
             </div>
           </Card>
         </TabsContent>
 
         <TabsContent value="templates" className="space-y-6">
-          <Card className="dark:bg-zinc-900 border-none shadow-sm">
+           {/* Existing Templates code ... */}
+           <Card className="dark:bg-zinc-900 border-none shadow-sm">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -374,26 +408,34 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
                 )}
               </TableBody>
             </Table>
+            <div className="flex items-center justify-end gap-2 p-4 border-t border-gray-100 dark:border-zinc-800">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setTemplatesPage(p => Math.max(0, p - 1))}
+                    disabled={templatesPage === 0 || loadingTemplates}
+                  >
+                    Previous
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setTemplatesPage(p => p + 1)}
+                    disabled={templates.length < PAGE_SIZE || loadingTemplates}
+                  >
+                    Next
+                  </Button>
+              </div>
+
           </Card>
         </TabsContent>
 
         <TabsContent value="payments" className="space-y-6">
-           <Card className="dark:bg-zinc-900 border-none shadow-sm p-12 text-center">
-                <Settings className="mx-auto mb-4 opacity-20" size={64} />
-                <h3 className="text-xl font-bold mb-2">{t('admin.payments.title')}</h3>
-                <p className="max-w-md mx-auto text-gray-500 mb-6">{t('admin.payments.desc')}</p>
-                <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-2xl p-8 border border-dashed border-gray-200 dark:border-zinc-800">
-                    <p className="text-gray-400 italic">{t('admin.payments.empty')}</p>
-                </div>
-           </Card>
+           <AdminPayments />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
-           <Card className="dark:bg-zinc-900 border-none shadow-sm p-12 text-center">
-                <BarChart3 className="mx-auto mb-4 opacity-20" size={64} />
-                <h3 className="text-xl font-bold mb-2">{t('admin.analytics.title')}</h3>
-                <p className="max-w-md mx-auto text-gray-500">{t('admin.analytics.desc')}</p>
-           </Card>
+           <AdminAnalytics />
         </TabsContent>
       </Tabs>
     </motion.div>

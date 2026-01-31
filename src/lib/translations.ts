@@ -93,6 +93,7 @@ export const translations = {
     'pricing.subtitle': 'Choose the level of architectural precision your ambition demands.',
     'pricing.mostPopular': 'Most Popular',
     'pricing.oneTime': 'One-time',
+    'pricing.custom': 'Custom',
     'pricing.tier.architect': 'Architect',
     'pricing.tier.architect.desc': 'Perfect for exploring fundamental frameworks.',
     'pricing.tier.standard': 'Standard',
@@ -140,6 +141,15 @@ export const translations = {
     'community.imported': 'Imported template to your workspace.',
     'community.error': 'Failed to load templates. Try again later.',
     'community.voteError': 'Could not record vote.',
+
+    // Leaderboard
+    'leaderboard.title': 'Leaderboard',
+    'leaderboard.topContributors': 'Top Contributors',
+    'leaderboard.subtitle': 'Most appreciated community members',
+    'leaderboard.totalVotes': 'Total Votes',
+    'leaderboard.templates': 'Templates',
+    'leaderboard.empty': 'No contributors yet.',
+    'leaderboard.error': 'Failed to load leaderboard.',
     
     // Common
     'common.about': 'What is it?',
@@ -418,6 +428,7 @@ export const translations = {
     'pricing.subtitle': 'Elige el nivel de precisión arquitectónica que tu ambición demanda.',
     'pricing.mostPopular': 'Más Popular',
     'pricing.oneTime': 'Pago único',
+    'pricing.custom': 'A medida',
     'pricing.tier.architect': 'Arquitecto',
     'pricing.tier.architect.desc': 'Perfecto para explorar modelos fundamentales.',
     'pricing.tier.standard': 'Estándar',
@@ -465,6 +476,15 @@ export const translations = {
     'community.imported': 'Plantilla importada a tu espacio.',
     'community.error': 'No se pudieron cargar las plantillas. Intenta más tarde.',
     'community.voteError': 'No se pudo registrar el voto.',
+
+    // Leaderboard
+    'leaderboard.title': 'Tabla de Clasificación',
+    'leaderboard.topContributors': 'Mejores Colaboradores',
+    'leaderboard.subtitle': 'Miembros de la comunidad más apreciados',
+    'leaderboard.totalVotes': 'Votos Totales',
+    'leaderboard.templates': 'Plantillas',
+    'leaderboard.empty': 'Aún no hay colaboradores.',
+    'leaderboard.error': 'Error al cargar la tabla de clasificación.',
 
      // Common
     'common.about': '¿Qué es?',
@@ -785,6 +805,15 @@ export const translations = {
     'community.imported': 'Modelo importado para seu espaço.',
     'community.error': 'Erro ao carregar modelos.',
     'community.voteError': 'Não foi possível registrar o voto.',
+
+    // Leaderboard
+    'leaderboard.title': 'Tabela de Classificação',
+    'leaderboard.topContributors': 'Principais Colaboradores',
+    'leaderboard.subtitle': 'Membros da comunidade mais apreciados',
+    'leaderboard.totalVotes': 'Total de Votos',
+    'leaderboard.templates': 'Modelos',
+    'leaderboard.empty': 'Ainda sem colaboradores.',
+    'leaderboard.error': 'Falha ao carregar tabela de classificação.',
 
     // Common Expansion
     'common.about': 'O que é?',

@@ -1,11 +1,11 @@
 /// <reference types="vite/client" />
 
-declare module '*.txt' {
+declare module '*.md' {
   const content: string;
   export default content;
 }
 
-declare module '*.txt?raw' {
+declare module '*.md?raw' {
   const rawContent: string;
   export default rawContent;
 }
