@@ -9,6 +9,7 @@ create table if not exists blueprint_messages (
 alter table blueprint_messages enable row level security;
 
 -- Policy: Users can view messages linked to their blueprints
+drop policy if exists "Users can view own messages" on blueprint_messages;
 create policy "Users can view own messages" on blueprint_messages
   for select using (
     exists (
@@ -19,6 +20,7 @@ create policy "Users can view own messages" on blueprint_messages
   );
 
 -- Policy: Users can insert messages linked to their blueprints
+drop policy if exists "Users can insert own messages" on blueprint_messages;
 create policy "Users can insert own messages" on blueprint_messages
   for insert with check (
     exists (

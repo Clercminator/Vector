@@ -33,8 +33,8 @@ const Dashboard = React.lazy(() => import('@/app/components/Dashboard').then(mod
 const Community = React.lazy(() => import('@/app/components/Community').then(module => ({ default: module.Community })));
 const Profile = React.lazy(() => import('@/app/components/Profile').then(module => ({ default: module.Profile })));
 const AdminDashboard = React.lazy(() => import('@/app/components/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
-import { FrameworkPage } from '@/pages/FrameworkPage';
-import { AnalyticsPage } from '@/pages/AnalyticsPage';
+const FrameworkPage = React.lazy(() => import('@/pages/FrameworkPage').then(module => ({ default: module.FrameworkPage })));
+const AnalyticsPage = React.lazy(() => import('@/pages/AnalyticsPage').then(module => ({ default: module.AnalyticsPage })));
 import { trackEvent } from '@/lib/analytics';
 
 // ...
@@ -124,8 +124,15 @@ function App() {
         setHasMore(false); // Local blueprints don't support pagination yet
       }
     });
+    
+    if (!supabase) {
+        setBlueprints(loadLocalBlueprints());
+        setTier(DEFAULT_TIER_ID);
+        setHasMore(false);
+        return;
+    }
 
-    const { data: { subscription } } = supabase!.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
          setUserId(session.user.id);
          setUserEmail(session.user.email || null);
