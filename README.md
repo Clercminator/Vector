@@ -32,6 +32,7 @@ This document explains **what the app does**, **how it’s built**, **how the pi
   - [What Can Be Improved](#what-can-be-improved)
     - [Already implemented](#already-implemented)
     - [Suggested improvements](#suggested-improvements)
+    - [Previously identified gaps — now addressed](#previously-identified-gaps--now-addressed)
   - [Project Structure: Where Everything Lives](#project-structure-where-everything-lives)
   - [How Everything Is Connected](#how-everything-is-connected)
   - [How to Change or Add Things](#how-to-change-or-add-things)
@@ -121,13 +122,23 @@ This document explains **what the app does**, **how it’s built**, **how the pi
    Open the URL shown (usually http://localhost:5173).
 
 4. **Database**  
-   In the Supabase dashboard, run the migrations in **`supabase/migrations/`** in order: `20240131000000_create_analytics_events.sql`, `20260131_chat_history.sql`, `20260131_admin_updates.sql`. Ensure your project also has base tables (blueprints, profiles, community_templates, template_votes, waitlist, etc.) and RLS from your initial setup. The app expects **`decrement_credits`** and **`increment_credits`** RPCs and a **`tier`** column on `profiles`; add these in Supabase if not present (see Edge Function webhook and GoalWizard usage).
+   In the Supabase dashboard, run the migrations in **`supabase/migrations/`** in order:
+   - `20240101000000_baseline_schema.sql` (profiles, blueprints, community_templates, template_votes)
+   - `20240131000000_create_analytics_events.sql`
+   - `20260131_chat_history.sql` (blueprint_messages table)
+   - `20260131_admin_updates.sql` (is_admin, template status/featured, RLS)
+   - `20260201_admin_enhancements.sql` (payments table for AdminPayments)
+   - `20260201_leaderboard_function.sql` (get_leaderboard RPC)
+
+   Ensure **`decrement_credits`** and **`increment_credits`** RPCs and a **`tier`** column on `profiles` exist; add these in Supabase if not present (see Edge Function webhook and GoalWizard usage).
 
 5. **Backend (payments, secure AI, credits/levels)**  
    The app uses **Supabase Edge Functions** for backend logic:
    - **openrouter-proxy** — Proxies AI requests; API key stays server-side.
    - **mercado-pago-preference** — Creates MercadoPago checkout; returns `init_point` URL.
-   - **mercado-pago-webhook** — Handles payment notifications; updates `profiles.credits` and `profiles.tier` via `increment_credits` RPC.
+   - **mercado-pago-webhook** — Handles payment notifications; updates `profiles.credits` and `profiles.tier` via `increment_credits` RPC; calls **send-email** for receipt.
+   - **send-email** — Sends transactional emails (receipt after purchase). Called by mercado-pago-webhook. Uses Resend (or similar); requires `RESEND_API_KEY` or equivalent in Supabase Secrets.
+   - **handle-new-user** — Triggered by Supabase Database Webhook (INSERT on `auth.users`). Sends welcome email via Resend. Requires `RESEND_API_KEY` and a Database Webhook configured in Supabase Dashboard.
    
    **Already deployed:** Edge Functions, Supabase Secrets (`OPENROUTER_API_KEY`, `MERCADOPAGO_ACCESS_TOKEN`), frontend env vars (`VITE_OPENROUTER_PROXY_URL`, `VITE_MERCADOPAGO_PUBLIC_KEY`), MercadoPago webhook configured. Ensure `profiles.tier` and the credit RPCs exist in your database.
    
@@ -230,12 +241,14 @@ Vector uses a **frontend-first** architecture with **Supabase Edge Functions** f
 |-------|-------|------|---------|
 | **Frontend** | Vercel (React/Vite) | UI, routing, local state, calls backend APIs | Public keys only (`VITE_SUPABASE_URL`, `VITE_ANON_PUBLIC_KEY`, `VITE_MERCADOPAGO_PUBLIC_KEY`) |
 | **Backend** | Supabase Edge Functions | AI proxy, payment processing, webhooks, credit management | Secret keys (`OPENROUTER_API_KEY`, `MERCADOPAGO_ACCESS_TOKEN`) in Supabase Secrets |
-| **Database** | Supabase Postgres | Auth, profiles (tier, credits), blueprints, templates, votes | RLS policies enforce security |
+| **Database** | Supabase Postgres | Auth, profiles (tier, credits), blueprints, templates, votes, payments, analytics_events | RLS policies enforce security |
 
 **Edge Functions:**
 - **openrouter-proxy** — Proxies Open Router API; keeps AI key server-side. Frontend calls this instead of Open Router directly.
 - **mercado-pago-preference** — Creates MercadoPago payment preference; returns `init_point` URL for checkout redirect.
-- **mercado-pago-webhook** — Receives payment notifications from MercadoPago; updates `profiles.credits` and `profiles.tier` using `increment_credits` RPC.
+- **mercado-pago-webhook** — Receives payment notifications from MercadoPago; updates `profiles.credits` and `profiles.tier` using `increment_credits` RPC; calls **send-email** for receipt.
+- **send-email** — Sends transactional emails (receipt, etc.). Called by mercado-pago-webhook. Requires `RESEND_API_KEY` (or equivalent) in Supabase Secrets.
+- **handle-new-user** — Triggered by Database Webhook (INSERT on `auth.users`). Sends welcome email via Resend. Requires `RESEND_API_KEY` and webhook configured in Supabase Dashboard.
 
 **Payment Flow (MercadoPago):**
 1. User clicks "Get Standard" or "Get Max" on Pricing page.
@@ -255,10 +268,10 @@ Vector uses a **frontend-first** architecture with **Supabase Edge Functions** f
 
 ### Component Architecture
 
-- **Entry:** `index.html` loads the app; `src/main.tsx` mounts React and wraps the tree in **ThemeProvider** (light/dark), **LanguageProvider** (i18n), **ErrorBoundary**, and **App**.
-- **Single-page:** No React Router. The current “screen” is React state in `App.tsx`: `landing` | `wizard` | `pricing` | `dashboard` | `profile` | `community`. Navigation is `setScreen(...)` or `navTo(...)`.
-- **App as controller:** `App.tsx` holds: screen, user (Supabase auth: `userId`, `userEmail`), blueprints list, onboarding visibility, selected framework, and (optionally) which blueprint is open. It renders: global nav, footer, particle background, and one main content area by screen. Handlers for save, delete, sign-in, waitlist, pricing CTA, and “start wizard” live here.
-- **Data flow:** Blueprints are kept in memory and persisted to `localStorage` and (when signed in) to Supabase `blueprints`. Profiles, community templates, votes, and waitlist go to Supabase only. Auth state is subscribed via `supabase.auth.onAuthStateChange`.
+- **Entry:** `index.html` loads the app; `src/main.tsx` mounts React and wraps the tree in **HelmetProvider**, **BrowserRouter**, **ThemeProvider** (light/dark), **LanguageProvider** (i18n), **ErrorBoundary**, and **App**. Also injects Vercel Speed Insights and Vercel Analytics.
+- **Routing:** React Router with Routes and Route. Routes: /, /wizard, /dashboard, /community, /pricing, /profile, /frameworks/:id, /analytics, /admin. Navigation uses navigate(path). The current “screen” is React state in `App.tsx`: `useLocation().pathname`.
+- **App as controller:** `App.tsx` holds: user (Supabase auth: `userId`, `userEmail`), blueprints list, onboarding visibility, selected framework, tier, and (optionally) which blueprint is open. It renders: global nav, footer, particle background, and the main content area via React Router. Handlers for save, delete, sign-in, waitlist, pricing CTA, and “start wizard” live here.
+- **Data flow:** Blueprints are kept in memory and persisted to `localStorage` and (when signed in) to Supabase `blueprints`. Profiles, community templates, votes, waitlist, and payments go to Supabase only. Auth state is subscribed via `supabase.auth.onAuthStateChange`.
 - **Goal Wizard:** Receives selected framework and optional initial blueprint. Uses `frameworkConfig` (questions + rule-based `generateResult`). On “done,” it tries Open Router first; on failure or missing key, uses `generateResult(answers)`. Result is shown; user can save, export (calendar/ICS), or restart.
 - **i18n:** `LanguageProvider` + `translations.ts` + `t(key)` in components. No routing by locale; language is global state.
 - **Styling:** Tailwind + `theme.css` (CSS variables for light/dark). Components use Tailwind classes and shadcn/ui building blocks.
@@ -283,7 +296,7 @@ Vector uses a **frontend-first** architecture with **Supabase Edge Functions** f
 | **Theme** | next-themes | Light/dark persistence and provider. |
 | **Calendar export** | Google Identity Services + ICS | Sign-in for Google Calendar; fallback: download .ics file. |
 
-Other deps: `canvas-confetti`, `date-fns`, `react-hook-form`, `recharts`, etc., for specific features. See `package.json` for versions.
+Other deps: `canvas-confetti`, `date-fns`, `react-hook-form`, `recharts`, `@vercel/analytics`, `@vercel/speed-insights`, `vite-plugin-sitemap`, `vite-plugin-pwa` (PWA configured in vite.config), etc. See `package.json` for versions.
 
 ---
 
@@ -353,12 +366,12 @@ Other deps: `canvas-confetti`, `date-fns`, `react-hook-form`, `recharts`, etc., 
 
 - **Expand test coverage:** Add unit tests (Vitest) for `openrouter`, `blueprints`, `calendarExport`, `pdfExport`, `gamification`; integration tests for `GoalWizard` and `Dashboard`. (`src/lib/tiers.test.ts` exists as a starting example.)
 - **Virtual scrolling (optional):** For very large lists (hundreds of items), consider virtual scrolling; pagination is already implemented for Dashboard and Community.
-- **Email notifications:** Send confirmation emails when users purchase a tier or when credits are low.
+- **Email notifications:** Receipt email on purchase is implemented (webhook → send-email). Optional: low-credits reminder, welcome email.
 - **Admin analytics:** Admin dashboard could show aggregate usage (tier conversions, payments, framework usage) beyond per-user data.
 - **Collaborative blueprints:** Allow users to share blueprints with others for real-time collaboration (requires WebSockets or Supabase Realtime).
 - **Mobile app:** Build React Native or PWA version for iOS/Android with offline-first sync.
 - **Advanced AI features:** Multi-turn conversations in Goal Wizard (follow-up questions based on answers). (AI-suggested framework and blueprint refinement are already implemented.)
-- **Gamification:** Leaderboard for community contributions (most voted templates). (Achievements/badges and streak tracking are already implemented.)
+- **Gamification:** Leaderboard is implemented. Further: weekly challenges, team leaderboards. (Achievements, streaks, and community leaderboard are already implemented.)
 - **Export enhancements:** Export to Notion, Trello, Asana, or other project management tools; bulk calendar export; custom PDF branding (Max tier branding from profile is already used in bulk PDF export).
 - **Subscription model:** Convert one-time pricing to recurring subscriptions (monthly/yearly) for sustained revenue. Requires Stripe or MercadoPago subscriptions API.
 - **Admin enhancements:** Approve/reject/feature community templates from Admin UI; bulk user/tier management.
@@ -367,6 +380,25 @@ Other deps: `canvas-confetti`, `date-fns`, `react-hook-form`, `recharts`, etc., 
 
 **Stripe (future, US):** See [integrations/pending/stripe/](integrations/pending/stripe/).
 
+### Previously identified gaps — now addressed
+
+The following gaps have been fixed in the codebase:
+
+| Gap | Status | Implementation |
+|-----|--------|----------------|
+| Profile when logged out | Fixed | `/profile` shows "Sign in required" + Sign in button (App.tsx Route, lines 749–760) |
+| Post-payment experience | Fixed | `?payment=success` on return: toast + profile refetch; `back_url_success` → `/dashboard?payment=success` (App.tsx, mercadoPago.ts) |
+| Anonymous → signed-in merge | Fixed | `syncLocalBlueprintsToRemote` on sign-in; local blueprints uploaded, toast shows count (App.tsx, blueprints.ts) |
+| Offline delete queue | Fixed | `queueDeletedBlueprint` when offline; `processDeletedQueue` on sign-in (App.tsx handleDeleteBlueprint, blueprints.ts) |
+| Locked framework click | Fixed | Toast + Pricing CTA on click; wizard does not open (App.tsx FrameworkCard onClick) |
+| Wizard tier check (deep link) | Fixed | GoalWizard `useEffect`: if `!canUseFramework` → toast + `onBack()` (GoalWizard.tsx lines 43–48) |
+| Email after purchase | Fixed | mercado-pago-webhook calls send-email Edge Function with receipt (mercado-pago-webhook/index.ts lines 174–201) |
+| Analytics nav entry | Fixed | Analytics link in nav (desktop + mobile); route `/analytics` (App.tsx) |
+| handle-new-user webhook | Fixed | Checks `body.schema === 'auth'` and `body.table === 'users'` for Supabase auth payload (handle-new-user/index.ts) |
+| PWA | Fixed | VitePWA configured in `vite.config.ts` with manifest, icons, autoUpdate |
+| verify_webhook.js | Fixed | Uses `process.env.VITE_SUPABASE_URL` or `process.env.PROJECT_ID`; no hardcoded project ID |
+| Base tables migration | Fixed | `20240101000000_baseline_schema.sql` creates profiles, blueprints, community_templates, template_votes |
+| Template moderation (Admin) | Fixed | AdminDashboard has approve/reject/feature actions for community templates (`handleUpdateTemplate`) |
 
 ---
 
@@ -381,10 +413,13 @@ Vector/
 ├── package.json                  # List of dependencies and scripts (e.g. npm run dev)
 ├── .env                          # Frontend keys (Supabase URL/anon key, MercadoPago Public Key, etc.). Safe to commit placeholders.
 ├── .env.backend (optional)       # Backend-only vars; never commit. See env docs for Supabase Secrets.
-├── supabase/migrations/         # Database: run in order (analytics_events, chat_history, admin_updates); ensure base tables + credit RPCs exist
+├── supabase/migrations/         # Database: run in order (see "How to Run" section); ensure base tables + credit RPCs exist
+├── scripts/
+│   ├── prerender.js             # Prerenders routes for SEO (puppeteer)
+│   └── verify_webhook.js        # Tests MercadoPago webhook endpoint
 │
 ├── src/
-│   ├── main.tsx                  # Entry: Theme, Language, ErrorBoundary, BrowserRouter, HelmetProvider, Speed Insights
+│   ├── main.tsx                  # Entry: HelmetProvider, BrowserRouter, ThemeProvider, LanguageProvider, ErrorBoundary, App; Vercel Speed Insights + Analytics
 │   ├── styles/                   # Global CSS (Tailwind, theme variables, fonts)
 │   │   ├── index.css
 │   │   ├── tailwind.css
@@ -403,8 +438,12 @@ Vector/
 │   │       ├── PricingSection.tsx    # Four pricing tiers (Architect, Standard, Max, Enterprise)
 │   │       ├── HelpMeChooseModal.tsx # AI-suggested framework from goal description
 │   │       ├── BulkExportModal.tsx   # Multi-blueprint PDF export (Max tier)
-│   │       ├── AdminDashboard.tsx    # Admin: users, templates (route /admin)
+│   │       ├── AdminDashboard.tsx    # Admin: users, templates, analytics, payments (route /admin)
+│   │       ├── admin/AdminAnalytics.tsx  # Admin analytics tab
+│   │       ├── admin/AdminPayments.tsx   # Admin payments tab (payments table)
+│   │       ├── admin/UserDetailModal.tsx # Admin user detail modal
 │   │       ├── AchievementsList.tsx  # Profile achievements display
+│   │       ├── Leaderboard.tsx       # Community leaderboard (top contributors)
 │   │       ├── InspirationalQuote.tsx # Rotating quote bubble on landing
 │   │       ├── ShareButton.tsx       # Share / copy link in footer
 │   │       ├── AuthModal.tsx         # Sign in with email (magic link)
@@ -423,7 +462,8 @@ Vector/
 │       ├── openrouter.ts         # AI: generateBlueprintResultAI, suggestFramework, refineBlueprint
 │       ├── blueprints.ts         # Blueprint type, local load/save (localStorage)
 │       ├── frameworks.ts         # Framework list (id, title, description, author, pros, cons, example)
-│       ├── frameworkContent.ts   # Extended content for FrameworkPage (longDescription, etc.)
+│       ├── frameworkContent.ts   # Extended content for FrameworkPage (longDescription, history, steps)
+│       ├── leaderboard.ts        # fetchLeaderboard; get_leaderboard RPC
 │       ├── tiers.ts              # Tier config: credits, frameworks, features (Architect/Standard/Max/Enterprise)
 │       ├── calendarExport.ts     # Turn blueprint into events; Google Calendar or .ics
 │       ├── pdfExport.ts          # Blueprint to PDF; branding from profile

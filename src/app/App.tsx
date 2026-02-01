@@ -6,10 +6,10 @@ import { ParticleBackground } from '@/app/components/ParticleBackground';
 import { FrameworkCard } from '@/app/components/FrameworkCard';
 import { Toaster } from '@/app/components/ui/sonner';
 import { AuthModal } from '@/app/components/AuthModal';
-import { Rocket, Brain, Layers, Target, ChevronRight, Menu, X, ArrowRight, WifiOff } from 'lucide-react';
+import { Rocket, Brain, Layers, Target, ChevronRight, Menu, X, ArrowRight, WifiOff, Sparkles, BarChart } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
-import { Blueprint, loadLocalBlueprints, saveLocalBlueprints, upsertBlueprint, removeBlueprint } from '@/lib/blueprints';
+import { Blueprint, loadLocalBlueprints, saveLocalBlueprints, upsertBlueprint, removeBlueprint, syncLocalBlueprintsToRemote, queueDeletedBlueprint, processDeletedQueue } from '@/lib/blueprints';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { createCheckout, isMercadoPagoConfigured } from '@/lib/mercadoPago';
 
@@ -24,7 +24,7 @@ import { InspirationalQuote } from '@/app/components/InspirationalQuote';
 import { FrameworkDetail } from '@/app/components/FrameworkDetail';
 import { OnboardingModal } from '@/app/components/OnboardingModal';
 import { HelpMeChooseModal } from '@/app/components/HelpMeChooseModal';
-import { Sparkles } from 'lucide-react';
+
 
 // Lazy load screens
 const GoalWizard = React.lazy(() => import('@/app/components/GoalWizard').then(module => ({ default: module.GoalWizard })));
@@ -36,10 +36,6 @@ const AdminDashboard = React.lazy(() => import('@/app/components/AdminDashboard'
 const FrameworkPage = React.lazy(() => import('@/pages/FrameworkPage').then(module => ({ default: module.FrameworkPage })));
 const AnalyticsPage = React.lazy(() => import('@/pages/AnalyticsPage').then(module => ({ default: module.AnalyticsPage })));
 import { trackEvent } from '@/lib/analytics';
-
-// ...
-
-
 
 import { frameworks, Framework } from '@/lib/frameworks';
 
@@ -66,6 +62,7 @@ function App() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useState(new URLSearchParams(window.location.search));
   const [selectedFramework, setSelectedFramework] = useState<Framework>('first-principles');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -104,14 +101,52 @@ function App() {
     };
   }, []);
 
+  // Payment Status Handler
+  useEffect(() => {
+      const paymentStatus = new URLSearchParams(window.location.search).get('payment');
+      if (paymentStatus === 'success') {
+          toast.success(t('app.payment.success'), { duration: 5000 });
+          // Force profile refresh if user logic is already loaded
+          if (userId && supabase) {
+              supabase.from('profiles').select('tier, credits, is_admin').eq('user_id', userId).single()
+              .then(({ data }) => {
+                  if (data) {
+                      setTier(data.tier as TierId);
+                      if (data.is_admin) setIsAdmin(true);
+                      // Force credits refresh in components by refetching or context (simplified here by just updating tier)
+                  }
+              });
+          }
+          // Clean URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+      } else if (paymentStatus === 'failure') {
+          toast.error(t('app.payment.failure'), { duration: 5000 });
+          window.history.replaceState({}, document.title, window.location.pathname);
+      }
+  }, [userId, t]);
+
   useEffect(() => {
     // Check initial session
     supabase?.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUserId(session.user.id);
         setUserEmail(session.user.email || null);
-        loadRemoteBlueprints(session.user.id, 0);
-        
+          
+          // Sync local blueprints if any
+          syncLocalBlueprintsToRemote(supabase, session.user.id).then(count => {
+              if (count > 0) {
+                  toast.success(t('app.syncedBlueprints', { count }), { duration: 4000 });
+                  // Reload remote to include just synced
+                  loadRemoteBlueprints(session.user.id, 0);
+              } else {
+                  // just load
+                  loadRemoteBlueprints(session.user.id, 0);
+              }
+          });
+          
+          // Process deleted queue
+          processDeletedQueue(supabase);
+          
         // Load profile data (tier + is_admin)
         supabase.from('profiles').select('tier, is_admin').eq('user_id', session.user.id).single()
         .then(({ data }) => {
@@ -292,10 +327,22 @@ function App() {
      const updated = blueprints.filter(b => b.id !== id);
      setBlueprints(updated);
      saveLocalBlueprints(updated);
-     if (userId && supabase && !isOffline) {
-       await removeBlueprint(supabase, id);
-     }
-     toast.success(t('app.blueprint.deleted'));
+      if (userId && supabase) {
+        try {
+            await removeBlueprint(supabase, id);
+        } catch (e) {
+            console.error("Delete failed, queuing", e);
+            if (!navigator.onLine) {
+                 queueDeletedBlueprint(id);
+                 toast.info("Offline: Blueprint deletion queued.");
+                 // Optimistically remove from UI
+                 setBlueprints(prev => prev.filter(b => b.id !== id));
+                 return; // Avoid success toast below if we want distinctive msg
+            }
+            throw e;
+        }
+      }
+    toast.success(t('app.blueprint.deleted'));
   };
 
   const handlePricingTier = async (tierName: string, tierId?: string) => {
@@ -430,6 +477,7 @@ function App() {
             <button onClick={() => navigate('/community')} className={`text-sm font-medium transition-colors ${location.pathname === '/community' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/community' ? 'page' : undefined}>{t('nav.community')}</button>
             <button onClick={() => navigate('/dashboard')} className={`text-sm font-medium transition-colors ${location.pathname === '/dashboard' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/dashboard' ? 'page' : undefined}>{t('nav.blueprints')}</button>
             <button onClick={() => navigate('/pricing')} className={`text-sm font-medium transition-colors ${location.pathname === '/pricing' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/pricing' ? 'page' : undefined}>{t('nav.pricing')}</button>
+            <button onClick={() => navigate('/analytics')} className={`text-sm font-medium transition-colors ${location.pathname === '/analytics' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/analytics' ? 'page' : undefined}>{t('nav.analytics')}</button>
             
             <div className="w-px h-4 bg-gray-200 dark:bg-gray-800 mx-2" />
             
@@ -482,6 +530,7 @@ function App() {
             <button onClick={() => navigate('/community')} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/community' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.community')}</button>
             <button onClick={() => navigate('/dashboard')} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/dashboard' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.blueprints')}</button>
             <button onClick={() => navigate('/pricing')} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/pricing' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.pricing')}</button>
+            <button onClick={() => navigate('/analytics')} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/analytics' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.analytics')}</button>
             
             <div className="flex items-center gap-4 py-4">
                <ThemeToggle />
@@ -582,7 +631,19 @@ function App() {
                                 {...fw}
                                 title={t(`fw.${fw.id}.title`) || fw.title}
                                 description={t(`fw.${fw.id}.desc`) || fw.description} 
-                                onClick={() => handleStartWizard(fw.id)}
+                                onClick={() => {
+                                  if (!canUseFramework(tier, fw.id)) {
+                                     toast.info("This framework is included in the Standard plan.", {
+                                         action: {
+                                             label: t('nav.pricing'),
+                                             onClick: () => navigate('/pricing')
+                                         },
+                                         duration: 4000
+                                     });
+                                     return;
+                                  }
+                                  handleStartWizard(fw.id);
+                                }}
                                 onLearnMore={() => setViewingFramework(fw)}
                                 isLocked={!canUseFramework(tier, fw.id)}
                               />
@@ -616,10 +677,11 @@ function App() {
                       exit={{ opacity: 0, x: -20 }}
                     >
                       <GoalWizard 
-                        framework={selectedFramework} 
+                        framework={location.state?.framework || selectedFramework} 
                         onBack={() => navigate('/')}
                         onSaveBlueprint={handleSaveBlueprint}
                         initialBlueprint={activeBlueprint}
+                        tier={tier}
                       />
                     </motion.div>
                 } />
@@ -690,7 +752,10 @@ function App() {
                            <Profile userId={userId} userEmail={userEmail} onBack={() => navigate('/')} />
                          </motion.div>
                     ) : (
-                         <div className="flex items-center justify-center h-screen">Loading...</div>
+                         <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+                            <p className="text-gray-500 dark:text-gray-400">{t('app.profile.signInRequired')}</p>
+                            <Button onClick={() => setAuthOpen(true)}>{t('nav.signin')}</Button>
+                         </div>
                     )
                  } />
 

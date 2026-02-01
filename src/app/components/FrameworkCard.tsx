@@ -20,7 +20,7 @@ export const FrameworkCard = React.memo(function FrameworkCard({ title, descript
           ? 'border-gray-100 dark:border-zinc-800 opacity-60 grayscale cursor-not-allowed' 
           : 'border-gray-100 dark:border-zinc-800 rounded-3xl p-8 hover:shadow-xl hover:shadow-blue-900/5 cursor-pointer'
       }`}
-      onClick={isLocked ? undefined : onClick}
+      onClick={onClick}
     >
       <div 
         className="absolute top-0 right-0 w-32 h-32 opacity-5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700" 

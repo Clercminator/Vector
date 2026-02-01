@@ -4,7 +4,9 @@
 // Node 18+ has built-in fetch, so we don't need to import it.
 // If using an older node, this might fail, but checking user env showed v22.
 
-const PROJECT_ID = 'rfemwgtomtzbwhfgpcuo'; // From your .env
+const PROJECT_ID = process.env.VITE_SUPABASE_URL 
+    ? process.env.VITE_SUPABASE_URL.replace('https://', '').split('.')[0] 
+    : (process.env.PROJECT_ID || 'your-project-id'); // Set PROJECT_ID in env
 const FUNCTION_URL = `https://${PROJECT_ID}.supabase.co/functions/v1/mercado-pago-webhook`;
 
 // Mock Payload simulating a successful payment from MercadoPago

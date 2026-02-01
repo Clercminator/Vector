@@ -125,3 +125,52 @@ export function blueprintTitleFromAnswers(answers: string[], fallback = "Untitle
   return first.length > 60 ? `${first.slice(0, 57)}...` : first;
 }
 
+
+export async function syncLocalBlueprintsToRemote(supabase: SupabaseClient, userId: string) {
+    const local = loadLocalBlueprints();
+    if (local.length === 0) return 0;
+
+    for (const bp of local) {
+        // Ensure user_id is set to the current user
+        await upsertBlueprint(supabase, bp, userId);
+    }
+    
+    // Clear local blueprints after sync
+    localStorage.removeItem(STORAGE_KEY);
+    return local.length;
+}
+
+const DELETED_QUEUE_KEY = "vector.deleted_queue";
+
+export function queueDeletedBlueprint(id: string) {
+    try {
+        const raw = localStorage.getItem(DELETED_QUEUE_KEY);
+        const queue = raw ? JSON.parse(raw) : [];
+        if (!queue.includes(id)) {
+            queue.push(id);
+            localStorage.setItem(DELETED_QUEUE_KEY, JSON.stringify(queue));
+        }
+    } catch (e) {
+        console.error("Failed to queue deleted blueprint", e);
+    }
+}
+
+export async function processDeletedQueue(supabase: SupabaseClient) {
+    try {
+        const raw = localStorage.getItem(DELETED_QUEUE_KEY);
+        if (!raw) return;
+        const queue = JSON.parse(raw) as string[];
+        
+        if (queue.length === 0) return;
+
+        console.log("Processing deleted queue:", queue);
+
+        for (const id of queue) {
+            await removeBlueprint(supabase, id);
+        }
+        
+        localStorage.removeItem(DELETED_QUEUE_KEY);
+    } catch (e) {
+        console.error("Failed to process deleted queue", e);
+    }
+}

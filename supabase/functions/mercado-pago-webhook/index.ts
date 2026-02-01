@@ -131,7 +131,21 @@ Deno.serve(async (req) => {
             }
 
             // 5. Update Profile via RPC or direct update
-            // ... (RPC increment_credits call) ...
+            const { error: rpcError } = await supabase.rpc('increment_credits', { 
+                user_id: targetUserId, 
+                amount: creditsToAdd 
+            });
+
+            if (rpcError) {
+                console.error("Failed to increment credits:", rpcError);
+            }
+
+            // Update tier if applicable (upgrade only)
+            const { error: tierError } = await supabase.from('profiles').update({
+                tier: newTier
+            }).eq('user_id', targetUserId);
+    
+            if (tierError) console.error("Failed to update tier:", tierError);
             
             // 5b. Insert into payments table
             try {
@@ -155,7 +169,30 @@ Deno.serve(async (req) => {
             }
 
             // 6. Send Receipt Email
-            // ... (email sending logic) ...
+            if (payerEmail) {
+                try {
+                     await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+                         method: 'POST',
+                         headers: {
+                             'Content-Type': 'application/json',
+                             'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+                         },
+                         body: JSON.stringify({
+                             to: payerEmail,
+                             subject: `Vector Purchase Confirmation - ${newTier.charAt(0).toUpperCase() + newTier.slice(1)} Tier`,
+                             html: `
+                                <h1>Thank you for your purchase!</h1>
+                                <p>You have successfully purchased the <strong>${newTier}</strong> tier.</p>
+                                <p><strong>${creditsToAdd} credits</strong> have been added to your account.</p>
+                                <p>Go to <a href="https://vector.app/dashboard">Vector Dashboard</a> to start building.</p>
+                             `
+                         })
+                     });
+                     console.log("Receipt email sent to", payerEmail);
+                } catch (emailErr) {
+                     console.error("Failed to send email:", emailErr);
+                }
+            }
 
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,

@@ -37,7 +37,8 @@ Deno.serve(async (req) => {
     const body: WebhookPayload = await req.json();
     console.log("New user webhook:", body);
 
-    if (body.type === 'INSERT' && body.table === 'users') {
+    // Supabase Auth webhook usually sends schema: 'auth', table: 'users'
+    if (body.type === 'INSERT' && body.table === 'users' && body.schema === 'auth') {
         const email = body.record.email;
         if (email) {
             console.log(`Sending welcome email to ${email}`);

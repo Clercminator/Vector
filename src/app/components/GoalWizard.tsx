@@ -22,9 +22,10 @@ interface GoalWizardProps {
   onBack: () => void;
   onSaveBlueprint?: (bp: Blueprint) => Promise<void> | void;
   initialBlueprint?: Blueprint;
+  tier?: TierId;
 }
 
-export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSaveBlueprint, initialBlueprint }) => {
+export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSaveBlueprint, initialBlueprint, tier: propTier }) => {
   const { t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -35,8 +36,16 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   const [isSynthesizing, setIsSynthesizing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [credits, setCredits] = useState<number | null>(null);
-  const [tier, setTier] = useState<TierId>(DEFAULT_TIER_ID);
+  const [tier, setTier] = useState<TierId>(propTier || DEFAULT_TIER_ID);
   const [userName, setUserName] = useState<string | undefined>(undefined);
+
+  // Enforce tier check
+  useEffect(() => {
+    if (!canUseFramework(tier, framework)) {
+      toast.error(t('wizard.lockedError') || "This framework is not available in your plan.", { duration: 5000 });
+      onBack();
+    }
+  }, [tier, framework, onBack, t]);
 
   useEffect(() => {
     // Fetch credits
@@ -48,6 +57,8 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                 .then(({ data }) => {
                     if (data) {
                         setCredits(data.credits);
+                        // If propTier is provided, it might be fresher or same, but let's sync if needed.
+                        // Actually App.tsx passes tier, so we might not need to overwrite it unless we want to be sure.
                         if (data.tier) setTier(data.tier as TierId);
                         if (data.full_name) setUserName(data.full_name);
                     }
@@ -59,6 +70,34 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         });
     }
   }, []);
+  
+  // Helper to check and notify low credits
+  const checkAndNotifyLowCredits = async (newCredits: number) => {
+      // Only notify if credits hit exactly 2 (to avoid spam) and user is logged in
+      if (newCredits === 2 && supabase && userName) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user && user.email) {
+               // Fire and forget
+               supabase.functions.invoke('send-email', {
+                  body: {
+                      to: user.email,
+                      subject: "Vector: You're running low on credits!",
+                      html: `
+                        <h1>Low Credits Warning</h1>
+                        <p>Hi ${userName},</p>
+                        <p>You have only <strong>${newCredits} details</strong> left.</p>
+                        <p>To continue using AI features ensuring uninterrupted access, consider upgrading your plan.</p>
+                        <p><a href="${window.location.origin}/pricing">Upgrade now</a></p>
+                      `
+                  }
+               }).then(({ error }) => {
+                   if (error) console.error("Failed to send low credit email", error);
+               });
+               
+               toast.info(t('wizard.lowCreditsWarning') || "Low credits! You have 2 credits remaining.");
+          }
+      }
+  };
 
   // Check function needs to be imported or defined, for now I'll just check the env var check wrapper
   const isOpenRouterConfigured = () => !!import.meta.env.VITE_OPENROUTER_API_KEY || !!import.meta.env.VITE_OPENROUTER_PROXY_URL;
@@ -144,9 +183,15 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     }
   };
 
-  const currentConfig = frameworkConfig[framework];
+  const currentConfig = frameworkConfig[framework as keyof typeof frameworkConfig];
 
   useEffect(() => {
+    if (!currentConfig) {
+      console.error("Critical: Invalid framework passed to GoalWizard:", framework);
+      onBack();
+      return;
+    }
+
     if (initialBlueprint) {
       const baseMessages: Message[] = [
         { role: 'ai', content: t('wizard.reopening').replace('{0}', currentConfig.title) },
@@ -232,7 +277,11 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                     const { data: { user } } = await supabase.auth.getUser();
                     if (user) {
                         await supabase.rpc('decrement_credits', { user_id: user.id });
-                        setCredits(c => (c ? c - 1 : 0));
+                        setCredits(c => {
+                             const newC = c ? c - 1 : 0;
+                             checkAndNotifyLowCredits(newC);
+                             return newC;
+                        });
                     }
                  }
              } else {
@@ -289,7 +338,11 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
               const { data: { user } } = await supabase.auth.getUser();
               if (user) {
                   await supabase.rpc('decrement_credits', { user_id: user.id });
-                  setCredits(c => (c ? c - 1 : 0));
+                  setCredits(c => {
+                       const newC = c ? c - 1 : 0;
+                       checkAndNotifyLowCredits(newC);
+                       return newC;
+                  });
               } else {
                   setCredits(c => (c ? c - 1 : 0)); // virtual
               }

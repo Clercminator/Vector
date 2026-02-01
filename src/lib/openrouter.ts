@@ -11,7 +11,11 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_MODEL = "openai/gpt-4o-mini";
 
 function getApiKey(): string {
-  return (import.meta.env.VITE_OPENROUTER_API_KEY as string | undefined) ?? "";
+  const key = (import.meta.env.VITE_OPENROUTER_API_KEY as string | undefined) ?? "";
+  if (key && import.meta.env.PROD && !import.meta.env.VITE_OPENROUTER_PROXY_URL) {
+      console.warn("Security Warning: VITE_OPENROUTER_API_KEY is exposed in the client. Use VITE_OPENROUTER_PROXY_URL for production.");
+  }
+  return key;
 }
 
 /** Proxy URL from your backend (e.g. Supabase Edge Function). When set, the app calls this instead of Open Router directly so the API key stays server-side. */
