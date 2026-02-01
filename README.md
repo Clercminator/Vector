@@ -300,6 +300,31 @@ Other deps: `canvas-confetti`, `date-fns`, `react-hook-form`, `recharts`, `@verc
 
 ---
 
+<a id="architectural-decisions"></a>
+## AI Architecture & Tech Stack Decisions
+
+We explicitly chose **Vite** (SPA) over Next.js and considered different AI agent architectures. Here is the rationale.
+
+### Why Vite instead of Next.js?
+
+1.  **Client-Heavy Logic**: Vector is primarily a "local-first" tool. Blueprint drafting, drag-and-drop, and state management happen in the browser. Next.js adds server-side rendering (SSR) complexity that isn't strictly necessary for an app behind an auth wall.
+2.  **Deployment Simplicity**: A Vite app builds to static HTML/JS/CSS. It can be hosted anywhere (Vercel, Netlify, S3, Supabase Storage) without needing a Node.js runtime. This reduces ops overhead and cost.
+3.  **Supabase Integration**: Since we use Supabase for Auth and DB, we don't need the Next.js API routes for backend logic. Supabase Edge Functions provide a cleaner separation of concerns.
+
+### AI Architecture: Current vs. LangGraph
+
+We are transitioning from a stateless model to a stateful agent. Here is the trade-off analysis:
+
+| Architecture | Description | Pros | Cons |
+|--------------|-------------|------|------|
+| **Current (Stateless)** | `GoalWizard` sends all answers to LLM in one shot. | • **Fast**: Single request.<br>• **Simple**: No state management.<br>• **Cheap**: Minimum token usage. | • **"Dumb"**: Can't plan or critique itself.<br>• **Rigid**: If data is missing, it guesses instead of asking.<br>• **No Memory**: Can't remember past corrections easily. |
+| **LangGraph JS (Client)** | Agent graph runs in the browser (`@langchain/langgraph`). | • **Stateful**: Can loop (Plan → Critique → Improve).<br>• **No Backend**: Runs on user's device.<br>• **Responsive**: Real-time updates without server roundtrips. | • **Complexity**: Managing graph state in React.<br>• **Security**: Prompts exist in client bundle (ok for public prompts).<br>• **Heavier Bundle**: Adds ~200kb of JS. |
+| **LangGraph Python (Server)** | Agent runs on a Python server (FastAPI/Flask). | • **Powerful**: Access to Python ecosystem (Pandas, NumPy).<br>• **Secure**: Prompts/Logic hidden on server.<br>• **Persistent**: Easier to persist long-term agent state in DB. | • **Cost**: Requires hosting a Python service (e.g. Railway/AWS).<br>• **Latency**: Network hops for every step.<br>• **Overkill**: We don't need complex data processing yet. |
+
+**Decision**: We are moving to **LangGraph JS (Client-side)**. This gives us the "smart" agentic behaviors (planning, critique, multi-turn) without the overhead of maintaining a separate Python backend service.
+
+---
+
 <a id="efficiency-advantages-and-disadvantages"></a>
 ## Efficiency, Advantages and Disadvantages
 

@@ -3,5 +3,10 @@ Current JSON is provided in the context.
 
 The user wants to refine this plan. 
 Update the JSON object based on their latest instruction. 
-Maintain the same schema and strict JSON format. 
-Do not output markdown or explanation. Just the updated JSON.
+Return a JSON object with this schema:
+{
+  "blueprint": { ... the updated blueprint object matching the original schema ... },
+  "message": "A short, helpful message explaining what you changed or asking a clarifying question if the request was ambiguous."
+}
+
+Do not output markdown. Just the JSON.

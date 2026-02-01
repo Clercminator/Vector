@@ -173,6 +173,7 @@ function App() {
          setUserId(session.user.id);
          setUserEmail(session.user.email || null);
          setIsOffline(false);
+         setAuthOpen(false); // Close modal if open
          setPage(0);
          setHasMore(true);
          loadRemoteBlueprints(session.user.id, 0);
@@ -795,6 +796,7 @@ function App() {
       </main>
 
       {/* Footer */}
+      {location.pathname !== '/wizard' && (
       <footer className="relative z-10 px-6 py-12 border-t border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 transition-colors">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
@@ -815,6 +817,7 @@ function App() {
           <p className="text-sm text-gray-400">{t('footer.copyright')}</p>
         </div>
       </footer>
+      )}
     </div>
   );
 }

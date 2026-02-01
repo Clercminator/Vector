@@ -293,7 +293,7 @@ export async function refineBlueprint(
     chatHistory: { role: 'ai' | 'user', content: string }[], 
     lastUserMessage: string,
     userName?: string
-): Promise<BlueprintResult | null> {
+): Promise<{ result: BlueprintResult, message: string } | null> {
     if (!isOpenRouterConfigured()) return null;
 
     let systemPrompt = `${refinePrompt}
@@ -317,9 +317,16 @@ export async function refineBlueprint(
     while (attempts < maxAttempts) {
         try {
             const content = await chat(messages, { max_tokens: 1500, retryCount: 1 });
-            const obj = parseJsonBlock(content);
-            const valid = validateAndSanitize(framework, obj);
-            if (valid) return valid;
+            const obj = parseJsonBlock(content) as any;
+            
+            // Support both old (direct) and new (wrapped) formats for robustness
+            const rawBlueprint = obj.blueprint || obj;
+            const message = obj.message || "Updated blueprint based on your feedback.";
+
+            const valid = validateAndSanitize(framework, rawBlueprint);
+            if (valid) {
+                return { result: valid, message };
+            }
              throw new Error("Invalid JSON schema returned");
         } catch (e: any) {
             console.warn("Refinement attempt failed", e);

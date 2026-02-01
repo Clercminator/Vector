@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Mail, Award, Zap, Save, Loader2, ArrowLeft } from 'lucide-react';
+import { User, Mail, Award, Zap, Save, Loader2, ArrowLeft, Star, CheckCircle2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
+import { useNavigate } from 'react-router-dom';
+import { createCheckout } from '@/lib/mercadoPago';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { AchievementsList } from '@/app/components/AchievementsList';
@@ -38,6 +40,7 @@ import { useLanguage } from '@/app/components/language-provider';
 
 export function Profile({ userId, userEmail, onBack }: ProfileProps) {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [data, setData] = useState<ProfileData>({
@@ -115,6 +118,24 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
     }
   };
 
+  const handlePricingTier = async (tierId: string) => {
+    const config = TIER_CONFIGS[tierId as TierId];
+    if (!config || config.priceUsd <= 0) return;
+    
+    try {
+      await createCheckout({ 
+        tier: tierId.charAt(0).toUpperCase() + tierId.slice(1), 
+        amount: config.priceUsd, 
+        currency: 'USD' 
+      });
+    } catch (e) {
+      console.error(e);
+      toast.error(t('common.error') || "Failed to initiate checkout.");
+    }
+  };
+
+  const currentTierConfig = TIER_CONFIGS[data.tier as TierId] || TIER_CONFIGS['architect'];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -159,6 +180,61 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
                   <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">{t('profile.streak') || 'Streak'}</span>
                 </div>
               </div>
+          </div>
+
+          {/* Plan & Credits Section */}
+          <div className="bg-gradient-to-br from-zinc-900 to-black dark:from-zinc-900 dark:to-zinc-950 p-8 rounded-3xl border border-zinc-800 shadow-2xl text-white">
+             <div className="flex justify-between items-start mb-6">
+                <div>
+                   <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mb-1">{t('profile.currentPlan') || 'Current Plan'}</p>
+                   <h3 className="text-2xl font-black capitalize tracking-tight flex items-center gap-2">
+                       {data.tier}
+                       {data.tier !== 'architect' && <Star size={20} className="text-yellow-400 fill-yellow-400" />}
+                   </h3>
+                </div>
+                <div className="bg-white/10 px-3 py-1 rounded-full text-xs font-bold backdrop-blur-md">
+                   {currentTierConfig.priceUsd > 0 ? `$${currentTierConfig.priceUsd}/mo` : 'Free'}
+                </div>
+             </div>
+
+             <div className="space-y-4 mb-8">
+                <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/10">
+                   <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center">
+                         <Zap className="text-yellow-500" size={20} />
+                      </div>
+                      <div>
+                         <p className="text-sm font-bold">{data.credits}</p>
+                         <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">{t('profile.creditsRemaining') || 'Credits Remaining'}</p>
+                      </div>
+                   </div>
+                   <Button 
+                      size="sm" 
+                      onClick={() => navigate('/pricing')}
+                      className="bg-white text-black hover:bg-zinc-200 rounded-xl font-bold h-10 px-4"
+                   >
+                      {t('profile.buyMore') || 'Buy More'}
+                   </Button>
+                </div>
+             </div>
+
+             <div className="space-y-2">
+                 <p className="text-xs text-zinc-500 font-medium px-1">Included in your plan:</p>
+                 <ul className="grid grid-cols-1 gap-2">
+                    {currentTierConfig.allowedFrameworks.slice(0, 3).map(fw => (
+                        <li key={fw} className="flex items-center gap-2 text-xs text-zinc-300">
+                           <CheckCircle2 size={12} className="text-green-500" />
+                           {fw}
+                        </li>
+                    ))}
+                    {currentTierConfig.canExportPdf && (
+                        <li className="flex items-center gap-2 text-xs text-zinc-300">
+                           <CheckCircle2 size={12} className="text-green-500" />
+                           PDF Export
+                        </li>
+                    )}
+                 </ul>
+             </div>
           </div>
         </div>
 

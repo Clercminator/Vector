@@ -4,25 +4,58 @@
 
 [36mvite v6.3.5 [32mbuilding for production...[36m[39m
 transforming...
-[32mΓ£ô[39m 2429 modules transformed.
-Γ£ù Build failed in 3.25s
-error during build:
-src/app/components/HelpMeChooseModal.tsx (6:9): "frameworks" is not exported by "src/lib/blueprints.ts", imported by "src/app/components/HelpMeChooseModal.tsx".
-file: C:/Users/clerc/Documents/Vector Project/Vector/src/app/components/HelpMeChooseModal.tsx:6:9
+[plugin vite:esbuild] src/lib/translations.ts: Duplicate key "fp.title" in object literal
+664|  
+665|      // Framework Titles & Questions
+666|      'fp.title': 'Arquitecto de Primeros Principios',
+   |      ^
+667|      'fp.q1': "┬íHola! Soy tu Arquitecto de Primeros Principios. Vamos a dise├▒ar tu ambici├│n. Para empezar, necesito contexto: ┬┐Cu├íl es tu objetivo principal o el problema que intentas resolver? Cuantos m├ís detalles me des, mejor ser├í el plan.",
+668|      'fp.q2': "┬┐Cu├íles son las verdades fundamentales que sabes con certeza? Desglosa el problema en hechos innegociables.",
 
-4: import { Button } from '@/app/components/ui/button';
-5: import { suggestFramework } from '@/lib/openrouter';
-6: import { frameworks, FrameworkId } from '@/lib/blueprints';
+[plugin vite:esbuild] src/lib/translations.ts: Duplicate key "fp.q1" in object literal
+665|      // Framework Titles & Questions
+666|      'fp.title': 'Arquitecto de Primeros Principios',
+667|      'fp.q1': "┬íHola! Soy tu Arquitecto de Primeros Principios. Vamos a dise├▒ar tu ambici├│n. Para empezar, necesito contexto: ┬┐Cu├íl es tu objetivo principal o el problema que intentas resolver? Cuantos m├ís detalles me des, mejor ser├í el plan.",
+   |      ^
+668|      'fp.q2': "┬┐Cu├íles son las verdades fundamentales que sabes con certeza? Desglosa el problema en hechos innegociables.",
+669|      'fp.q3': "Basado en estas verdades, ┬┐cu├íl es una forma completamente nueva de construir esto desde cero?",
+
+[plugin vite:esbuild] src/lib/translations.ts: Duplicate key "fp.q2" in object literal
+666|      'fp.title': 'Arquitecto de Primeros Principios',
+667|      'fp.q1': "┬íHola! Soy tu Arquitecto de Primeros Principios. Vamos a dise├▒ar tu ambici├│n. Para empezar, necesito contexto: ┬┐Cu├íl es tu objetivo principal o el problema que intentas resolver? Cuantos m├ís detalles me des, mejor ser├í el plan.",
+668|      'fp.q2': "┬┐Cu├íles son las verdades fundamentales que sabes con certeza? Desglosa el problema en hechos innegociables.",
+   |      ^
+669|      'fp.q3': "Basado en estas verdades, ┬┐cu├íl es una forma completamente nueva de construir esto desde cero?",
+670|      'fp.truths': 'Verdades Fundamentales',
+
+[plugin vite:esbuild] src/lib/translations.ts: Duplicate key "fp.q3" in object literal
+667|      'fp.q1': "┬íHola! Soy tu Arquitecto de Primeros Principios. Vamos a dise├▒ar tu ambici├│n. Para empezar, necesito contexto: ┬┐Cu├íl es tu objetivo principal o el problema que intentas resolver? Cuantos m├ís detalles me des, mejor ser├í el plan.",
+668|      'fp.q2': "┬┐Cu├íles son las verdades fundamentales que sabes con certeza? Desglosa el problema en hechos innegociables.",
+669|      'fp.q3': "Basado en estas verdades, ┬┐cu├íl es una forma completamente nueva de construir esto desde cero?",
+   |      ^
+670|      'fp.truths': 'Verdades Fundamentales',
+671|      'fp.newApproach': 'La Nueva Arquitectura',
+
+[plugin vite:resolve] Module "node:async_hooks" has been externalized for browser compatibility, imported by "C:/Users/clerc/Documents/Vector Project/Vector/node_modules/@langchain/langgraph/dist/setup/async_local_storage.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[32mΓ£ô[39m 3976 modules transformed.
+Γ£ù Build failed in 5.72s
+error during build:
+[vite-plugin-pwa:build] There was an error during the build:
+  node_modules/@langchain/langgraph/dist/setup/async_local_storage.js (2:9): "AsyncLocalStorage" is not exported by "__vite-browser-external", imported by "node_modules/@langchain/langgraph/dist/setup/async_local_storage.js".
+Additionally, handling the error in the 'buildEnd' hook caused the following error:
+  node_modules/@langchain/langgraph/dist/setup/async_local_storage.js (2:9): "AsyncLocalStorage" is not exported by "__vite-browser-external", imported by "node_modules/@langchain/langgraph/dist/setup/async_local_storage.js".
+file: C:/Users/clerc/Documents/Vector Project/Vector/node_modules/@langchain/langgraph/dist/setup/async_local_storage.js:2:9
+
+1: import { AsyncLocalStorageProviderSingleton } from "@langchain/core/singletons";
+2: import { AsyncLocalStorage } from "node:async_hooks";
             ^
-7: import { toast } from 'sonner';
+3: 
+4: //#region src/setup/async_local_storage.ts
 
     at getRollupError (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/parseAst.js:402:41)
-    at error (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/parseAst.js:398:42)
-    at Module.error (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/node-entry.js:17037:16)
-    at Module.traceVariable (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/node-entry.js:17449:29)
-    at ModuleScope.findVariable (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/node-entry.js:15067:39)
-    at FunctionScope.findVariable (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/node-entry.js:5673:38)
-    at FunctionBodyScope.findVariable (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/node-entry.js:5673:38)
-    at MemberExpression.bind (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/node-entry.js:7392:49)
-    at CallExpression.bind (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/node-entry.js:2829:23)
-    at CallExpression.bind (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/node-entry.js:12179:15)
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/node-entry.js:23441:39
+    at async catchUnfinishedHookActions (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/node-entry.js:22899:16)
+    at async rollupInternal (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/node-entry.js:23424:5)
+    at async buildEnvironment (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:46206:14)
+    at async Object.defaultBuildApp [as buildApp] (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:46684:5)
+    at async CAC.<anonymous> (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/vite/dist/node/cli.js:863:7)

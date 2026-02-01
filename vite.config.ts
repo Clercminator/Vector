@@ -43,16 +43,27 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      'node:async_hooks': path.resolve(__dirname, './src/lib/polyfill-async-hooks.ts'),
     },
   },
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'motion-vendor': ['motion', 'framer-motion'],
-          'supabase-vendor': ['@supabase/supabase-js'],
-          'ui-vendor': ['lucide-react', 'sonner', 'canvas-confetti'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('@langchain') || id.includes('langgraph') || id.includes('openai')) {
+              return 'ai-vendor';
+            }
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@supabase')) {
+              return 'supabase-vendor';
+            }
+            if (id.includes('lucide-react') || id.includes('sonner') || id.includes('canvas-confetti')) {
+              return 'ui-vendor';
+            }
+          }
         },
       },
     },

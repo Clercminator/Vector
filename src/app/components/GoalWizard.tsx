@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 import { Send, ArrowLeft, RefreshCcw, CheckCircle2, Calendar, Target, Zap, Layers, Share2, Rocket, Clock, Star, Download, Lock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
@@ -11,6 +12,9 @@ import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, canUseFramework } from '@/lib/ti
 import { useLanguage } from '@/app/components/language-provider';
 import { supabase } from '@/lib/supabase';
 import { useTheme } from 'next-themes';
+import { graph } from '@/agent/goalAgent';
+import { HumanMessage, AIMessage } from '@langchain/core/messages';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Message {
   role: 'ai' | 'user';
@@ -27,9 +31,10 @@ interface GoalWizardProps {
 
 export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSaveBlueprint, initialBlueprint, tier: propTier }) => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(0); // Deprecated in Agent flow, kept for safely removing UI refs if any
   const [isTyping, setIsTyping] = useState(false);
   const [result, setResult] = useState<BlueprintResult | null>(null);
   const [finalAnswers, setFinalAnswers] = useState<string[]>([]);
@@ -38,6 +43,10 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   const [credits, setCredits] = useState<number | null>(null);
   const [tier, setTier] = useState<TierId>(propTier || DEFAULT_TIER_ID);
   const [userName, setUserName] = useState<string | undefined>(undefined);
+  
+  // Agent State
+  const [threadId] = useState<string>(() => uuidv4());
+  const [isAgentRunning, setIsAgentRunning] = useState(false);
 
   // Enforce tier check
   useEffect(() => {
@@ -50,11 +59,11 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   useEffect(() => {
     // Fetch credits
     if (supabase) {
-        supabase.auth.getUser().then(({ data: { user } }) => {
+        supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
             if (user) {
                 // Fetch full_name along with credits and tier
                 supabase.from('profiles').select('credits, tier, full_name').eq('user_id', user.id).single()
-                .then(({ data }) => {
+                .then(({ data }: { data: any }) => {
                     if (data) {
                         setCredits(data.credits);
                         // If propTier is provided, it might be fresher or same, but let's sync if needed.
@@ -221,7 +230,8 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     setStep(0);
     setIsTyping(true);
     const tTimer = setTimeout(() => {
-      setMessages([{ role: 'ai', content: t('wizard.welcome').replace('{0}', currentConfig.title) + ' ' + currentConfig.questions[0] }]);
+      // Agent Welcome
+      setMessages([{ role: 'ai', content: t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart') }]); // Ensure we have a translation keys
       setIsTyping(false);
     }, 1000);
     return () => clearTimeout(tTimer);
@@ -231,135 +241,101 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim() || isTyping) return;
+  const runAgent = async (userText: string) => {
+    if (!userText.trim()) return;
 
-    // Phase 2: Refinement Chat (after result is generated)
-    if (result) {
-        if (!isOpenRouterConfigured()) {
-             toast.error(t('wizard.configError'));
-             return;
-        }
-
-        const instruction = inputValue;
-        const newMessages = [...messages, { role: 'user' as const, content: instruction }];
-        setMessages(newMessages);
-        setInputValue('');
-        setIsTyping(true);
-
-        // Persist user message if blueprint is saved
-        if (supabase && initialBlueprint?.id) {
-            saveBlueprintMessage(supabase, initialBlueprint.id, 'user', instruction).catch(console.error);
-        }
-
-        (async () => {
-             // Deduct credit check
-             if (credits !== null && credits <= 0) {
-                 setIsTyping(false);
-                 setMessages(prev => [...prev, { role: 'ai', content: t('wizard.noCredits') }]);
-                 return;
-             }
-
-             const refinedResult = await refineBlueprint(framework, result, newMessages, instruction, userName);
-             
-             if (refinedResult) {
-                 setResult(refinedResult);
-                 const aiMsg = t('wizard.refineSuccess');
-                 setMessages(prev => [...prev, { role: 'ai', content: aiMsg }]);
-                 
-                 if (supabase && initialBlueprint?.id) {
-                     saveBlueprintMessage(supabase, initialBlueprint.id, 'ai', aiMsg).catch(console.error);
-                 }
-                 
-                 // Deduct credit
-                 if (supabase && credits !== null) {
-                    const { data: { user } } = await supabase.auth.getUser();
-                    if (user) {
-                        await supabase.rpc('decrement_credits', { user_id: user.id });
-                        setCredits(c => {
-                             const newC = c ? c - 1 : 0;
-                             checkAndNotifyLowCredits(newC);
-                             return newC;
-                        });
-                    }
-                 }
-             } else {
-                 const errMsg = t('wizard.refineError');
-                 setMessages(prev => [...prev, { role: 'ai', content: errMsg }]);
-                 if (supabase && initialBlueprint?.id) {
-                     saveBlueprintMessage(supabase, initialBlueprint.id, 'ai', errMsg).catch(console.error);
-                 }
-             }
-             setIsTyping(false);
-        })();
+    // 1. Credit Check Guard
+    if (credits !== null && credits <= 0) {
+        toast.error(t('wizard.outOfCredits') || "You have run out of credits. Please upgrade your plan to continue.", {
+            action: {
+                label: t('nav.pricing') || "Pricing",
+                onClick: () => navigate('/pricing')
+            },
+            duration: 10000
+        });
         return;
     }
-
-    // Phase 1: Initial Questionnaire
-    const newMessages: Message[] = [...messages, { role: 'user', content: inputValue }];
-    setMessages(newMessages);
-    setInputValue('');
     
-    const nextStep = step + 1;
-    setStep(nextStep);
+    // Add user message to UI immediately
+    setMessages(prev => [...prev, { role: 'user', content: userText }]);
+    setInputValue('');
+    setIsTyping(true);
+    setIsAgentRunning(true);
 
-    if (nextStep < currentConfig.questions.length) {
-      setIsTyping(true);
-      setTimeout(() => {
-        setMessages(prev => [...prev, { role: 'ai', content: currentConfig.questions[nextStep] }]);
-        setIsTyping(false);
-      }, 1500);
-    } else {
-      const answers = newMessages.filter(m => m.role === 'user').map(m => m.content);
-      
-      // Credit Check
-      if (credits !== null && credits <= 0) {
-          toast.error(t('wizard.creditError'));
-          // Fallback to non-AI or stop? 
-          // For now, let's stop but maybe in future we allow rule-based fallback
-          // Force fallback to rule based:
-          const res = currentConfig.generateResult(answers) as BlueprintResult;
-          setResult(res);
-          setFinalAnswers(answers);
-          setMessages(prev => [...prev, { role: 'ai', content: t('wizard.ai.complete') + t('wizard.ruleBased') }]);
-          return; 
-      }
+    try {
+        const config = { configurable: { thread_id: threadId } };
+        
+        const inputs = {
+            messages: [new HumanMessage(userText)],
+            goal: userText, 
+            framework: framework,
+        };
 
-      setIsTyping(true);
-      setIsSynthesizing(true);
-      (async () => {
-        let res: BlueprintResult | null = null;
-        try {
-          res = await generateBlueprintResultAI(framework, answers, userName);
-          
-          // Deduct credit if AI was successful
-          if (res && supabase && credits !== null) {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (user) {
-                  await supabase.rpc('decrement_credits', { user_id: user.id });
-                  setCredits(c => {
-                       const newC = c ? c - 1 : 0;
-                       checkAndNotifyLowCredits(newC);
-                       return newC;
-                  });
-              } else {
-                  setCredits(c => (c ? c - 1 : 0)); // virtual
-              }
-          }
+        const stream = await graph.stream(inputs, config);
 
-        } catch {
-          // Fall through to rule-based
+        let deductionTriggered = false;
+
+        for await (const event of stream) {
+            // Handle streaming Logic
+            if (event?.ask && event.ask.messages && event.ask.messages.length > 0) {
+                 const lastMsg = event.ask.messages[event.ask.messages.length - 1];
+                 const content = lastMsg.content as string;
+                 setMessages(prev => [...prev, { role: 'ai', content }]);
+                 setIsTyping(false); 
+
+                 // 2. Deduction Logic (Trigger once per turn when AI speaks)
+                 if (!deductionTriggered) {
+                     deductionTriggered = true;
+                     if (supabase) {
+                         const { data: { user } } = await supabase.auth.getUser();
+                         if (user) {
+                             // Call secure RPC
+                             const { data: newBalance, error } = await supabase.rpc('decrement_credits', { amount_to_deduct: 1 });
+                             if (!error && newBalance !== undefined) {
+                                 setCredits(newBalance);
+                                 checkAndNotifyLowCredits(newBalance);
+                             } else if (error) {
+                                 console.error("Credit deduction failed:", error);
+                             }
+                         } else {
+                             // Guest user: local decrement
+                             setCredits(prev => {
+                                 const next = prev !== null ? Math.max(0, prev - 1) : 0;
+                                 return next;
+                             });
+                         }
+                     }
+                 }
+            }
+            
+            if (event?.draft && event.draft.blueprint) {
+                 const bp = event.draft.blueprint;
+                 setResult({
+                     type: framework, 
+                     ...bp 
+                 });
+                 if (event.draft.messages && event.draft.messages.length > 0) {
+                     const lastMsg = event.draft.messages[event.draft.messages.length - 1];
+                     setMessages(prev => [...prev, { role: 'ai', content: lastMsg.content as string }]);
+                 }
+                 setIsTyping(false);
+                 setIsSynthesizing(false);
+                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            }
         }
-        if (res == null) res = currentConfig.generateResult(answers) as BlueprintResult;
-        setResult(res);
-        setFinalAnswers(answers);
-        setMessages(prev => [...prev, { role: 'ai', content: t('wizard.ai.complete') }]);
+    } catch (e) {
+        console.error("Agent Error", e);
+        toast.error("Agent encountered an error. Please try again.");
+    } finally {
+        setIsAgentRunning(false);
         setIsTyping(false);
-        setIsSynthesizing(false);
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-      })();
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue.trim() || isAgentRunning) return;
+    runAgent(inputValue);
   };
 
   const handleExport = () => {
@@ -599,22 +575,26 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   };
 
   return (
-    <div className="relative min-h-screen pt-24 pb-12 px-4 z-10 flex flex-col">
-      <div className="max-w-4xl mx-auto w-full flex-grow">
+    <div className="relative h-[calc(100vh-5rem)] px-4 md:px-8 z-10 flex flex-col overflow-hidden">
+      {/* Header */}
+      <div className="w-full max-w-full mx-auto flex-none pt-4">
         <button 
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors mb-8 group"
+          className="flex items-center gap-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors mb-2 group"
         >
           <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm font-medium">{t('wizard.exit')}</span>
         </button>
+      </div>
 
-        <div className="space-y-6 mb-8">
+      {/* Scrollable Area */}
+      <div className="w-full max-w-full mx-auto flex-grow flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden">
+        <div className="space-y-6 pb-4">
           <AnimatePresence mode="popLayout">
             {messages.map((msg, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'ai' ? 'justify-start' : 'justify-end'}`}>
                  <div className={`max-w-[80%] p-4 rounded-2xl ${msg.role === 'ai' ? 'bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 text-gray-800 dark:text-gray-200 shadow-sm' : 'bg-black dark:bg-white text-white dark:text-black'}`}>
-                  <p className="text-sm md:text-base leading-relaxed">{msg.content}</p>
+                  <p className="text-base md:text-lg leading-relaxed">{msg.content}</p>
                 </div>
               </motion.div>
             ))}
@@ -638,20 +618,20 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       </div>
 
       {!initialBlueprint && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent dark:from-zinc-950 dark:via-zinc-950 pt-12 z-20">
-          <form onSubmit={handleSubmit} className="max-w-4xl mx-auto relative">
+        <div className="flex-none p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-gray-100 dark:border-zinc-800 z-20 pb-safe">
+          <form onSubmit={handleSubmit} className="w-full relative">
             <input 
                 autoFocus 
                 value={inputValue} 
                 onChange={(e) => setInputValue(e.target.value)} 
                 placeholder={result ? t('wizard.refinePlaceholder') : t('wizard.typePlaceholder')} 
-                className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-full py-4 pl-6 pr-16 shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-lg dark:text-white dark:placeholder-zinc-500" 
+                className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl py-3 pl-5 pr-14 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-base md:text-lg text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-500" 
             />
             <button
               type="submit"
               aria-label="Send message"
               disabled={!inputValue.trim() || isTyping}
-              className="absolute right-2 top-2 bottom-2 aspect-square bg-black dark:bg-white text-white dark:text-black rounded-full flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-50 transition-all"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black dark:bg-white text-white dark:text-black rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-50 transition-all"
             >
               <Send size={20} />
             </button>
@@ -660,7 +640,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       )}
 
       {result && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-4 items-center">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-4 items-center z-30">
           <button onClick={() => { setMessages([]); setStep(0); setResult(null); setFinalAnswers([]); }} className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium"><RefreshCcw size={18} />{t('wizard.restart')}</button>
           
           {/* Calendar Export */}
