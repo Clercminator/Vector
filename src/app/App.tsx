@@ -35,6 +35,7 @@ const Profile = React.lazy(() => import('@/app/components/Profile').then(module 
 const AdminDashboard = React.lazy(() => import('@/app/components/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const FrameworkPage = React.lazy(() => import('@/pages/FrameworkPage').then(module => ({ default: module.FrameworkPage })));
 const AnalyticsPage = React.lazy(() => import('@/pages/AnalyticsPage').then(module => ({ default: module.AnalyticsPage })));
+const LegalPage = React.lazy(() => import('@/pages/LegalPage').then(module => ({ default: module.LegalPage })));
 import { trackEvent } from '@/lib/analytics';
 
 import { frameworks, Framework } from '@/lib/frameworks';
@@ -229,8 +230,8 @@ function App() {
            if (data.length < PAGE_SIZE) setHasMore(false);
            else setHasMore(true);
 
-           if (pageToLoad === 0) setBlueprints(data as Blueprint[]);
-           else setBlueprints(prev => [...prev, ...data as Blueprint[]]);
+           if (pageToLoad === 0) setBlueprints(data.map((b: any) => ({ ...b, createdAt: b.created_at || b.createdAt })) as Blueprint[]);
+           else setBlueprints(prev => [...prev, ...data.map((b: any) => ({ ...b, createdAt: b.created_at || b.createdAt })) as Blueprint[]]);
         } else {
            if (pageToLoad === 0) setBlueprints([]);
            setHasMore(false);
@@ -411,7 +412,15 @@ function App() {
   const frameworksList = frameworks.map(f => ({
     ...f,
     title: t(`fw.${f.id}.title`) || f.title,
-    description: t(`fw.${f.id}.desc`) || f.description, 
+    description: t(`fw.${f.id}.desc`) || f.description,
+    definition: t(`fw.${f.id}.definition`) || f.definition,
+    example: t(`fw.${f.id}.example`) || f.example,
+    pros: [0, 1, 2].map(i => t(`fw.${f.id}.pros.${i}`)).filter(Boolean).length > 0 
+          ? [0, 1, 2].map(i => t(`fw.${f.id}.pros.${i}`)) 
+          : f.pros,
+    cons: [0, 1, 2].map(i => t(`fw.${f.id}.cons.${i}`)).filter(Boolean).length > 0
+          ? [0, 1, 2].map(i => t(`fw.${f.id}.cons.${i}`)) 
+          : f.cons,
   }));
 
   // Close mobile menu on route change
@@ -471,13 +480,14 @@ function App() {
             <span className="text-xl font-bold tracking-tight text-black dark:text-white">VECTOR</span>
           </div>
 
-          {/* Desktop Nav */}
+            {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-6">
-            <button onClick={() => navigate('/')} className={`text-sm font-medium transition-colors ${location.pathname === '/' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/' ? 'page' : undefined}>{t('nav.frameworks')}</button>
-            <button onClick={() => navigate('/community')} className={`text-sm font-medium transition-colors ${location.pathname === '/community' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/community' ? 'page' : undefined}>{t('nav.community')}</button>
-            <button onClick={() => navigate('/dashboard')} className={`text-sm font-medium transition-colors ${location.pathname === '/dashboard' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/dashboard' ? 'page' : undefined}>{t('nav.blueprints')}</button>
-            <button onClick={() => navigate('/pricing')} className={`text-sm font-medium transition-colors ${location.pathname === '/pricing' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/pricing' ? 'page' : undefined}>{t('nav.pricing')}</button>
-            <button onClick={() => navigate('/analytics')} className={`text-sm font-medium transition-colors ${location.pathname === '/analytics' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/analytics' ? 'page' : undefined}>{t('nav.analytics')}</button>
+            <button onClick={() => navigate('/')} className={`text-sm font-medium transition-colors ${location.pathname === '/' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/' ? 'page' : undefined}>{t('nav.frameworks')}</button>
+            <button onClick={() => navigate('/community')} className={`text-sm font-medium transition-colors ${location.pathname === '/community' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/community' ? 'page' : undefined}>{t('nav.community')}</button>
+            {userEmail && (
+                <button onClick={() => navigate('/dashboard')} className={`text-sm font-medium transition-colors ${location.pathname === '/dashboard' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/dashboard' ? 'page' : undefined}>{t('nav.blueprints')}</button>
+            )}
+            <button onClick={() => navigate('/pricing')} className={`text-sm font-medium transition-colors ${location.pathname === '/pricing' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/pricing' ? 'page' : undefined}>{t('nav.pricing')}</button>
             
             <div className="w-px h-4 bg-gray-200 dark:bg-gray-800 mx-2" />
             
@@ -530,7 +540,6 @@ function App() {
             <button onClick={() => navigate('/community')} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/community' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.community')}</button>
             <button onClick={() => navigate('/dashboard')} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/dashboard' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.blueprints')}</button>
             <button onClick={() => navigate('/pricing')} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/pricing' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.pricing')}</button>
-            <button onClick={() => navigate('/analytics')} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/analytics' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.analytics')}</button>
             
             <div className="flex items-center gap-4 py-4">
                <ThemeToggle />
@@ -557,7 +566,7 @@ function App() {
         )}
       </AnimatePresence>
 
-      <main id="main-content" className="relative pt-20" tabIndex={-1}>
+      <main id="main-content" className="relative pt-20 flex-grow" tabIndex={-1}>
         <Suspense fallback={<LoadingFallback />}>
             <AnimatePresence mode="wait">
               <Routes location={location} key={location.pathname}>
@@ -746,6 +755,17 @@ function App() {
                      </motion.div>
                  } />
 
+                <Route path="/legal" element={
+                     <motion.div
+                       key="legal"
+                       initial={{ opacity: 0, y: 20 }}
+                       animate={{ opacity: 1, y: 0 }}
+                       exit={{ opacity: 0, y: -20 }}
+                     >
+                        <LegalPage />
+                     </motion.div>
+                 } />
+
                  <Route path="/profile" element={
                     userId ? (
                          <motion.div key="profile" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
@@ -784,10 +804,10 @@ function App() {
             <span className="font-bold tracking-tight text-black dark:text-white">VECTOR</span>
           </div>
           <div className="flex flex-wrap items-center gap-6 md:gap-8 text-sm text-gray-500 dark:text-gray-400">
-            <a href="#" className="hover:text-black dark:hover:text-white transition-colors">{t('footer.privacy')}</a>
-            <a href="#" className="hover:text-black dark:hover:text-white transition-colors">{t('footer.terms')}</a>
-            <a href="#" className="hover:text-black dark:hover:text-white transition-colors">{t('footer.security')}</a>
-            <a href="#" className="hover:text-black dark:hover:text-white transition-colors">{t('footer.contact')}</a>
+            <button onClick={() => navigate('/legal?section=privacy')} className="hover:text-black dark:hover:text-white transition-colors font-medium">{t('footer.privacy')}</button>
+            <button onClick={() => navigate('/legal?section=terms')} className="hover:text-black dark:hover:text-white transition-colors font-medium">{t('footer.terms')}</button>
+            <button onClick={() => navigate('/legal?section=security')} className="hover:text-black dark:hover:text-white transition-colors font-medium">{t('footer.security')}</button>
+            <a href="mailto:vectorgoal.contact@gmail.com" className="hover:text-black dark:hover:text-white transition-colors font-medium">{t('footer.contact')}</a>
             <span className="inline-flex items-center">
               <ShareButton />
             </span>

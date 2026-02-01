@@ -245,17 +245,37 @@ export async function generateBlueprintResult(
 /**
  * Suggest a framework based on the user's problem description.
  */
-export async function suggestFramework(problem: string, userName?: string): Promise<FrameworkId | null> {
+export async function suggestFramework(
+    objective: string, 
+    stakes: string, 
+    horizon: string, 
+    userName?: string,
+    language?: string
+): Promise<{ id: FrameworkId; explanation: string } | null> {
     if (!isOpenRouterConfigured()) return null;
+
+    const userContent = `
+    User Context:
+    - Objective: "${objective}"
+    - Stakes (Risk/Importance): "${stakes}"
+    - Horizon (Timeline): "${horizon}"
+    ${userName ? `- User Name: ${userName}` : ''}
+    
+    Based on this, which framework is best? Return JSON only: { "framework": "id", "explanation": "reasoning in ${language || 'English'}" }
+    IDs: first-principles, pareto, rpm, eisenhower, okr, dsss, mandalas.
+    `;
 
     try {
         const content = await chat([
             { role: "system", content: suggestPrompt },
-            { role: "user", content: `Problem: "${problem}" ${userName ? `(User: ${userName})` : ''}` }
+            { role: "user", content: userContent }
         ]);
         const obj = parseJsonBlock(content) as any;
-        if (obj && obj.framework && ["first-principles", "pareto", "rpm", "eisenhower", "okr"].includes(obj.framework)) {
-            return obj.framework as FrameworkId;
+        if (obj && obj.framework && ["first-principles", "pareto", "rpm", "eisenhower", "okr", "dsss", "mandalas"].includes(obj.framework)) {
+            return {
+                id: obj.framework as FrameworkId,
+                explanation: obj.explanation || "Recommended based on your inputs."
+            };
         }
         return null;
     } catch (e) {

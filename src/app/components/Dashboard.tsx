@@ -75,8 +75,8 @@ export function Dashboard({
                             logoUrl: data.branding_logo_url,
                             primaryColor: data.branding_color || '#000000'
                         });
-                        const tier = (data.tier || 'free') as TierId;
-                        setCanBulkExport(TIER_CONFIGS[tier].canExportPdf); // Assuming bulk export follows PDF export rules or higher
+                        const tier = (data.tier || DEFAULT_TIER_ID) as TierId;
+                        setCanBulkExport(TIER_CONFIGS[tier]?.canExportPdf ?? false); // Avoiding crash if tier is invalid
                     }
                 });
             }

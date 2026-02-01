@@ -1,6 +1,6 @@
 import { Brain, Layers, Target, Rocket } from 'lucide-react';
 
-export type Framework = 'first-principles' | 'pareto' | 'rpm' | 'eisenhower' | 'okr';
+export type Framework = 'first-principles' | 'pareto' | 'rpm' | 'eisenhower' | 'okr' | 'dsss' | 'mandalas';
 
 export const frameworks = [
   {
@@ -62,5 +62,29 @@ export const frameworks = [
     pros: ['Aligns teams', 'Measurable progress', 'Encourages ambition'],
     cons: ['Can be too rigid', 'Hard to set correct metrics', 'Can demotivate if targets are missed'],
     example: 'Objective: "Increase brand awareness". Key Result: "Achieve 10,000 active monthly users".'
+  },
+  {
+    id: 'dsss' as Framework,
+    title: 'Tim Ferriss DSSS',
+    description: 'Deconstruction, Selection, Sequencing, Stakes. A meta-learning framework to master any skill.',
+    icon: Target,
+    color: '#F59E0B', // Amber
+    author: 'Tim Ferriss',
+    definition: 'A 4-step framework for rapid skill acquisition: Deconstruct the skill, Select the 20%, Sequence the order, and set Stakes.',
+    pros: ['Rapid learning', 'Focuses on high-impact areas', 'Accountability built-in'],
+    cons: ['Requires discipline', 'Stakes can be stressful', 'Needs good analysis'],
+    example: 'Learning Spanish: Deconstruct grammar/vocab, Select top 1200 words, Sequence sentence structures, Stake $100 on passing a test.'
+  },
+  {
+    id: 'mandalas' as Framework,
+    title: 'Mandala Chart',
+    description: 'A 9x9 grid to map out a central goal and all related sub-goals and actions. Used by Shohei Ohtani.',
+    icon: Layers,
+    color: '#EC4899', // Pink
+    author: 'Shohei Ohtani (popularized by)',
+    definition: 'A visual chart with a central core goal surrounded by 8 distinct categories, each with 8 actionable steps (64 total items).',
+    pros: ['Comprehensive', 'Visualizes connections', 'Balances huge goals'],
+    cons: ['Can become complex', 'Requires 64 specific items', 'Hard to track all at once'],
+    example: 'Central Goal: "Best Player". Outer 8: Fitness, Mental, Control, Speed, Luck, Human Quality, etc.'
   },
 ];

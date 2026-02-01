@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, ArrowRight, Loader2, X } from 'lucide-react';
+import { Sparkles, ArrowRight, Loader2, X, Target, AlertTriangle, Clock } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { suggestFramework } from '@/lib/openrouter';
 import { FrameworkId } from '@/lib/blueprints';
 import { frameworks } from '@/lib/frameworks';
 import { toast } from 'sonner';
+import { useLanguage } from './language-provider';
 
 interface HelpMeChooseModalProps {
   onClose: () => void;
@@ -13,18 +14,26 @@ interface HelpMeChooseModalProps {
 }
 
 export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps) {
-  const [problem, setProblem] = useState('');
+  const { t, language } = useLanguage();
+  const [objective, setObjective] = useState('');
+  const [stakes, setStakes] = useState('');
+  const [horizon, setHorizon] = useState('');
+  
   const [loading, setLoading] = useState(false);
   const [suggestion, setSuggestion] = useState<FrameworkId | null>(null);
+  const [explanation, setExplanation] = useState<string>('');
 
   const handleAnalyze = async () => {
-    if (!problem.trim()) return;
+    if (!objective.trim()) return;
     setLoading(true);
     setSuggestion(null);
+    setExplanation('');
+    
     try {
-        const result = await suggestFramework(problem);
+        const result = await suggestFramework(objective, stakes, horizon, undefined, language === 'es' ? 'Spanish' : 'English');
         if (result) {
-            setSuggestion(result);
+            setSuggestion(result.id);
+            setExplanation(result.explanation);
         } else {
             toast.error("Could not determine the best framework. Please try again or pick manually.");
         }
@@ -38,57 +47,128 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
   const suggestedFramework = frameworks.find(f => f.id === suggestion);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white dark:bg-zinc-900 w-full max-w-lg rounded-3xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden flex flex-col"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="bg-white dark:bg-zinc-950 w-full max-w-2xl rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh]"
       >
-        <div className="p-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white relative">
-            <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors">
-                <X size={18} />
-            </button>
-            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md">
-                <Sparkles className="text-white" size={24} />
+        <div className="p-8 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-start bg-white dark:bg-zinc-950 sticky top-0 z-10">
+            <div>
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 bg-black dark:bg-white rounded-xl flex items-center justify-center">
+                        <Sparkles className="text-white dark:text-black" size={20} />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('intake.title')}</h2>
+                </div>
+                <p className="text-gray-500 dark:text-gray-400 max-w-md">{t('intake.subtitle')}</p>
             </div>
-            <h2 className="text-2xl font-bold">Help me choose</h2>
-            <p className="opacity-90 mt-2 text-sm leading-relaxed">Describe your current challenge, and our AI will recommend the perfect architectural framework.</p>
+            <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
+                <X size={24} />
+            </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-8 overflow-y-auto">
             {!suggestion ? (
-                <div className="space-y-4">
-                    <textarea 
-                        className="w-full h-32 p-4 bg-gray-50 dark:bg-zinc-800 rounded-xl border-2 border-transparent focus:border-indigo-500 focus:outline-none resize-none transition-all dark:text-white placeholder:text-gray-400"
-                        placeholder="e.g. I have too many tasks and don't know where to start..."
-                        value={problem}
-                        onChange={(e) => setProblem(e.target.value)}
-                        autoFocus
-                    />
+                <div className="space-y-6">
+                    <div className="space-y-4">
+                        <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
+                            <Target size={16} className="inline mr-2 text-gray-400" />
+                            {t('intake.objective.label')}
+                        </label>
+                        <textarea 
+                            className="w-full h-24 p-4 bg-gray-50 dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 focus:border-black dark:focus:border-white focus:ring-0 resize-none transition-all dark:text-white placeholder:text-gray-400"
+                            placeholder={t('intake.objective.placeholder')}
+                            value={objective}
+                            onChange={(e) => setObjective(e.target.value)}
+                            autoFocus
+                        />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <div className="space-y-2">
+                            <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                <AlertTriangle size={16} className="inline mr-2 text-gray-400" />
+                                {t('intake.stakes.label')}
+                            </label>
+                            <input 
+                                className="w-full h-12 p-4 bg-gray-50 dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 focus:border-black dark:focus:border-white focus:ring-0 transition-all dark:text-white placeholder:text-gray-400"
+                                placeholder={t('intake.stakes.placeholder')}
+                                value={stakes}
+                                onChange={(e) => setStakes(e.target.value)}
+                            />
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                <Clock size={16} className="inline mr-2 text-gray-400" />
+                                {t('intake.horizon.label')}
+                            </label>
+                            <input 
+                                className="w-full h-12 p-4 bg-gray-50 dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 focus:border-black dark:focus:border-white focus:ring-0 transition-all dark:text-white placeholder:text-gray-400"
+                                placeholder={t('intake.horizon.placeholder')}
+                                value={horizon}
+                                onChange={(e) => setHorizon(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
                     <Button 
                         onClick={handleAnalyze} 
-                        disabled={loading || !problem.trim()} 
-                        className="w-full h-12 text-lg bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none"
+                        disabled={loading || !objective.trim()} 
+                        className="w-full h-14 text-lg bg-black hover:bg-zinc-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black rounded-xl shadow-lg mt-4 transition-all"
                     >
-                        {loading ? <Loader2 className="animate-spin mr-2" /> : <Sparkles className="mr-2" size={18} />}
-                        Find My Framework
+                        {loading ? (
+                            <>
+                                <Loader2 className="animate-spin mr-2" /> 
+                                {t('intake.analyzing')}
+                            </>
+                        ) : (
+                            <>
+                                <Sparkles className="mr-2" size={18} />
+                                {t('intake.analyze')}
+                            </>
+                        )}
                     </Button>
                 </div>
             ) : (
-                <div className="space-y-6">
-                    <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 p-6 rounded-2xl">
-                        <span className="text-xs font-bold text-indigo-500 uppercase tracking-widest block mb-2">Recommended</span>
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{suggestedFramework?.title}</h3>
-                        <p className="text-gray-600 dark:text-gray-300">{suggestedFramework?.description}</p>
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div>
+                         <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-4 border-b border-gray-100 dark:border-zinc-800 pb-2">
+                            {t('intake.result.title')}
+                         </span>
+                         
+                         <div className="flex items-start gap-6">
+                             <div className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 text-white shadow-lg" style={{ backgroundColor: suggestedFramework?.color }}>
+                                {suggestedFramework?.icon && <suggestedFramework.icon size={32} />}
+                             </div>
+                             <div>
+                                 <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{suggestedFramework?.title}</h3>
+                                 <p className="text-xl text-gray-500 dark:text-gray-400 font-medium leading-relaxed">{suggestedFramework?.description}</p>
+                             </div>
+                         </div>
                     </div>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                         <Button variant="outline" onClick={() => setSuggestion(null)} className="h-12 rounded-xl border-gray-200 dark:border-zinc-700 dark:text-white">
-                            Try Again
+
+                    <div className="bg-gray-50 dark:bg-zinc-900 p-6 rounded-2xl border border-gray-100 dark:border-zinc-800 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <Sparkles size={100} />
+                        </div>
+                        <h4 className="font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                            <Sparkles size={16} className="text-yellow-500" />
+                            Why this fits your ambition:
+                        </h4>
+                        <p className="text-gray-600 dark:text-gray-300 leading-relaxed italic relative z-10">
+                            "{explanation}"
+                        </p>
+                    </div>
+                
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
+                         <Button variant="ghost" onClick={() => setSuggestion(null)} className="h-14 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-900">
+                            {t('intake.tryAgain')}
                          </Button>
-                         <Button onClick={() => onSelect(suggestion!)} className="h-12 rounded-xl bg-black dark:bg-white text-white dark:text-black">
-                            Start Building <ArrowRight size={18} className="ml-2" />
+                         <Button onClick={() => onSelect(suggestion!)} className="h-14 rounded-xl bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-gray-200 shadow-xl">
+                            {t('intake.useFramework')} <ArrowRight size={20} className="ml-2" />
                          </Button>
                     </div>
                 </div>

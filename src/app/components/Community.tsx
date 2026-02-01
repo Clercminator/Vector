@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Heart, Upload, Gift, Download, Loader2, ArrowLeft, Trophy, LayoutGrid } from 'lucide-react';
+import { Heart, Upload, Gift, Download, Loader2, ArrowLeft, Trophy, LayoutGrid, Search, Plus } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
+import { Input } from '@/app/components/ui/input';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Leaderboard } from './Leaderboard';
@@ -28,6 +29,7 @@ import { useLanguage } from '@/app/components/language-provider';
 export function Community({ userId, onBack, onImport }: CommunityProps) {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'templates' | 'leaderboard'>('templates');
+  const [searchQuery, setSearchQuery] = useState('');
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,9 +40,14 @@ export function Community({ userId, onBack, onImport }: CommunityProps) {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const fetchTemplates = async (pageToLoad: number, isInitial: boolean = false) => {
-    if (!supabase) return;
     if (isInitial) setLoading(true);
     else setIsLoadingMore(true);
+
+    if (!supabase) {
+      setLoading(false);
+      setIsLoadingMore(false);
+      return;
+    }
 
     try {
       const from = pageToLoad * PAGE_SIZE;
@@ -175,11 +182,16 @@ export function Community({ userId, onBack, onImport }: CommunityProps) {
 
   const [sortBy, setSortBy] = useState<'recent' | 'top'>('recent');
 
-  const sortedTemplates = [...templates].sort((a, b) => {
+  const sortedTemplates = [...templates]
+    .filter(t => 
+      t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.author_name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => {
       if (sortBy === 'top') {
           return b.votes - a.votes;
       }
-      // default recent (based on created_at string if available, or just index)
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
 
@@ -225,8 +237,18 @@ export function Community({ userId, onBack, onImport }: CommunityProps) {
         <Leaderboard />
       ) : (
         <>
-          <div className="flex justify-end mb-6">
-             <div className="flex bg-gray-100 dark:bg-zinc-800 p-1 rounded-lg">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+             <div className="relative w-full md:w-96">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <Input 
+                   placeholder={t('community.search') || "Search templates..."} 
+                   className="pl-10 bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800"
+                   value={searchQuery}
+                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                />
+             </div>
+
+             <div className="flex bg-gray-100 dark:bg-zinc-800 p-1 rounded-lg shrink-0">
                 <button 
                     onClick={() => setSortBy('recent')}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${sortBy === 'recent' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
@@ -254,8 +276,14 @@ export function Community({ userId, onBack, onImport }: CommunityProps) {
             <>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {sortedTemplates.length === 0 ? (
-                    <div className="col-span-full text-center py-20 bg-gray-50 dark:bg-zinc-900 rounded-3xl border border-dashed border-gray-200 dark:border-zinc-800 text-gray-400">
-                        <p>{t('community.empty')}</p>
+                    <div className="col-span-full flex flex-col items-center justify-center py-20 bg-gray-50 dark:bg-zinc-900 rounded-3xl border border-dashed border-gray-200 dark:border-zinc-800 text-gray-400">
+                        <p className="mb-4 text-lg">{searchQuery ? t('community.noResults') : t('community.empty')}</p>
+                        {!searchQuery && (
+                           <Button onClick={onBack} variant="outline" className="gap-2">
+                              <Plus size={16} />
+                              {t('community.createFirst') || "Create your first Blueprint"}
+                           </Button>
+                        )}
                     </div>
                 ) : (
                     sortedTemplates.map((template) => (

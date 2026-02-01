@@ -40,73 +40,78 @@ export function FrameworkDetail({ framework, onClose, onStart }: FrameworkDetail
           <X size={20} />
         </button>
 
-        <div className="relative h-32 overflow-hidden shrink-0" style={{ backgroundColor: framework.color }}>
-           <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent" />
-           <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-        </div>
-
-        <div className="px-8 pt-0 pb-8 overflow-y-auto custom-scrollbar">
-          <div className="-mt-12 mb-6">
-            <div className="w-24 h-24 bg-white dark:bg-zinc-800 rounded-3xl flex items-center justify-center shadow-lg mx-auto md:mx-0">
-               <framework.icon size={40} style={{ color: framework.color }} />
-            </div>
+        <div className="overflow-y-auto custom-scrollbar flex-1 relative">
+          <div className="relative h-32 shrink-0" style={{ backgroundColor: framework.color }}>
+             <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent" />
+             <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
           </div>
 
-          {/* Title and Author are updated by App.tsx injection, but we need to ensure styling is correct */}
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{framework.title}</h2>
-          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-6 text-sm font-medium">
-            <User size={16} />
-            <span>{framework.author}</span>
-          </div>
-
-          <div className="space-y-8">
-            <section>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
-                {t('common.about') || "What is it?"}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg">
-                {framework.definition}
-              </p>
-            </section>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <section className="bg-green-50/50 dark:bg-green-900/10 p-5 rounded-2xl border border-green-100 dark:border-green-900/30">
-                <h3 className="text-sm font-bold text-green-800 dark:text-green-400 mb-3 uppercase tracking-wider flex items-center gap-2">
-                  <Check size={16} /> {t('common.pros') || "Pros"}
-                </h3>
-                <ul className="space-y-2">
-                  {framework.pros.map((pro: string, i: number) => (
-                    <li key={i} className="text-green-900 dark:text-green-300 text-sm flex items-start gap-2">
-                      <span className="mt-1.5 w-1 h-1 bg-green-500 rounded-full shrink-0" />
-                      {pro}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-
-              <section className="bg-red-50/50 dark:bg-red-900/10 p-5 rounded-2xl border border-red-100 dark:border-red-900/30">
-                <h3 className="text-sm font-bold text-red-800 dark:text-red-400 mb-3 uppercase tracking-wider flex items-center gap-2">
-                  <XIcon size={16} /> {t('common.cons') || "Cons"}
-                </h3>
-                <ul className="space-y-2">
-                  {framework.cons.map((con: string, i: number) => (
-                    <li key={i} className="text-red-900 dark:text-red-300 text-sm flex items-start gap-2">
-                      <span className="mt-1.5 w-1 h-1 bg-red-500 rounded-full shrink-0" />
-                      {con}
-                    </li>
-                  ))}
-                </ul>
-              </section>
+          <div className="px-8 pb-8">
+            <div className="-mt-12 mb-6">
+              <div 
+                className="w-24 h-24 rounded-3xl flex items-center justify-center shadow-lg mx-auto md:mx-0 text-white relative z-10"
+                style={{ backgroundColor: framework.color }}
+              >
+                 <framework.icon size={40} />
+              </div>
             </div>
 
-            <section className="bg-gray-50 dark:bg-zinc-800/50 p-6 rounded-2xl border border-gray-100 dark:border-zinc-700">
-              <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider flex items-center gap-2">
-                <Quote size={14} /> {t('common.example') || "Example"}
-              </h3>
-              <p className="text-gray-700 dark:text-gray-300 italic font-medium">
-                "{framework.example}"
-              </p>
-            </section>
+            {/* Title and Author are updated by App.tsx injection, but we need to ensure styling is correct */}
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{framework.title}</h2>
+            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-6 text-sm font-medium">
+              <User size={16} />
+              <span>{framework.author}</span>
+            </div>
+
+            <div className="space-y-8">
+              <section>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+                  {t('common.about') || "What is it?"}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg">
+                  {framework.definition}
+                </p>
+              </section>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <section className="bg-green-50/50 dark:bg-green-900/10 p-5 rounded-2xl border border-green-100 dark:border-green-900/30">
+                  <h3 className="text-sm font-bold text-green-800 dark:text-green-400 mb-3 uppercase tracking-wider flex items-center gap-2">
+                    <Check size={16} /> {t('common.pros') || "Pros"}
+                  </h3>
+                  <ul className="space-y-2">
+                    {framework.pros.map((pro: string, i: number) => (
+                      <li key={i} className="text-green-900 dark:text-green-300 text-sm flex items-start gap-2">
+                        <span className="mt-1.5 w-1 h-1 bg-green-500 rounded-full shrink-0" />
+                        {pro}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                <section className="bg-red-50/50 dark:bg-red-900/10 p-5 rounded-2xl border border-red-100 dark:border-red-900/30">
+                  <h3 className="text-sm font-bold text-red-800 dark:text-red-400 mb-3 uppercase tracking-wider flex items-center gap-2">
+                    <XIcon size={16} /> {t('common.cons') || "Cons"}
+                  </h3>
+                  <ul className="space-y-2">
+                    {framework.cons.map((con: string, i: number) => (
+                      <li key={i} className="text-red-900 dark:text-red-300 text-sm flex items-start gap-2">
+                        <span className="mt-1.5 w-1 h-1 bg-red-500 rounded-full shrink-0" />
+                        {con}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              </div>
+
+              <section className="bg-gray-50 dark:bg-zinc-800/50 p-6 rounded-2xl border border-gray-100 dark:border-zinc-700">
+                <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider flex items-center gap-2">
+                  <Quote size={14} /> {t('common.example') || "Example"}
+                </h3>
+                <p className="text-gray-700 dark:text-gray-300 italic font-medium">
+                  "{framework.example}"
+                </p>
+              </section>
+            </div>
           </div>
         </div>
 

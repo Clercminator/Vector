@@ -1,5 +1,6 @@
 import React from 'react';
 import { LucideIcon, ArrowRight, Info, Lock } from 'lucide-react';
+import { useLanguage } from './language-provider';
 
 interface FrameworkCardProps {
   id: string;
@@ -13,11 +14,12 @@ interface FrameworkCardProps {
 }
 
 export const FrameworkCard = React.memo(function FrameworkCard({ title, description, icon: Icon, color, onClick, onLearnMore, isLocked = false }: FrameworkCardProps) {
+  const { t } = useLanguage();
   return (
     <div 
       className={`group relative bg-white dark:bg-zinc-900 border transition-all duration-300 overflow-hidden ${
         isLocked 
-          ? 'border-gray-100 dark:border-zinc-800 opacity-60 grayscale cursor-not-allowed' 
+          ? 'border-gray-100 dark:border-zinc-800 opacity-60 grayscale cursor-not-allowed rounded-3xl' 
           : 'border-gray-100 dark:border-zinc-800 rounded-3xl p-8 hover:shadow-xl hover:shadow-blue-900/5 cursor-pointer'
       }`}
       onClick={onClick}
@@ -40,13 +42,13 @@ export const FrameworkCard = React.memo(function FrameworkCard({ title, descript
         
         <div className="flex items-center gap-2 font-bold text-sm" style={{ color: isLocked ? '#9ca3af' : color }}>
           {isLocked ? (
-             <>
+             <div className="flex items-center gap-2 bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full">
                <Lock size={16} />
-               <span>Included in Standard</span>
-             </>
+               <span>{t('card.locked')}</span>
+             </div>
           ) : (
              <>
-               <span>Start Architecting</span>
+               <span>{t('card.start')}</span>
                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
              </>
           )}
@@ -67,6 +69,10 @@ export const FrameworkCard = React.memo(function FrameworkCard({ title, descript
            </div>
         )}
       </div>
+      
+      {isLocked && (
+          <div className="absolute inset-0 z-0 bg-transparent rounded-3xl" />
+      )}
     </div>
   );
 });
