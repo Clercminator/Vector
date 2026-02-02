@@ -11,6 +11,7 @@ import { Button } from "@/app/components/ui/button";
 import { useLanguage } from '@/app/components/language-provider';
 
 import { Rocket } from 'lucide-react';
+import { Logo } from '@/app/components/Logo';
 
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 
@@ -97,9 +98,7 @@ export function AuthModal({
             <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-blue-600/10 via-transparent to-transparent -z-10" />
 
             <DialogHeader className="mb-8">
-              <div className="w-12 h-12 bg-black dark:bg-white rounded-2xl flex items-center justify-center mb-6 shadow-xl transform -rotate-6">
-                <Rocket size={24} className="text-white dark:text-black" />
-              </div>
+              <Logo className="w-12 h-12 rounded-2xl mb-6 shadow-xl transform -rotate-6" />
               <DialogTitle className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
                 {mode === "ready" ? t('auth.checkEmail') || "Check your email" : 
                  mode === "signin" ? t('auth.welcomeBack') || "Welcome back" : 

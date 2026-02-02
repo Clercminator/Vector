@@ -11,6 +11,10 @@ import { useLanguage } from '@/app/components/language-provider';
 
 // ... interface
 
+import { Logo } from '@/app/components/Logo';
+
+// ... interface
+
 export function OnboardingModal({ onComplete }: OnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isOpen, setIsOpen] = useState(true);
@@ -21,7 +25,7 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
       id: 'welcome',
       title: t('onboarding.welcome.title'),
       description: t('onboarding.welcome.desc'),
-      icon: Rocket,
+      icon: Logo,
     },
     {
       id: 'frameworks',

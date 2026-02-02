@@ -24,6 +24,7 @@ import { InspirationalQuote } from '@/app/components/InspirationalQuote';
 import { FrameworkDetail } from '@/app/components/FrameworkDetail';
 import { OnboardingModal } from '@/app/components/OnboardingModal';
 import { HelpMeChooseModal } from '@/app/components/HelpMeChooseModal';
+import { Logo } from '@/app/components/Logo';
 
 
 // Lazy load screens
@@ -475,9 +476,7 @@ function App() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-gray-100 dark:border-zinc-800 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center">
-              <Rocket size={18} className="text-white dark:text-black" />
-            </div>
+            <Logo className="w-8 h-8 rounded-lg" />
             <span className="text-xl font-bold tracking-tight text-black dark:text-white">VECTOR</span>
           </div>
 
@@ -692,6 +691,12 @@ function App() {
                         onSaveBlueprint={handleSaveBlueprint}
                         initialBlueprint={activeBlueprint}
                         tier={tier}
+                        onSwitchFramework={(fw, isPreview) => {
+                            setSelectedFramework(fw);
+                            // Soft update URL/Location state so the wizard re-renders with new prop
+                            navigate('/wizard', { state: { framework: fw, isPreview }, replace: true });
+                        }}
+                        isPreviewMode={location.state?.isPreview}
                       />
                     </motion.div>
                 } />
@@ -800,9 +805,7 @@ function App() {
       <footer className="relative z-10 px-6 py-12 border-t border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 transition-colors">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="w-6 h-6 bg-black dark:bg-white rounded flex items-center justify-center">
-              <Rocket size={12} className="text-white dark:text-black" />
-            </div>
+            <Logo className="w-6 h-6 rounded" />
             <span className="font-bold tracking-tight text-black dark:text-white">VECTOR</span>
           </div>
           <div className="flex flex-wrap items-center gap-6 md:gap-8 text-sm text-gray-500 dark:text-gray-400">

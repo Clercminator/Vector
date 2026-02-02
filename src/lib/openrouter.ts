@@ -6,9 +6,10 @@ import eisenhowerPrompt from "@/lib/prompts/eisenhower.txt?raw";
 import okrPrompt from "@/lib/prompts/okr.txt?raw";
 import suggestPrompt from "@/lib/prompts/suggest-framework.txt?raw";
 import refinePrompt from "@/lib/prompts/refine-blueprint.txt?raw";
+import gpsPrompt from "@/lib/prompts/gps.txt?raw";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const DEFAULT_MODEL = "openai/gpt-4o-mini";
+const DEFAULT_MODEL = "deepseek/deepseek-v3.2";
 
 function getApiKey(): string {
   const key = (import.meta.env.VITE_OPENROUTER_API_KEY as string | undefined) ?? "";
@@ -127,6 +128,8 @@ function buildSystemPrompt(framework: FrameworkId, userName?: string): string {
       prompt = eisenhowerPrompt; break;
     case "okr":
       prompt = okrPrompt; break;
+    case "gps":
+      prompt = gpsPrompt; break;
     default:
       prompt = fpPrompt;
   }
@@ -190,6 +193,14 @@ function validateAndSanitize(framework: FrameworkId, obj: unknown): BlueprintRes
           objective: String(o.objective ?? "").trim() || "—",
           keyResults: toStringList(o.keyResults),
           initiative: String(o.initiative ?? "").trim() || "—",
+        };
+      case "gps":
+        return {
+          type: "gps",
+          goal: String(o.goal ?? "").trim() || "—",
+          plan: toStringList(o.plan),
+          system: toStringList(o.system),
+          anti_goals: toStringList(o.anti_goals),
         };
       default:
         return null;

@@ -8,6 +8,7 @@ import paretoMd from '@/content/frameworks/pareto.md?raw';
 import rpmMd from '@/content/frameworks/rpm.md?raw';
 import eisenhowerMd from '@/content/frameworks/eisenhower.md?raw';
 import okrMd from '@/content/frameworks/okr.md?raw';
+import gpsMd from '@/content/frameworks/gps.md?raw';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/app/components/ui/button';
 import { ArrowLeft, Brain, Layers, Target, Rocket, Check, X as XIcon, Quote, User } from 'lucide-react';
@@ -21,6 +22,7 @@ const markdownMap: Record<string, string> = {
   'rpm': rpmMd,
   'eisenhower': eisenhowerMd,
   'okr': okrMd,
+  'gps': gpsMd,
 };
 
 // Start of component

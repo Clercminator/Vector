@@ -79,6 +79,25 @@ export const translations = {
     'auth.sent': 'Magic link sent to',
     'auth.diffEmail': 'Use a different email',
     'auth.noSupabase': 'Supabase is not configured.',
+    'auth.welcomeBack': 'Welcome back',
+    'auth.createAccount': 'Start your journey',
+    'auth.checkEmail': 'Check your email',
+    'auth.signinDesc': 'Sign in to continue your goal architecture.',
+    'auth.signupDesc': 'Join Vector to build deconstructed goal blueprints.',
+    'auth.sentDesc': 'We\'ve sent a magic link to your inbox.',
+    'auth.emailAddress': 'Email Address',
+    'auth.continueSignIn': 'Sign In with Magic Link',
+    'auth.continueSignUp': 'Create Account',
+    'auth.needAccount': "Don't have an account? Sign up",
+    'auth.haveAccount': 'Already have an account? Sign in',
+    'auth.sentTo': 'Link sent to',
+    'auth.checkSpam': "If you don't see it, check your spam folder.",
+    'auth.tryDifferentEmail': 'Try a different email',
+    'auth.terms': "By continuing, you agree to Vector's Terms of Service and Privacy Policy.",
+    'auth.loading': 'Processing...',
+    'auth.signingIn': 'Signing in...',
+    'auth.creatingAccount': 'Creating your account...',
+    'auth.success': 'Magic link sent! Check your inbox.',
 
     // Dashboard
     'dashboard.title': 'My Blueprints',
@@ -302,6 +321,15 @@ export const translations = {
     'okr.keyResult': 'Key Result',
     'okr.initiative': 'Immediate Initiative',
 
+    'gps.title': 'The GPS Method',
+    'gps.title.long': 'The GPS Method (Goal, Plan, System)',
+    'gps.goal': 'Goal',
+    'gps.plan': 'Plan',
+    'gps.system': 'System',
+    'gps.q1': 'What is your main Goal? (The Destination)',
+    'gps.q2': 'What is your Plan to get there? (The Route)',
+    'gps.q3': 'What System will ensure you follow the plan? (The Vehicle/Habits)',
+
     // Frameworks Data (Static content translation)
     'fw.first-principles.title': 'Elon Musk First Principles',
     'fw.first-principles.desc': 'Break down complex problems into basic elements and then reassemble them from the ground up.',
@@ -317,6 +345,8 @@ export const translations = {
     'fw.dsss.desc': 'A meta-learning framework to master any skill: Deconstruct, Selection, Sequencing, Stakes.',
     'fw.mandalas.title': 'Mandala Chart',
     'fw.mandalas.desc': 'A 9x9 grid to map out a central goal and all related sub-goals and actions.',
+    'fw.gps.title': 'The GPS Method',
+    'fw.gps.desc': 'Bridging the gap between knowledge and execution with Goal, Plan, System.',
 
     // Detailed Framework Data (EN)
     'fw.first-principles.definition': 'A problem-solving mental model that involves breaking a problem down into its basic elements (fundamental truths) and then reassembling them from the ground up, rather than reasoning by analogy.',
@@ -412,7 +442,7 @@ export const translations = {
     // ... existing ES translations (managed by next block below via AllowMultiple? No, need to be careful with structure)
 
     // Navigation
-    'nav.frameworks': 'Modelos',
+    'nav.frameworks': 'Métodos',
     'nav.blueprints': 'Mis Planos',
     'nav.pricing': 'Precios',
     'nav.profile': 'Perfil',
@@ -430,8 +460,8 @@ export const translations = {
     'hero.pricing': 'Ver Precios',
 
     // Frameworks Section
-    'frameworks.title': 'Elige tu Modelo',
-    'frameworks.subtitle': 'Cada ambición requiere una lente diferente. Selecciona un marco probado para comenzar tu proceso arquitectónico.',
+    'frameworks.title': 'Elige tu Método',
+    'frameworks.subtitle': 'Cada ambición requiere una lente diferente. Selecciona un marco probado para comenzar tu proceso.',
 
     // Footer
     'footer.privacy': 'Privacidad',
@@ -455,7 +485,7 @@ export const translations = {
     // Onboarding
     'onboarding.welcome.title': 'Bienvenido a Vector',
     'onboarding.welcome.desc': 'Vector no es una lista de tareas. Es un motor arquitectónico para tu vida.',
-    'onboarding.step1.title': 'Elige un Modelo Mental',
+    'onboarding.step1.title': 'Elige un Método',
     'onboarding.step1.desc': '¿Cómo quieres deconstruir tu objetivo?',
     'onboarding.step2.title': 'Arquitecta tu Plan',
     'onboarding.step2.desc': 'Responde las preguntas profundas. Construye el plano.',
@@ -490,6 +520,25 @@ export const translations = {
     'auth.sent': 'Enlace mágico enviado a',
     'auth.diffEmail': 'Usar otro correo',
     'auth.noSupabase': 'Supabase no está configurado.',
+    'auth.welcomeBack': 'Bienvenido de nuevo',
+    'auth.createAccount': 'Comienza tu viaje',
+    'auth.checkEmail': 'Revisa tu correo',
+    'auth.signinDesc': 'Inicia sesión para continuar tu arquitectura de objetivos.',
+    'auth.signupDesc': 'Únete a Vector para construir planos de objetivos desglosados.',
+    'auth.sentDesc': 'Hemos enviado un enlace mágico a tu bandeja de entrada.',
+    'auth.emailAddress': 'Dirección de correo',
+    'auth.continueSignIn': 'Iniciar sesión con enlace mágico',
+    'auth.continueSignUp': 'Crear Cuenta',
+    'auth.needAccount': "¿No tienes cuenta? Regístrate",
+    'auth.haveAccount': '¿Ya tienes cuenta? Inicia sesión',
+    'auth.sentTo': 'Enlace enviado a',
+    'auth.checkSpam': "Si no lo ves, revisa tu carpeta de spam.",
+    'auth.tryDifferentEmail': 'Prueba con otro correo',
+    'auth.terms': "Al continuar, aceptas los Términos de Servicio y la Política de Privacidad de Vector.",
+    'auth.loading': 'Procesando...',
+    'auth.signingIn': 'Iniciando sesión...',
+    'auth.creatingAccount': 'Creando tu cuenta...',
+    'auth.success': '¡Enlace enviado! Revisa tu correo.',
 
     // Dashboard
     'dashboard.title': 'Mis Planos',
@@ -510,9 +559,9 @@ export const translations = {
     'pricing.oneTime': 'Pago único',
     'pricing.custom': 'A medida',
     'pricing.tier.architect': 'Arquitecto',
-    'pricing.tier.architect.desc': 'Perfecto para explorar modelos fundamentales.',
+    'pricing.tier.architect.desc': 'Perfecto para explorar métodos fundamentales.',
     'pricing.tier.standard': 'Estándar',
-    'pricing.tier.standard.desc': 'Todos los modelos y más créditos para constructores serios.',
+    'pricing.tier.standard.desc': 'Todos los métodos y más créditos para constructores serios.',
     'pricing.tier.max': 'Max',
     'pricing.tier.max.desc': 'Para usuarios avanzados y profesionales que necesitan el máximo rendimiento.',
     'pricing.tier.enterprise': 'Empresarial',
@@ -521,23 +570,23 @@ export const translations = {
     'pricing.cta.standard': 'Obtener Standard',
     'pricing.cta.max': 'Obtener Max',
     'pricing.cta.contact': 'Contactar Ventas',
-    'pricing.feature.architect.frameworks': 'Acceso a {0} modelos estándar',
+    'pricing.feature.architect.frameworks': 'Acceso a {0} métodos estándar',
     'pricing.feature.architect.blueprints': 'Guarda hasta {0} planos de metas',
     'pricing.feature.architect.credits': '{0} créditos para IA',
     'pricing.feature.architect.ai': 'Asistente de IA básico',
     'pricing.feature.standard.credits': '{0} créditos',
-    'pricing.feature.standard.frameworks': 'Todos los modelos (Primeros Principios, Pareto, RPM, Eisenhower, OKR)',
+    'pricing.feature.standard.frameworks': 'Todos los métodos (Primeros Principios, Pareto, RPM, Eisenhower, OKR)',
     'pricing.feature.standard.blueprints': 'Hasta {0} planos',
     'pricing.feature.standard.ai': 'Arquitecto de metas con IA completa',
     'pricing.feature.max.credits': '{0} créditos',
-    'pricing.feature.max.frameworks': 'Todos los modelos',
+    'pricing.feature.max.frameworks': 'Todos los métodos',
     'pricing.feature.max.calendar': 'Exportar a Calendario (Google / Outlook)',
     'pricing.feature.max.pdf': 'Exportar a PDF y descargar',
     'pricing.feature.max.priority': 'Razonamiento de IA prioritario',
     'pricing.feature.max.blueprints': 'Hasta {0} planos',
     'pricing.feature.enterprise.workspaces': 'Espacios de trabajo compartidos',
     'pricing.feature.enterprise.admin': 'Panel de administración y analíticas',
-    'pricing.feature.enterprise.integration': 'Integración de modelos personalizados',
+    'pricing.feature.enterprise.integration': 'Integración de métodos personalizados',
     'pricing.feature.enterprise.support': 'Soporte dedicado',
 
     // Community
@@ -574,7 +623,7 @@ export const translations = {
     'common.pros': 'Pros',
     'common.cons': 'Contras',
     'common.example': 'Ejemplo',
-    'common.use': 'Usar este modelo',
+    'common.use': 'Usar este método',
 
     // Goal Wizard
     'wizard.exit': 'Salir del Arquitecto',
@@ -663,7 +712,7 @@ export const translations = {
     'landing.hero.startBuilding': 'Empieza gratis',
     'landing.hero.viewPricing': 'Ver precios',
     'landing.liftoff.vector': 'Vector',
-    'frameworks.helpMeChoose': 'Ayúdame a elegir el modelo adecuado',
+    'frameworks.helpMeChoose': 'Ayúdame a elegir el método adecuado',
 
 
 
@@ -692,6 +741,15 @@ export const translations = {
     'okr.keyResult': 'Resultado Clave',
     'okr.initiative': 'Iniciativa Inmediata',
 
+    'gps.title': 'El Método GPS',
+    'gps.title.long': 'El Método GPS (Objetivo, Plan, Sistema)',
+    'gps.goal': 'Objetivo',
+    'gps.plan': 'Plan',
+    'gps.system': 'Sistema',
+    'gps.q1': '¿Cuál es tu Objetivo principal? (El Destino)',
+    'gps.q2': '¿Cuál es tu Plan para llegar allí? (La Ruta)',
+    'gps.q3': '¿Qué Sistema asegurará que sigas el plan? (El Vehículo/Hábitos)',
+
      // Frameworks Data
     'fw.first-principles.title': 'Método First Principles (Elon Musk)',
     'fw.first-principles.desc': 'Desglosa problemas complejos en elementos básicos y reensámblalos desde cero.',
@@ -707,6 +765,8 @@ export const translations = {
     'fw.dsss.desc': 'Deconstrucción, Selección, Secuenciación, Apuestas. Un marco de meta-aprendizaje.',
     'fw.mandalas.title': 'Gráfico Mandala',
     'fw.mandalas.desc': 'Una cuadrícula de 9x9 para mapear un objetivo central y todos los subobjetivos relacionados.',
+    'fw.gps.title': 'El Método GPS',
+    'fw.gps.desc': 'Cerrando la brecha entre el conocimiento y la ejecución con Objetivo, Plan, Sistema.',
 
     // Detailed Framework Data (ES)
     'fw.first-principles.definition': 'Un modelo mental de resolución de problemas que implica descomponer un problema en sus elementos básicos (verdades fundamentales) y luego reensamblarlos desde cero.',
@@ -782,7 +842,7 @@ export const translations = {
     'intake.stakes.placeholder': 'Ej. Pierdo mi negocio, me quemo, pierdo tiempo...',
     'intake.horizon.label': '¿Cuál es tu horizonte temporal?',
     'intake.horizon.placeholder': 'Ej. 3 meses, 1 año, Urgente...',
-    'intake.analyze': 'Encontrar mi Modelo',
+    'intake.analyze': 'Encontrar mi Método',
     'intake.analyzing': 'Analizando...',
     'intake.result.title': 'Recomendado para ti',
     'intake.tryAgain': 'Intentar de nuevo',
