@@ -52,7 +52,8 @@ export function AuthModal({
     const trimmed = email.trim();
     if (!trimmed) return;
 
-    if (mode === 'signup' && !captchaToken) {
+    // Supabase often requires Captcha for Magic Link (Sign In) too
+    if (!captchaToken) {
         toast.error("Please complete the captcha.");
         return;
     }
@@ -64,7 +65,7 @@ export function AuthModal({
       email: trimmed,
       options: { 
           emailRedirectTo,
-          captchaToken: captchaToken || undefined,
+          captchaToken,
       },
     });
 
@@ -84,7 +85,7 @@ export function AuthModal({
             setMode("ready");
         }
     } catch (err) {
-        console.error("Auth error:", err);
+        console.error("Auth error details:", err);
     } finally {
         setIsLoading(false);
     }
@@ -120,7 +121,7 @@ export function AuthModal({
 
             {mode !== "ready" ? (
               <div className="space-y-6">
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 ml-1" htmlFor="email">
                     {t('auth.emailAddress') || "Email Address"}
                   </label>
@@ -136,22 +137,20 @@ export function AuthModal({
                   />
                 </div>
                 
-                {/* hCaptcha (only visible/required for signup, or both if needed. Assuming signup for anti-bot spam) */}
-                {mode === 'signup' && (
-                    <div className="flex justify-center my-4">
-                        <HCaptcha
-                            ref={captchaRef}
-                            sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-000000000001"}
-                            onVerify={(token) => setCaptchaToken(token)}
-                            onExpire={() => setCaptchaToken(null)}
-                        />
-                    </div>
-                )}
+                {/* hCaptcha (Required for both Sign In and Sign Up if Supabase protection is enabled) */}
+                <div className="flex justify-center my-4">
+                    <HCaptcha
+                        ref={captchaRef}
+                        sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-000000000001"}
+                        onVerify={(token) => setCaptchaToken(token)}
+                        onExpire={() => setCaptchaToken(null)}
+                    />
+                </div>
                 
                 <Button 
                     className="h-14 w-full bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-[0.98] rounded-2xl text-lg font-bold shadow-xl shadow-black/10 transition-all disabled:opacity-50" 
                     onClick={handleAuth} 
-                    disabled={!canSubmit || isLoading || (mode === 'signup' && !captchaToken)}
+                    disabled={!canSubmit || isLoading || !captchaToken}
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">
@@ -166,7 +165,7 @@ export function AuthModal({
                 <div className="text-center">
                     <button 
                         onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-                        className="text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white text-sm font-medium transition-colors"
+                        className="text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white text-sm font-medium transition-colors cursor-pointer"
                     >
                         {mode === "signin" ? t('auth.needAccount') || "Don't have an account? Sign up" : t('auth.haveAccount') || "Already have an account? Sign in"}
                     </button>

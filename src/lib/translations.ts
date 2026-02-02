@@ -513,11 +513,11 @@ export const translations = {
 
     // Auth
     'auth.title': 'Inicia sesión en Vector',
-    'auth.desc': 'Te enviaremos un enlace mágico. Sin contraseñas. Tus planos se sincronizarán.',
+    'auth.desc': 'Te enviaremos un enlace de acceso. Sin contraseñas. Tus planos se sincronizarán.',
     'auth.email': 'Correo electrónico',
     'auth.placeholder': 'tu@dominio.com',
     'auth.submit': 'Enviarme enlace de acceso',
-    'auth.sent': 'Enlace mágico enviado a',
+    'auth.sent': 'Enlace de acceso enviado a',
     'auth.diffEmail': 'Usar otro correo',
     'auth.noSupabase': 'Supabase no está configurado.',
     'auth.welcomeBack': 'Bienvenido de nuevo',
@@ -525,9 +525,9 @@ export const translations = {
     'auth.checkEmail': 'Revisa tu correo',
     'auth.signinDesc': 'Inicia sesión para continuar tu arquitectura de objetivos.',
     'auth.signupDesc': 'Únete a Vector para construir planos de objetivos desglosados.',
-    'auth.sentDesc': 'Hemos enviado un enlace mágico a tu bandeja de entrada.',
+    'auth.sentDesc': 'Hemos enviado un enlace de acceso a tu bandeja de entrada.',
     'auth.emailAddress': 'Dirección de correo',
-    'auth.continueSignIn': 'Iniciar sesión con enlace mágico',
+    'auth.continueSignIn': 'Iniciar sesión con enlace',
     'auth.continueSignUp': 'Crear Cuenta',
     'auth.needAccount': "¿No tienes cuenta? Regístrate",
     'auth.haveAccount': '¿Ya tienes cuenta? Inicia sesión',
@@ -638,8 +638,8 @@ export const translations = {
     'wizard.welcome': "¡Hola! Soy tu {0}. Vamos a diseñar tu ambición.",
     'wizard.agentStart': "Dime, ¿qué tienes en mente?",
     // Framework Titles & Questions
-    'fp.title': 'Arquitecto de Primeros Principios',
-    'fp.q1': "¡Hola! Soy tu Arquitecto de Primeros Principios. Vamos a diseñar tu ambición. Para empezar, necesito contexto: ¿Cuál es tu objetivo principal o el problema que intentas resolver? Cuantos más detalles me des, mejor será el plan.",
+    'fp.title': 'Planner Generator Coach',
+    'fp.q1': "¡Hola! Soy tu Planner Generator Coach. Si estás aquí es porque buscas un cambio real y necesitas una estrategia sólida. Muchos fallan por falta de un plan de acción constante, pero estás en el lugar correcto. Cuéntame: ¿qué objetivo quieres alcanzar, en cuánto tiempo y qué importancia tiene para ti? Crearemos un plan a tu medida. Cuantos más detalles compartas, mejor será el resultado. Es momento de cambiar tu vida.",
     'fp.q2': "¿Cuáles son las verdades fundamentales que sabes con certeza? Desglosa el problema en hechos innegociables.",
     'fp.q3': "Basado en estas verdades, ¿cuál es una forma completamente nueva de construir esto desde cero?",
     
