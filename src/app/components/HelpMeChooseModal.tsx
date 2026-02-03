@@ -52,9 +52,9 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="bg-white dark:bg-zinc-950 w-full max-w-2xl rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[90vh]"
+        className="bg-white dark:bg-zinc-950 w-full max-w-lg rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[85vh]"
       >
-        <div className="p-8 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-start bg-white dark:bg-zinc-950 sticky top-0 z-10">
+        <div className="p-6 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-start bg-white dark:bg-zinc-950 sticky top-0 z-10">
             <div>
                 <div className="flex items-center gap-3 mb-2">
                     <div className="w-10 h-10 bg-black dark:bg-white rounded-xl flex items-center justify-center">
@@ -69,7 +69,7 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
             </button>
         </div>
 
-        <div className="p-8 overflow-y-auto">
+        <div className="p-6 overflow-y-auto">
             {!suggestion ? (
                 <div className="space-y-6">
                     <div className="space-y-4">

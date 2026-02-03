@@ -579,7 +579,7 @@ function App() {
                       className="relative z-10"
                     >
                       {/* Hero Section */}
-                      <section className="px-6 pt-24 pb-32 md:pt-40 md:pb-48 text-center max-w-5xl mx-auto">
+                      <section className="px-6 pt-24 pb-32 md:pt-20 md:pb-48 text-center max-w-5xl mx-auto">
                         <motion.div
                           initial={{ opacity: 0, y: 30 }}
                           animate={{ opacity: 1, y: 0 }}

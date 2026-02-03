@@ -465,6 +465,21 @@ export const translations = {
     'quote.5.author': "Steve Jobs",
     'quote.6.text': "When something is important enough, you do it even if the odds are not in your favor.",
     'quote.6.author': "Elon Musk",
+
+    // Intake Modal
+    'intake.title': 'Find Your Framework',
+    'intake.subtitle': 'Tell AI about your goal, and we will recommend the perfect mental model.',
+    'intake.objective.label': 'What is your main objective?',
+    'intake.objective.placeholder': 'e.g. "I want to launch a SaaS business in 3 months"',
+    'intake.stakes.label': 'What are the stakes?',
+    'intake.stakes.placeholder': 'e.g. "High financial risk"',
+    'intake.horizon.label': 'Time Horizon',
+    'intake.horizon.placeholder': 'e.g. "90 days"',
+    'intake.analyzing': 'Analyzing...',
+    'intake.analyze': 'Analyze',
+    'intake.result.title': 'Recommended Framework',
+    'intake.tryAgain': 'Try Again',
+    'intake.useFramework': 'Use Framework',
   },
   es: {
     // ... existing ES translations (managed by next block below via AllowMultiple? No, need to be careful with structure)
@@ -754,6 +769,21 @@ export const translations = {
     'landing.liftoff.vector': 'Vector',
     'frameworks.helpMeChoose': 'Ayúdame a elegir el método adecuado',
 
+    // Intake Modal
+    'intake.title': 'Encuentra tu Método',
+    'intake.subtitle': 'Cuéntale a la IA tu objetivo y te recomendaremos el modelo mental perfecto.',
+    'intake.objective.label': '¿Cuál es tu objetivo principal?',
+    'intake.objective.placeholder': 'ej. "Quiero lanzar un negocio SaaS en 3 meses"',
+    'intake.stakes.label': '¿Qué está en juego?',
+    'intake.stakes.placeholder': 'ej. "Alto riesgo financiero"',
+    'intake.horizon.label': 'Horizonte Temporal',
+    'intake.horizon.placeholder': 'ej. "90 días"',
+    'intake.analyzing': 'Analizando...',
+    'intake.analyze': 'Analizar',
+    'intake.result.title': 'Método Recomendado',
+    'intake.tryAgain': 'Probar de nuevo',
+    'intake.useFramework': 'Usar Método',
+
 
 
     'rpm.title': 'Estratega de Objetivos RPM',
@@ -889,20 +919,7 @@ export const translations = {
     'fw.mandalas.cons.2': 'Difícil de rastrear todo',
 
 
-    // Intake Modal
-    'intake.title': 'Ayúdame a elegir',
-    'intake.subtitle': 'Describe tu ambición, riesgos y plazos. Nuestra IA recomendará la arquitectura perfecta.',
-    'intake.objective.label': '¿Cuál es tu Objetivo o Problema principal?',
-    'intake.objective.placeholder': 'Ej. Tengo demasiadas tareas y no sé por dónde empezar...',
-    'intake.stakes.label': '¿Qué está en juego si fallas?',
-    'intake.stakes.placeholder': 'Ej. Pierdo mi negocio, me quemo, pierdo tiempo...',
-    'intake.horizon.label': '¿Cuál es tu horizonte temporal?',
-    'intake.horizon.placeholder': 'Ej. 3 meses, 1 año, Urgente...',
-    'intake.analyze': 'Encontrar mi Método',
-    'intake.analyzing': 'Analizando...',
-    'intake.result.title': 'Recomendado para ti',
-    'intake.tryAgain': 'Intentar de nuevo',
-    'intake.useFramework': 'Empezar a Construir',
+
 
     // Share
     'share.button': 'Compartir',
