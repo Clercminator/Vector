@@ -80,7 +80,19 @@ const setFrameworkTool = tool(async ({ framework }) => {
   schema: setFrameworkSchema
 });
 
-const tools = [setFrameworkTool];
+const generateBlueprintSchema = z.object({
+  reason: z.string().describe("The reason for generating the blueprint now (e.g. 'User confirmed readiness', 'Sufficient information gathered').")
+});
+
+const generateBlueprintTool = tool(async () => {
+  return "READY_TO_GENERATE";
+}, {
+  name: "generate_blueprint",
+  description: "Signal that you have gathered enough information and are ready to generate the final strategic blueprint. Call this when the user says 'ready', 'yes', 'listo', or when you have all necessary details.",
+  schema: generateBlueprintSchema
+});
+
+const tools = [setFrameworkTool, generateBlueprintTool];
 const toolNode = new ToolNode(tools);
 
 // 2. LLM Setup
@@ -199,7 +211,7 @@ const askNode = async (state: typeof AgentState.State) => {
   1. Ask 1-2 critical questions to fill the gaps for the blueprint.
   2. Be concise.
   3. When you have enough info, summarize and ASK: "Ready to generate the blueprint?"
-  4. If user says "Yes/Ready", reply exactly "READY".
+  4. If user says "Yes/Ready/Listo" or confirms they are done, CALL THE TOOL "generate_blueprint". DO NOT just say "READY".
   5. If the user asks for general research (e.g., "What are the trends in X?"), politely decline and refocus on the plan.
 
   IMPORTANT: As you gather information, update the "Rough Draft" by appending a JSON block at the VERY END of your message (after suggestion chips).
@@ -249,8 +261,15 @@ const routeStep = (state: typeof AgentState.State) => {
   const lastMsg = messages[messages.length - 1] as AIMessage;
   
   if (steps > 10) return "draft"; // Lower limit to 10
-  if (lastMsg.tool_calls && lastMsg.tool_calls.length > 0) return "tools";
-  if (lastMsg.content.toString().trim().toUpperCase().includes("READY")) return "draft"; // Loosened check
+  
+  if (lastMsg.tool_calls && lastMsg.tool_calls.length > 0) {
+      if (lastMsg.tool_calls.some(tc => tc.name === 'generate_blueprint')) {
+          return "draft";
+      }
+      return "tools";
+  }
+  
+  if (lastMsg.content.toString().trim().toUpperCase().includes("READY")) return "draft"; // Deprecated fallback
 
   return END;
 };

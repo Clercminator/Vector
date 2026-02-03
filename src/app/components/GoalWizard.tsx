@@ -506,17 +506,16 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     try {
         const callbacks: any[] = [];
         const tracingEnabled = import.meta.env.VITE_LANGCHAIN_TRACING_V2 === "true";
-        
-        if (tracingEnabled) {
-             const apiKey = import.meta.env.VITE_LANGCHAIN_API_KEY;
-             const project = import.meta.env.VITE_LANGCHAIN_PROJECT;
+        const apiKey = import.meta.env.VITE_LANGCHAIN_API_KEY;
+        const project = import.meta.env.VITE_LANGCHAIN_PROJECT || "Vector";
 
-             if (apiKey) {
-                 callbacks.push(new LangChainTracer({
-                     projectName: project || "Vector",
-                     apiKey: apiKey
-                 }));
-             }
+        if (tracingEnabled && apiKey && apiKey.length > 10) { 
+             callbacks.push(new LangChainTracer({
+                 projectName: project,
+                 apiKey: apiKey
+             }));
+        } else if (tracingEnabled) {
+            console.warn("LangSmith tracing is enabled but API key is missing or invalid. Tracing skipped.");
         }
 
         const config = { 
@@ -1158,21 +1157,23 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
           <span className="text-sm font-medium">{t('wizard.exit')}</span>
         </button>
 
-         {/* Hard Mode Toggle (Moved to Header) */}
-         {!result && (
-              <button 
-                  onClick={toggleHardMode}
-                  title={isHardMode ? "Disable Devil's Advocate Mode" : "Enable Hard Mode: The AI will ruthlessly challenge your assumptions."}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
-                      isHardMode 
-                      ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' 
-                      : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-zinc-700'
-                  }`}
-              >
-                  {isHardMode ? <Flame size={12} fill="currentColor" /> : <div className="w-3 h-3 rounded-full border-2 border-current" />}
-                  {isHardMode ? "Hard Mode" : "Normal"}
-              </button>
-         )}
+          {/* Hard Mode Toggle (Moved to Header) */}
+          {!result && (
+               <div className="flex items-center">
+                   <button 
+                       onClick={toggleHardMode}
+                       title={isHardMode ? "Disable Devil's Advocate Mode" : "Enable Hard Mode: The AI will ruthlessly challenge your assumptions."}
+                       className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border ${
+                           isHardMode 
+                           ? 'bg-red-500 text-white border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' 
+                           : 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600'
+                       }`}
+                   >
+                       {isHardMode ? <Flame size={12} fill="currentColor" /> : <div className="w-3 h-3 rounded-full border-2 border-current opacity-50" />}
+                       {isHardMode ? "Devil's Advocate" : "Coach Mode"}
+                   </button>
+               </div>
+          )}
       </div>
 
       <div className="flex-grow flex overflow-hidden">
