@@ -20,6 +20,18 @@ import { v4 as uuidv4 } from 'uuid';
 import { EditableText, EditableList } from './Editable';
 import { ErrorBoundary } from './ErrorBoundary';
 
+// LangSmith Polyfill for Browser
+if (typeof window !== 'undefined' && !window.process) {
+  (window as any).process = {
+    env: {
+      LANGCHAIN_TRACING_V2: import.meta.env.VITE_LANGCHAIN_TRACING_V2,
+      LANGCHAIN_API_KEY: import.meta.env.VITE_LANGCHAIN_API_KEY,
+      LANGCHAIN_PROJECT: import.meta.env.VITE_LANGCHAIN_PROJECT,
+      LANGCHAIN_ENDPOINT: import.meta.env.VITE_LANGCHAIN_ENDPOINT
+    }
+  };
+}
+
 interface Message {
   role: 'ai' | 'user';
   content: string;
@@ -1166,7 +1178,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       <div className="flex-grow flex overflow-hidden">
         {/* Chat Area */}
         <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${draftResult ? 'lg:mr-96' : ''}`}>
-          <div className="w-full max-w-5xl mx-auto flex-grow flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-6">
+          <div className="w-full h-full flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-8 lg:px-12">
              <div className="space-y-2 pb-32 pt-4">
               <AnimatePresence mode="popLayout">
                 {messages.map((msg, i) => (

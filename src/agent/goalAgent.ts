@@ -447,7 +447,7 @@ const workflow = new StateGraph(AgentState)
   .addNode("draft", draftNode)
   .addNode("critique", critiqueNode)
   
-  .addEdge(START, "consultant") 
+
   .addConditionalEdges(START, routeStart, {
       consultant: "consultant",
       ask: "ask"
