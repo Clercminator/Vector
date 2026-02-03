@@ -29,6 +29,12 @@ interface ProfileData {
   branding_logo_url?: string;
   branding_color?: string;
   tier?: string;
+  metadata?: {
+    demographics?: string;
+    hobbies?: string;
+    skills?: string;
+    interests?: string;
+  };
 }
 
 import { TIER_CONFIGS, TierId } from '@/lib/tiers';
@@ -54,6 +60,12 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
     branding_logo_url: '',
     branding_color: '#000000',
     tier: 'free',
+    metadata: {
+      demographics: '',
+      hobbies: '',
+      skills: '',
+      interests: ''
+    }
   });
 
   useEffect(() => {
@@ -64,7 +76,7 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
         if (user) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('display_name, bio, avatar_url, level, credits, points, streak_count, branding_logo_url, branding_color, tier')
+            .select('display_name, bio, avatar_url, level, credits, points, streak_count, branding_logo_url, branding_color, tier, metadata')
             .eq('user_id', user.id)
             .single();
 
@@ -80,6 +92,7 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
               branding_logo_url: profile.branding_logo_url || '',
               branding_color: profile.branding_color || '#000000',
               tier: profile.tier || 'free',
+              metadata: profile.metadata || { demographics: '', hobbies: '', skills: '', interests: '' },
             });
           }
         }
@@ -105,6 +118,7 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
           avatar_url: data.avatar_url,
           branding_logo_url: data.branding_logo_url,
           branding_color: data.branding_color,
+          metadata: data.metadata,
           updated_at: new Date().toISOString(),
         });
 
@@ -328,6 +342,51 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
                 placeholder="What are you building?"
                 className="bg-transparent dark:text-white dark:border-zinc-700"
               />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="demographics" className="text-black dark:text-white">{t('profile.demographics') || "Demographics"}</Label>
+                  <Input 
+                    id="demographics" 
+                    value={data.metadata?.demographics || ''} 
+                    onChange={(e) => setData({ ...data, metadata: { ...data.metadata, demographics: e.target.value } })}
+                    placeholder="e.g. 28, New York"
+                    className="bg-transparent dark:text-white dark:border-zinc-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="interests" className="text-black dark:text-white">{t('profile.interests') || "Interests"}</Label>
+                  <Input 
+                    id="interests" 
+                    value={data.metadata?.interests || ''} 
+                    onChange={(e) => setData({ ...data, metadata: { ...data.metadata, interests: e.target.value } })}
+                    placeholder="e.g. AI, startups, reading"
+                    className="bg-transparent dark:text-white dark:border-zinc-700"
+                  />
+                </div>
+            </div>
+
+            <div className="space-y-2">
+               <Label htmlFor="skills" className="text-black dark:text-white">{t('profile.skills') || "Skills & Expertise"}</Label>
+               <Input 
+                 id="skills" 
+                 value={data.metadata?.skills || ''} 
+                 onChange={(e) => setData({ ...data, metadata: { ...data.metadata, skills: e.target.value } })}
+                 placeholder="e.g. Marketing, coding, design"
+                 className="bg-transparent dark:text-white dark:border-zinc-700"
+               />
+            </div>
+
+            <div className="space-y-2">
+               <Label htmlFor="hobbies" className="text-black dark:text-white">{t('profile.hobbies') || "Hobbies"}</Label>
+               <Input 
+                 id="hobbies" 
+                 value={data.metadata?.hobbies || ''} 
+                 onChange={(e) => setData({ ...data, metadata: { ...data.metadata, hobbies: e.target.value } })}
+                 placeholder="e.g. Hiking, chess, photography"
+                 className="bg-transparent dark:text-white dark:border-zinc-700"
+               />
             </div>
 
 

@@ -65,7 +65,21 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   const [suggestionChips, setSuggestionChips] = useState<string[]>([]); // Dynamic suggestions
   
   // Agent State
-  const [threadId] = useState<string>(() => uuidv4());
+  // Initialize from LocalStorage if valid to ensure persistence across reloads
+  const [threadId, setThreadId] = useState<string>(() => {
+      if (typeof window === 'undefined') return uuidv4();
+      const saved = localStorage.getItem('vector_wizard_session');
+      if (saved) {
+          try {
+              const parsed = JSON.parse(saved);
+              // Reuse threadId if session is fresh (< 24h)
+              if (parsed.threadId && Date.now() - (parsed.timestamp || 0) < 24 * 60 * 60 * 1000) {
+                  return parsed.threadId;
+              }
+          } catch (e) {}
+      }
+      return uuidv4();
+  });
   const [isAgentRunning, setIsAgentRunning] = useState(false);
   
   // Transition State
@@ -132,7 +146,15 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       setDraftResult(null);
       setFinalAnswers([]);
       setSuggestionChips([]);
-      // We don't reset threadId to avoid issues, but practically a new component mount would do that.
+      const newThread = uuidv4();
+      setThreadId(newThread);
+      // Force clear checks
+      setIsTyping(true);
+      setTimeout(() => {
+           // Re-initialize welcome message logic logic manually if needed or let effect run if framework changes
+           // Quicker hack: Reload page to ensure clean slate if simple state reset is buggy
+           window.location.reload(); 
+      }, 100);
   };
 
   // Mobile Drawer State
@@ -1149,21 +1171,21 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     <div className="relative h-[calc(100vh-5rem)] px-4 md:px-8 z-10 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="w-full max-w-full mx-auto flex-none pt-4 flex justify-between items-center bg-transparent z-20">
-        <button 
-          onClick={onBack}
-          className="flex items-center gap-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors group"
-        >
-          <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="text-sm font-medium">{t('wizard.exit')}</span>
-        </button>
+        <div className="flex items-center gap-4">
+            <button 
+              onClick={onBack}
+              className="flex items-center gap-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors group cursor-pointer"
+            >
+              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">{t('wizard.exit')}</span>
+            </button>
 
-          {/* Hard Mode Toggle (Moved to Header) */}
-          {!result && (
-               <div className="flex items-center">
-                   <button 
+             {/* Hard Mode Toggle (Moved to Left Group) */}
+             {!result && (
+                  <button 
                        onClick={toggleHardMode}
                        title={isHardMode ? "Disable Devil's Advocate Mode" : "Enable Hard Mode: The AI will ruthlessly challenge your assumptions."}
-                       className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border ${
+                       className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border cursor-pointer ${
                            isHardMode 
                            ? 'bg-red-500 text-white border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' 
                            : 'bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600'
@@ -1172,8 +1194,26 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                        {isHardMode ? <Flame size={12} fill="currentColor" /> : <div className="w-3 h-3 rounded-full border-2 border-current opacity-50" />}
                        {isHardMode ? "Devil's Advocate" : "Coach Mode"}
                    </button>
-               </div>
-          )}
+             )}
+        </div>
+
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-2">
+             {!result && messages.length > 2 && (
+                 <button 
+                    onClick={() => {
+                        if (confirm("Are you sure you want to start over? This will clear the current conversation.")) {
+                            clearSession();
+                        }
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+                    title="Start Over"
+                 >
+                    <RefreshCcw size={14} />
+                    <span className="hidden sm:inline">New Try</span>
+                 </button>
+             )}
+        </div>
       </div>
 
       <div className="flex-grow flex overflow-hidden">
