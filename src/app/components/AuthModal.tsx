@@ -61,6 +61,13 @@ export function AuthModal({
     setIsLoading(true);
     const emailRedirectTo = window.location.origin;
 
+    console.log("Supabase Auth Debug:", {
+        url: import.meta.env.VITE_SUPABASE_URL,
+        keyStart: import.meta.env.VITE_SUPABASE_ANON_KEY ? import.meta.env.VITE_SUPABASE_ANON_KEY.substring(0, 10) + "..." : "MISSING",
+        redirect: emailRedirectTo,
+        hasCaptcha: !!captchaToken
+    });
+
     const p = supabase.auth.signInWithOtp({
       email: trimmed,
       options: { 
