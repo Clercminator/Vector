@@ -62,30 +62,46 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
   // Persistence: Load on Mount
   useEffect(() => {
+    // 1. Try to load from LocalStorage first (Draft/Unsaved state)
     const savedSession = localStorage.getItem('vector_wizard_session');
     if (savedSession) {
         try {
             const { threadId: savedThreadId, messages: savedMsgs, step: savedStep, draftResult: savedDraft, framework: savedFw, timestamp } = JSON.parse(savedSession);
-            // Valid for 24 hours
-            if (Date.now() - timestamp < 24 * 60 * 60 * 1000 && savedFw === framework && savedMsgs.length > 0) {
-                 setMessages(savedMsgs);
-                 setStep(savedStep);
-                 setDraftResult(savedDraft);
-                 // We don't restore threadId state directly as it's a prop/state init, but we can reuse it if we store it
-                 // Actually, threadId is state initialized via function, so we can't easily change it here without setThreadId which we don't have exposed.
-                 // Ideally we should have setThreadId, but for now let's just restore the visible state.
+            
+            // Valid for 24 hours AND matches current framework
+            if (Date.now() - timestamp < 24 * 60 * 60 * 1000 && savedFw === framework) {
+                 if (savedMsgs.length > 0) setMessages(savedMsgs);
+                 if (savedStep) setStep(savedStep);
+                 if (savedDraft) setDraftResult(savedDraft);
+                 // Note: We can't easily restore threadId as it's state-initialized, but practically it matters less 
+                 // as long as the conversation flow continues. The agent uses it for checkpointer, so ideally we should.
+                 // Ideally: setThreadId(savedThreadId); if we exposed it. 
+                 // For now, we accept a new threadId for the *agent* session but restore the *chat UI*.
             }
         } catch (e) {
             console.error("Failed to restore session", e);
         }
+    } else if (initialBlueprint) {
+        // 2. If no local session, but we have an initialBlueprint (Editing mode), load its messages
+        const loadRemoteMessages = async () => {
+             try {
+                const remoteMsgs = await fetchBlueprintMessages(supabase, initialBlueprint.id);
+                if (remoteMsgs && remoteMsgs.length > 0) {
+                     setMessages(remoteMsgs);
+                }
+             } catch(e) {
+                 console.error("Failed to load remote messages:", e);
+             }
+        };
+        loadRemoteMessages();
     }
-  }, [framework]);
+  }, [framework, initialBlueprint]);
 
   // Persistence: Save on Change
   useEffect(() => {
     if (messages.length > 0) {
         const session = {
-            threadId,
+            threadId, // We save this, even if we don't fully restore it yet (future proof)
             messages,
             step,
             draftResult,
@@ -104,6 +120,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       setDraftResult(null);
       setFinalAnswers([]);
       setSuggestionChips([]);
+      // We don't reset threadId to avoid issues, but practically a new component mount would do that.
   };
 
   // Mobile Drawer State
@@ -474,8 +491,13 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
     try {
         const callbacks: any[] = [];
+        
+        // Vite Replaces 'process.env.LANGCHAIN_TRACING_V2' with the string value "true"
+        // We do NOT check for 'process' existence because it doesn't exist in browser, but the REPLACEMENT does.
         // @ts-ignore
-        if (typeof process !== 'undefined' && process.env.LANGCHAIN_TRACING_V2 === "true") {
+        const tracingEnabled = process.env.LANGCHAIN_TRACING_V2 === "true";
+        
+        if (tracingEnabled) {
              // @ts-ignore
              const apiKey = process.env.LANGCHAIN_API_KEY;
              // @ts-ignore
