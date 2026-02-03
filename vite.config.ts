@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
@@ -8,8 +8,19 @@ import { VitePWA } from 'vite-plugin-pwa'
 const frameworkIds = ['first-principles', 'pareto', 'rpm', 'eisenhower', 'okr'];
 const dynamicRoutes = frameworkIds.map(id => `/frameworks/${id}`);
 
-export default defineConfig({
-  plugins: [
+export default defineConfig(({ mode }) => {
+  // Load env file based on `mode` in the current working directory.
+  // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
+  const env = loadEnv(mode, process.cwd(), '')
+
+  return {
+    define: {
+      'process.env.LANGCHAIN_TRACING_V2': JSON.stringify(env.LANGCHAIN_TRACING_V2),
+      'process.env.LANGCHAIN_API_KEY': JSON.stringify(env.LANGCHAIN_API_KEY), // Careful: Exposes key to client
+      'process.env.LANGCHAIN_ENDPOINT': JSON.stringify(env.LANGCHAIN_ENDPOINT),
+      'process.env.LANGCHAIN_PROJECT': JSON.stringify(env.LANGCHAIN_PROJECT),
+    },
+    plugins: [
     react(),
     tailwindcss(),
     Sitemap({
@@ -68,4 +79,5 @@ export default defineConfig({
       },
     },
   },
+  }
 })
