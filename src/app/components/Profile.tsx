@@ -197,29 +197,32 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
         {/* Left Column: Stats & Avatar */}
         <div className="flex flex-col gap-6">
           <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-gray-100 dark:border-zinc-800 shadow-sm flex flex-col items-center text-center">
-             <div className="relative group cursor-pointer">
-               <Avatar className="w-32 h-32 mb-4 border-4 border-white dark:border-zinc-800 shadow-xl group-hover:opacity-50 transition-opacity">
-                 <AvatarImage src={data.avatar_url} />
-                 <AvatarFallback className="text-4xl bg-gray-100 dark:bg-zinc-800 text-black dark:text-white">
-                    {userEmail?.[0]?.toUpperCase()}
-                 </AvatarFallback>
-               </Avatar>
-               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity mb-4 pointer-events-none">
-                  {uploading ? (
-                    <Loader2 className="animate-spin text-black dark:text-white drop-shadow-md" size={32} />
-                  ) : (
-                    <Camera className="text-black dark:text-white drop-shadow-md" size={32} />
-                  )}
+             <div className="flex flex-col items-center gap-3">
+               <div className="relative group">
+                 <Avatar className="w-32 h-32 border-4 border-white dark:border-zinc-800 shadow-xl">
+                   <AvatarImage src={data.avatar_url} />
+                   <AvatarFallback className="text-4xl bg-gray-100 dark:bg-zinc-800 text-black dark:text-white">
+                      {userEmail?.[0]?.toUpperCase()}
+                   </AvatarFallback>
+                 </Avatar>
                </div>
-               <input 
-                 type="file" 
-                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer mb-4 z-10" 
-                 accept="image/*"
-                 onChange={handleAvatarUpload}
-                 disabled={uploading}
-               />
+               
+               <div className="relative">
+                 <Button variant="outline" size="sm" className="gap-2 relative z-10 dark:text-white dark:border-zinc-700 dark:hover:bg-zinc-800">
+                    {uploading ? <Loader2 className="animate-spin" size={14} /> : <Camera size={14} />}
+                    {t('profile.upload') || "Upload Avatar"}
+                 </Button>
+                 <input 
+                   type="file" 
+                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" 
+                   accept="image/*"
+                   onChange={handleAvatarUpload}
+                   disabled={uploading}
+                 />
+               </div>
              </div>
-             <h2 className="text-xl font-bold truncate w-full text-black dark:text-white">{data.display_name || 'Architect'}</h2>
+
+             <h2 className="text-xl font-bold truncate w-full mt-2 text-black dark:text-white">{data.display_name || 'Architect'}</h2>
              <p className="text-sm text-gray-400 mb-6">{userEmail}</p>
 
               <div className="grid grid-cols-3 gap-2 w-full">

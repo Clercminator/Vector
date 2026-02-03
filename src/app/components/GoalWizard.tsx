@@ -427,8 +427,9 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     setStep(0);
     setIsTyping(true);
     const tTimer = setTimeout(() => {
-      // Agent Welcome
-      setMessages([{ role: 'ai', content: t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart') }]); 
+      // Agent Welcome - Use the first question of the framework if available
+      const initialMsg = currentConfig.questions?.[0] || (t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart'));
+      setMessages([{ role: 'ai', content: initialMsg }]); 
       setIsTyping(false);
     }, 1000);
     return () => clearTimeout(tTimer);
@@ -1122,20 +1123,35 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   return (
     <div className="relative h-[calc(100vh-5rem)] px-4 md:px-8 z-10 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="w-full max-w-full mx-auto flex-none pt-4">
+      <div className="w-full max-w-full mx-auto flex-none pt-4 flex justify-between items-center bg-transparent z-20">
         <button 
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors mb-2 group"
+          className="flex items-center gap-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors group"
         >
           <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm font-medium">{t('wizard.exit')}</span>
         </button>
+
+         {/* Hard Mode Toggle (Moved to Header) */}
+         {!result && (
+              <button 
+                  onClick={toggleHardMode}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+                      isHardMode 
+                      ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' 
+                      : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                  }`}
+              >
+                  {isHardMode ? <Flame size={12} fill="currentColor" /> : <div className="w-3 h-3 rounded-full border-2 border-current" />}
+                  {isHardMode ? "Hard Mode" : "Normal"}
+              </button>
+         )}
       </div>
 
       <div className="flex-grow flex overflow-hidden">
         {/* Chat Area */}
         <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${draftResult ? 'lg:mr-96' : ''}`}>
-          <div className="w-full max-w-3xl mx-auto flex-grow flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-0">
+          <div className="w-full max-w-7xl mx-auto flex-grow flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-6">
              <div className="space-y-6 pb-32 pt-4">
               <AnimatePresence mode="popLayout">
                 {messages.map((msg, i) => (
@@ -1183,20 +1199,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
              </button>
           )}
 
-          {/* Hard Mode Toggle */}
-          <div className="absolute top-4 right-4 z-10">
-              <button 
-                  onClick={toggleHardMode}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
-                      isHardMode 
-                      ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' 
-                      : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-zinc-700'
-                  }`}
-              >
-                  {isHardMode ? <Flame size={12} fill="currentColor" /> : <div className="w-3 h-3 rounded-full border-2 border-current" />}
-                  {isHardMode ? "Hard Mode" : "Normal"}
-              </button>
-          </div>
+
 
           {/* Suggestion Chips */}
           {!result && !isTyping && !isAgentRunning && suggestionChips.length > 0 && (
