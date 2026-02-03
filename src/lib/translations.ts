@@ -59,6 +59,8 @@ export const translations = {
 
     // Profile
     'profile.title': 'Your Profile',
+    'profile.upload': 'Upload Avatar',
+    'profile.currentPlan': 'Current Plan',
     'profile.level': 'Level',
     'profile.credits': 'Credits',
     'profile.streak': 'Streak',
@@ -520,6 +522,8 @@ export const translations = {
 
     // Profile
     'profile.title': 'Tu Perfil',
+    'profile.upload': 'Subir Avatar',
+    'profile.currentPlan': 'Plan Actual',
     'profile.level': 'Nivel',
     'profile.credits': 'Créditos',
     'profile.streak': 'Racha',
