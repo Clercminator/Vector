@@ -1,8 +1,8 @@
 -- Fix handle_new_user and ensure profiles table has necessary defaults
--- Addresses Auth 500 Error: "Database error saving new user" due to missing columns/defaults
+-- Addresses Auth 500 Error: "Database error saving new user"
 
 -- 1. Ensure Columns Exist and Have Defaults
--- We use DO blocks or IF NOT EXISTS to be safe, but ALTER COLUMN SET DEFAULT is safe to repeat.
+-- We use DO blocks to check existence and ALTER to set defaults.
 
 DO $$ BEGIN
     ALTER TABLE profiles ADD COLUMN IF NOT EXISTS level INTEGER DEFAULT 1;
@@ -24,15 +24,7 @@ DO $$ BEGIN
     ALTER TABLE profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT DEFAULT '';
 EXCEPTION WHEN duplicate_column THEN NULL; END $$;
 
-DO $$ BEGIN
-    ALTER TABLE profiles ADD COLUMN IF NOT EXISTS branding_logo_url TEXT DEFAULT '';
-EXCEPTION WHEN duplicate_column THEN NULL; END $$;
-
-DO $$ BEGIN
-    ALTER TABLE profiles ADD COLUMN IF NOT EXISTS branding_color TEXT DEFAULT '';
-EXCEPTION WHEN duplicate_column THEN NULL; END $$;
-
--- Ensure defaults are applied even if columns already existed without them
+-- Fix defaults for existing columns just in case
 ALTER TABLE profiles ALTER COLUMN level SET DEFAULT 1;
 ALTER TABLE profiles ALTER COLUMN points SET DEFAULT 0;
 ALTER TABLE profiles ALTER COLUMN streak_count SET DEFAULT 0;
@@ -42,6 +34,7 @@ ALTER TABLE profiles ALTER COLUMN credits SET DEFAULT 5;
 ALTER TABLE profiles ALTER COLUMN tier SET DEFAULT 'architect';
 
 -- 2. Update handle_new_user to explicitly insert these values
+-- CRITICAL FIX: Removed 'full_name' as it appears to be missing from the production table schema.
 -- We also ensure search_path is set to public for security
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
@@ -49,7 +42,6 @@ BEGIN
   INSERT INTO public.profiles (
     user_id, 
     display_name, 
-    full_name, 
     credits, 
     tier,
     level,
@@ -61,7 +53,6 @@ BEGIN
   VALUES (
     new.id,
     COALESCE(new.raw_user_meta_data->>'full_name', new.email),
-    COALESCE(new.raw_user_meta_data->>'full_name', ''),
     5,
     'architect',
     1,

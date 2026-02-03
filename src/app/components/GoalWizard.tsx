@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { Send, ArrowLeft, RefreshCcw, CheckCircle2, Calendar, Target, Zap, Layers, Share2, Rocket, Clock, Star, Download, Lock } from 'lucide-react';
+import { Send, ArrowLeft, RefreshCcw, CheckCircle2, Calendar, Target, Zap, Layers, Share2, Rocket, Clock, Star, Download, Lock, Mic, X, FileText } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 import { Blueprint, BlueprintResult, blueprintTitleFromAnswers, fetchBlueprintMessages, saveBlueprintMessage, saveBlueprintMessages } from '@/lib/blueprints';
@@ -17,6 +17,7 @@ import { graph } from '@/agent/goalAgent';
 import { HumanMessage, AIMessage } from '@langchain/core/messages';
 import { v4 as uuidv4 } from 'uuid';
 import { EditableText, EditableList } from './Editable';
+import { ErrorBoundary } from './ErrorBoundary';
 
 interface Message {
   role: 'ai' | 'user';
@@ -41,6 +42,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   const [step, setStep] = useState(0); 
   const [isTyping, setIsTyping] = useState(false);
   const [result, setResult] = useState<BlueprintResult | null>(null);
+  const [draftResult, setDraftResult] = useState<any>(null); // Interactive Draft State
   const [finalAnswers, setFinalAnswers] = useState<string[]>([]);
   const [isSynthesizing, setIsSynthesizing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -54,7 +56,94 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   const [isAgentRunning, setIsAgentRunning] = useState(false);
   
   // Transition State
+  // Transition State
   const isSwitchingRef = useRef(false);
+
+  // Persistence: Load on Mount
+  useEffect(() => {
+    const savedSession = localStorage.getItem('vector_wizard_session');
+    if (savedSession) {
+        try {
+            const { threadId: savedThreadId, messages: savedMsgs, step: savedStep, draftResult: savedDraft, framework: savedFw, timestamp } = JSON.parse(savedSession);
+            // Valid for 24 hours
+            if (Date.now() - timestamp < 24 * 60 * 60 * 1000 && savedFw === framework && savedMsgs.length > 0) {
+                 setMessages(savedMsgs);
+                 setStep(savedStep);
+                 setDraftResult(savedDraft);
+                 // We don't restore threadId state directly as it's a prop/state init, but we can reuse it if we store it
+                 // Actually, threadId is state initialized via function, so we can't easily change it here without setThreadId which we don't have exposed.
+                 // Ideally we should have setThreadId, but for now let's just restore the visible state.
+            }
+        } catch (e) {
+            console.error("Failed to restore session", e);
+        }
+    }
+  }, [framework]);
+
+  // Persistence: Save on Change
+  useEffect(() => {
+    if (messages.length > 0) {
+        const session = {
+            threadId,
+            messages,
+            step,
+            draftResult,
+            framework,
+            timestamp: Date.now()
+        };
+        localStorage.setItem('vector_wizard_session', JSON.stringify(session));
+    }
+  }, [messages, step, draftResult, framework, threadId]);
+
+  const clearSession = () => {
+      localStorage.removeItem('vector_wizard_session');
+      setMessages([]);
+      setStep(0);
+      setResult(null);
+      setDraftResult(null);
+      setFinalAnswers([]);
+      setSuggestionChips([]);
+  };
+
+  // Mobile Drawer State
+  const [showMobileDraft, setShowMobileDraft] = useState(false);
+
+  // Voice Input State
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error("Speech recognition is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US'; // Could be dynamic based on user language
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error", event.error);
+      setIsListening(false);
+    };
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setInputValue(prev => (prev + " " + transcript).trim());
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
 
   // Enforce tier check
   useEffect(() => {
@@ -116,19 +205,42 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
   const isOpenRouterConfigured = () => !!import.meta.env.VITE_OPENROUTER_API_KEY || !!import.meta.env.VITE_OPENROUTER_PROXY_URL;
 
-  const extractSuggestions = (text: string): { cleanText: string, suggestions: string[] } => {
-    const parts = text.split('|||');
-    if (parts.length > 1) {
+  const extractContent = (text: string): { cleanText: string, suggestions: string[], draft: any | null } => {
+    let cleanText = text;
+    let suggestions: string[] = [];
+    let draft: any | null = null;
+
+    // 1. Extract Draft
+    const draftRegex = /\|\|\|DRAFT_START\|\|\|([\s\S]*?)\|\|\|DRAFT_END\|\|\|/;
+    const draftMatch = cleanText.match(draftRegex);
+    if (draftMatch) {
         try {
-            const jsonStr = parts[parts.length - 1].trim();
-            const suggestions = JSON.parse(jsonStr);
-            const cleanText = parts.slice(0, -1).join('|||').trim();
-            return { cleanText, suggestions: Array.isArray(suggestions) ? suggestions : [] };
+            draft = JSON.parse(draftMatch[1].trim());
+            cleanText = cleanText.replace(draftMatch[0], '').trim();
         } catch (e) {
-            return { cleanText: text, suggestions: [] };
+            console.error("Failed to parse draft JSON", e);
         }
     }
-    return { cleanText: text, suggestions: [] };
+
+    // 2. Extract Suggestions (at the end)
+    const parts = cleanText.split('|||');
+    if (parts.length > 1) {
+        try {
+            const lastPart = parts[parts.length - 1].trim();
+            // Check if it looks like a JSON array
+            if (lastPart.startsWith('[') && lastPart.endsWith(']')) {
+                const parsed = JSON.parse(lastPart);
+                if (Array.isArray(parsed)) {
+                    suggestions = parsed;
+                    cleanText = parts.slice(0, -1).join('|||').trim();
+                }
+            }
+        } catch (e) {
+            // Ignore parse errors, just keep text as is
+        }
+    }
+
+    return { cleanText, suggestions, draft };
   };
 
   const frameworkConfig = {
@@ -283,6 +395,9 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         return;
     }
     
+    // 2. Race Condition Guard: Prevent multiple submissions
+    if (isTyping || isAgentRunning) return;
+    
     // Add user message to UI immediately
     // Add user message to UI immediately
     setMessages(prev => [...prev, { role: 'user', content: userText }]);
@@ -315,16 +430,12 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                 const newFw = event.framework_setter.framework;
                 if (newFw && newFw !== framework && onSwitchFramework) {
                     isSwitchingRef.current = true;
+                    // FRANKENSTEIN FIX: Explicitly clear draft to prevent mixing old framework data with new one
+                    setDraftResult(null); 
                     
-                    // Check if the new framework is locked for the current tier
                     const isLocked = !canUseFramework(tier, newFw as FrameworkId);
-                    
-                    // If locked, we want to enable Preview Mode (pass true)
-                    // If not locked, we pass false/undefined
-                    onSwitchFramework(newFw as FrameworkId, isLocked); // Pass isLocked as isPreview flag
+                    onSwitchFramework(newFw as FrameworkId, isLocked); 
 
-                    // The graph continues running? 
-                    // Ideally we should see the messages from framework_setter in the stream too.
                     if (event.framework_setter.messages) {
                          const lastMsg = event.framework_setter.messages[event.framework_setter.messages.length - 1];
                          setMessages(prev => [...prev, { role: 'ai', content: lastMsg.content as string }]);
@@ -336,48 +447,56 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
             if (event?.ask && event.ask.messages && event.ask.messages.length > 0) {
                  const lastMsg = event.ask.messages[event.ask.messages.length - 1];
                  const rawContent = lastMsg.content as string;
-                 const { cleanText, suggestions } = extractSuggestions(rawContent);
+                 const { cleanText, suggestions, draft } = extractContent(rawContent);
                  
-                 setMessages(prev => [...prev, { role: 'ai', content: cleanText }]);
+                 // 2. Loop Detection: Check if identical to last AI message
+                 setMessages(prev => {
+                     const lastAiMsg = [...prev].reverse().find(m => m.role === 'ai');
+                     if (lastAiMsg && lastAiMsg.content === cleanText) {
+                         // Duplicate detected, ignore.
+                         return prev;
+                     }
+                     
+                     // 3. Silent Failure Check: Ignore empty messages
+                     if (!cleanText.trim()) return prev;
+
+                     return [...prev, { role: 'ai', content: cleanText }];
+                 });
+
                  if (suggestions.length > 0) setSuggestionChips(suggestions);
+                 if (draft) setDraftResult((prev: any) => ({ ...prev, ...draft, type: framework }));
                  setIsTyping(false); 
 
-                 // 2. Deduction Logic (Trigger once per turn when AI speaks)
                  if (!deductionTriggered) {
                      deductionTriggered = true;
                      if (supabase) {
                          const { data: { user } } = await supabase.auth.getUser();
                          if (user) {
-                             // Call secure RPC
                              const { data: newBalance, error } = await supabase.rpc('decrement_credits', { amount_to_deduct: 1 });
                              if (!error && newBalance !== undefined) {
                                  setCredits(newBalance);
                                  checkAndNotifyLowCredits(newBalance);
-                             } else if (error) {
-                                 console.error("Credit deduction failed:", error);
                              }
                          } else {
-                             // Guest user: local decrement
-                             setCredits(prev => {
-                                 const next = prev !== null ? Math.max(0, prev - 1) : 0;
-                                 return next;
-                             });
+                             setCredits(prev => (prev !== null ? Math.max(0, prev - 1) : 0));
                          }
                      }
                  }
             }
             
-            // Consultant/Diagnosis Logic (if any messages come from consultant)
+            // Consultant Logic
              if (event?.consultant && event.consultant.messages) {
-                 const lastMsg = event.consultant.messages[event.consultant.messages.length - 1];
-                 const rawContent = lastMsg.content as string;
-                 const { cleanText, suggestions } = extractSuggestions(rawContent);
-
-                 setMessages(prev => [...prev, { role: 'ai', content: cleanText }]);
-                 if (suggestions.length > 0) setSuggestionChips(suggestions);
-                 setIsTyping(false);
+                  const lastMsg = event.consultant.messages[event.consultant.messages.length - 1];
+                  const rawContent = lastMsg.content as string;
+                  const { cleanText, suggestions, draft } = extractContent(rawContent);
+                  
+                  setMessages(prev => [...prev, { role: 'ai', content: cleanText }]);
+                  if (suggestions.length > 0) setSuggestionChips(suggestions);
+                  if (draft) setDraftResult((prev: any) => ({ ...prev, ...draft, type: framework }));
+                  setIsTyping(false);
             }
 
+            // Draft Logic (Completion)
             if (event?.draft && event.draft.blueprint) {
                  const bp = event.draft.blueprint;
                  setResult({
@@ -393,12 +512,12 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                  confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             }
         }
-    } catch (e) {
-        console.error("Agent Error", e);
-        toast.error("Agent encountered an error. Please try again.");
+    } catch (error) {
+        console.error("Agent Error:", error);
+        toast.error(t('wizard.error') || "Agent connection failed. Please try again.");
+        setIsTyping(false);
     } finally {
         setIsAgentRunning(false);
-        setIsTyping(false);
     }
   };
 
@@ -835,6 +954,71 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     return null;
   };
 
+  const renderDraftContent = (draft: any, t: any) => {
+      if (!draft) return null;
+
+      if (draft.type === 'pareto') {
+        return (
+            <div className="space-y-4">
+                <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-blue-100 dark:border-blue-900/30">
+                    <h5 className="font-bold text-blue-600 text-sm mb-2">{t('pareto.vital')}</h5>
+                    <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                        {draft.vital?.map((v: string, i: number) => <li key={i}>{v}</li>)}
+                    </ul>
+                </div>
+                 <div className="p-4 bg-gray-100 dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700">
+                    <h5 className="font-bold text-gray-500 text-sm mb-2">{t('pareto.trivial')}</h5>
+                    <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400">
+                        {draft.trivial?.map((v: string, i: number) => <li key={i}>{v}</li>)}
+                    </ul>
+                </div>
+            </div>
+        );
+    }
+
+    if (draft.type === 'okr') {
+        return (
+            <div className="space-y-4">
+                 <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-900/40">
+                    <h5 className="font-bold text-purple-600 text-sm mb-2">{t('okr.northStar')}</h5>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white leading-tight">{draft.objective || "Defining..."}</p>
+                </div>
+                 <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+                    <h5 className="font-bold text-gray-500 text-sm mb-2">{t('okr.keyResult')}</h5>
+                    <ul className="space-y-2">
+                        {draft.keyResults?.map((kr: string, i: number) => (
+                            <li key={i} className="flex gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                <span className="font-bold text-purple-400">{i+1}.</span> {kr}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+        );
+    }
+
+    // Fallback
+    return (
+        <div className="space-y-4">
+            {Object.entries(draft).map(([key, val]) => {
+                if (key === 'type' || !val) return null;
+                return (
+                    <div key={key} className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+                        <h5 className="font-bold text-gray-500 text-sm mb-2 capitalize">{key}</h5>
+                        {Array.isArray(val) ? (
+                            <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                                {(val as string[]).map((v, i) => <li key={i}>{v}</li>)}
+                            </ul>
+                        ) : (
+                            <p className="text-sm text-gray-800 dark:text-gray-200">{val as string}</p>
+                        )}
+                    </div>
+                )
+            })}
+        </div>
+    );
+  };
+
   return (
     <div className="relative h-[calc(100vh-5rem)] px-4 md:px-8 z-10 flex flex-col overflow-hidden">
       {/* Header */}
@@ -848,52 +1032,66 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         </button>
       </div>
 
-      {/* Scrollable Area */}
-      <div className="w-full max-w-full mx-auto flex-grow flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden">
-        <div className="space-y-6 pb-32">
-          <AnimatePresence mode="popLayout">
-            {messages.map((msg, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'ai' ? 'justify-start' : 'justify-end'}`}>
-                 <div className={`max-w-[80%] p-4 rounded-2xl ${msg.role === 'ai' ? 'bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 text-gray-800 dark:text-gray-200 shadow-sm' : 'bg-black dark:bg-white text-white dark:text-black'}`}>
-                  <div className={`text-base md:text-lg leading-relaxed prose max-w-none ${
-                    msg.role === 'ai' 
-                      ? 'dark:prose-invert' 
-                      : 'prose-invert dark:prose'
-                  }`}>
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-            {isTyping && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-                <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-4 rounded-2xl flex items-center gap-3">
-                  <div className="flex gap-1">
-                    <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1.5 h-1.5 bg-gray-300 dark:bg-zinc-600 rounded-full" />
-                    <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1.5 h-1.5 bg-gray-300 dark:bg-zinc-600 rounded-full" />
-                    <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1.5 h-1.5 bg-gray-300 dark:bg-zinc-600 rounded-full" />
-                  </div>
-                  {isSynthesizing && <span className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">{t('wizard.synthesizing') || "Thinking..."}</span>}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <div ref={messagesEndRef} />
-        </div>
+      <div className="flex-grow flex overflow-hidden">
+        {/* Chat Area */}
+        <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${draftResult ? 'lg:mr-96' : ''}`}>
+          <div className="w-full max-w-3xl mx-auto flex-grow flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-0">
+             <div className="space-y-6 pb-32 pt-4">
+              <AnimatePresence mode="popLayout">
+                {messages.map((msg, i) => (
+                  <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'ai' ? 'justify-start' : 'justify-end'}`}>
+                     <div className={`max-w-[85%] p-4 rounded-2xl ${msg.role === 'ai' ? 'bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 text-gray-800 dark:text-gray-200 shadow-sm' : 'bg-black dark:bg-white text-white dark:text-black'}`}>
+                      <div className={`text-base md:text-lg leading-relaxed prose max-w-none ${
+                        msg.role === 'ai' 
+                          ? 'dark:prose-invert' 
+                          : 'prose-invert dark:prose'
+                      }`}>
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+                {isTyping && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
+                    <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-4 rounded-2xl flex items-center gap-3">
+                      <div className="flex gap-1">
+                        <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1.5 h-1.5 bg-gray-300 dark:bg-zinc-600 rounded-full" />
+                        <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1.5 h-1.5 bg-gray-300 dark:bg-zinc-600 rounded-full" />
+                        <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1.5 h-1.5 bg-gray-300 dark:bg-zinc-600 rounded-full" />
+                      </div>
+                      {isSynthesizing && <span className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">{t('wizard.synthesizing') || "Thinking..."}</span>}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <div ref={messagesEndRef} />
+            </div>
 
-        {renderResult()}
-      </div>
+            {renderResult()}
+          </div>
 
-      {!initialBlueprint && (
+          {!initialBlueprint && (
         <div className="flex-none p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-gray-100 dark:border-zinc-800 z-20 pb-safe">
+          {/* Mobile Draft Toggle */}
+          {!result && draftResult && (
+             <button 
+               onClick={() => setShowMobileDraft(!showMobileDraft)}
+               className="lg:hidden absolute top-[-3rem] left-1/2 -translate-x-1/2 px-4 py-1.5 bg-black/80 dark:bg-white/90 text-white dark:text-black rounded-full text-xs font-bold shadow-lg backdrop-blur-md flex items-center gap-2 animate-in slide-in-from-bottom-2 fade-in"
+             >
+                {showMobileDraft ? <X size={12} /> : <FileText size={12} />}
+                {showMobileDraft ? "Close Draft" : "View Draft"}
+             </button>
+          )}
+
           {/* Suggestion Chips */}
-          {!result && !isTyping && suggestionChips.length > 0 && (
+          {!result && !isTyping && !isAgentRunning && suggestionChips.length > 0 && (
              <div className="flex gap-2 mb-3 overflow-x-auto pb-2 scrollbar-none">
                 {suggestionChips.map((chip) => (
                    <button 
                      key={chip}
                      onClick={() => runAgent(chip)}
-                     className="px-4 py-1.5 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors whitespace-nowrap"
+                     disabled={isTyping || isAgentRunning}
+                     className="px-4 py-1.5 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                    >
                      {chip}
                    </button>
@@ -905,24 +1103,91 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                 autoFocus 
                 value={inputValue} 
                 onChange={(e) => setInputValue(e.target.value)} 
-                placeholder={result ? t('wizard.refinePlaceholder') : t('wizard.typePlaceholder')} 
-                className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl py-3 pl-5 pr-14 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-base md:text-lg text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-500" 
+                disabled={isTyping || isAgentRunning}
+                placeholder={isTyping ? t('wizard.synthesizing') : (result ? t('wizard.refinePlaceholder') : t('wizard.typePlaceholder'))} 
+                className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl py-3 pl-12 pr-14 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-base md:text-lg text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-500 disabled:opacity-70 disabled:cursor-not-allowed" 
             />
+            {/* Voice Input Button */}
+            {!result && (
+                <button
+                    type="button"
+                    onClick={toggleListening}
+                    disabled={isTyping || isAgentRunning}
+                    className={`absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${isListening ? 'bg-red-500 text-white animate-pulse' : 'text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed'}`}
+                    title="Voice Input"
+                >
+                    <Mic size={18} />
+                </button>
+            )}
+
             <button
               type="submit"
               aria-label="Send message"
-              disabled={!inputValue.trim() || isTyping}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black dark:bg-white text-white dark:text-black rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-50 transition-all"
+              disabled={!inputValue.trim() || isTyping || isAgentRunning}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black dark:bg-white text-white dark:text-black rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all"
             >
               <Send size={20} />
             </button>
           </form>
         </div>
       )}
+        </div>
+
+        {/* Side Panel (Desktop only for now) */}
+        {!result && draftResult && (
+          <>
+             {/* Desktop Drawer */}
+             <motion.div 
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 50 }}
+                className="hidden lg:block absolute right-0 top-16 bottom-0 w-96 bg-gray-50 dark:bg-zinc-900/50 border-l border-gray-200 dark:border-zinc-800 overflow-y-auto p-6 backdrop-blur-sm z-10"
+              >
+                 <div className="flex items-center gap-2 mb-6 text-gray-400 uppercase tracking-widest text-xs font-bold">
+                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                     Live Draft
+                 </div>
+                 <div className="pointer-events-none opacity-80 scale-90 origin-top">
+                     <ErrorBoundary name="Live Draft">
+                       {renderDraftContent(draftResult, t)}
+                     </ErrorBoundary>
+                 </div>
+              </motion.div>
+
+              {/* Mobile Drawer */}
+              <AnimatePresence>
+                {showMobileDraft && (
+                    <motion.div 
+                        initial={{ y: "100%" }}
+                        animate={{ y: 0 }}
+                        exit={{ y: "100%" }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className="lg:hidden absolute inset-x-0 bottom-0 top-20 bg-white dark:bg-zinc-900 rounded-t-[2rem] shadow-2xl z-20 border-t border-gray-200 dark:border-zinc-800 flex flex-col"
+                    >
+                         <div className="flex-none p-4 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between">
+                             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500">
+                                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                 Live Draft
+                             </div>
+                             <button onClick={() => setShowMobileDraft(false)} className="p-2 bg-gray-100 dark:bg-zinc-800 rounded-full">
+                                 <X size={16} />
+                             </button>
+                         </div>
+                         <div className="flex-grow overflow-y-auto p-6">
+                              <ErrorBoundary name="Mobile Draft">
+                                {renderDraftContent(draftResult, t)}
+                              </ErrorBoundary>
+                         </div>
+                    </motion.div>
+                )}
+              </AnimatePresence>
+          </>
+        )}
+      </div>
 
       {result && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-4 items-center z-30">
-          <button onClick={() => { setMessages([]); setStep(0); setResult(null); setFinalAnswers([]); }} className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium"><RefreshCcw size={18} />{t('wizard.restart')}</button>
+          <button onClick={clearSession} className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium"><RefreshCcw size={18} />{t('wizard.restart')}</button>
           
           {/* Calendar Export */}
           <button 

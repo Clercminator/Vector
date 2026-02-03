@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Mail, Award, Zap, Save, Loader2, ArrowLeft, Star, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Award, Zap, Save, Loader2, ArrowLeft, Star, CheckCircle2, Camera, Info } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
@@ -134,6 +134,49 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
     }
   };
 
+  const [uploading, setUploading] = useState(false);
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0) {
+      return;
+    }
+    if (!supabase) return;
+
+    setUploading(true);
+    try {
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      setData({ ...data, avatar_url: publicUrl }); // Optimistic update
+      
+      // Auto-save the new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+        .eq('user_id', userId);
+
+      if (updateError) throw updateError;
+      
+      toast.success(t('profile.avatarSuccess') || 'Avatar updated successfully');
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error(t('profile.avatarError') || 'Error uploading avatar');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const currentTierConfig = TIER_CONFIGS[data.tier as TierId] || TIER_CONFIGS['architect'];
 
   return (
@@ -141,7 +184,7 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="max-w-4xl mx-auto px-6 py-12"
+      className="max-w-5xl mx-auto px-6 py-12"
     >
       <div className="mb-8 flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={onBack} className="dark:text-white dark:hover:bg-zinc-800">
@@ -154,12 +197,28 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
         {/* Left Column: Stats & Avatar */}
         <div className="flex flex-col gap-6">
           <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-gray-100 dark:border-zinc-800 shadow-sm flex flex-col items-center text-center">
-             <Avatar className="w-32 h-32 mb-4 border-4 border-white dark:border-zinc-800 shadow-xl">
-               <AvatarImage src={data.avatar_url} />
-               <AvatarFallback className="text-4xl bg-gray-100 dark:bg-zinc-800 text-black dark:text-white">
-                  {userEmail?.[0].toUpperCase()}
-               </AvatarFallback>
-             </Avatar>
+             <div className="relative group cursor-pointer">
+               <Avatar className="w-32 h-32 mb-4 border-4 border-white dark:border-zinc-800 shadow-xl group-hover:opacity-50 transition-opacity">
+                 <AvatarImage src={data.avatar_url} />
+                 <AvatarFallback className="text-4xl bg-gray-100 dark:bg-zinc-800 text-black dark:text-white">
+                    {userEmail?.[0]?.toUpperCase()}
+                 </AvatarFallback>
+               </Avatar>
+               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity mb-4 pointer-events-none">
+                  {uploading ? (
+                    <Loader2 className="animate-spin text-black dark:text-white drop-shadow-md" size={32} />
+                  ) : (
+                    <Camera className="text-black dark:text-white drop-shadow-md" size={32} />
+                  )}
+               </div>
+               <input 
+                 type="file" 
+                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer mb-4 z-10" 
+                 accept="image/*"
+                 onChange={handleAvatarUpload}
+                 disabled={uploading}
+               />
+             </div>
              <h2 className="text-xl font-bold truncate w-full text-black dark:text-white">{data.display_name || 'Architect'}</h2>
              <p className="text-sm text-gray-400 mb-6">{userEmail}</p>
 
@@ -268,17 +327,7 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="avatarUrl" className="text-black dark:text-white">{t('profile.avatarUrl')}</Label>
-              <Input 
-                id="avatarUrl" 
-                value={data.avatar_url} 
-                onChange={(e) => setData({ ...data, avatar_url: e.target.value })}
-                placeholder="https://..."
-                className="bg-transparent dark:text-white dark:border-zinc-700"
-              />
-              <p className="text-xs text-gray-400">Paste a link to your image.</p>
-            </div>
+
 
             <div className="pt-4 flex justify-end">
               <Button onClick={handleSave} disabled={saving || loading} className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90">
@@ -311,6 +360,12 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
              <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-black dark:text-white">
                 <Award className="text-gray-400" /> 
                 PDF Branding
+                <div className="group relative ml-2">
+                   <Info className="text-gray-400 cursor-help" size={16} />
+                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                     Customize the logo and colors on your exported PDF blueprints.
+                   </div>
+                </div>
              </h3>
 
              <div className="space-y-6">
