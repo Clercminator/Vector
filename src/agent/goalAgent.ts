@@ -56,9 +56,67 @@ export const AgentState = Annotation.Root({
   })
 });
 
-// ... tools ...
+// 0. Configuration & Contexts
+const frameworkContexts: Record<string, string> = {
+  "first-principles": fpPrompt,
+  "pareto": paretoPrompt,
+  "rpm": rpmPrompt,
+  "eisenhower": eisenhowerPrompt,
+  "okr": okrPrompt,
+  "gps": gpsPrompt,
+  "misogi": "MISOGI: A framework for defining one year-defining challenge. 1. 50% chance of failure (hard). 2. You cannot die (safe). Ask: What is the Misogi? What is the gap? How will you purify yourself?"
+};
 
-// ... frameworkContexts ...
+// 1. Tools
+const setFrameworkSchema = z.object({
+  framework: z.enum(["first-principles", "pareto", "rpm", "eisenhower", "okr", "gps", "misogi"]).describe("The framework ID to switch to.")
+});
+
+const setFrameworkTool = tool(async ({ framework }) => {
+  return `Framework switched to ${framework}.`; 
+}, {
+  name: "set_framework",
+  description: "Switch the strategic framework (e.g., from 'first-principles' to 'okr'). Use this if the user explicitly asks to change methods.",
+  schema: setFrameworkSchema
+});
+
+const tools = [setFrameworkTool];
+const toolNode = new ToolNode(tools);
+
+// 2. LLM Setup
+const model = new ChatOpenAI({
+  model: "openai/gpt-4o",
+  temperature: 0,
+  apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || "dummy", 
+  configuration: { baseURL: import.meta.env.VITE_OPENROUTER_PROXY_URL || "https://openrouter.ai/api/v1" }
+});
+
+const llm = model.bindTools(tools);
+
+// 3. Framework Setter Node
+const frameworkSetterNode = async (state: typeof AgentState.State) => {
+    const lastMsg = state.messages[state.messages.length - 1] as AIMessage;
+    const toolCall = lastMsg.tool_calls?.find(tc => tc.name === 'set_framework');
+    
+    if (toolCall) {
+        const framework = toolCall.args.framework;
+        
+        // Manually create the ToolMessage
+        const toolMsg = new ToolMessage({
+            tool_call_id: toolCall.id!,
+            content: `Switched to ${framework}`,
+            name: 'set_framework'
+        });
+        
+        // Return state update: Set framework, add tool output, and reset steps
+        return { 
+            framework: framework,
+            messages: [toolMsg],
+            steps: 1 
+        };
+    }
+    return { }; 
+};
 
 // 1. Consultant Node (Diagnosis)
 const consultantNode = async (state: typeof AgentState.State) => {
