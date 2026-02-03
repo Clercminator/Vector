@@ -7,6 +7,8 @@ import okrPrompt from "@/lib/prompts/okr.txt?raw";
 import suggestPrompt from "@/lib/prompts/suggest-framework.txt?raw";
 import refinePrompt from "@/lib/prompts/refine-blueprint.txt?raw";
 import gpsPrompt from "@/lib/prompts/gps.txt?raw";
+import { traceable } from "langsmith/traceable";
+import { Client } from "langsmith";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_MODEL = "deepseek/deepseek-v3.2";
@@ -37,7 +39,7 @@ interface ChatMessage {
  * Call Open Router chat completions. Returns the assistant message content or throws.
  * If VITE_OPENROUTER_PROXY_URL is set, calls your backend proxy (no API key in browser).
  */
-export async function chat(
+export const chat = traceable(async function chat(
   messages: ChatMessage[],
   options?: { model?: string; max_tokens?: number; retryCount?: number }
 ): Promise<string> {
@@ -101,19 +103,26 @@ export async function chat(
       if (data.error?.message) throw new Error(data.error.message);
       const content = data.choices?.[0]?.message?.content;
       if (content == null) throw new Error("Open Router returned no content.");
+      
       return content.trim();
 
-    } catch (e) {
-      lastError = e;
-      attempt++;
-      if (attempt <= maxRetries) {
-        console.warn(`Chat attempt ${attempt} failed, retrying...`, e);
-        await new Promise(r => setTimeout(r, 1000 * attempt)); // Exponential backoffish
+    } catch (err: any) {
+      lastError = err;
+      if (attempt < maxRetries) {
+        attempt++;
+        await new Promise(r => setTimeout(r, 1000 * attempt)); // Backoff
+        continue;
       }
     }
+    attempt++;
   }
-  throw lastError;
-}
+  throw lastError || new Error("Unknown error in chat completion");
+}, {
+  run_type: "llm",
+  name: "chat_openrouter"
+});
+
+
 
 function buildSystemPrompt(framework: FrameworkId, userName?: string): string {
   let prompt = "";
