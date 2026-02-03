@@ -11,7 +11,22 @@ export type Framework =
   | "gps"
   | "misogi";
 
-export const frameworks = [
+export interface FrameworkDefinition {
+  id: Framework;
+  title: string;
+  description: string;
+  icon: any;
+  color: string;
+  author: string;
+  definition: string;
+  pros: string[];
+  cons: string[];
+  example: string;
+  whoItIsFor?: string;
+  questions?: string[]; 
+}
+
+export const frameworks: FrameworkDefinition[] = [
   {
     id: "first-principles" as Framework,
     title: "Elon Musk First Principles",
@@ -30,6 +45,7 @@ export const frameworks = [
     cons: ["Time-consuming", "Mentally taxing", "Requires deep understanding"],
     example:
       "SpaceX lowered rocket costs by calculating the raw material cost of a rocket instead of buying pre-assembled parts.",
+    questions: ['fp.q1', 'fp.q2', 'fp.q3'], 
   },
   {
     id: "pareto" as Framework,
@@ -49,6 +65,7 @@ export const frameworks = [
     ],
     example:
       "A software company fixes the top 20% of reported bugs to solve 80% of user crashes.",
+    questions: ['pareto.q1', 'pareto.q2', 'pareto.q3'],
   },
   {
     id: "rpm" as Framework,
@@ -72,6 +89,7 @@ export const frameworks = [
     ],
     example:
       'Instead of "Go to gym", the goal is "Vibrant Health" (Result) because "I want energy for my kids" (Purpose) by "Running 3x/week" (Map).',
+    questions: ['rpm.q1', 'rpm.q2', 'rpm.q3'],
   },
   {
     id: "eisenhower" as Framework,
@@ -95,6 +113,7 @@ export const frameworks = [
     ],
     example:
       'Urgent & Important: "Server crash". Important not Urgent: "Strategic planning". Urgent not Important: "Most emails".',
+    questions: ['eisenhower.q1', 'eisenhower.q2', 'eisenhower.q3'],
   },
   {
     id: "okr" as Framework,
@@ -114,6 +133,7 @@ export const frameworks = [
     ],
     example:
       'Objective: "Increase brand awareness". Key Result: "Achieve 10,000 active monthly users".',
+    questions: ['okr.q1', 'okr.q2', 'okr.q3'],
   },
   {
     id: "dsss" as Framework,
@@ -137,6 +157,7 @@ export const frameworks = [
     ],
     example:
       "Learning Spanish: Deconstruct grammar/vocab, Select top 1200 words, Sequence sentence structures, Stake $100 on passing a test.",
+    questions: ['fw.dsss.definition'], // DSSS doesn't have specific q1/q2 in translations yet, using definition as placeholder or generic
   },
   {
     id: "mandalas" as Framework,
@@ -156,6 +177,7 @@ export const frameworks = [
     ],
     example:
       'Central Goal: "Best Player". Outer 8: Fitness, Mental, Control, Speed, Luck, Human Quality, etc.',
+    questions: ['fw.mandalas.definition'],
   },
   {
     id: "gps" as Framework,
@@ -172,6 +194,7 @@ export const frameworks = [
     example:
       "Goal: Run 10k. Plan: Training app. System: Strava + accountability.",
     whoItIsFor: "Anyone struggling to turn knowledge into action.",
+    questions: ['gps.q1', 'gps.q2', 'gps.q3'],
   },
   {
     id: "misogi" as Framework,
@@ -195,5 +218,6 @@ export const frameworks = [
     ],
     example:
       "Paddleboarding across a 30-mile channel without ever having paddled more than 5 miles.",
+    questions: ['misogi.q1', 'misogi.q2', 'misogi.q3'],
   },
 ];

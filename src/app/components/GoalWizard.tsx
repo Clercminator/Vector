@@ -428,7 +428,13 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     setIsTyping(true);
     const tTimer = setTimeout(() => {
       // Agent Welcome - Use the first question of the framework if available
-      const initialMsg = currentConfig.questions?.[0] || (t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart'));
+      // Note: frameworks.ts now stores KEYS (e.g. 'fp.q1'), so we must translate them.
+      let initialMsg = "";
+      if (currentConfig.questions?.[0]) {
+          initialMsg = t(currentConfig.questions[0]);
+      } else {
+          initialMsg = t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart');
+      }
       setMessages([{ role: 'ai', content: initialMsg }]); 
       setIsTyping(false);
     }, 1000);
