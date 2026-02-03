@@ -482,12 +482,12 @@ function App() {
 
             {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-6">
-            <button onClick={() => navigate('/')} className={`text-sm font-medium transition-colors ${location.pathname === '/' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/' ? 'page' : undefined}>{t('nav.frameworks')}</button>
-            <button onClick={() => navigate('/community')} className={`text-sm font-medium transition-colors ${location.pathname === '/community' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/community' ? 'page' : undefined}>{t('nav.community')}</button>
+            <button onClick={() => navigate('/')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/' ? 'page' : undefined}>{t('nav.frameworks')}</button>
+            <button onClick={() => navigate('/community')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/community' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/community' ? 'page' : undefined}>{t('nav.community')}</button>
             {userEmail && (
-                <button onClick={() => navigate('/dashboard')} className={`text-sm font-medium transition-colors ${location.pathname === '/dashboard' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/dashboard' ? 'page' : undefined}>{t('nav.blueprints')}</button>
+                <button onClick={() => navigate('/dashboard')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/dashboard' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/dashboard' ? 'page' : undefined}>{t('nav.blueprints')}</button>
             )}
-            <button onClick={() => navigate('/pricing')} className={`text-sm font-medium transition-colors ${location.pathname === '/pricing' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/pricing' ? 'page' : undefined}>{t('nav.pricing')}</button>
+            <button onClick={() => navigate('/pricing')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/pricing' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/pricing' ? 'page' : undefined}>{t('nav.pricing')}</button>
             
             <div className="w-px h-4 bg-gray-200 dark:bg-gray-800 mx-2" />
             
@@ -495,26 +495,26 @@ function App() {
             <LanguageToggle />
 
             {userEmail && (
-                 <button onClick={() => navigate('/profile')} className={`text-sm font-medium transition-colors ${location.pathname === '/profile' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/profile' ? 'page' : undefined}>
+                 <button onClick={() => navigate('/profile')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/profile' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/profile' ? 'page' : undefined}>
                     {t('nav.profile')}
                  </button>
             )}
 
             {isAdmin && (
-                 <button onClick={() => navigate('/admin')} className={`text-sm font-medium transition-colors ${location.pathname === '/admin' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/admin' ? 'page' : undefined}>
+                 <button onClick={() => navigate('/admin')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/admin' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/admin' ? 'page' : undefined}>
                     {t('nav.admin')}
                  </button>
             )}
 
             <button
               onClick={() => (userEmail ? handleSignOut() : setAuthOpen(true))}
-              className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+              className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
             >
               {userEmail ? t('nav.signout') : t('nav.signin')}
             </button>
             <button
               onClick={() => handleStartWizard('first-principles')}
-              className="px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-bold hover:scale-105 active:scale-95 transition-all"
+              className="px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer"
             >
               {t('nav.getStarted')}
             </button>
