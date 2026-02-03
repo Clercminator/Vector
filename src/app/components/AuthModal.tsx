@@ -91,7 +91,8 @@ export function AuthModal({
         return data;
     };
 
-    toast.promise(authAction(), {
+    const authPromise = authAction();
+    toast.promise(authPromise, {
       loading: mode === "signin" ? t('auth.signingIn') || "Signing in..." : t('auth.creatingAccount') || "Creating your account...",
       success: t('auth.success') || "Magic link sent! Check your inbox.",
       error: (e: any) => {
@@ -104,10 +105,8 @@ export function AuthModal({
     });
 
     try {
-        const { error } = await p;
-        if (!error) {
-            setMode("ready");
-        }
+        await authPromise;
+        setMode("ready");
     } catch (err) {
         console.error("Auth error details:", err);
     } finally {
@@ -145,7 +144,7 @@ export function AuthModal({
 
             {mode !== "ready" ? (
               <div className="space-y-6">
-                <div className="space-y-4">
+                <div className="flex flex-col gap-6">
                   <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 ml-1" htmlFor="email">
                     {t('auth.emailAddress') || "Email Address"}
                   </label>
@@ -154,7 +153,7 @@ export function AuthModal({
                     type="email"
                     placeholder="you@example.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                     disabled={isLoading}
                     autoFocus
                     className="h-14 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 text-lg focus:ring-2 focus:ring-blue-500/20 transition-all dark:text-white"
