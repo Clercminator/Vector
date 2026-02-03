@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Blueprint } from "@/lib/blueprints";
 import { Button } from "@/app/components/ui/button";
 import { Card } from "@/app/components/ui/card";
@@ -20,6 +20,7 @@ import { supabase } from "@/lib/supabase";
 import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID } from '@/lib/tiers';
 
 import { useLanguage } from '@/app/components/language-provider';
+import { ErrorBoundary } from '@/app/components/ErrorBoundary';
 
 // ... other imports
 
@@ -85,6 +86,7 @@ export function Dashboard({
   }, []);
 
   return (
+    <ErrorBoundary name="Dashboard">
     <section className="px-6 py-24 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
@@ -207,6 +209,7 @@ export function Dashboard({
         </AlertDialogContent>
       </AlertDialog>
     </section>
+    </ErrorBoundary>
   );
 }
 

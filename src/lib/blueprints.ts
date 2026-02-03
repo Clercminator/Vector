@@ -108,6 +108,7 @@ export async function saveBlueprintMessage(supabase: SupabaseClient, blueprintId
     });
 }
 
+
 export async function saveBlueprintMessages(supabase: SupabaseClient, blueprintId: string, messages: { role: 'user' | 'ai'; content: string }[]) {
     const toInsert = messages.map(m => ({
         blueprint_id: blueprintId,
@@ -116,6 +117,22 @@ export async function saveBlueprintMessages(supabase: SupabaseClient, blueprintI
     }));
     return supabase.from('blueprint_messages').insert(toInsert);
 }
+
+export async function syncBlueprintMessages(supabase: SupabaseClient, blueprintId: string, messages: { role: 'user' | 'ai'; content: string }[]) {
+    // 1. Delete existing messages for this blueprint
+    const { error: deleteError } = await supabase
+        .from('blueprint_messages')
+        .delete()
+        .eq('blueprint_id', blueprintId);
+    
+    if (deleteError) throw deleteError;
+
+    // 2. Insert new messages
+    if (messages.length > 0) {
+        return saveBlueprintMessages(supabase, blueprintId, messages);
+    }
+}
+
 
 
 export function blueprintTitleFromAnswers(answers: string[], fallback = "Untitled blueprint") {
