@@ -24,7 +24,7 @@ interface Message {
 }
 
 interface GoalWizardProps {
-  framework: 'first-principles' | 'pareto' | 'rpm' | 'eisenhower' | 'okr' | 'gps' | 'dsss' | 'mandalas';
+  framework: 'first-principles' | 'pareto' | 'rpm' | 'eisenhower' | 'okr' | 'gps' | 'dsss' | 'mandalas' | 'misogi';
   onBack: () => void;
   onSaveBlueprint?: (bp: Blueprint) => Promise<void> | void;
   initialBlueprint?: Blueprint;
@@ -192,6 +192,16 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       })
     },
     'gps': { title: "GPS", questions: [], generateResult: () => ({}) }, // Placeholder as in original might be missing
+    'misogi': {
+      title: t('misogi.title'),
+      questions: [t('misogi.q1'), t('misogi.q2'), t('misogi.q3')],
+      generateResult: (answers: string[]) => ({
+        type: 'misogi',
+        challenge: answers[0] || "",
+        gap: answers[1] || "",
+        purification: answers[2] || ""
+      })
+    },
     'dsss': { title: "DSSS", questions: [], generateResult: () => ({}) },
     'mandalas': { title: "Mandalas", questions: [], generateResult: () => ({}) }
   };
@@ -772,6 +782,50 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                 onChange={(val) => updateResult(['plan'], val)}
                 itemClassName="font-medium text-lg text-gray-700 dark:text-gray-300"
             />
+           </div>
+        </motion.div>
+        </Wrapper>
+      );
+    }
+
+    if (result.type === 'misogi') {
+      return (
+        <Wrapper>
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 w-full max-w-4xl mx-auto space-y-8">
+           <div className="bg-gradient-to-br from-red-900 to-rose-900 text-white rounded-[2.5rem] p-12 shadow-2xl relative overflow-hidden border border-red-800">
+              <div className="absolute top-0 right-0 w-[30rem] h-[30rem] bg-orange-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+              <div className="relative z-10 text-center">
+                 <span className="inline-block px-4 py-1.5 rounded-full bg-white/10 text-red-100 text-xs font-bold uppercase tracking-[0.3em] mb-8 border border-white/20">The Challenge (50% Fail Rate)</span>
+                 <div className="text-4xl md:text-5xl font-black leading-tight tracking-tight">
+                    <EditableText 
+                        value={result.challenge} 
+                        onChange={(val) => updateResult(['challenge'], val)} 
+                        multiline 
+                        className="bg-transparent border-white/20 text-center"
+                    />
+                 </div>
+              </div>
+           </div>
+
+           <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-gray-200 dark:border-zinc-800 shadow-xl">
+                 <h4 className="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-sm mb-4">The Failure Gap</h4>
+                 <EditableText 
+                    value={result.gap} 
+                    onChange={(val) => updateResult(['gap'], val)}
+                    multiline
+                    className="text-xl font-medium text-gray-900 dark:text-gray-100 leading-relaxed"
+                 />
+              </div>
+              <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-gray-200 dark:border-zinc-800 shadow-xl">
+                 <h4 className="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-sm mb-4">The Purification</h4>
+                 <EditableText 
+                    value={result.purification} 
+                    onChange={(val) => updateResult(['purification'], val)}
+                    multiline
+                    className="text-xl font-medium text-gray-900 dark:text-gray-100 leading-relaxed"
+                 />
+              </div>
            </div>
         </motion.div>
         </Wrapper>

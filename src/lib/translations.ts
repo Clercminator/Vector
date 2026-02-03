@@ -330,6 +330,11 @@ export const translations = {
     'gps.q2': 'What is your Plan to get there? (The Route)',
     'gps.q3': 'What System will ensure you follow the plan? (The Vehicle/Habits)',
 
+    'misogi.title': 'The Misogi Challenge',
+    'misogi.q1': "A Misogi is a defining yearly challenge with a 50% chance of success. Rule 1: It must be hard. Rule 2: Don't die. What is a challenge that scares you but calls to you?",
+    'misogi.q2': "Why do you think you have a high chance of failing this? (If you are sure you can do it, it's not a Misogi).",
+    'misogi.q3': "What is the physical or mental 'purification' you hope to achieve by attempting this?",
+
     // Frameworks Data (Static content translation)
     'fw.first-principles.title': 'Elon Musk First Principles',
     'fw.first-principles.desc': 'Break down complex problems into basic elements and then reassemble them from the ground up.',
@@ -347,6 +352,8 @@ export const translations = {
     'fw.mandalas.desc': 'A 9x9 grid to map out a central goal and all related sub-goals and actions.',
     'fw.gps.title': 'The GPS Method',
     'fw.gps.desc': 'Bridging the gap between knowledge and execution with Goal, Plan, System.',
+    'fw.misogi.title': 'The Misogi Challenge',
+    'fw.misogi.desc': 'Undertake one defining challenge this year with a 50% chance of success to reset your spiritual baseline.',
 
     // Detailed Framework Data (EN)
     'fw.first-principles.definition': 'A problem-solving mental model that involves breaking a problem down into its basic elements (fundamental truths) and then reassembling them from the ground up, rather than reasoning by analogy.',
@@ -411,6 +418,15 @@ export const translations = {
     'fw.mandalas.cons.0': 'Can become complex',
     'fw.mandalas.cons.1': 'Requires 64 specific items',
     'fw.mandalas.cons.2': 'Hard to track all at once',
+
+    'fw.misogi.definition': 'A voluntary hardship undertaken to purify the mind and body. Rule 1: It must be really hard (50% fail rate). Rule 2: You cannot die.',
+    'fw.misogi.example': 'Paddleboarding across a 30-mile channel without ever having paddled more than 5 miles.',
+    'fw.misogi.pros.0': 'Radical confidence boost',
+    'fw.misogi.pros.1': 'Re-baselines difficulty',
+    'fw.misogi.pros.2': 'Spiritual purification',
+    'fw.misogi.cons.0': 'High chance of failure',
+    'fw.misogi.cons.1': 'Physical/Mental strain',
+    'fw.misogi.cons.2': 'Not a daily productivity tool',
 
     // Share
     'share.button': 'Share',
@@ -750,6 +766,11 @@ export const translations = {
     'gps.q2': '¿Cuál es tu Plan para llegar allí? (La Ruta)',
     'gps.q3': '¿Qué Sistema asegurará que sigas el plan? (El Vehículo/Hábitos)',
 
+    'misogi.title': 'El Desafío Misogi',
+    'misogi.q1': "Un Misogi es un desafío anual definitorio con un 50% de probabilidad de éxito. Regla 1: Debe ser difícil. Regla 2: No morir. ¿Cuál es un desafío que te asusta pero te llama?",
+    'misogi.q2': "¿Por qué crees que tienes una alta probabilidad de fallar? (Si estás seguro de que puedes hacerlo, no es un Misogi).",
+    'misogi.q3': "¿Cuál es la 'purificación' física o mental que esperas lograr al intentar esto?",
+
      // Frameworks Data
     'fw.first-principles.title': 'Método First Principles (Elon Musk)',
     'fw.first-principles.desc': 'Desglosa problemas complejos en elementos básicos y reensámblalos desde cero.',
@@ -767,6 +788,8 @@ export const translations = {
     'fw.mandalas.desc': 'Una cuadrícula de 9x9 para mapear un objetivo central y todos los subobjetivos relacionados.',
     'fw.gps.title': 'El Método GPS',
     'fw.gps.desc': 'Cerrando la brecha entre el conocimiento y la ejecución con Objetivo, Plan, Sistema.',
+    'fw.misogi.title': 'El Desafío Misogi',
+    'fw.misogi.desc': 'Asume un desafío definitorio este año con un 50% de probabilidad de éxito para restablecer tu línea base espiritual.',
 
     // Detailed Framework Data (ES)
     'fw.first-principles.definition': 'Un modelo mental de resolución de problemas que implica descomponer un problema en sus elementos básicos (verdades fundamentales) y luego reensamblarlos desde cero.',
@@ -798,6 +821,15 @@ export const translations = {
 
     'fw.eisenhower.definition': 'Una herramienta de toma de decisiones que divide las tareas en cuatro cuadrantes basados en la urgencia y la importancia.',
     'fw.eisenhower.example': 'Urgente e Importante: "Caída del servidor". Importante no Urgente: "Planificación estratégica".',
+
+    'fw.misogi.definition': 'Una dificultad voluntaria asumida para purificar la mente y el cuerpo. Regla 1: Debe ser realmente difícil (tasa de fallo del 50%). Regla 2: No morir.',
+    'fw.misogi.example': 'Remar en tabla a través de un canal de 30 millas sin haber remado más de 5 millas nunca.',
+    'fw.misogi.pros.0': 'Impulso radical de confianza',
+    'fw.misogi.pros.1': 'Restablece la dificultad',
+    'fw.misogi.pros.2': 'Purificación espiritual',
+    'fw.misogi.cons.0': 'Alta probabilidad de fallo',
+    'fw.misogi.cons.1': 'Esfuerzo físico/mental',
+    'fw.misogi.cons.2': 'No es una herramienta diaria',
     'fw.eisenhower.pros.0': 'Priorización clara',
     'fw.eisenhower.pros.1': 'Reduce la procrastinación',
     'fw.eisenhower.pros.2': 'Marco de delegación',

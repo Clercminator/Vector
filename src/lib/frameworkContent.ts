@@ -53,5 +53,17 @@ export const frameworkContent: Record<string, { longDescription: string; history
       "Define 3-5 Key Results (measurable).",
       "Track progress regularly."
     ]
+  },
+  "misogi": {
+    longDescription: "The Misogi Challenge is a modern adaptation of an ancient Japanese Shinto purification ritual. In its modern form, popularized by Dr. Marcus Elliott, it involves taking on one defining challenge each year. This challenge must satisfy two rules: 1) You must have a roughly 50% chance of success (meaning failure is a very real possibility), and 2) You cannot die (safety is paramount). The goal is not just the achievement, but the 'purification' that comes from pushing yourself to your absolute limits and realizing you are capable of more than you thought.",
+    history: "Rooted in Shinto tradition where followers stood under icy waterfalls to purify themselves. Reinterpreted by Dr. Marcus Elliott for the modern era to combat the 'comfort crisis' of modern life.",
+    whoItIsFor: "Anyone feeling stagnant, comfortable, or in need of a radical shift in perspective. It is for those who want to see what they are truly made of.",
+    steps: [
+      "Choose a challenge specifically for you.",
+      "Ensure it has a ~50% failure rate.",
+      "Ensure you can't die (manage the risk).",
+      "Prepare, then attempt it.",
+      "Reflect on the experience (success or fail)."
+    ]
   }
 };

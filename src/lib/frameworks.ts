@@ -1,4 +1,4 @@
-import { Brain, Layers, Target, Rocket, Compass } from "lucide-react";
+import { Brain, Layers, Target, Rocket, Compass, Flame } from "lucide-react";
 
 export type Framework =
   | "first-principles"
@@ -8,7 +8,8 @@ export type Framework =
   | "okr"
   | "dsss"
   | "mandalas"
-  | "gps";
+  | "gps"
+  | "misogi";
 
 export const frameworks = [
   {
@@ -171,5 +172,28 @@ export const frameworks = [
     example:
       "Goal: Run 10k. Plan: Training app. System: Strava + accountability.",
     whoItIsFor: "Anyone struggling to turn knowledge into action.",
+  },
+  {
+    id: "misogi" as Framework,
+    title: "The Misogi Challenge",
+    description:
+      "Undertake one defining challenge this year with a 50% chance of success to reset your spiritual baseline.",
+    icon: Flame,
+    color: "#E1306C", // Intense Pink/Red
+    author: "Shinto / Marcus Elliott",
+    definition:
+      "A voluntary hardship undertaken to purify the mind and body. Rule 1: It must be really hard (50% fail rate). Rule 2: You can't die.",
+    pros: [
+      "Radical confidence boost",
+      "Re-baselines difficulty",
+      "Spiritual purification",
+    ],
+    cons: [
+      "High chance of failure",
+      "Physical/Mental strain",
+      "Not a daily productivity tool",
+    ],
+    example:
+      "Paddleboarding across a 30-mile channel without ever having paddled more than 5 miles.",
   },
 ];

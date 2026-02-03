@@ -9,6 +9,7 @@ import rpmMd from '@/content/frameworks/rpm.md?raw';
 import eisenhowerMd from '@/content/frameworks/eisenhower.md?raw';
 import okrMd from '@/content/frameworks/okr.md?raw';
 import gpsMd from '@/content/frameworks/gps.md?raw';
+import misogiMd from '@/content/frameworks/misogi.md?raw';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/app/components/ui/button';
 import { ArrowLeft, Brain, Layers, Target, Rocket, Check, X as XIcon, Quote, User } from 'lucide-react';
@@ -23,6 +24,7 @@ const markdownMap: Record<string, string> = {
   'eisenhower': eisenhowerMd,
   'okr': okrMd,
   'gps': gpsMd,
+  'misogi': misogiMd,
 };
 
 // Start of component

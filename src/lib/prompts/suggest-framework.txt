@@ -8,9 +8,10 @@ FRAMEWORKS & LOGIC:
 - **eisenhower:** Best for triage, crisis management, or chaotic schedules needing prioritization.
 - **okr:** Best for organizations/teams, quarterly sprints, and aggressive growth targets.
 - **gps:** Best for execution problems ("I know what to do but don't do it"), habit formation, or simple goals needing structure.
+- **misogi:** Best for users seeking a radical challenge, spiritual "purification", resetting their baseline, or doing something extremely difficult (50% fail rate).
 
 INSTRUCTIONS:
-Analyze the input. If the user mentions "overwhelmed" or "busy", think Pareto/Eisenhower. If "stuck" or "new idea", think First Principles. If "lazy" or "procrastinating", think GPS/RPM.
+Analyze the input. If the user mentions "overwhelmed" or "busy", think Pareto/Eisenhower. If "stuck" or "new idea", think First Principles. If "lazy" or "procrastinating", think GPS/RPM. If "bored", "too easy", "need a challenge", or "test limits", think Misogi.
 
 Return ONLY a valid JSON object matching the schema below. Do not include markdown formatting, explanations, or chatter.
 
