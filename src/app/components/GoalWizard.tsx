@@ -108,6 +108,9 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   // Mobile Drawer State
   const [showMobileDraft, setShowMobileDraft] = useState(false);
 
+  // Devil's Advocate Mode
+  const [isHardMode, setIsHardMode] = useState(false);
+
   // Voice Input State
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -151,7 +154,17 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       toast.error(t('wizard.lockedError') || "This framework is not available in your plan.", { duration: 5000 });
       onBack();
     }
+      onBack();
+    }
   }, [tier, framework, onBack, t, isPreviewMode]);
+
+  // Mode Toggle
+  const toggleHardMode = () => {
+      setIsHardMode(!isHardMode);
+      toast(isHardMode ? "Mode: Supportive Coach 🤝" : "Mode: Devil's Advocate (Hard Mode) 🔥", {
+          description: !isHardMode ? "The agent will now be ruthless and critical." : "The agent is back to being nice."
+      });
+  };
 
   useEffect(() => {
     // Fetch credits logic... (omitted for brevity, assume same)
@@ -205,20 +218,70 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
   const isOpenRouterConfigured = () => !!import.meta.env.VITE_OPENROUTER_API_KEY || !!import.meta.env.VITE_OPENROUTER_PROXY_URL;
 
+  // Helper to parse partial JSON (Streaming Support)
+  const tryParsePartialJson = (jsonString: string): any => {
+      try {
+          return JSON.parse(jsonString);
+      } catch (e) {
+          // Heuristic auto-completion for partial JSON
+          // This is a naive implementation but works for most simple streaming cases
+          try {
+              if (jsonString.trim().endsWith(',')) jsonString = jsonString.trim().slice(0, -1);
+              if (!jsonString.endsWith('}')) jsonString += '}'; 
+              return JSON.parse(jsonString);
+          } catch (e2) {
+              try {
+                  jsonString += ']}'; // Try closing array + obj
+                  return JSON.parse(jsonString);
+              } catch (e3) {
+                  try {
+                      jsonString += '"}'; // Try closing quote + obj
+                      return JSON.parse(jsonString);
+                  } catch (e4) {
+                      return null;
+                  }
+              }
+          }
+      }
+  };
+
   const extractContent = (text: string): { cleanText: string, suggestions: string[], draft: any | null } => {
     let cleanText = text;
     let suggestions: string[] = [];
     let draft: any | null = null;
+    let isPartial = false;
 
-    // 1. Extract Draft
-    const draftRegex = /\|\|\|DRAFT_START\|\|\|([\s\S]*?)\|\|\|DRAFT_END\|\|\|/;
-    const draftMatch = cleanText.match(draftRegex);
-    if (draftMatch) {
-        try {
-            draft = JSON.parse(draftMatch[1].trim());
-            cleanText = cleanText.replace(draftMatch[0], '').trim();
-        } catch (e) {
-            console.error("Failed to parse draft JSON", e);
+    // 1. Extract Draft (Streaming Friendly)
+    // We look for the start tag. If end tag is missing, we try to parse what we have.
+    const startTag = '|||DRAFT_START|||';
+    const endTag = '|||DRAFT_END|||';
+    const startIndex = cleanText.indexOf(startTag);
+    
+    if (startIndex !== -1) {
+        const afterStart = cleanText.substring(startIndex + startTag.length);
+        const endIndex = afterStart.indexOf(endTag);
+        
+        let jsonStr = '';
+        if (endIndex !== -1) {
+            // Full block found
+            jsonStr = afterStart.substring(0, endIndex);
+            cleanText = cleanText.substring(0, startIndex) + afterStart.substring(endIndex + endTag.length);
+        } else {
+            // Only start found (Streaming)
+            jsonStr = afterStart;
+            // In streaming mode, we hide the raw JSON from the chat bubble by stripping it from cleanText
+            cleanText = cleanText.substring(0, startIndex);
+            isPartial = true;
+        }
+
+        if (jsonStr.trim()) {
+           if (isPartial) {
+               draft = tryParsePartialJson(jsonStr.trim());
+           } else {
+               try {
+                   draft = JSON.parse(jsonStr.trim());
+               } catch (e) { console.error("Bad JSON", e); }
+           }
         }
     }
 
@@ -227,7 +290,6 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     if (parts.length > 1) {
         try {
             const lastPart = parts[parts.length - 1].trim();
-            // Check if it looks like a JSON array
             if (lastPart.startsWith('[') && lastPart.endsWith(']')) {
                 const parsed = JSON.parse(lastPart);
                 if (Array.isArray(parsed)) {
@@ -235,9 +297,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                     cleanText = parts.slice(0, -1).join('|||').trim();
                 }
             }
-        } catch (e) {
-            // Ignore parse errors, just keep text as is
-        }
+        } catch (e) {}
     }
 
     return { cleanText, suggestions, draft };
@@ -416,7 +476,8 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
             goal: userText, 
             framework: framework,
             tier: tier,
-            validFrameworks: allowedFrameworks
+            validFrameworks: allowedFrameworks,
+            hardMode: isHardMode // Pass flag
         };
 
         const stream = await graph.stream(inputs, config);
@@ -954,69 +1015,110 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     return null;
   };
 
+  // Score Indicator Component
+  const ScoreIndicator = ({ score }: { score: number }) => {
+    let color = "text-red-500";
+    let text = "Weak";
+    if (score >= 40) { color = "text-yellow-500"; text = "Developing"; }
+    if (score >= 70) { color = "text-green-500"; text = "Strong"; }
+    if (score >= 90) { color = "text-emerald-600 font-bold"; text = "Excellent"; }
+
+    return (
+        <div className="flex items-center gap-3 bg-white dark:bg-zinc-800/50 px-3 py-1.5 rounded-lg border border-gray-100 dark:border-zinc-800/50">
+            <div className="flex flex-col items-end">
+                <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">{text}</span>
+                <span className={`text-xl font-mono leading-none ${color}`}>{score}%</span>
+            </div>
+             <div className="w-10 h-10 relative flex items-center justify-center">
+                <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 36 36">
+                    <path className="text-gray-200 dark:text-zinc-700" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path className={`${color} transition-all duration-1000 ease-out`} strokeDasharray={`${score}, 100`} strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+             </div>
+        </div>
+    );
+  };
+
   const renderDraftContent = (draft: any, t: any) => {
       if (!draft) return null;
 
-      if (draft.type === 'pareto') {
-        return (
-            <div className="space-y-4">
-                <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-blue-100 dark:border-blue-900/30">
-                    <h5 className="font-bold text-blue-600 text-sm mb-2">{t('pareto.vital')}</h5>
-                    <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
-                        {draft.vital?.map((v: string, i: number) => <li key={i}>{v}</li>)}
-                    </ul>
-                </div>
-                 <div className="p-4 bg-gray-100 dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700">
-                    <h5 className="font-bold text-gray-500 text-sm mb-2">{t('pareto.trivial')}</h5>
-                    <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400">
-                        {draft.trivial?.map((v: string, i: number) => <li key={i}>{v}</li>)}
-                    </ul>
-                </div>
-            </div>
-        );
-    }
-
-    if (draft.type === 'okr') {
-        return (
-            <div className="space-y-4">
-                 <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-900/40">
-                    <h5 className="font-bold text-purple-600 text-sm mb-2">{t('okr.northStar')}</h5>
-                    <p className="text-lg font-bold text-gray-900 dark:text-white leading-tight">{draft.objective || "Defining..."}</p>
-                </div>
-                 <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
-                    <h5 className="font-bold text-gray-500 text-sm mb-2">{t('okr.keyResult')}</h5>
-                    <ul className="space-y-2">
-                        {draft.keyResults?.map((kr: string, i: number) => (
-                            <li key={i} className="flex gap-2 text-sm text-gray-700 dark:text-gray-300">
-                                <span className="font-bold text-purple-400">{i+1}.</span> {kr}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
-        );
-    }
-
-    // Fallback
-    return (
-        <div className="space-y-4">
-            {Object.entries(draft).map(([key, val]) => {
-                if (key === 'type' || !val) return null;
-                return (
-                    <div key={key} className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
-                        <h5 className="font-bold text-gray-500 text-sm mb-2 capitalize">{key}</h5>
-                        {Array.isArray(val) ? (
-                            <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
-                                {(val as string[]).map((v, i) => <li key={i}>{v}</li>)}
-                            </ul>
-                        ) : (
-                            <p className="text-sm text-gray-800 dark:text-gray-200">{val as string}</p>
-                        )}
+      const renderBody = () => {
+        if (draft.type === 'pareto') {
+            return (
+                <div className="space-y-4">
+                    <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-blue-100 dark:border-blue-900/30">
+                        <h5 className="font-bold text-blue-600 text-sm mb-2">{t('pareto.vital')}</h5>
+                        <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                            {draft.vital?.map((v: string, i: number) => <li key={i}>{v}</li>)}
+                        </ul>
                     </div>
-                )
-            })}
-        </div>
-    );
+                     <div className="p-4 bg-gray-100 dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700">
+                        <h5 className="font-bold text-gray-500 text-sm mb-2">{t('pareto.trivial')}</h5>
+                        <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400">
+                            {draft.trivial?.map((v: string, i: number) => <li key={i}>{v}</li>)}
+                        </ul>
+                    </div>
+                </div>
+            );
+        }
+
+        if (draft.type === 'okr') {
+            return (
+                <div className="space-y-4">
+                     <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-900/40">
+                        <h5 className="font-bold text-purple-600 text-sm mb-2">{t('okr.northStar')}</h5>
+                        <p className="text-lg font-bold text-gray-900 dark:text-white leading-tight">{draft.objective || "Defining..."}</p>
+                    </div>
+                     <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+                        <h5 className="font-bold text-gray-500 text-sm mb-2">{t('okr.keyResult')}</h5>
+                        <ul className="space-y-2">
+                            {draft.keyResults?.map((kr: string, i: number) => (
+                                <li key={i} className="flex gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                    <span className="font-bold text-purple-400">{i+1}.</span> {kr}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+            );
+        }
+
+        // Fallback
+        return (
+            <div className="space-y-4">
+                {Object.entries(draft).map(([key, val]) => {
+                    if (key === 'type' || key === 'score' || !val) return null;
+                    return (
+                        <div key={key} className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+                            <h5 className="font-bold text-gray-500 text-sm mb-2 capitalize">{key}</h5>
+                            {Array.isArray(val) ? (
+                                <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                                    {(val as string[]).map((v, i) => <li key={i}>{v}</li>)}
+                                </ul>
+                            ) : (
+                                <p className="text-sm text-gray-800 dark:text-gray-200">{val as string}</p>
+                            )}
+                        </div>
+                    )
+                })}
+            </div>
+        );
+      };
+
+      return (
+          <div className="space-y-6">
+               <div className="flex items-start justify-between border-b border-gray-100 dark:border-zinc-800 pb-4">
+                   <div>
+                       <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                           <span className="capitalize">{draft.type?.replace('-', ' ') || "Plan"}</span>
+                       </h3>
+                       <p className="text-xs text-gray-400 mt-1">Live Blueprint Preview</p>
+                   </div>
+                   {draft.score !== undefined && <ScoreIndicator score={draft.score} />}
+               </div>
+               {renderBody()}
+          </div>
+      );
   };
 
   return (
@@ -1083,13 +1185,28 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
              </button>
           )}
 
+          {/* Hard Mode Toggle */}
+          <div className="absolute top-4 right-4 z-10">
+              <button 
+                  onClick={toggleHardMode}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+                      isHardMode 
+                      ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]' 
+                      : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                  }`}
+              >
+                  {isHardMode ? <Flame size={12} fill="currentColor" /> : <div className="w-3 h-3 rounded-full border-2 border-current" />}
+                  {isHardMode ? "Hard Mode" : "Normal"}
+              </button>
+          </div>
+
           {/* Suggestion Chips */}
           {!result && !isTyping && !isAgentRunning && suggestionChips.length > 0 && (
              <div className="flex gap-2 mb-3 overflow-x-auto pb-2 scrollbar-none">
                 {suggestionChips.map((chip) => (
                    <button 
                      key={chip}
-                     onClick={() => runAgent(chip)}
+                     onClick={() => runAgent(chip, isHardMode)}
                      disabled={isTyping || isAgentRunning}
                      className="px-4 py-1.5 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                    >
