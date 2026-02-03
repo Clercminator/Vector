@@ -222,14 +222,16 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
             if (user) {
                 // Fetch full_name along with credits and tier
-                supabase.from('profiles').select('credits, tier, full_name').eq('user_id', user.id).single()
-                .then(({ data }: { data: any }) => {
-                    if (data) {
-                        setCredits(data.credits);
-                        if (data.tier) setTier(data.tier as TierId);
-                        if (data.full_name) setUserName(data.full_name);
-                    }
-                });
+                if (user.id) {
+                    supabase.from('profiles').select('credits, tier, full_name').eq('user_id', user.id).single()
+                    .then(({ data }: { data: any }) => {
+                        if (data) {
+                            setCredits(data.credits);
+                            if (data.tier) setTier(data.tier as TierId);
+                            if (data.full_name) setUserName(data.full_name);
+                        }
+                    });
+                }
             } else {
                 setCredits(3); 
             }
@@ -1327,7 +1329,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
-                className="hidden lg:block absolute right-0 top-16 bottom-0 w-96 bg-gray-50 dark:bg-zinc-900/50 border-l border-gray-200 dark:border-zinc-800 overflow-y-auto p-6 backdrop-blur-sm z-10"
+                className="hidden lg:block absolute right-0 top-0 bottom-0 w-96 bg-gray-50 dark:bg-zinc-900/50 border-l border-gray-200 dark:border-zinc-800 overflow-y-auto p-6 backdrop-blur-sm z-10"
               >
                  <div className="flex items-center gap-2 mb-6 text-gray-400 uppercase tracking-widest text-xs font-bold">
                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
