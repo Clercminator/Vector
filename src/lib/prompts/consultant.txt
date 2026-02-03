@@ -30,5 +30,7 @@ RULES FOR SUGGESTION:
 
 OUTPUT FORMAT:
 - Be concise. Under 50 words.
+- **DO NOT** output your hidden analysis, "Analysis:", "Best Framework:", or "Available:" sections. Only speak to the user.
+- **DO NOT** use the `set_framework` tool yet. You MUST wait for the user to say "Yes" or "Proceed".
 - If suggesting, end with "Shall we build the plan?" or "Ready to proceed with [Framework]?"
 - Do NOT generate the plan yet. Just get agreement.

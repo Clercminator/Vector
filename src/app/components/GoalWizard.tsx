@@ -15,6 +15,7 @@ import { supabase } from '@/lib/supabase';
 import { useTheme } from 'next-themes';
 import { graph } from '@/agent/goalAgent';
 import { HumanMessage, AIMessage } from '@langchain/core/messages';
+import { LangChainTracer } from "@langchain/core/tracers/tracer_langchain";
 import { v4 as uuidv4 } from 'uuid';
 import { EditableText, EditableList } from './Editable';
 import { ErrorBoundary } from './ErrorBoundary';
@@ -472,7 +473,26 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     setIsAgentRunning(true);
 
     try {
-        const config = { configurable: { thread_id: threadId } };
+        const callbacks: any[] = [];
+        // @ts-ignore
+        if (typeof process !== 'undefined' && process.env.LANGCHAIN_TRACING_V2 === "true") {
+             // @ts-ignore
+             const apiKey = process.env.LANGCHAIN_API_KEY;
+             // @ts-ignore
+             const project = process.env.LANGCHAIN_PROJECT;
+
+             if (apiKey) {
+                 callbacks.push(new LangChainTracer({
+                     projectName: project || "Vector",
+                     apiKey: apiKey
+                 }));
+             }
+        }
+
+        const config = { 
+            configurable: { thread_id: threadId },
+            callbacks
+        };
         
         const allowedFrameworks = TIER_CONFIGS[tier]?.allowedFrameworks || [];
 
@@ -1156,9 +1176,9 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
       <div className="flex-grow flex overflow-hidden">
         {/* Chat Area */}
-        <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${draftResult ? 'lg:mr-96' : ''}`}>
-          <div className="w-full max-w-7xl mx-auto flex-grow flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-6">
-             <div className="space-y-6 pb-32 pt-4">
+        <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${draftResult ? 'lg:mr-96' : ''}`}>
+          <div className="w-full max-w-5xl mx-auto flex-grow flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-6">
+             <div className="space-y-2 pb-32 pt-4">
               <AnimatePresence mode="popLayout">
                 {messages.map((msg, i) => (
                   <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'ai' ? 'justify-start' : 'justify-end'}`}>
@@ -1310,7 +1330,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       </div>
 
       {result && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-4 items-center z-30">
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-4 items-center z-30">
           <button onClick={clearSession} className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium"><RefreshCcw size={18} />{t('wizard.restart')}</button>
           
           {/* Calendar Export */}
