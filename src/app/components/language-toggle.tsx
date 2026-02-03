@@ -16,7 +16,7 @@ export function LanguageToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 dark:text-gray-400 font-medium text-sm flex items-center gap-1 focus:outline-none"
+          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 dark:text-gray-400 font-medium text-sm flex items-center gap-1 focus:outline-none cursor-pointer"
           title="Switch Language"
         >
           <Globe size={18} />

@@ -809,10 +809,10 @@ function App() {
             <span className="font-bold tracking-tight text-black dark:text-white">VECTOR</span>
           </div>
           <div className="flex flex-wrap items-center gap-6 md:gap-8 text-sm text-gray-500 dark:text-gray-400">
-            <button onClick={() => navigate('/legal?section=privacy')} className="hover:text-black dark:hover:text-white transition-colors font-medium">{t('footer.privacy')}</button>
-            <button onClick={() => navigate('/legal?section=terms')} className="hover:text-black dark:hover:text-white transition-colors font-medium">{t('footer.terms')}</button>
-            <button onClick={() => navigate('/legal?section=security')} className="hover:text-black dark:hover:text-white transition-colors font-medium">{t('footer.security')}</button>
-            <a href="mailto:vectorgoal.contact@gmail.com" className="hover:text-black dark:hover:text-white transition-colors font-medium">{t('footer.contact')}</a>
+            <button onClick={() => navigate('/legal?section=privacy')} className="hover:text-black dark:hover:text-white transition-colors font-medium cursor-pointer">{t('footer.privacy')}</button>
+            <button onClick={() => navigate('/legal?section=terms')} className="hover:text-black dark:hover:text-white transition-colors font-medium cursor-pointer">{t('footer.terms')}</button>
+            <button onClick={() => navigate('/legal?section=security')} className="hover:text-black dark:hover:text-white transition-colors font-medium cursor-pointer">{t('footer.security')}</button>
+            <a href="mailto:vectorgoal.contact@gmail.com" className="hover:text-black dark:hover:text-white transition-colors font-medium cursor-pointer">{t('footer.contact')}</a>
             <span className="inline-flex items-center">
               <ShareButton />
             </span>
