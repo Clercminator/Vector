@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { Send, ArrowLeft, RefreshCcw, CheckCircle2, Calendar, Target, Zap, Layers, Share2, Rocket, Clock, Star, Download, Lock, Mic, X, FileText } from 'lucide-react';
+import { Send, ArrowLeft, RefreshCcw, CheckCircle2, Calendar, Target, Zap, Layers, Share2, Rocket, Clock, Star, Download, Lock, Mic, X, FileText, Flame } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 import { Blueprint, BlueprintResult, blueprintTitleFromAnswers, fetchBlueprintMessages, saveBlueprintMessage, saveBlueprintMessages } from '@/lib/blueprints';
@@ -152,8 +152,6 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   useEffect(() => {
     if (!isPreviewMode && !canUseFramework(tier, framework)) {
       toast.error(t('wizard.lockedError') || "This framework is not available in your plan.", { duration: 5000 });
-      onBack();
-    }
       onBack();
     }
   }, [tier, framework, onBack, t, isPreviewMode]);
@@ -1206,7 +1204,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                 {suggestionChips.map((chip) => (
                    <button 
                      key={chip}
-                     onClick={() => runAgent(chip, isHardMode)}
+                     onClick={() => runAgent(chip)}
                      disabled={isTyping || isAgentRunning}
                      className="px-4 py-1.5 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                    >
