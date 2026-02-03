@@ -68,21 +68,38 @@ export function AuthModal({
         hasCaptcha: !!captchaToken
     });
 
-    const p = supabase.auth.signInWithOtp({
-      email: trimmed,
-      options: { 
-          emailRedirectTo,
-          captchaToken,
-      },
-    });
+    const authAction = async () => {
+        console.log("Starting auth action...", { email: trimmed, redirect: emailRedirectTo });
+        
+        const { data, error } = await supabase.auth.signInWithOtp({
+            email: trimmed,
+            options: { 
+                emailRedirectTo,
+                captchaToken,
+            },
+        });
 
-    toast.promise(p, {
+        if (error) {
+            console.error("Supabase returned error:", error);
+            // Log specifically for SMTP or Captcha hints
+            console.log("Error status:", error.status);
+            console.log("Error message:", error.message);
+            throw error;
+        }
+        
+        console.log("Auth action successful. Data:", data);
+        return data;
+    };
+
+    toast.promise(authAction(), {
       loading: mode === "signin" ? t('auth.signingIn') || "Signing in..." : t('auth.creatingAccount') || "Creating your account...",
       success: t('auth.success') || "Magic link sent! Check your inbox.",
       error: (e: any) => {
+          console.error("Toast caught error:", e);
           captchaRef.current?.resetCaptcha();
           setCaptchaToken(null);
-          return e instanceof Error ? e.message : "Authentication failed.";
+          // Show the actual error message from Supabase in the Toast
+          return `Error: ${e.message || "Authentication failed"}`;
       },
     });
 
