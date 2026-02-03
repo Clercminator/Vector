@@ -74,8 +74,12 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
         className="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
       >
         <div className="p-8 text-center flex flex-col items-center">
-          <div className="w-16 h-16 bg-black dark:bg-white text-white dark:text-black rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-black/20 dark:shadow-white/10">
-            <StepIcon size={32} />
+          <div className={`flex items-center justify-center mb-6 transition-all duration-300 ${
+            steps[currentStep].id === 'welcome' 
+              ? 'w-auto h-auto bg-transparent shadow-none' 
+              : 'w-16 h-16 bg-black dark:bg-white text-white dark:text-black rounded-2xl shadow-lg shadow-black/20 dark:shadow-white/10'
+          }`}>
+            <StepIcon size={steps[currentStep].id === 'welcome' ? 64 : 32} />
           </div>
           
           <h2 className="text-3xl font-bold tracking-tight mb-4 text-gray-900 dark:text-white">

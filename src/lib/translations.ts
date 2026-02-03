@@ -75,6 +75,12 @@ export const translations = {
     'profile.saving': 'Saving...',
     'profile.success': 'Profile updated',
     'profile.error': 'Failed to save profile',
+    'profile.demographics': 'Demographics',
+    'profile.interests': 'Interests',
+    'profile.skills': 'Skills & Expertise',
+    'profile.hobbies': 'Hobbies',
+    'profile.values': 'Core Values',
+    'profile.vision': 'Long-term Vision',
 
     // Auth
     'auth.title': 'Sign in to Vector',
@@ -538,6 +544,12 @@ export const translations = {
     'profile.saving': 'Guardando...',
     'profile.success': 'Perfil actualizado',
     'profile.error': 'Error al guardar el perfil',
+    'profile.demographics': 'Demografía',
+    'profile.interests': 'Intereses',
+    'profile.skills': 'Habilidades y Experiencia',
+    'profile.hobbies': 'Pasatiempos',
+    'profile.values': 'Valores Fundamentales',
+    'profile.vision': 'Visión a Largo Plazo',
 
     // Auth
     'auth.title': 'Inicia sesión en Vector',

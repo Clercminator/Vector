@@ -34,6 +34,8 @@ interface ProfileData {
     hobbies?: string;
     skills?: string;
     interests?: string;
+    values?: string;
+    vision?: string;
   };
 }
 
@@ -64,7 +66,9 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
       demographics: '',
       hobbies: '',
       skills: '',
-      interests: ''
+      interests: '',
+      values: '',
+      vision: ''
     }
   });
 
@@ -92,7 +96,7 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
               branding_logo_url: profile.branding_logo_url || '',
               branding_color: profile.branding_color || '#000000',
               tier: profile.tier || 'free',
-              metadata: profile.metadata || { demographics: '', hobbies: '', skills: '', interests: '' },
+              metadata: profile.metadata || { demographics: '', hobbies: '', skills: '', interests: '', values: '', vision: '' },
             });
           }
         }
