@@ -10,7 +10,7 @@ import { useLanguage } from './language-provider';
 
 interface HelpMeChooseModalProps {
   onClose: () => void;
-  onSelect: (id: FrameworkId) => void;
+  onSelect: (id: FrameworkId, context?: { explanation: string; objective: string }) => void;
 }
 
 export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps) {
@@ -47,7 +47,7 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
   const suggestedFramework = frameworks.find(f => f.id === suggestion);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -156,7 +156,7 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
                         </div>
                         <h4 className="font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
                             <Sparkles size={16} className="text-yellow-500" />
-                            Why this fits your ambition:
+                            {t('intake.fitting')}
                         </h4>
                         <p className="text-gray-600 dark:text-gray-300 leading-relaxed italic relative z-10">
                             "{explanation}"
@@ -167,7 +167,7 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
                          <Button variant="ghost" onClick={() => setSuggestion(null)} className="h-14 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-900">
                             {t('intake.tryAgain')}
                          </Button>
-                         <Button onClick={() => onSelect(suggestion!)} className="h-14 rounded-xl bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-gray-200 shadow-xl">
+                         <Button onClick={() => onSelect(suggestion!, { explanation, objective })} className="h-14 rounded-xl bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-gray-200 shadow-xl">
                             {t('intake.useFramework')} <ArrowRight size={20} className="ml-2" />
                          </Button>
                     </div>

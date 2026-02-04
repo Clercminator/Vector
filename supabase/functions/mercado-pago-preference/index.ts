@@ -8,7 +8,7 @@ const MERCADOPAGO_PREFERENCES_URL = "https://api.mercadopago.com/checkout/prefer
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, x-client-info, x-client-version",
 };
 
 interface PreferenceBody {

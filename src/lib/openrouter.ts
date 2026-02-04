@@ -296,7 +296,7 @@ export async function suggestFramework(
     Output Schema (JSON ONLY):
     {
         "framework": "one_of_the_ids_above",
-        "explanation": "A concise reasoning (1-2 sentences) in ${language || 'English'} explaining WHY this fits."
+        "explanation": "A concise reasoning (1-2 sentences) COMPLETELY in ${language || 'English'} explaining WHY this fits. Do not use English if the target language is ${language}."
     }
     
     IMPORTANT: Return ONLY the JSON object. Do not add markdown formatting or extra text.
@@ -304,7 +304,7 @@ export async function suggestFramework(
 
     try {
         const content = await chat([
-            { role: "system", content: "You are an expert strategic advisor. You output strictly valid JSON." },
+            { role: "system", content: `You are an expert strategic advisor. You output strictly valid JSON. You MUST write the explanation in ${language || 'English'}.` },
             { role: "user", content: userContent }
         ], { max_tokens: 500, retryCount: 1 });
         

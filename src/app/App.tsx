@@ -305,7 +305,7 @@ function App() {
     toast.success(t('app.auth.signedOut'));
   };
 
-  const handleStartWizard = (fwId: Framework) => {
+  const handleStartWizard = (fwId: Framework, context?: any) => {
     // Enforce Auth for Chat UI logic
     if (!userId) {
         toast.error(t('app.profile.signInRequired') || "Please sign in to start.");
@@ -314,7 +314,7 @@ function App() {
     }
     setSelectedFramework(fwId);
     setActiveBlueprint(undefined); // New blueprint
-    navigate('/wizard');
+    navigate('/wizard', { state: { framework: fwId, context } });
   };
 
   const handleOpenBlueprint = (bp: Blueprint) => {

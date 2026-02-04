@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Send, ArrowLeft, RefreshCcw, CheckCircle2, Calendar, Target, Zap, Layers, Share2, Rocket, Clock, Star, Download, Lock, Mic, X, FileText, Flame, PlusCircle, WifiOff } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
@@ -74,6 +74,7 @@ const ThinkingIndicator = () => (
 export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSaveBlueprint, initialBlueprint, tier: propTier, onSwitchFramework, isPreviewMode = false }) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [step, setStep] = useState(0); 
@@ -552,16 +553,21 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     setStep(0);
     setIsTyping(true);
     const tTimer = setTimeout(() => {
-      // Agent Welcome - Use the first question of the framework if available
-      // Note: frameworks.ts now stores KEYS (e.g. 'fp.q1'), so we must translate them.
-      let initialMsg = "";
-      if (currentConfig.questions?.[0]) {
-          initialMsg = t(currentConfig.questions[0]);
-      } else {
-          initialMsg = t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart');
-      }
-      setMessages([{ role: 'ai', content: initialMsg }]); 
-      setIsTyping(false);
+        // Check for injected context from Help Me Choose
+        const initialContext = (window.history.state?.usr?.context) || (location.state as any)?.context;
+
+        let initialMsg = "";
+        
+        if (initialContext && initialContext.explanation) {
+             initialMsg = `${initialContext.explanation}\n\n${t(currentConfig.questions?.[0] || 'wizard.agentStart')}`;
+        } else if (currentConfig.questions?.[0]) {
+           initialMsg = t(currentConfig.questions[0]);
+        } else {
+           initialMsg = t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart');
+        }
+        
+        setMessages([{ role: 'ai', content: initialMsg }]); 
+        setIsTyping(false);
     }, 1000);
     return () => clearTimeout(tTimer);
   }, [framework, initialBlueprint, t]); // Removed currentConfig from dep to avoid loop if object ref changes
@@ -1318,7 +1324,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   };
 
   return (
-    <div className="relative h-[calc(100vh-5rem)] px-4 md:px-8 z-10 flex flex-col overflow-hidden">
+    <div className="relative h-[calc(100vh-5rem)] px-2 md:px-4 z-10 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="w-full max-w-full mx-auto flex-none pt-4 flex justify-between items-center bg-transparent z-20">
         <div className="flex items-center gap-4">
@@ -1359,7 +1365,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       <div className="flex-grow flex overflow-hidden">
         {/* Chat Area */}
         <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${draftResult ? 'lg:mr-96' : ''}`}>
-          <div className="w-full h-full flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-8 lg:px-12">
+          <div className="w-full h-full flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-2 md:px-4 lg:px-6">
              <div className="space-y-2 pb-32 pt-4">
               <AnimatePresence mode="popLayout">
                 {(messages || []).map((msg, i) => (

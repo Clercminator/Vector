@@ -190,6 +190,7 @@ export const translations = {
     'pricing.mostPopular': 'Most Popular',
     'pricing.oneTime': 'One-time',
     'pricing.custom': 'Custom',
+    'pricing.currentPlan': 'Current Plan',
     'pricing.tier.architect': 'Architect',
     'pricing.tier.architect.desc': 'Perfect for exploring fundamental frameworks.',
     'pricing.tier.standard': 'Standard',
@@ -543,6 +544,8 @@ export const translations = {
     'intake.result.title': 'Recommended Framework',
     'intake.tryAgain': 'Try Again',
     'intake.useFramework': 'Use Framework',
+    'intake.fitting': 'Why this fits your ambition:',
+    'wizard.placeholder': 'Type your response...',
   },
   es: {
     // ... existing ES translations (managed by next block below via AllowMultiple? No, need to be careful with structure)
@@ -736,6 +739,7 @@ export const translations = {
     'pricing.mostPopular': 'Más Popular',
     'pricing.oneTime': 'Pago único',
     'pricing.custom': 'A medida',
+    'pricing.currentPlan': 'Plan Actual',
     'pricing.tier.architect': 'Arquitecto',
     'pricing.tier.architect.desc': 'Perfecto para explorar métodos fundamentales.',
     'pricing.tier.standard': 'Estándar',
@@ -909,8 +913,8 @@ export const translations = {
     'intake.result.title': 'Método Recomendado',
     'intake.tryAgain': 'Probar de nuevo',
     'intake.useFramework': 'Usar Método',
-
-
+    'intake.fitting': 'Por qué esto encaja con tu ambición:',
+    'wizard.placeholder': 'Escribe tu respuesta...',
 
     'rpm.title': 'Estratega de Objetivos RPM',
     'rpm.q1': "¿Cuál es el Resultado específico que quieres lograr? (Sé preciso)",
@@ -1183,6 +1187,7 @@ export const translations = {
     'pricing.mostPopular': 'Mais Popular',
     'pricing.oneTime': 'Pagamento único',
     'pricing.custom': 'Personalizado',
+    'pricing.currentPlan': 'Plano Atual',
     'pricing.tier.architect': 'Arquiteto',
     'pricing.tier.architect.desc': 'Perfeito para explorar modelos fundamentais.',
     'pricing.tier.standard': 'Padrão',
@@ -1505,6 +1510,7 @@ export const translations = {
     'pricing.mostPopular': 'Le Plus Populaire',
     'pricing.oneTime': 'Paiement unique',
     'pricing.custom': 'Sur mesure',
+    'pricing.currentPlan': 'Plan Actuel',
     'pricing.tier.architect': 'Architecte',
     'pricing.tier.architect.desc': 'Parfait pour explorer les modèles fondamentaux.',
     'pricing.tier.standard': 'Standard',
@@ -1825,6 +1831,7 @@ export const translations = {
     'pricing.mostPopular': 'Beliebteste',
     'pricing.oneTime': 'Einmalig',
     'pricing.custom': 'Benutzerdefiniert',
+    'pricing.currentPlan': 'Aktueller Plan',
     'pricing.tier.architect': 'Architekt',
     'pricing.tier.architect.desc': 'Perfekt, um grundlegende Modelle zu erkunden.',
     'pricing.tier.standard': 'Standard',
