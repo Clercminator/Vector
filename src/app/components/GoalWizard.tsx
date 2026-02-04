@@ -169,21 +169,8 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
             console.error("Failed to restore session, clearing corrupted data", e);
             localStorage.removeItem('vector_wizard_session');
         }
-    } else if (initialBlueprint) {
-        // 2. If no local session, but we have an initialBlueprint (Editing mode), load its messages
-        const loadRemoteMessages = async () => {
-             try {
-                const remoteMsgs = await fetchBlueprintMessages(supabase, initialBlueprint.id);
-                if (remoteMsgs && remoteMsgs.length > 0) {
-                     setMessages(remoteMsgs);
-                }
-             } catch(e) {
-                 console.error("Failed to load remote messages:", e);
-             }
-        };
-        loadRemoteMessages();
-         loadRemoteMessages();
     }
+
     
     return () => {
         if (channel) supabase.removeChannel(channel);
@@ -1409,10 +1396,8 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                   </motion.div>
                 )}
               </AnimatePresence>
-              <div ref={messagesEndRef} />
-            </div>
-
             {renderResult()}
+            <div ref={messagesEndRef} />
           </div>
 
           {!initialBlueprint && (
