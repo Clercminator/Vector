@@ -31,7 +31,11 @@ interface ProfileData {
   branding_color?: string;
   tier?: string;
   metadata?: {
-    demographics?: string;
+    demographics?: string; // Deprecated but kept for type safety if needed
+    age?: string;
+    gender?: string;
+    country?: string;
+    zodiac_sign?: string;
     hobbies?: string;
     skills?: string;
     interests?: string;
@@ -65,6 +69,10 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
     tier: 'free',
     metadata: {
       demographics: '',
+      age: '',
+      gender: '',
+      country: '',
+      zodiac_sign: '',
       hobbies: '',
       skills: '',
       interests: '',
@@ -97,7 +105,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
               branding_logo_url: profile.branding_logo_url || '',
               branding_color: profile.branding_color || '#000000',
               tier: profile.tier || 'free',
-              metadata: profile.metadata || { demographics: '', hobbies: '', skills: '', interests: '', values: '', vision: '' },
+              metadata: profile.metadata || { demographics: '', age: '', gender: '', country: '', zodiac_sign: '', hobbies: '', skills: '', interests: '', values: '', vision: '' },
             });
           }
         }
@@ -352,15 +360,49 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="demographics" className="text-black dark:text-white">{t('profile.demographics') || "Demographics"}</Label>
-                  <Input 
-                    id="demographics" 
-                    value={data.metadata?.demographics || ''} 
-                    onChange={(e) => setData({ ...data, metadata: { ...data.metadata, demographics: e.target.value } })}
-                    placeholder="e.g. 28, New York"
-                    className="bg-transparent dark:text-white dark:border-zinc-700"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="age" className="text-black dark:text-white">{t('profile.age')}</Label>
+                    <Input 
+                      id="age" 
+                      value={data.metadata?.age || ''} 
+                      onChange={(e) => setData({ ...data, metadata: { ...data.metadata, age: e.target.value } })}
+                      placeholder="e.g. 28"
+                      className="bg-transparent dark:text-white dark:border-zinc-700"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="gender" className="text-black dark:text-white">{t('profile.gender')}</Label>
+                    <Input 
+                      id="gender" 
+                      value={data.metadata?.gender || ''} 
+                      onChange={(e) => setData({ ...data, metadata: { ...data.metadata, gender: e.target.value } })}
+                      placeholder="e.g. Female"
+                      className="bg-transparent dark:text-white dark:border-zinc-700"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="country" className="text-black dark:text-white">{t('profile.country')}</Label>
+                    <Input 
+                      id="country" 
+                      value={data.metadata?.country || ''} 
+                      onChange={(e) => setData({ ...data, metadata: { ...data.metadata, country: e.target.value } })}
+                      placeholder="e.g. USA"
+                      className="bg-transparent dark:text-white dark:border-zinc-700"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="zodiac" className="text-black dark:text-white">{t('profile.zodiac')}</Label>
+                    <Input 
+                      id="zodiac" 
+                      value={data.metadata?.zodiac_sign || ''} 
+                      onChange={(e) => setData({ ...data, metadata: { ...data.metadata, zodiac_sign: e.target.value } })}
+                      placeholder="e.g. Leo"
+                      className="bg-transparent dark:text-white dark:border-zinc-700"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="interests" className="text-black dark:text-white">{t('profile.interests') || "Interests"}</Label>
@@ -415,59 +457,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
             </div>
           </div>
 
-          {/* Branding Section (Max Tier Only) */}
-          <div className={`mt-8 pt-8 border-t border-gray-100 dark:border-zinc-800 ${data.tier !== 'max' ? 'opacity-50 pointer-events-none relative' : ''}`}>
-             
-             {data.tier !== 'max' && (
-                 <div className="absolute inset-0 flex items-center justify-center z-10">
-                     <div className="bg-black/80 text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-bold">
-                        <Lock size={14} /> Max Tier Only
-                     </div>
-                 </div>
-             )}
-
-             <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-black dark:text-white">
-                <Award className="text-gray-400" /> 
-                PDF Branding
-                <div className="group relative ml-2">
-                   <Info className="text-gray-400 cursor-help" size={16} />
-                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
-                     Customize the logo and colors on your exported PDF blueprints.
-                   </div>
-                </div>
-             </h3>
-
-             <div className="space-y-6">
-                 <div className="space-y-2">
-                    <Label htmlFor="logoUrl" className="text-black dark:text-white">Logo URL</Label>
-                    <Input 
-                        id="logoUrl" 
-                        value={data.branding_logo_url} 
-                        onChange={(e) => setData({ ...data, branding_logo_url: e.target.value })}
-                        placeholder="https://your-company.com/logo.png"
-                        className="bg-transparent dark:text-white dark:border-zinc-700"
-                    />
-                 </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="brandColor" className="text-black dark:text-white">Primary Color</Label>
-                    <div className="flex gap-4">
-                        <Input 
-                            id="brandColor" 
-                            type="color"
-                            value={data.branding_color} 
-                            onChange={(e) => setData({ ...data, branding_color: e.target.value })}
-                            className="w-16 h-10 p-1 bg-transparent dark:border-zinc-700"
-                        />
-                        <Input 
-                            value={data.branding_color} 
-                            onChange={(e) => setData({ ...data, branding_color: e.target.value })}
-                            placeholder="#000000"
-                            className="bg-transparent dark:text-white dark:border-zinc-700 flex-1"
-                        />
-                    </div>
-                 </div>
-             </div>
-          </div>
+          {/* Branding Section Removed as per request */}
           
           <div className="mt-8 border-t border-gray-100 dark:border-zinc-800 pt-8">
             <AchievementsList userId={userId} />
