@@ -9,11 +9,12 @@ import { AuthModal } from '@/app/components/AuthModal';
 import { Rocket, Brain, Layers, Target, ChevronRight, Menu, X, ArrowRight, WifiOff, Sparkles, BarChart } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
+import { ErrorBoundary } from '@/app/components/ErrorBoundary';
 import { Blueprint, loadLocalBlueprints, saveLocalBlueprints, upsertBlueprint, removeBlueprint, syncLocalBlueprintsToRemote, queueDeletedBlueprint, processDeletedQueue } from '@/lib/blueprints';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { createCheckout, isMercadoPagoConfigured } from '@/lib/mercadoPago';
 
-import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, canUseFramework } from '@/lib/tiers';
+import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID } from '@/lib/tiers';
 import { checkAndAwardAchievements } from '@/lib/gamification';
 
 import { useLanguage } from '@/app/components/language-provider';
@@ -40,6 +41,7 @@ const LegalPage = React.lazy(() => import('@/pages/LegalPage').then(module => ({
 import { trackEvent } from '@/lib/analytics';
 
 import { frameworks, Framework } from '@/lib/frameworks';
+import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 
 const LoadingFallback = () => (
     <div className="flex items-center justify-center min-h-[50vh]">
@@ -79,6 +81,7 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [showHelpChoose, setShowHelpChoose] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   
   const PAGE_SIZE = 12;
   const [page, setPage] = useState(0);
@@ -86,6 +89,23 @@ function App() {
 
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+
+  useEffect(() => {
+    // Check if user has returned from payment
+    const params = new URLSearchParams(location.search);
+    const paymentStatus = params.get('payment');
+    if (paymentStatus === 'success') {
+        toast.success(t('pricing.paymentSuccess') || "Payment successful! Your plan has been upgraded.");
+        confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+        // Clean URL
+        window.history.replaceState({}, '', '/dashboard');
+        // Refresh profile (tier should be updated by webhook, but we might need to wait or poll)
+        setTimeout(refreshProfile, 2000); 
+    } else if (paymentStatus === 'failure') {
+        toast.error(t('pricing.paymentFailed') || "Payment failed or was cancelled.");
+    }
+  }, [location.search, t]);
 
   useEffect(() => {
     // Check for onboarding
@@ -156,10 +176,11 @@ function App() {
           processDeletedQueue(supabase);
           
         // Load profile data (tier + is_admin)
-        supabase.from('profiles').select('tier, is_admin').eq('user_id', session.user.id).single()
+        supabase.from('profiles').select('tier, is_admin, avatar_url').eq('user_id', session.user.id).single()
         .then(({ data }) => {
             if (data?.tier) setTier(data.tier as TierId);
             if (data?.is_admin) setIsAdmin(true);
+            if (data?.avatar_url) setAvatarUrl(data.avatar_url);
         });
       } else {
         setBlueprints(loadLocalBlueprints());
@@ -185,11 +206,12 @@ function App() {
          setHasMore(true);
          loadRemoteBlueprints(session.user.id, 0);
 
-         // Load profile data (tier + is_admin)
-         supabase!.from('profiles').select('tier, is_admin').eq('user_id', session.user.id).single()
+          // Load profile data (tier + is_admin + avatar)
+          supabase!.from('profiles').select('tier, is_admin, avatar_url').eq('user_id', session.user.id).single()
           .then(({ data }) => {
               if (data?.tier) setTier(data.tier as TierId);
               if (data?.is_admin) setIsAdmin(true);
+              if (data?.avatar_url) setAvatarUrl(data.avatar_url);
           });
       } else if (event === 'SIGNED_OUT') {
          setUserId(null);
@@ -197,6 +219,7 @@ function App() {
          setBlueprints(loadLocalBlueprints());
          setTier(DEFAULT_TIER_ID);
          setIsAdmin(false);
+         setAvatarUrl(null);
          setHasMore(false);
       }
     });
@@ -256,9 +279,24 @@ function App() {
     }
   };
 
+  const refreshProfile = () => {
+    if (userId && supabase) {
+        supabase.from('profiles').select('avatar_url, tier, credits').eq('user_id', userId).single()
+        .then(({ data }) => {
+            if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+        });
+    }
+  };
+
   const handleSignOut = async () => {
     if (!supabase) return;
-    await supabase.auth.signOut();
+    try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+    } catch (e) {
+        console.error("Sign out error", e);
+        // We continue client-side signout anyway
+    }
     setUserEmail(null);
     setUserId(null);
     setIsAdmin(false);
@@ -322,6 +360,8 @@ function App() {
       } catch (e) {
           console.error("Sync failed", e);
           toast.error(t('app.sync.failed'));
+          // Revert local optimistic update if needed? 
+          // For now we keep local state as "unsynced" effectively.
       }
     }
     
@@ -358,26 +398,49 @@ function App() {
   };
 
   const handlePricingTier = async (tierName: string, tierId?: string) => {
-    if (!userEmail) {
-      setAuthOpen(true);
-      return;
+    if (!tierId) return;
+    
+    // 1. Handle Free Tier / Downgrade
+    if (tierId === 'architect') {
+        toast.info(t('pricing.freeTierSelected') || "You are on the free plan.");
+        return;
     }
-    if ((tierId === 'standard' || tierId === 'max') && isMercadoPagoConfigured()) {
-      const config = TIER_CONFIGS[tierId as 'standard' | 'max'];
-      if (config.priceUsd <= 0) return;
-      try {
-        await createCheckout({ tier: tierName, amount: config.priceUsd, currency: 'USD' });
-      } catch (e) {
-        console.error(e);
-        toast.error(e instanceof Error ? e.message : t('common.error'));
-      }
-      return;
-    }
+
+    // 2. Handle Enterprise
     if (tierId === 'enterprise') {
-      toast.info(t('app.pricing.enterprise'));
-      return;
+        window.location.href = "mailto:sales@vector.com?subject=Enterprise%20Inquiry";
+        return;
     }
-    toast.info(t('app.tier.selected').replace('{0}', tierName));
+
+    // 3. Handle Paid Tiers (Standard/Max)
+    if (!isMercadoPagoConfigured()) {
+        toast.error("Payments are not configured yet (Test Mode).");
+        return;
+    }
+    
+    if (isOffline) {
+        toast.error(t('common.offline') || "You are offline.");
+        return;
+    }
+
+    try {
+        setIsCheckoutLoading(true);
+        const config = TIER_CONFIGS[tierId as TierId];
+        if (!config || config.priceUsd <= 0) {
+             throw new Error("Invalid tier configuration");
+        }
+
+        await createCheckout({
+            tier: config.id, // e.g. 'standard'
+            title: `Vector - ${tierName}`, // e.g. 'Vector - Standard Plan'
+            amount: config.priceUsd,
+            currency: 'USD' // Or configurable
+        });
+    } catch (e: any) {
+        console.error("Checkout error", e);
+        toast.error(e.message || "Failed to start checkout");
+        setIsCheckoutLoading(false);
+    }
   };
 
   const handleImportTemplate = (templateData: any) => {
@@ -440,7 +503,23 @@ function App() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950 text-gray-900 dark:text-gray-50 font-sans selection:bg-blue-100 dark:selection:bg-blue-900 selection:text-blue-900 dark:selection:text-blue-100 overflow-x-hidden transition-colors duration-300">
+    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white transition-colors duration-300 font-sans selection:bg-purple-500/30">
+        {/* Loading Overlay for Checkout */}
+        <AnimatePresence>
+            {isCheckoutLoading && (
+                <motion.div 
+                    initial={{ opacity: 0 }} 
+                    animate={{ opacity: 1 }} 
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center"
+                >
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="w-12 h-12 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin" />
+                        <p className="font-medium text-lg animate-pulse">Redirecting to MercadoPago...</p>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-black focus:text-white focus:rounded-lg focus:outline-none">
         {t('app.skipToMain')}
       </a>
@@ -503,11 +582,16 @@ function App() {
             <ThemeToggle />
             <LanguageToggle />
 
-            {userEmail && (
-                 <button onClick={() => navigate('/profile')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/profile' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/profile' ? 'page' : undefined}>
-                    {t('nav.profile')}
-                 </button>
-            )}
+             {userEmail && (
+                  <button onClick={() => navigate('/profile')} className="flex items-center gap-2 text-sm font-medium transition-colors cursor-pointer" aria-current={location.pathname === '/profile' ? 'page' : undefined}>
+                    <Avatar className="w-8 h-8 ring-2 ring-gray-100 dark:ring-zinc-800 transition-all hover:ring-4">
+                        <AvatarImage src={avatarUrl || ''} />
+                        <AvatarFallback className="bg-gray-100 dark:bg-zinc-800 text-xs text-black dark:text-white">
+                            {userEmail?.[0]?.toUpperCase()}
+                        </AvatarFallback>
+                    </Avatar>
+                  </button>
+             )}
 
             {isAdmin && (
                  <button onClick={() => navigate('/admin')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/admin' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/admin' ? 'page' : undefined}>
@@ -555,9 +639,17 @@ function App() {
                <LanguageToggle />
             </div>
 
-            {userEmail && (
-               <button onClick={() => navigate('/profile')} className="text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white">{t('nav.profile')}</button>
-            )}
+             {userEmail && (
+                <button onClick={() => navigate('/profile')} className="text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white flex items-center gap-3">
+                    <Avatar className="w-8 h-8">
+                        <AvatarImage src={avatarUrl || ''} />
+                        <AvatarFallback className="bg-gray-100 dark:bg-zinc-800 text-xs text-black dark:text-white">
+                            {userEmail?.[0]?.toUpperCase()}
+                        </AvatarFallback>
+                    </Avatar>
+                    {t('nav.profile')}
+                </button>
+             )}
             {isAdmin && (
                <button onClick={() => navigate('/admin')} className="text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white">{t('nav.admin')}</button>
             )}
@@ -576,6 +668,7 @@ function App() {
       </AnimatePresence>
 
       <main id="main-content" className="relative pt-20 flex-grow" tabIndex={-1}>
+        <ErrorBoundary fallback={<div className="p-8 text-center text-red-500">Failed to load content. Please refresh.</div>}>
         <Suspense fallback={<LoadingFallback />}>
             <AnimatePresence mode="wait">
               <Routes location={location} key={location.pathname}>
@@ -783,11 +876,16 @@ function App() {
                  } />
 
                  <Route path="/profile" element={
-                    userId ? (
-                         <motion.div key="profile" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-                           <Profile userId={userId} userEmail={userEmail} onBack={() => navigate('/')} />
-                         </motion.div>
-                    ) : (
+                     userId ? (
+                          <motion.div key="profile" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                            <Profile 
+                                userId={userId} 
+                                userEmail={userEmail} 
+                                onBack={() => navigate('/')} 
+                                onProfileUpdate={refreshProfile}
+                            />
+                          </motion.div>
+                     ) : (
                          <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
                             <p className="text-gray-500 dark:text-gray-400">{t('app.profile.signInRequired')}</p>
                             <Button onClick={() => setAuthOpen(true)}>{t('nav.signin')}</Button>
@@ -804,10 +902,11 @@ function App() {
                          <div className="flex items-center justify-center h-screen text-xl font-medium">{t('admin.accessDenied')}</div>
                     )
                  } />
-
+                    <Route path="*" element={<div className="p-20 text-center">404</div>} />
               </Routes>
             </AnimatePresence>
         </Suspense>
+        </ErrorBoundary>
       </main>
 
       {/* Footer */}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { Send, ArrowLeft, RefreshCcw, CheckCircle2, Calendar, Target, Zap, Layers, Share2, Rocket, Clock, Star, Download, Lock, Mic, X, FileText, Flame, PlusCircle } from 'lucide-react';
+import { Send, ArrowLeft, RefreshCcw, CheckCircle2, Calendar, Target, Zap, Layers, Share2, Rocket, Clock, Star, Download, Lock, Mic, X, FileText, Flame, PlusCircle, WifiOff } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 import { Blueprint, BlueprintResult, blueprintTitleFromAnswers, fetchBlueprintMessages, saveBlueprintMessage, saveBlueprintMessages, syncBlueprintMessages } from '@/lib/blueprints';
@@ -114,13 +114,41 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   // Transition State
   const isSwitchingRef = useRef(false);
   const isMounted = useRef(true);
+  const isRunningRef = useRef(false);
 
   useEffect(() => {
+    isMounted.current = true;
     return () => { isMounted.current = false; };
   }, []);
 
   // Persistence: Load on Mount
   useEffect(() => {
+    // Realtime Subscription for Concurrency
+    let channel: any = null;
+    if (initialBlueprint?.id && supabase) {
+        channel = supabase.channel(`blueprint-${initialBlueprint.id}`)
+          .on('postgres_changes', { 
+            event: 'UPDATE', 
+            schema: 'public', 
+            table: 'blueprints', 
+            filter: `id=eq.${initialBlueprint.id}` 
+          }, (payload: any) => {
+              // Simple check: If the update came from another client (we could check user_id but RLS might mask it, 
+              // or better, comparing a client-generated timestamp or just simple "changed" logic)
+              
+              // For now, we just notify and optionally re-fetch if we aren't typing
+              if (!isTyping && !isAgentRunning) {
+                   toast.info(t('wizard.externalUpdate') || "This blueprint was updated in another tab.", {
+                       action: {
+                           label: "Refresh",
+                           onClick: () => window.location.reload()
+                       }
+                   });
+              }
+          })
+          .subscribe();
+    }
+
     // 1. Try to load from LocalStorage first (Draft/Unsaved state)
     const savedSession = localStorage.getItem('vector_wizard_session');
     if (savedSession) {
@@ -154,7 +182,12 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
              }
         };
         loadRemoteMessages();
+         loadRemoteMessages();
     }
+    
+    return () => {
+        if (channel) supabase.removeChannel(channel);
+    };
   }, [framework, initialBlueprint]);
 
   // Persistence: Save on Change
@@ -196,6 +229,20 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
   // Devil's Advocate Mode
   const [isHardMode, setIsHardMode] = useState(false);
+  
+  // Offline State
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Voice Input State
   const [isListening, setIsListening] = useState(false);
@@ -407,8 +454,8 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       title: t('pareto.title'),
       questions: [t('pareto.q1'), t('pareto.q2'), t('pareto.q3')],
       generateResult: (answers: string[]) => {
-        const activities = answers[1]?.split(/,|\n/).map(s => s.trim()).filter(s => s) || [];
-        const vital = answers[2]?.split(/,|\n/).map(s => s.trim()).filter(s => s) || [];
+        const activities = (answers[1]?.split(/,|\n/) || []).map(s => s.trim()).filter(s => s);
+        const vital = (answers[2]?.split(/,|\n/) || []).map(s => s.trim()).filter(s => s);
         return {
           type: 'pareto',
           vital: vital,
@@ -423,16 +470,16 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         type: 'rpm',
         result: answers[0] || "",
         purpose: answers[1] || "",
-        plan: answers[2]?.split(/,|\n/).map(s => s.trim()).filter(s => s) || []
+        plan: (answers[2]?.split(/,|\n/) || []).map(s => s.trim()).filter(s => s)
       })
     },
     'eisenhower': {
       title: t('eisenhower.title'),
       questions: [t('eisenhower.q1'), t('eisenhower.q2'), t('eisenhower.q3')],
       generateResult: (answers: string[]) => {
-        const all = answers[0]?.split(/,|\n/).map(s => s.trim()).filter(s => s) || [];
-        const quadrant1 = answers[1]?.split(/,|\n/).map(s => s.trim()).filter(s => s) || [];
-        const quadrant2 = answers[2]?.split(/,|\n/).map(s => s.trim()).filter(s => s) || [];
+        const all = (answers[0]?.split(/,|\n/) || []).map(s => s.trim()).filter(s => s);
+        const quadrant1 = (answers[1]?.split(/,|\n/) || []).map(s => s.trim()).filter(s => s);
+        const quadrant2 = (answers[2]?.split(/,|\n/) || []).map(s => s.trim()).filter(s => s);
         return {
           type: 'eisenhower',
           q1: quadrant1, // Do
@@ -448,7 +495,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       generateResult: (answers: string[]) => ({
         type: 'okr',
         objective: answers[0] || "",
-        keyResults: answers[1]?.split(/,|\n/).map(s => s.trim()).filter(s => s) || [],
+        keyResults: (answers[1]?.split(/,|\n/) || []).map(s => s.trim()).filter(s => s),
         initiative: answers[2] || ""
       })
     },
@@ -551,8 +598,9 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         return;
     }
     
-    // 2. Race Condition Guard: Prevent multiple submissions
-    if (isTyping || isAgentRunning) return;
+    // 2. Race Condition Guard: Prevent multiple submissions (Ref is synchronous)
+    if (isRunningRef.current || isTyping || isAgentRunning) return;
+    isRunningRef.current = true;
     
     // Add user message to UI immediately
     setMessages(prev => [...prev, { role: 'user', content: userText }]);
@@ -692,19 +740,21 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
 
     finally {
+        isRunningRef.current = false;
         if (isMounted.current) setIsAgentRunning(false);
     }
   };
 
   const handleStop = () => {
+      isRunningRef.current = false;
       setIsAgentRunning(false); // This will break the loop due to the check above
       setIsTyping(false);
       toast.info("Generation stopped by user");
   };
-
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim() || isAgentRunning) return;
+    if (!inputValue.trim() || isRunningRef.current || isAgentRunning) return;
     runAgent(inputValue);
   };
 
@@ -942,6 +992,14 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                  <span className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center"><Share2 size={16} /></span>
                  {t('eisenhower.delegate')}
               </h4>
+              {/* The following code block is likely intended for a different part of the file, e.g., an async function like runAgent */}
+              {/* for await (const event of await graph.stream(
+                  inputs,
+                  { ...config, streamMode: "values" }
+              )) {
+                  // Zombie State Guard: Stop processing if unmounted
+                  if (!isMounted.current) break;
+              } */}
               <EditableList 
                   items={result.q3} 
                   onChange={(val) => updateResult(['q3'], val)}
@@ -1393,12 +1451,19 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                 autoFocus 
                 value={inputValue} 
                 onChange={(e) => setInputValue(e.target.value)} 
-                disabled={isTyping || isAgentRunning}
-                placeholder={isTyping ? t('wizard.synthesizing') : (result ? t('wizard.refinePlaceholder') : t('wizard.typePlaceholder'))} 
-                className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl py-3 pl-12 pr-14 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-base md:text-lg text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-500 disabled:opacity-70 disabled:cursor-not-allowed" 
+                disabled={isTyping || isAgentRunning || isOffline}
+                placeholder={isOffline ? "You are offline. Please reconnect to continue." : (isTyping ? "Agent is thinking..." : isListening ? "Listening..." : t('wizard.placeholder'))}
+                className={`w-full bg-gray-100 dark:bg-zinc-800 text-black dark:text-white rounded-[2rem] pl-12 pr-14 py-4 focus:outline-none focus:ring-2 focus:ring-black/5 dark:focus:ring-white/10 shadow-inner transition-all ${isOffline ? 'opacity-50 cursor-not-allowed pl-24' : ''}`}
             />
-            {/* Voice Input Button */}
-            {!result && isSpeechSupported && (
+            {/* Offline Indicator in Input Area */}
+            {isOffline && (
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-red-500 font-medium text-sm">
+                    <WifiOff size={16} />
+                </div>
+            )}
+
+             {/* Voice Input Button */}
+            {!result && isSpeechSupported && !isOffline && (
                 <button
                     type="button"
                     onClick={toggleListening}
@@ -1413,9 +1478,9 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
             <button
               type="submit"
               aria-label="Send message"
-              disabled={!inputValue.trim() || isTyping || isAgentRunning}
+              disabled={!inputValue.trim() || isTyping || isAgentRunning || isOffline}
               className={`absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
-                  !inputValue.trim() && !isAgentRunning ? 'bg-gray-200 text-gray-400 dark:bg-zinc-800 dark:text-zinc-600' : 'bg-black dark:bg-white text-white dark:text-black hover:scale-105 active:scale-95'
+                  (!inputValue.trim() && !isAgentRunning) || isOffline ? 'bg-gray-200 text-gray-400 dark:bg-zinc-800 dark:text-zinc-600' : 'bg-black dark:bg-white text-white dark:text-black hover:scale-105 active:scale-95'
               }`}
             >
               <Send size={20} />

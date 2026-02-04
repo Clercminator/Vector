@@ -112,6 +112,8 @@ export const translations = {
     'auth.success': 'Magic link sent! Check your inbox.',
 
     // Dashboard
+    // Dashboard
+    'dashboard.new': 'New Blueprint',
     'dashboard.title': 'My Blueprints',
     'dashboard.subtitle': 'Your saved strategies, ready to reopen or export.',
     'dashboard.empty': 'No saved blueprints yet. Build one, then click “Save Blueprint”.',
@@ -197,6 +199,7 @@ export const translations = {
     'common.use': 'Use this framework',
 
     // Goal Wizard
+    'wizard.newConversation': 'New Conversation',
     'wizard.exit': 'Exit Architect',
     'wizard.restart': 'Restart',
     'wizard.export': 'Export to Google',
@@ -596,6 +599,8 @@ export const translations = {
     'auth.success': '¡Enlace enviado! Revisa tu correo.',
 
     // Dashboard
+    // Dashboard
+    'dashboard.new': 'Nuevo Plano',
     'dashboard.title': 'Mis Planos',
     'dashboard.subtitle': 'Tus estrategias guardadas, listas para reabrir o exportar.',
     'dashboard.empty': 'Aún no hay planos guardados. Construye uno y haz clic en "Guardar Plano".',
@@ -681,6 +686,8 @@ export const translations = {
     'common.use': 'Usar este método',
 
     // Goal Wizard
+    // Goal Wizard
+    'wizard.newConversation': 'Nueva Conversación',
     'wizard.exit': 'Salir del Arquitecto',
     'wizard.restart': 'Reiniciar',
     'wizard.export': 'Exportar a Google',

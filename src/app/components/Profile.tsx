@@ -16,6 +16,7 @@ interface ProfileProps {
   userId: string;
   userEmail: string | null;
   onBack: () => void;
+  onProfileUpdate?: () => void;
 }
 
 interface ProfileData {
@@ -46,7 +47,7 @@ import { useLanguage } from '@/app/components/language-provider';
 
 // ... interfaces
 
-export function Profile({ userId, userEmail, onBack }: ProfileProps) {
+export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileProps) {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -128,6 +129,7 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
 
       if (error) throw error;
       toast.success(t('profile.success'));
+      onProfileUpdate?.(); 
     } catch (e: any) {
       console.error(e);
       toast.error(t('profile.error'));
@@ -187,6 +189,7 @@ export function Profile({ userId, userEmail, onBack }: ProfileProps) {
       if (updateError) throw updateError;
       
       toast.success(t('profile.avatarSuccess') || 'Avatar updated successfully');
+      onProfileUpdate?.();
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast.error(t('profile.avatarError') || 'Error uploading avatar');

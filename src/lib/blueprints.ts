@@ -75,6 +75,9 @@ export function upsertBlueprint(arg1: any, bp: Blueprint, arg3?: string): any {
       answers: bp.answers,
       result: bp.result,
       updated_at: new Date().toISOString()
+  }).then(({ error }) => {
+      if (error) throw error;
+      return null;
   });
 }
 
@@ -85,7 +88,10 @@ export function removeBlueprint(arg1: any, id: string): any {
   if (Array.isArray(arg1)) {
     return (arg1 as Blueprint[]).filter((x) => x.id !== id);
   }
-  return (arg1 as SupabaseClient).from('blueprints').delete().eq('id', id);
+  return (arg1 as SupabaseClient).from('blueprints').delete().eq('id', id).then(({ error }) => {
+      if (error) throw error;
+      return null;
+  });
 }
 
 // Chat Persistence
@@ -105,6 +111,9 @@ export async function saveBlueprintMessage(supabase: SupabaseClient, blueprintId
         blueprint_id: blueprintId,
         role,
         content
+    }).then(({ error }) => {
+        if (error) throw error;
+        return null; 
     });
 }
 
@@ -115,7 +124,10 @@ export async function saveBlueprintMessages(supabase: SupabaseClient, blueprintI
         role: m.role,
         content: m.content
     }));
-    return supabase.from('blueprint_messages').insert(toInsert);
+    return supabase.from('blueprint_messages').insert(toInsert).then(({ error }) => {
+        if (error) throw error;
+        return null;
+    });
 }
 
 export async function syncBlueprintMessages(supabase: SupabaseClient, blueprintId: string, messages: { role: 'user' | 'ai'; content: string }[]) {
