@@ -1586,9 +1586,8 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         </div>
       )}
 
-      {result && (
-          <div className="h-32" /> // Spacer for the fixed input
-      )}
+      {null}
+    </div>
     </div>
   );
 };
