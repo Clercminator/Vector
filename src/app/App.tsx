@@ -83,7 +83,9 @@ function App() {
   const PAGE_SIZE = 12;
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   useEffect(() => {
     // Check for onboarding
@@ -144,6 +146,10 @@ function App() {
                   // just load
                   loadRemoteBlueprints(session.user.id, 0);
               }
+          }).catch(err => {
+              console.error("Sync failed:", err);
+              // Still try to load remote even if sync failed
+              loadRemoteBlueprints(session.user.id, 0);
           });
           
           // Process deleted queue
@@ -212,7 +218,9 @@ function App() {
     if (!supabase) return;
     
     if (pageToLoad === 0) setBlueprintsLoading(true);
+
     else setIsLoadingMore(true);
+    setSyncError(null);
 
     try {
         const from = pageToLoad * PAGE_SIZE;
@@ -238,8 +246,9 @@ function App() {
            if (pageToLoad === 0) setBlueprints([]);
            setHasMore(false);
         }
-    } catch (e) {
+    } catch (e: any) {
         console.error("Failed to load blueprints", e);
+        setSyncError(e.message || "Unknown error");
         toast.error(t('app.sync.error'));
     } finally {
         setBlueprintsLoading(false);
@@ -718,6 +727,7 @@ function App() {
                         onLoadMore={handleLoadMore}
                         hasMore={hasMore}
                         isLoadingMore={isLoadingMore}
+                        error={syncError}
                       />
                     </motion.div>
                  } />

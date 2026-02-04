@@ -47,6 +47,30 @@ interface GoalWizardProps {
   isPreviewMode?: boolean;
 }
 
+// --- components/ThinkingIndicator.tsx specific ---
+const ThinkingIndicator = () => (
+    <div className="flex items-center gap-1 h-6">
+        {[0, 1, 2].map((i) => (
+            <motion.div
+                key={i}
+                className="w-2 h-2 bg-blue-500 rounded-full"
+                animate={{
+                    y: ["0%", "-50%", "0%"],
+                    opacity: [0.4, 1, 0.4]
+                }}
+                transition={{
+                    duration: 0.8,
+                    repeat: Infinity,
+                    delay: i * 0.2,
+                    ease: "easeInOut"
+                }}
+            />
+        ))}
+        <span className="text-xs font-semibold text-blue-500 uppercase tracking-wider ml-2 animate-pulse">Designing Strategy...</span>
+    </div>
+);
+// --------------------------------------------------
+
 export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSaveBlueprint, initialBlueprint, tier: propTier, onSwitchFramework, isPreviewMode = false }) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -81,10 +105,19 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       return uuidv4();
   });
   const [isAgentRunning, setIsAgentRunning] = useState(false);
+  // Live Draft Pulse State
+  const [draftPulse, setDraftPulse] = useState(false);
+  const prevDraftRef = useRef<any>(null);
   
   // Transition State
   // Transition State
+  // Transition State
   const isSwitchingRef = useRef(false);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    return () => { isMounted.current = false; };
+  }, []);
 
   // Persistence: Load on Mount
   useEffect(() => {
@@ -105,7 +138,8 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                  // For now, we accept a new threadId for the *agent* session but restore the *chat UI*.
             }
         } catch (e) {
-            console.error("Failed to restore session", e);
+            console.error("Failed to restore session, clearing corrupted data", e);
+            localStorage.removeItem('vector_wizard_session');
         }
     } else if (initialBlueprint) {
         // 2. If no local session, but we have an initialBlueprint (Editing mode), load its messages
@@ -165,7 +199,12 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
   // Voice Input State
   const [isListening, setIsListening] = useState(false);
+  const [isSpeechSupported, setIsSpeechSupported] = useState(false);
   const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    setIsSpeechSupported(!!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition));
+  }, []);
 
   const toggleListening = () => {
     if (isListening) {
@@ -272,27 +311,25 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
   // Helper to parse partial JSON (Streaming Support)
   const tryParsePartialJson = (jsonString: string): any => {
+      if (!jsonString) return null;
       try {
           return JSON.parse(jsonString);
       } catch (e) {
           // Heuristic auto-completion for partial JSON
-          // This is a naive implementation but works for most simple streaming cases
           try {
-              if (jsonString.trim().endsWith(',')) jsonString = jsonString.trim().slice(0, -1);
-              if (!jsonString.endsWith('}')) jsonString += '}'; 
-              return JSON.parse(jsonString);
-          } catch (e2) {
-              try {
-                  jsonString += ']}'; // Try closing array + obj
-                  return JSON.parse(jsonString);
-              } catch (e3) {
+              let sanitized = jsonString.trim();
+              if (sanitized.endsWith(',')) sanitized = sanitized.slice(0, -1);
+              
+              // Try various closing sequences
+              const closers = ['}', ']}', '"}', '"]}', '"]}'];
+              for (const closer of closers) {
                   try {
-                      jsonString += '"}'; // Try closing quote + obj
-                      return JSON.parse(jsonString);
-                  } catch (e4) {
-                      return null;
-                  }
+                       return JSON.parse(sanitized + closer);
+                  } catch (err) { continue; }
               }
+              return null;
+          } catch (e2) {
+              return null;
           }
       }
   };
@@ -535,8 +572,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
         if (tracingEnabled && apiKey && apiKey.length > 10) { 
              callbacks.push(new LangChainTracer({
-                 projectName: project,
-                 apiKey: apiKey
+                 projectName: project
              }));
         } else if (tracingEnabled) {
             console.warn("LangSmith tracing is enabled but API key is missing or invalid. Tracing skipped.");
@@ -560,11 +596,27 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
             language: currentLang // Pass language
         };
 
-        const stream = await graph.stream(inputs, config);
+        const streamPromise = graph.stream(inputs, config);
+        
+        // 15s Safety Timeout
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("Timeout: Agent is taking too long to respond.")), 15000)
+        );
 
+        // Race only the initial connection, not the whole stream iteration (which takes time)
+        // However, since graph.stream returns an async generator, we can't easily race the *entire* consumption here without wrapping.
+        // But getting the iterator itself usually implies connection.
+        const stream = await Promise.race([streamPromise, timeoutPromise]) as any;
+
+
+
+        const abortController = new AbortController(); // Placeholder if we had real abort, currently we just break loop
+        // If we wanted to support real abort, we'd need to pass a signal to graph.stream if supported, or manually break.
+        
         let deductionTriggered = false;
 
         for await (const event of stream) {
+            if (!isMounted.current || !isAgentRunning) break; // Stop if unmounted or aborted via state
             
             // Check for Framework Switching (Keep existing logic)
             if (event?.framework_setter) {
@@ -614,20 +666,40 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                      });
 
                      if (suggestions.length > 0) setSuggestionChips(suggestions);
-                     if (draft) setDraftResult((prev: any) => ({ ...prev, ...draft, type: framework }));
+                     if (draft) {
+                        // Check if draft has conceptually changed to trigger pulse
+                        const currentDraftStr = JSON.stringify(draft);
+                        const prevDraftStr = JSON.stringify(prevDraftRef.current);
+                        if (currentDraftStr !== prevDraftStr) {
+                            setDraftPulse(true);
+                            setTimeout(() => setDraftPulse(false), 800); // Reset pulse
+                            prevDraftRef.current = draft;
+                        }
+                        setDraftResult((prev: any) => ({ ...prev, ...draft, type: framework }));
+                     }
                      setIsTyping(false); 
                  }
             }
         }
-    } catch (e) {
-        // ... error handling
+    } catch (e: any) {
+        console.error("Agent Run Error:", e);
+        toast.error(t('common.error'), {
+            description: e.message || "Failed to contact the agent. Please try again."
+        });
+        setMessages(prev => [...prev, { role: 'ai', content: "⚠️ **Connection Error**: I couldn't complete that thought. Please try asking again." }]);
     }
 // ...
 
 
     finally {
-        setIsAgentRunning(false);
+        if (isMounted.current) setIsAgentRunning(false);
     }
+  };
+
+  const handleStop = () => {
+      setIsAgentRunning(false); // This will break the loop due to the check above
+      setIsTyping(false);
+      toast.info("Generation stopped by user");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -1186,7 +1258,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       };
 
       return (
-          <div className="space-y-6">
+          <div className={`space-y-6 transition-all duration-500 ${draftPulse ? 'scale-[1.02] ring-2 ring-blue-400/50 rounded-2xl shadow-[0_0_30px_rgba(59,130,246,0.2)] bg-blue-50/30' : ''}`}>
                <div className="flex items-start justify-between border-b border-gray-100 dark:border-zinc-800 pb-4">
                    <div>
                        <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -1215,6 +1287,13 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
             </button>
 
              {/* Hard Mode Toggle (Moved to Left Group) */}
+             <button
+                onClick={toggleHardMode}
+                className={`p-2 rounded-full transition-all cursor-pointer ${isHardMode ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'text-gray-400 hover:text-black dark:hover:text-white'}`}
+                title={isHardMode ? "Disable Devil's Advocate" : "Enable Devil's Advocate Mode"}
+             >
+                <Flame size={18} fill={isHardMode ? "currentColor" : "none"} />
+             </button>
 
              {/* New Conversation Button - Prominent */}
              <button 
@@ -1247,20 +1326,28 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                           ? 'dark:prose-invert' 
                           : 'prose-invert dark:prose'
                       }`}>
-                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      <ReactMarkdown
+                      components={{
+                        p: ({node, ...props}) => <p className="mb-4 leading-relaxed text-gray-800 dark:text-gray-100 last:mb-0" {...props} />,
+                        ul: ({node, ...props}) => <ul className="mb-4 pl-4 space-y-2" {...props} />,
+                        ol: ({node, ...props}) => <ol className="mb-4 pl-4 space-y-2" {...props} />,
+                        li: ({node, ...props}) => <li className="text-gray-700 dark:text-gray-300 pl-2 border-l-2 border-gray-200 dark:border-zinc-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors" {...props} />,
+                        h1: ({node, ...props}) => <h1 className="text-2xl font-bold mt-6 mb-4 text-gray-900 dark:text-white tracking-tight" {...props} />,
+                        h2: ({node, ...props}) => <h2 className="text-xl font-bold mt-5 mb-3 text-gray-800 dark:text-gray-100 tracking-tight" {...props} />,
+                        h3: ({node, ...props}) => <h3 className="text-lg font-bold mt-4 mb-2 text-gray-800 dark:text-gray-200" {...props} />,
+                        blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-blue-500/50 pl-4 py-2 my-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-r-lg italic text-gray-600 dark:text-gray-400" {...props} />,
+                        strong: ({node, ...props}) => <strong className="font-bold text-gray-900 dark:text-white" {...props} />,
+                        code: ({node, ...props}) => <code className="bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono text-pink-600 dark:text-pink-400" {...props} />,
+                      }}
+                      >{msg.content}</ReactMarkdown>
                       </div>
                     </div>
                   </motion.div>
                 ))}
                 {isTyping && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-                    <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-4 rounded-2xl flex items-center gap-3">
-                      <div className="flex gap-1">
-                        <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1.5 h-1.5 bg-gray-300 dark:bg-zinc-600 rounded-full" />
-                        <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1.5 h-1.5 bg-gray-300 dark:bg-zinc-600 rounded-full" />
-                        <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1.5 h-1.5 bg-gray-300 dark:bg-zinc-600 rounded-full" />
-                      </div>
-                      {isSynthesizing && <span className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">{t('wizard.synthesizing') || "Thinking..."}</span>}
+                    <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-4 rounded-2xl rounded-tl-none shadow-sm">
+                       <ThinkingIndicator />
                     </div>
                   </motion.div>
                 )}
@@ -1311,7 +1398,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                 className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl py-3 pl-12 pr-14 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-base md:text-lg text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-500 disabled:opacity-70 disabled:cursor-not-allowed" 
             />
             {/* Voice Input Button */}
-            {!result && (
+            {!result && isSpeechSupported && (
                 <button
                     type="button"
                     onClick={toggleListening}
@@ -1327,10 +1414,24 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
               type="submit"
               aria-label="Send message"
               disabled={!inputValue.trim() || isTyping || isAgentRunning}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black dark:bg-white text-white dark:text-black rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all cursor-pointer"
+              className={`absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                  !inputValue.trim() && !isAgentRunning ? 'bg-gray-200 text-gray-400 dark:bg-zinc-800 dark:text-zinc-600' : 'bg-black dark:bg-white text-white dark:text-black hover:scale-105 active:scale-95'
+              }`}
             >
               <Send size={20} />
             </button>
+            
+            {/* Stop Button (only when running) */}
+            {isAgentRunning && (
+                <button
+                    type="button"
+                    onClick={handleStop}
+                    className="absolute right-14 top-1/2 -translate-y-1/2 p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-full transition-colors cursor-pointer"
+                    title="Stop Generating"
+                >
+                    <div className="w-3 h-3 bg-red-600 rounded-[2px]" />
+                </button>
+            )}
           </form>
         </div>
       )}
