@@ -14,7 +14,7 @@ import { Blueprint, loadLocalBlueprints, saveLocalBlueprints, upsertBlueprint, r
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { createCheckout, isMercadoPagoConfigured } from '@/lib/mercadoPago';
 
-import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID } from '@/lib/tiers';
+import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, canUseFramework } from '@/lib/tiers';
 import { checkAndAwardAchievements } from '@/lib/gamification';
 
 import { useLanguage } from '@/app/components/language-provider';
