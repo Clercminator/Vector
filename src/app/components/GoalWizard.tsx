@@ -297,7 +297,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
             if (user) {
                 // Fetch full_name along with credits and tier
                 if (user.id) {
-                    supabase.from('profiles').select('credits, tier, full_name').eq('user_id', user.id).single()
+                    supabase.from('profiles').select('credits,tier,full_name').eq('user_id', user.id).single()
                     .then(({ data }: { data: any }) => {
                         if (data) {
                             setCredits(data.credits);
