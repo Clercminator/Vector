@@ -1084,6 +1084,8 @@ export const translations = {
     'nav.signout': 'Sair',
     'nav.getStarted': 'Começar',
     'nav.admin': 'Admin',
+    'wizard.newConversation': 'Nova Conversa',
+    'dashboard.new': 'Novo Modelo',
 
     // Hero
     'hero.title.prefix': 'Arquitete Sua',
@@ -1404,6 +1406,8 @@ export const translations = {
     'nav.signout': 'Déconnexion',
     'nav.getStarted': 'Commencer',
     'nav.admin': 'Admin',
+    'wizard.newConversation': 'Nouvelle Conversation',
+    'dashboard.new': 'Nouveau Modèle',
 
     // Hero
     'hero.title.prefix': 'Architectez Votre',

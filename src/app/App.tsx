@@ -456,12 +456,12 @@ function App() {
              throw new Error("Invalid tier configuration");
         }
 
-        await createCheckout({
+        await createCheckout(supabase!, {
             tier: config.id, // e.g. 'standard'
             title: `Vector - ${tierName}`, // e.g. 'Vector - Standard Plan'
             amount: config.priceUsd,
             currency: 'USD' // Or configurable
-        }, session.access_token);
+        });
         
     } catch (e: any) {
         console.error("Checkout error", e);

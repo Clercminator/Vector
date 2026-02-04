@@ -28,26 +28,11 @@ export interface CreateCheckoutOptions {
  * Creates a MercadoPago checkout preference via the Edge Function and redirects the user to MercadoPago.
  * Requires: VITE_SUPABASE_URL (or VITE_supabase_url) set, and mercado-pago-preference Edge Function deployed with MERCADOPAGO_ACCESS_TOKEN in Secrets.
  */
-export async function createCheckout(options: CreateCheckoutOptions = {}, accessToken?: string): Promise<void> {
-  const baseUrl = getSupabaseUrl();
-  if (!baseUrl) {
-    throw new Error("VITE_SUPABASE_URL is not set. Cannot create MercadoPago checkout.");
-  }
+import { SupabaseClient } from "@supabase/supabase-js";
 
-  const functionUrl = `${baseUrl}/functions/v1/mercado-pago-preference`;
-
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-  };
-
-  if (accessToken) {
-    headers["Authorization"] = `Bearer ${accessToken}`;
-  }
-
-  const res = await fetch(functionUrl, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
+export async function createCheckout(supabase: SupabaseClient, options: CreateCheckoutOptions = {}): Promise<void> {
+  const { data, error } = await supabase.functions.invoke('mercado-pago-preference', {
+    body: {
       tier: options.tier ?? "Master Builder",
       title: options.title,
       amount: options.amount,
@@ -55,18 +40,22 @@ export async function createCheckout(options: CreateCheckoutOptions = {}, access
       back_url_success: window.location.origin + "/dashboard?payment=success",
       back_url_failure: window.location.origin + "/pricing?payment=failure",
       back_url_pending: window.location.origin + "/dashboard?payment=pending",
-    }),
+    }
   });
 
-  const data = (await res.json()) as { init_point?: string; error?: string };
-
-  if (!res.ok) {
-    throw new Error(data.error ?? `Checkout failed (${res.status})`);
+  if (error) {
+    throw new Error(error.message || "Function invocation failed");
   }
 
-  if (!data.init_point) {
+  const { init_point, error: logicError } = data || {};
+
+  if (logicError) {
+    throw new Error(logicError);
+  }
+
+  if (!init_point) {
     throw new Error("No checkout URL returned");
   }
 
-  window.location.href = data.init_point;
+  window.location.href = init_point;
 }

@@ -281,23 +281,51 @@ export async function suggestFramework(
     - Horizon (Timeline): "${horizon}"
     ${userName ? `- User Name: ${userName}` : ''}
     
-    Based on this, which framework is best? Return JSON only: { "framework": "id", "explanation": "reasoning in ${language || 'English'}" }
-    IDs: first-principles, pareto, rpm, eisenhower, okr, dsss, mandalas.
+    Task: Analyze the user's goal and select the BEST strategic framework from the list below.
+    
+    Frameworks IDs: 
+    - first-principles (for fundamental innovation/engineering)
+    - pareto (for optimization/efficiency)
+    - rpm (for high-energy/motivation alignment)
+    - eisenhower (for time management/prioritization)
+    - okr (for measurable team/business goals)
+    - dsss (for skill acquisition)
+    - mandalas (for holistic life balance)
+    - misogi (for a single define-the-year challenge)
+
+    Output Schema (JSON ONLY):
+    {
+        "framework": "one_of_the_ids_above",
+        "explanation": "A concise reasoning (1-2 sentences) in ${language || 'English'} explaining WHY this fits."
+    }
+    
+    IMPORTANT: Return ONLY the JSON object. Do not add markdown formatting or extra text.
     `;
 
     try {
         const content = await chat([
-            { role: "system", content: suggestPrompt },
+            { role: "system", content: "You are an expert strategic advisor. You output strictly valid JSON." },
             { role: "user", content: userContent }
-        ]);
+        ], { max_tokens: 500, retryCount: 1 });
+        
         const obj = parseJsonBlock(content) as any;
-        if (obj && obj.framework && ["first-principles", "pareto", "rpm", "eisenhower", "okr", "dsss", "mandalas"].includes(obj.framework)) {
+        
+        // Normalize framework ID just in case
+        let fw = obj.framework?.toLowerCase().trim();
+        
+        // Mapping common hallucinations to real IDs
+        if (fw === 'first principles') fw = 'first-principles';
+        if (fw === '80/20' || fw === 'pareto principle') fw = 'pareto';
+        
+        if (fw && ["first-principles", "pareto", "rpm", "eisenhower", "okr", "dsss", "mandalas", "misogi", "gps"].includes(fw)) {
             return {
-                id: obj.framework as FrameworkId,
+                id: fw as FrameworkId,
                 explanation: obj.explanation || "Recommended based on your inputs."
             };
         }
-        return null;
+        
+        console.warn("Invalid framework ID returned:", fw);
+        return null; // Fallback to null (UI asks user to pick)
     } catch (e) {
         console.error("Framework suggestion failed", e);
         return null;
