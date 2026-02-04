@@ -1366,7 +1366,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         {/* Chat Area */}
         <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${draftResult ? 'lg:mr-96' : ''}`}>
         <div className="w-full flex-1 flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-8 lg:px-10">
-             <div className="max-w-4xl mx-auto w-full space-y-2 pb-4 pt-4">
+             <div className="max-w-4xl w-full space-y-2 pb-4 pt-4">
               <AnimatePresence mode="popLayout">
                 {(messages || []).map((msg, i) => (
                   <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'ai' ? 'justify-start' : 'justify-end'}`}>
@@ -1409,7 +1409,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
           {!initialBlueprint && (
         <div className="flex-none p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-gray-100 dark:border-zinc-800 z-20 pb-safe">
-          <div className="max-w-4xl mx-auto w-full relative">
+          <div className="max-w-4xl w-full relative">
           {/* Mobile Draft Toggle */}
           {!result && draftResult && (
              <button 
