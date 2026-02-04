@@ -7,8 +7,6 @@ import okrPrompt from "@/lib/prompts/okr.txt?raw";
 import suggestPrompt from "@/lib/prompts/suggest-framework.txt?raw";
 import refinePrompt from "@/lib/prompts/refine-blueprint.txt?raw";
 import gpsPrompt from "@/lib/prompts/gps.txt?raw";
-import { traceable } from "langsmith/traceable";
-import { Client } from "langsmith";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_MODEL = "deepseek/deepseek-v3.2";
@@ -39,7 +37,7 @@ interface ChatMessage {
  * Call Open Router chat completions. Returns the assistant message content or throws.
  * If VITE_OPENROUTER_PROXY_URL is set, calls your backend proxy (no API key in browser).
  */
-export const chat = traceable(async function chat(
+export async function chat(
   messages: ChatMessage[],
   options?: { model?: string; max_tokens?: number; retryCount?: number }
 ): Promise<string> {
@@ -117,10 +115,7 @@ export const chat = traceable(async function chat(
     attempt++;
   }
   throw lastError || new Error("Unknown error in chat completion");
-}, {
-  run_type: "llm",
-  name: "chat_openrouter"
-});
+}
 
 
 

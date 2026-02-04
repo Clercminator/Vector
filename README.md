@@ -20,6 +20,8 @@ This document explains **what the app does**, **how it’s built**, **how the pi
     - [4. Eisenhower Matrix](#4-eisenhower-matrix)
     - [5. OKR (Objectives and Key Results)](#5-okr-objectives-and-key-results)
   - [How the AI Works](#how-the-ai-works)
+  - [LangSmith Tracing (Debugging the AI)](#langsmith-tracing-debugging-the-ai)
+    - [Fix: Agent Not Responding and "No API key found"](#fix-agent-not-responding-and-no-api-key-found-simple-explanation)
   - [How Levels and Credits Work](#how-levels-and-credits-work)
   - [Architecture](#architecture)
     - [Frontend / Backend Split](#frontend--backend-split)
@@ -218,6 +220,67 @@ Relevant code: `src/lib/openrouter.ts` (API client, system prompts, JSON parsing
 
 ---
 
+<a id="langsmith-tracing"></a>
+## LangSmith Tracing (Debugging the AI)
+
+LangSmith is a tool that lets you see what the AI agent is doing—each question it asks, each reply it gets, and each step in between. It’s useful for debugging and improving the agent.
+
+### Why Our Traces Don’t Show Up (Simple Explanation)
+
+The agent runs in your browser. For LangSmith to record traces, the browser has to send data to LangSmith’s servers. That fails for two main reasons:
+
+1. **Security and privacy**: LangSmith’s official guidance says you should *not* put your LangSmith API key in the browser. Anyone can see it in the page source. We’ve tried it anyway, but it’s unsafe.
+2. **Network blocking**: When the browser tries to send trace data to LangSmith’s site, the request is often blocked by the browser’s security rules (CORS). LangSmith’s servers aren’t set up to accept these requests directly from web pages.
+
+So even when we configure tracing, the data never reaches LangSmith.
+
+### Why Our Traces Don’t Show Up (Technical Explanation)
+
+- **CORS**: The LangSmith API (`https://api.smith.langchain.com`) does not expose `Access-Control-Allow-Origin` for arbitrary origins. The tracer uses `fetch()` from the browser; cross-origin requests are blocked before they complete.
+- **API key exposure**: Any variable starting with `VITE_` in `.env` is embedded in the client bundle. Putting `VITE_LANGCHAIN_API_KEY` or `VITE_LANGSMITH_API_KEY` in the frontend exposes the key to anyone who inspects the app. LangSmith’s docs explicitly advise against this.
+- **`process.env`**: LangChain’s tracer expects `process.env`, which doesn’t exist in the browser. We use a polyfill (`window.process.env`), but some internals may read env vars at import time, before the polyfill runs.
+- **Best practice**: LangSmith recommends a *token exchange service* or *proxy* on the backend. The frontend should never talk to LangSmith directly; instead, it talks to our server, which adds the API key and forwards the request.
+
+### How to Set Up LangSmith Correctly (Simple Explanation)
+
+To use LangSmith when the agent runs in the browser, we need a small backend service (similar to the OpenRouter proxy) that:
+
+1. Receives trace data from the browser.
+2. Adds the LangSmith API key securely (kept only on the server).
+3. Sends the data to LangSmith on behalf of the app.
+
+That way the key stays private and the browser’s security rules no longer block the request.
+
+### How to Set Up LangSmith Correctly (Technical Explanation)
+
+1. **Create a LangSmith proxy Edge Function** (e.g. `langsmith-proxy`), analogous to `openrouter-proxy`. It accepts POST requests with trace payloads, adds the `LANGSMITH_API_KEY` from Supabase Secrets, and forwards to `https://api.smith.langchain.com`.
+2. **Configure the tracer** to use the proxy URL instead of LangSmith’s direct URL (via `LANGCHAIN_ENDPOINT` or equivalent, if supported by the LangSmith JS client).
+3. **Keep secrets server-side**: Store `LANGSMITH_API_KEY` (or `LANGCHAIN_API_KEY`) only in Supabase Edge Function Secrets or `.env.backend`. Do *not* put it in `.env` with a `VITE_` prefix.
+4. **Alternative**: Use LangSmith’s **Collector-Proxy** (beta), which is built for this use case. See [LangSmith Collector-Proxy docs](https://docs.smith.langchain.com/observability/how_to_guides/collector_proxy).
+5. **Environment files**: `.env` holds frontend-safe variables (e.g. `VITE_SUPABASE_URL`). `.env.backend` is gitignored and holds secrets (API keys, etc.). Ensure `.env` is in `.gitignore` if it contains secrets, or use a `.env.example` template without real keys.
+
+### What We’ve Tried (and Why It Failed)
+
+- Polyfilling `process.env` in the browser → tracer may read env before polyfill; CORS still blocks the request.
+- Passing `LangChainTracer` with callbacks to `graph.stream()` → tracer runs, but the outbound request to LangSmith fails (CORS).
+- Setting `VITE_LANGCHAIN_TRACING_V2`, `VITE_LANGCHAIN_API_KEY`, etc. in `.env` → keys are exposed in the bundle and requests are still blocked.
+
+**Bottom line**: Browser-based tracing only works with a backend proxy or token exchange. The proxy pattern (like `openrouter-proxy`) is the right approach.
+
+### Fix: Agent Not Responding and "No API key found" (Simple Explanation)
+
+If the agent gets stuck on "Designing strategy..." and the console shows "No API key found in request," the LLM requests to the openrouter-proxy were being rejected. The proxy is a Supabase Edge Function; Supabase requires every request to include your project's public key (the `apikey` header). The LLM client was not sending it. We now add that key automatically when calling the proxy, so the agent can get AI responses again.
+
+Separately, the LangSmith tracer was sending requests from the browser that returned 403 errors. We turned the tracer off in the browser so it no longer spams the console or interferes with the agent.
+
+### Fix: Agent Not Responding and "No API key found" (Technical Explanation)
+
+- **Cause**: `ChatOpenAI` calls `VITE_OPENROUTER_PROXY_URL` (a Supabase Edge Function) via direct `fetch()`. The Supabase Functions gateway expects the `apikey` header (anon/publishable key). Without it, the gateway returns `{"message":"No API key found in request","hint":"No \`apikey\` request header or url param was found."}` and the LLM never receives a response.
+- **Fix**: In `src/agent/goalAgent.ts`, we build an `llmConfig` that adds `defaultHeaders: { apikey: supabaseKey }` when `VITE_OPENROUTER_PROXY_URL` is set. The Supabase key comes from `VITE_SUPABASE_PUBLISHABLE_KEY` or `VITE_SUPABASE_ANON_KEY`. All three LLM instances (main model, draft, critique) use this config.
+- **LangSmith**: The `LangChainTracer` was disabled in `GoalWizard.tsx` because direct POSTs to `api.smith.langchain.com` from the browser return 403. Re-enable only when a LangSmith proxy is in place.
+
+---
+
 <a id="how-levels-and-credits-work"></a>
 ## How Levels and Credits Work
 
@@ -322,6 +385,18 @@ We are transitioning from a stateless model to a stateful agent. Here is the tra
 | **LangGraph Python (Server)** | Agent runs on a Python server (FastAPI/Flask). | • **Powerful**: Access to Python ecosystem (Pandas, NumPy).<br>• **Secure**: Prompts/Logic hidden on server.<br>• **Persistent**: Easier to persist long-term agent state in DB. | • **Cost**: Requires hosting a Python service (e.g. Railway/AWS).<br>• **Latency**: Network hops for every step.<br>• **Overkill**: We don't need complex data processing yet. |
 
 **Decision**: We are moving to **LangGraph JS (Client-side)**. This gives us the "smart" agentic behaviors (planning, critique, multi-turn) without the overhead of maintaining a separate Python backend service.
+
+### Where the AI Agent Runs (and Where It Doesn’t)
+
+**The AI agent runs in your browser** (on your computer or phone). When you chat in the Goal Wizard, the “brain” that decides what questions to ask, when to generate a blueprint, and how to refine it—all of that logic runs right in the web page. Nothing about that flow is running on our servers.
+
+**So what do the Supabase functions do?** They are helper services on the server. They do *not* run the agent. Instead:
+
+- **openrouter-proxy** — When the agent needs an AI reply, it asks this function to get one. The function keeps our API key secret and forwards the request to Open Router. Think of it as a safe middleman: your browser says “I need an answer,” the function fetches it and sends it back.
+- **mercado-pago-preference**, **mercado-pago-webhook** — Payment setup and handling (checkout, credits, receipts).
+- **send-email**, **handle-new-user** — Emails (receipts, welcome messages).
+
+In short: the agent’s logic lives in the browser; the server provides secure access to the AI and handles payments and emails.
 
 ---
 

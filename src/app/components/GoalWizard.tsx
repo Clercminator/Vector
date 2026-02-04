@@ -15,22 +15,9 @@ import { supabase } from '@/lib/supabase';
 import { useTheme } from 'next-themes';
 import { graph } from '@/agent/goalAgent';
 import { HumanMessage, AIMessage } from '@langchain/core/messages';
-import { LangChainTracer } from "@langchain/core/tracers/tracer_langchain";
 import { v4 as uuidv4 } from 'uuid';
 import { EditableText, EditableList } from './Editable';
 import { ErrorBoundary } from './ErrorBoundary';
-
-// LangSmith Polyfill for Browser
-if (typeof window !== 'undefined' && !window.process) {
-  (window as any).process = {
-    env: {
-      LANGCHAIN_TRACING_V2: import.meta.env.VITE_LANGCHAIN_TRACING_V2,
-      LANGCHAIN_API_KEY: import.meta.env.VITE_LANGCHAIN_API_KEY,
-      LANGCHAIN_PROJECT: import.meta.env.VITE_LANGCHAIN_PROJECT,
-      LANGCHAIN_ENDPOINT: import.meta.env.VITE_LANGCHAIN_ENDPOINT
-    }
-  };
-}
 
 interface Message {
   role: 'ai' | 'user';
@@ -606,22 +593,8 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
     // LangSmith Config (Vite Standard)
     try {
-        const callbacks: any[] = [];
-        const tracingEnabled = import.meta.env.VITE_LANGCHAIN_TRACING_V2 === "true";
-        const apiKey = import.meta.env.VITE_LANGCHAIN_API_KEY;
-        const project = import.meta.env.VITE_LANGCHAIN_PROJECT || "Vector";
-
-        if (tracingEnabled && apiKey && apiKey.length > 10) { 
-             callbacks.push(new LangChainTracer({
-                 projectName: project
-             }));
-        } else if (tracingEnabled) {
-            console.warn("LangSmith tracing is enabled but API key is missing or invalid. Tracing skipped.");
-        }
-
-        const config = { 
+        const config = {
             configurable: { thread_id: threadId },
-            callbacks
         };
         
         const allowedFrameworks = TIER_CONFIGS[tier]?.allowedFrameworks || [];
@@ -1370,7 +1343,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
               <AnimatePresence mode="popLayout">
                 {(messages || []).map((msg, i) => (
                   <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'ai' ? 'justify-start' : 'justify-end'}`}>
-                     <div className={`max-w-[85%] p-4 rounded-2xl ${msg.role === 'ai' ? 'bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 text-gray-800 dark:text-gray-200 shadow-sm' : 'bg-black dark:bg-white text-white dark:text-black'}`}>
+                     <div className={`max-w-[85%] p-4 rounded-2xl ${msg.role === 'ai' ? 'bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 text-black dark:text-white shadow-sm' : 'bg-black dark:bg-white text-white dark:text-black'}`}>
                       <div className={`text-base md:text-lg leading-relaxed prose max-w-none ${
                         msg.role === 'ai' 
                           ? 'dark:prose-invert' 

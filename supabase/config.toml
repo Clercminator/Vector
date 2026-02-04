@@ -1,0 +1,11 @@
+# Supabase project configuration.
+# Function configs here are used when deploying with `supabase functions deploy`.
+
+[functions.mercado-pago-preference]
+# Allow unauthenticated requests (pricing buttons, checkout flow).
+# The frontend sends apikey via supabase.functions.invoke.
+verify_jwt = false
+
+[functions.openrouter-proxy]
+# Allow requests with apikey only (agent runs for both logged-in and guest users).
+verify_jwt = false

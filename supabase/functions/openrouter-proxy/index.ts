@@ -7,7 +7,7 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, x-stainless-os, x-stainless-arch, x-stainless-platform, x-stainless-runtime, x-stainless-runtime-version, x-stainless-lang, x-stainless-package-version, x-stainless-retry-count",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey, x-stainless-os, x-stainless-arch, x-stainless-platform, x-stainless-runtime, x-stainless-runtime-version, x-stainless-lang, x-stainless-package-version, x-stainless-retry-count",
 };
 
 Deno.serve(async (req: Request): Promise<Response> => {

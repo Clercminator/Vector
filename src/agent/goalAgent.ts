@@ -95,12 +95,22 @@ const generateBlueprintTool = tool(async () => {
 const tools = [setFrameworkTool, generateBlueprintTool];
 const toolNode = new ToolNode(tools);
 
+// Build LLM config. When using Supabase openrouter-proxy, we must add the apikey header
+// or the Supabase gateway rejects with "No API key found in request".
+const proxyUrl = import.meta.env.VITE_OPENROUTER_PROXY_URL as string | undefined;
+const supabaseKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY) as string | undefined;
+const baseURL = proxyUrl || "https://openrouter.ai/api/v1";
+const llmConfig: { baseURL: string; defaultHeaders?: Record<string, string> } = { baseURL };
+if (proxyUrl && supabaseKey) {
+  llmConfig.defaultHeaders = { apikey: supabaseKey };
+}
+
 // 2. LLM Setup
 const model = new ChatOpenAI({
   model: "openai/gpt-4o",
   temperature: 0,
-  apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || "dummy", 
-  configuration: { baseURL: import.meta.env.VITE_OPENROUTER_PROXY_URL || "https://openrouter.ai/api/v1" }
+  apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || "dummy",
+  configuration: llmConfig,
 });
 
 const llm = model.bindTools(tools);
@@ -284,8 +294,8 @@ const draftNode = async (state: typeof AgentState.State) => {
   const draftLlm = new ChatOpenAI({
      model: "openai/gpt-4o",
      temperature: 0.2,
-     apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || "dummy", 
-     configuration: { baseURL: import.meta.env.VITE_OPENROUTER_PROXY_URL || "https://openrouter.ai/api/v1" }
+     apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || "dummy",
+     configuration: llmConfig,
   });
 
   let prompt = "";
@@ -342,8 +352,8 @@ const critiqueNode = async (state: typeof AgentState.State) => {
     const criticLlm = new ChatOpenAI({
         model: "openai/gpt-4o-mini",
         temperature: 0.3,
-        apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || "dummy", 
-        configuration: { baseURL: import.meta.env.VITE_OPENROUTER_PROXY_URL }
+        apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || "dummy",
+        configuration: llmConfig,
     });
     
     if (!blueprint) return { critiqueAttempts: 1 };
