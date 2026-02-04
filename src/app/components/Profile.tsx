@@ -46,6 +46,7 @@ interface ProfileData {
 }
 
 import { TIER_CONFIGS, TierId } from '@/lib/tiers';
+import { COUNTRIES, GENDERS, ZODIACS } from '@/lib/constants';
 import { Lock } from 'lucide-react';
 
 import { useLanguage } from '@/app/components/language-provider';
@@ -390,8 +391,8 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
                             <SelectValue placeholder={t('profile.genderPlaceholder') || "Select gender"} />
                         </SelectTrigger>
                         <SelectContent>
-                            {['Male', 'Female', 'Other'].map((o: string) => (
-                                <SelectItem key={o} value={o}>{o}</SelectItem>
+                            {GENDERS.map((o: string) => (
+                                <SelectItem key={o} value={o}>{t(`gender.${o}`)}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -408,8 +409,8 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
                             <SelectValue placeholder={t('profile.countryPlaceholder') || "Select country"} />
                         </SelectTrigger>
                          <SelectContent className="max-h-60">
-                            {['United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Spain', 'Italy', 'Brazil', 'Mexico', 'India', 'China', 'Japan', 'Other'].map((o: string) => (
-                                <SelectItem key={o} value={o}>{o}</SelectItem>
+                            {COUNTRIES.map((o: string) => (
+                                <SelectItem key={o} value={o}>{t(`country.${o}`)}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -424,8 +425,8 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
                             <SelectValue placeholder={t('profile.zodiacPlaceholder') || "Select sign"} />
                         </SelectTrigger>
                         <SelectContent>
-                            {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map((o: string) => (
-                                <SelectItem key={o} value={o}>{o}</SelectItem>
+                            {ZODIACS.map((o: string) => (
+                                <SelectItem key={o} value={o}>{t(`zodiac.${o}`)}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>

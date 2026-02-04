@@ -306,6 +306,12 @@ function App() {
   };
 
   const handleStartWizard = (fwId: Framework) => {
+    // Enforce Auth for Chat UI logic
+    if (!userId) {
+        toast.error(t('app.profile.signInRequired') || "Please sign in to start.");
+        setAuthOpen(true);
+        return;
+    }
     setSelectedFramework(fwId);
     setActiveBlueprint(undefined); // New blueprint
     navigate('/wizard');
@@ -399,10 +405,21 @@ function App() {
 
   const handlePricingTier = async (tierName: string, tierId?: string) => {
     if (!tierId) return;
-    
+
+    // Enforce Auth for ALL plans
+    if (!userId) {
+        toast.error(t('app.profile.signInRequired') || "Please sign in to continue.");
+        setAuthOpen(true);
+        return;
+    }
+
     // 1. Handle Free Tier / Downgrade
     if (tierId === 'architect') {
-        toast.info(t('pricing.freeTierSelected') || "You are on the free plan.");
+        if (tier === 'architect') {
+            toast.info(t('pricing.currentPlan') || "You are currently on this plan.");
+        } else {
+            toast.info(t('pricing.freeTierSelected') || "You are on the free plan.");
+        }
         return;
     }
 
@@ -413,13 +430,7 @@ function App() {
     }
 
     // 3. Handle Paid Tiers (Standard/Max)
-    // Auth Check: Must be logged in to checkout
-    if (!userId) {
-        toast.error(t('app.profile.signInRequired') || "Please sign in to continue.");
-        setAuthOpen(true);
-        return;
-    }
-
+    
     if (!isMercadoPagoConfigured()) {
         toast.error("Payments are not configured yet (Test Mode).");
         return;
@@ -433,9 +444,10 @@ function App() {
     try {
         setIsCheckoutLoading(true);
         
-        // Get fresh session token
-        const { data: { session } } = await supabase!.auth.getSession();
-        if (!session?.access_token) {
+        // Ensure session is valid/refreshed before checkout
+        const { data: { session }, error: sessionError } = await supabase!.auth.getSession();
+        
+        if (sessionError || !session?.access_token) {
              throw new Error("Authentication session missing. Please sign in again.");
         }
 
@@ -853,7 +865,11 @@ function App() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                     >
-                      <PricingSection onSelectTier={handlePricingTier} />
+                      <PricingSection 
+                        onSelectTier={handlePricingTier} 
+                        currentTier={tier}
+                        userEmail={userEmail}
+                      />
                     </motion.div>
                  } />
 

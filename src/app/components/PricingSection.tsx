@@ -5,7 +5,11 @@ import confetti from 'canvas-confetti';
 import { useLanguage } from '@/app/components/language-provider';
 import { TIER_CONFIGS, type TierId } from '@/lib/tiers';
 
-export const PricingSection: React.FC<{ onSelectTier?: (tierName: string, tierId?: string) => void }> = ({ onSelectTier }) => {
+export const PricingSection: React.FC<{ 
+  onSelectTier?: (tierName: string, tierId?: string) => void;
+  currentTier?: TierId;
+  userEmail?: string | null;
+}> = ({ onSelectTier, currentTier, userEmail }) => {
   const { t } = useLanguage();
 
   const tierIds: TierId[] = ['architect', 'standard', 'max', 'enterprise'];
@@ -16,7 +20,13 @@ export const PricingSection: React.FC<{ onSelectTier?: (tierName: string, tierId
     const priceStr = isFree ? '$0' : isCustom ? t('pricing.custom') || 'Custom' : `$${config.priceUsd}`;
     const nameKey = `pricing.tier.${id}`;
     const descKey = `pricing.tier.${id}.desc`;
-    const ctaKey = id === 'architect' ? 'pricing.cta.start' : id === 'enterprise' ? 'pricing.cta.contact' : `pricing.cta.${id}`;
+    
+    // Logic for CTA Text
+    let ctaKey = id === 'architect' ? 'pricing.cta.start' : id === 'enterprise' ? 'pricing.cta.contact' : `pricing.cta.${id}`;
+    
+    // Logic for Current Plan
+    // Only show "Current Plan" if user is logged in AND matches the tier
+    const isCurrent = !!(userEmail && currentTier === id);
     
     const features: string[] =
       id === 'architect'
@@ -54,14 +64,17 @@ export const PricingSection: React.FC<{ onSelectTier?: (tierName: string, tierId
       price: priceStr,
       description: t(descKey),
       features: features.filter(Boolean),
-      cta: t(ctaKey),
+      cta: isCurrent ? (t('pricing.currentPlan') || 'Current Plan') : t(ctaKey),
       popular: id === 'max',
       color: id === 'architect' ? '#4285F4' : id === 'standard' ? '#34A853' : id === 'max' ? '#EA4335' : '#FBBC05',
       oneTime: !isFree && !isCustom,
+      isCurrent
     };
   });
 
   const handleCta = (tierName: string, tierId: string) => {
+    // If it's already the current plan, maybe do nothing or show info?
+    // For now, let properties flow up, App.tsx will reject if needed, but visually we might want to disable
     confetti({
       particleCount: 150,
       spread: 70,
@@ -72,7 +85,7 @@ export const PricingSection: React.FC<{ onSelectTier?: (tierName: string, tierId
   };
 
   return (
-    <section className="px-6 py-24 max-w-7xl mx-auto">
+    <section className="px-6 pt-12 pb-24 max-w-7xl mx-auto">
       <div className="text-center mb-16">
         <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-black dark:text-white">{t('pricing.title')}</h2>
         <p className="text-lg text-gray-500 dark:text-gray-400 font-light max-w-2xl mx-auto">
@@ -89,12 +102,20 @@ export const PricingSection: React.FC<{ onSelectTier?: (tierName: string, tierId
             viewport={{ once: true }}
             whileHover={{ y: -10 }}
             className={`relative p-8 rounded-3xl border ${
-              tier.popular ? 'border-black dark:border-white shadow-2xl scale-105 z-10' : 'border-gray-100 dark:border-zinc-800 shadow-sm'
+              tier.popular ? 'border-black dark:border-white shadow-2xl scale-105 z-10' : 
+              tier.isCurrent ? 'border-blue-500 shadow-xl ring-1 ring-blue-500' :
+              'border-gray-100 dark:border-zinc-800 shadow-sm'
             } bg-white dark:bg-zinc-900 flex flex-col`}
           >
-            {tier.popular && (
+            {tier.popular && !tier.isCurrent && (
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-widest px-4 py-1 rounded-full">
                 {t('pricing.mostPopular')}
+              </div>
+            )}
+            
+            {tier.isCurrent && (
+               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[10px] font-bold uppercase tracking-widest px-4 py-1 rounded-full">
+                {t('pricing.currentPlan') || 'Current Plan'}
               </div>
             )}
             
@@ -118,10 +139,13 @@ export const PricingSection: React.FC<{ onSelectTier?: (tierName: string, tierId
 
             <button
               onClick={() => handleCta(tier.name, tier.id)}
+              disabled={tier.isCurrent}
               className={`w-full py-4 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                tier.popular
-                  ? 'bg-black dark:bg-white text-white dark:text-black shadow-xl shadow-black/20 dark:shadow-white/10'
-                  : 'bg-gray-50 dark:bg-zinc-800 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700'
+                tier.isCurrent 
+                  ? 'bg-blue-500/10 text-blue-500 cursor-default'
+                  : tier.popular
+                    ? 'bg-black dark:bg-white text-white dark:text-black shadow-xl shadow-black/20 dark:shadow-white/10'
+                    : 'bg-gray-50 dark:bg-zinc-800 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700'
               }`}
             >
               {tier.cta}
