@@ -1363,9 +1363,9 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       </div>
 
       <div className="flex-grow flex overflow-hidden">
-        {/* Chat Area - CRITICAL: Keep flex-1 to fill available space. Do not change to h-full. */}
+        {/* Chat Area */}
         <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${draftResult ? 'lg:mr-96' : ''}`}>
-        <div className="w-full h-full flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-8 lg:px-10">
+        <div className="w-full flex-1 flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-8 lg:px-10">
              <div className="max-w-4xl mx-auto w-full space-y-2 pb-4 pt-4">
               <AnimatePresence mode="popLayout">
                 {(messages || []).map((msg, i) => (
@@ -1405,6 +1405,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
             {renderResult()}
             <div ref={messagesEndRef} />
           </div>
+        </div>
 
           {!initialBlueprint && (
         <div className="flex-none p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-gray-100 dark:border-zinc-800 z-20 pb-safe">
@@ -1492,7 +1493,6 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
           </div>
         </div>
       )}
-        </div>
 
         {/* Side Panel (Desktop only for now) */}
         {!result && draftResult && (
