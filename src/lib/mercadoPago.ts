@@ -28,7 +28,7 @@ export interface CreateCheckoutOptions {
  * Creates a MercadoPago checkout preference via the Edge Function and redirects the user to MercadoPago.
  * Requires: VITE_SUPABASE_URL (or VITE_supabase_url) set, and mercado-pago-preference Edge Function deployed with MERCADOPAGO_ACCESS_TOKEN in Secrets.
  */
-export async function createCheckout(options: CreateCheckoutOptions = {}): Promise<void> {
+export async function createCheckout(options: CreateCheckoutOptions = {}, accessToken?: string): Promise<void> {
   const baseUrl = getSupabaseUrl();
   if (!baseUrl) {
     throw new Error("VITE_SUPABASE_URL is not set. Cannot create MercadoPago checkout.");
@@ -36,9 +36,17 @@ export async function createCheckout(options: CreateCheckoutOptions = {}): Promi
 
   const functionUrl = `${baseUrl}/functions/v1/mercado-pago-preference`;
 
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  if (accessToken) {
+    headers["Authorization"] = `Bearer ${accessToken}`;
+  }
+
   const res = await fetch(functionUrl, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({
       tier: options.tier ?? "Master Builder",
       title: options.title,

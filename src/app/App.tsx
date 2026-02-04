@@ -413,6 +413,13 @@ function App() {
     }
 
     // 3. Handle Paid Tiers (Standard/Max)
+    // Auth Check: Must be logged in to checkout
+    if (!userId) {
+        toast.error(t('app.profile.signInRequired') || "Please sign in to continue.");
+        setAuthOpen(true);
+        return;
+    }
+
     if (!isMercadoPagoConfigured()) {
         toast.error("Payments are not configured yet (Test Mode).");
         return;
@@ -425,6 +432,13 @@ function App() {
 
     try {
         setIsCheckoutLoading(true);
+        
+        // Get fresh session token
+        const { data: { session } } = await supabase!.auth.getSession();
+        if (!session?.access_token) {
+             throw new Error("Authentication session missing. Please sign in again.");
+        }
+
         const config = TIER_CONFIGS[tierId as TierId];
         if (!config || config.priceUsd <= 0) {
              throw new Error("Invalid tier configuration");
@@ -435,7 +449,8 @@ function App() {
             title: `Vector - ${tierName}`, // e.g. 'Vector - Standard Plan'
             amount: config.priceUsd,
             currency: 'USD' // Or configurable
-        });
+        }, session.access_token);
+        
     } catch (e: any) {
         console.error("Checkout error", e);
         toast.error(e.message || "Failed to start checkout");
