@@ -22,6 +22,7 @@ import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID } from '@/lib/tiers';
 
 import { useLanguage } from '@/app/components/language-provider';
 import { ErrorBoundary } from '@/app/components/ErrorBoundary';
+import { toast } from "sonner";
 
 // Theme Configuration
 const FRAMEWORK_THEMES: Record<string, { bg: string, border: string, iconBg: string, iconColor: string, icon: any }> = {
@@ -136,7 +137,7 @@ export function Dashboard({
 
   return (
     <ErrorBoundary name="Dashboard">
-    <section className="px-6 py-24 max-w-7xl mx-auto min-h-screen">
+    <section className="px-6 pb-24 pt-8 max-w-7xl mx-auto min-h-screen">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
           <h1 className="text-4xl md:text-5xl font-black mb-2 tracking-tight text-black dark:text-white">{t('dashboard.title')}</h1>

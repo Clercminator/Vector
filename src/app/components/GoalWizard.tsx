@@ -818,7 +818,6 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       toast.success(t('wizard.saveSuccess'));
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.75 } });
       onBack();
-      onBack();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t('common.error'));
     }
