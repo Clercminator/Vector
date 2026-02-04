@@ -1324,9 +1324,9 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   };
 
   return (
-    <div className="relative h-[calc(100vh-5rem)] px-2 md:px-4 z-10 flex flex-col overflow-hidden">
+    <div className="relative h-[calc(100vh-5rem)] z-10 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="w-full max-w-full mx-auto flex-none pt-4 flex justify-between items-center bg-transparent z-20">
+      <div className="w-full max-w-full mx-auto flex-none pt-4 px-4 md:px-8 flex justify-between items-center bg-transparent z-20">
         <div className="flex items-center gap-4">
             <button 
               onClick={onBack}
@@ -1365,7 +1365,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       <div className="flex-grow flex overflow-hidden">
         {/* Chat Area - CRITICAL: Keep flex-1 to fill available space. Do not change to h-full. */}
         <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${draftResult ? 'lg:mr-96' : ''}`}>
-        <div className="w-full h-full flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-2 md:px-4 lg:px-6">
+        <div className="w-full h-full flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-8 lg:px-10">
              <div className="max-w-4xl mx-auto w-full space-y-2 pb-4 pt-4">
               <AnimatePresence mode="popLayout">
                 {(messages || []).map((msg, i) => (
