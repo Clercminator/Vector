@@ -1298,7 +1298,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                                     {(val as string[]).map((v, i) => <li key={i}>{v}</li>)}
                                 </ul>
                             ) : (
-                                <p className="text-sm text-gray-800 dark:text-gray-200">{val as string}</p>
+                                <p className="text-sm text-black dark:text-white">{val as string}</p>
                             )}
                         </div>
                     )
@@ -1366,7 +1366,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         {/* Chat Area */}
         <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${draftResult ? 'lg:mr-96' : ''}`}>
         <div className="w-full flex-1 flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-8 lg:px-10">
-             <div className="max-w-4xl w-full space-y-2 pb-4 pt-4">
+             <div className="mx-auto w-full space-y-2 pb-4 pt-4">
               <AnimatePresence mode="popLayout">
                 {(messages || []).map((msg, i) => (
                   <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'ai' ? 'justify-start' : 'justify-end'}`}>
@@ -1378,12 +1378,12 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                       }`}>
                       <ReactMarkdown
                       components={{
-                        p: ({node, ...props}) => <p className="mb-4 leading-relaxed text-gray-800 dark:text-gray-100 last:mb-0" {...props} />,
+                        p: ({node, ...props}) => <p className="mb-4 leading-relaxed text-black dark:text-white last:mb-0" {...props} />,
                         ul: ({node, ...props}) => <ul className="mb-4 pl-4 space-y-2" {...props} />,
                         ol: ({node, ...props}) => <ol className="mb-4 pl-4 space-y-2" {...props} />,
-                        li: ({node, ...props}) => <li className="text-gray-700 dark:text-gray-300 pl-2 border-l-2 border-gray-200 dark:border-zinc-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors" {...props} />,
-                        h1: ({node, ...props}) => <h1 className="text-2xl font-bold mt-6 mb-4 text-gray-900 dark:text-white tracking-tight" {...props} />,
-                        h2: ({node, ...props}) => <h2 className="text-xl font-bold mt-5 mb-3 text-gray-800 dark:text-gray-100 tracking-tight" {...props} />,
+                        li: ({node, ...props}) => <li className="text-black dark:text-white pl-2 border-l-2 border-gray-200 dark:border-zinc-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors" {...props} />,
+                        h1: ({node, ...props}) => <h1 className="text-2xl font-bold mt-6 mb-4 text-black dark:text-white tracking-tight" {...props} />,
+                        h2: ({node, ...props}) => <h2 className="text-xl font-bold mt-5 mb-3 text-black dark:text-white tracking-tight" {...props} />,
                         h3: ({node, ...props}) => <h3 className="text-lg font-bold mt-4 mb-2 text-gray-800 dark:text-gray-200" {...props} />,
                         blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-blue-500/50 pl-4 py-2 my-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-r-lg italic text-gray-600 dark:text-gray-400" {...props} />,
                         strong: ({node, ...props}) => <strong className="font-bold text-gray-900 dark:text-white" {...props} />,
@@ -1409,7 +1409,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
           {!initialBlueprint && (
         <div className="flex-none p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-gray-100 dark:border-zinc-800 z-20 pb-safe">
-          <div className="max-w-4xl w-full relative">
+          <div className="max-w-4xl mx-auto w-full relative">
           {/* Mobile Draft Toggle */}
           {!result && draftResult && (
              <button 
