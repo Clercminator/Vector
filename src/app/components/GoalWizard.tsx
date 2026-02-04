@@ -1363,10 +1363,10 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       </div>
 
       <div className="flex-grow flex overflow-hidden">
-        {/* Chat Area */}
+        {/* Chat Area - CRITICAL: Keep flex-1 to fill available space. Do not change to h-full. */}
         <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${draftResult ? 'lg:mr-96' : ''}`}>
-          <div className="w-full h-full flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-2 md:px-4 lg:px-6">
-             <div className="space-y-2 pb-32 pt-4">
+        <div className="w-full h-full flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-2 md:px-4 lg:px-6">
+             <div className="space-y-2 pb-4 pt-4">
               <AnimatePresence mode="popLayout">
                 {(messages || []).map((msg, i) => (
                   <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'ai' ? 'justify-start' : 'justify-end'}`}>
