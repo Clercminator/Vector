@@ -39,6 +39,7 @@ export const translations = {
     'common.save': 'Save',
     'common.close': 'Close',
     'common.loading': 'Loading...',
+    'common.loadMore': 'Load More',
     'common.error': 'Something went wrong',
 
     // Onboarding
@@ -128,6 +129,9 @@ export const translations = {
     'dashboard.delete': 'Delete',
     'dashboard.open': 'Open',
     'dashboard.created': 'Created',
+    'dashboard.exportAll': 'Export All',
+    'dashboard.emptyTitle': 'No blueprints found',
+    'dashboard.emptyDesc': 'Adjust your filters or create a new blueprint.',
     
     // Pricing
     'pricing.title': 'Transparent Blueprinting',
@@ -185,6 +189,7 @@ export const translations = {
     'community.search': 'Search templates...',
     'community.createFirst': 'Create your first Blueprint',
     'community.noResults': 'No templates found matching your search.',
+    'community.errorMore': 'Failed to load more templates.',
 
     // Leaderboard
     'leaderboard.title': 'Leaderboard',
@@ -530,6 +535,7 @@ export const translations = {
     'common.save': 'Guardar',
     'common.close': 'Cerrar',
     'common.loading': 'Cargando...',
+    'common.loadMore': 'Cargar Más',
     'common.error': 'Algo salió mal',
 
     // Onboarding
@@ -619,6 +625,9 @@ export const translations = {
     'dashboard.delete': 'Eliminar',
     'dashboard.open': 'Abrir',
     'dashboard.created': 'Creado',
+    'dashboard.exportAll': 'Exportar Todo',
+    'dashboard.emptyTitle': 'No se encontraron planos',
+    'dashboard.emptyDesc': 'Ajusta tus filtros o crea un nuevo plano.',
 
     // Pricing
     'pricing.title': 'Precios Transparentes',
@@ -676,6 +685,7 @@ export const translations = {
     'community.search': 'Buscar plantillas...',
     'community.createFirst': 'Crea tu primer Plano',
     'community.noResults': 'No se encontraron plantillas que coincidan con tu búsqueda.',
+    'community.errorMore': 'Error al cargar más plantillas.',
 
     // Leaderboard
     'leaderboard.title': 'Tabla de Clasificación',

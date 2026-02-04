@@ -54,7 +54,7 @@ export function Dashboard({
   onLoadMore?: () => void;
   hasMore?: boolean;
   isLoadingMore?: boolean;
-  error?: string | null;
+  syncError?: string | null;
 }) {
   const { t } = useLanguage();
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -82,8 +82,8 @@ export function Dashboard({
       setPinnedIds(newPinned);
       try {
           localStorage.setItem('pinned_blueprints', JSON.stringify(newPinned));
-      } catch (e: any) {
-          if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+      } catch (err: any) {
+          if (err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
               toast.error("Storage full: Cannot pin more items. Please unpin some first.");
               // Rollback state
               setPinnedIds(pinnedIds); 
@@ -91,9 +91,14 @@ export function Dashboard({
       }
   };
   
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (deleteId) {
-      onDeleteBlueprint(deleteId);
+      try {
+        await onDeleteBlueprint(deleteId);
+      } catch (deleteErr) {
+        console.error("Failed to delete blueprint:", deleteErr);
+        // Error is handled by App.tsx usually, but this prevents Dashboard from crashing
+      }
       setDeleteId(null);
     }
   };
@@ -207,15 +212,15 @@ export function Dashboard({
       ) : filteredBlueprints.length === 0 ? (
         <div className="text-center py-20 bg-gray-50 dark:bg-zinc-900/50 rounded-[3rem] border-2 border-dashed border-gray-200 dark:border-zinc-800">
           <div className="w-20 h-20 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
-            {error ? <WifiOff className="text-red-400" size={32} /> : <Search className="text-gray-400" size={32} />}
+            {syncError ? <WifiOff className="text-red-400" size={32} /> : <Search className="text-gray-400" size={32} />}
           </div>
           <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
-              {error ? "Couldn't load your blueprints" : (searchQuery ? "No matching blueprints found" : t('dashboard.emptyTitle'))}
+              {syncError ? "Couldn't load your blueprints" : (searchQuery ? "No matching blueprints found" : t('dashboard.emptyTitle'))}
           </h3>
           <p className="text-gray-500 mb-8 max-w-md mx-auto">
-              {error ? "Please check your connection and try again." : (searchQuery ? "Try adjusting your search or filters." : t('dashboard.emptyDesc'))}
+              {syncError ? "Please check your connection and try again." : (searchQuery ? "Try adjusting your search or filters." : t('dashboard.emptyDesc'))}
           </p>
-          {error ? (
+          {syncError ? (
               <Button onClick={() => window.location.reload()} size="lg" className="rounded-full px-8 bg-red-600 hover:bg-red-700 text-white shadow-xl shadow-red-500/20">
                 Retry
               </Button>

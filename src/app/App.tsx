@@ -820,7 +820,7 @@ function App() {
                         onLoadMore={handleLoadMore}
                         hasMore={hasMore}
                         isLoadingMore={isLoadingMore}
-                        error={syncError}
+                        syncError={syncError}
                       />
                     </motion.div>
                  } />
