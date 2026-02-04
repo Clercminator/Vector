@@ -4,6 +4,7 @@ import { User, Mail, Award, Zap, Save, Loader2, ArrowLeft, Star, CheckCircle2, C
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Label } from '@/app/components/ui/label';
 import { useNavigate } from 'react-router-dom';
 import { createCheckout } from '@/lib/mercadoPago';
@@ -312,7 +313,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
              <div className="space-y-2">
                  <p className="text-xs text-zinc-500 font-medium px-1">Included in your plan:</p>
                  <ul className="grid grid-cols-1 gap-2">
-                    {currentTierConfig.allowedFrameworks.slice(0, 3).map(fw => (
+                    {currentTierConfig.allowedFrameworks.slice(0, 3).map((fw: string) => (
                         <li key={fw} className="flex items-center gap-2 text-xs text-zinc-300">
                            <CheckCircle2 size={12} className="text-green-500" />
                            {fw}
@@ -342,7 +343,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
               <Input 
                 id="displayName" 
                 value={data.display_name} 
-                onChange={(e) => setData({ ...data, display_name: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, display_name: e.target.value })}
                 placeholder="e.g. Elon Musk"
                 className="bg-transparent dark:text-white dark:border-zinc-700"
               />
@@ -353,7 +354,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
               <Input 
                 id="bio" 
                 value={data.bio} 
-                onChange={(e) => setData({ ...data, bio: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, bio: e.target.value })}
                 placeholder="What are you building?"
                 className="bg-transparent dark:text-white dark:border-zinc-700"
               />
@@ -365,43 +366,69 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
                     <Label htmlFor="age" className="text-black dark:text-white">{t('profile.age')}</Label>
                     <Input 
                       id="age" 
+                      type="number"
+                      min={10}
+                      max={90}
                       value={data.metadata?.age || ''} 
-                      onChange={(e) => setData({ ...data, metadata: { ...data.metadata, age: e.target.value } })}
-                      placeholder="e.g. 28"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const val = parseInt(e.target.value);
+                          if (!e.target.value || (val >= 10 && val <= 90)) {
+                              setData({ ...data, metadata: { ...data.metadata, age: e.target.value } });
+                          }
+                      }}
+                      placeholder="28"
                       className="bg-transparent dark:text-white dark:border-zinc-700"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="gender" className="text-black dark:text-white">{t('profile.gender')}</Label>
-                    <Input 
-                      id="gender" 
-                      value={data.metadata?.gender || ''} 
-                      onChange={(e) => setData({ ...data, metadata: { ...data.metadata, gender: e.target.value } })}
-                      placeholder="e.g. Female"
-                      className="bg-transparent dark:text-white dark:border-zinc-700"
-                    />
+                    <Select 
+                        value={data.metadata?.gender} 
+                        onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, gender: val } })}
+                    >
+                        <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                            <SelectValue placeholder={t('profile.genderPlaceholder') || "Select gender"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {['Male', 'Female', 'Other'].map((o: string) => (
+                                <SelectItem key={o} value={o}>{o}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="country" className="text-black dark:text-white">{t('profile.country')}</Label>
-                    <Input 
-                      id="country" 
-                      value={data.metadata?.country || ''} 
-                      onChange={(e) => setData({ ...data, metadata: { ...data.metadata, country: e.target.value } })}
-                      placeholder="e.g. USA"
-                      className="bg-transparent dark:text-white dark:border-zinc-700"
-                    />
+                    <Select 
+                        value={data.metadata?.country} 
+                        onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, country: val } })}
+                    >
+                        <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                            <SelectValue placeholder={t('profile.countryPlaceholder') || "Select country"} />
+                        </SelectTrigger>
+                         <SelectContent className="max-h-60">
+                            {['United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Spain', 'Italy', 'Brazil', 'Mexico', 'India', 'China', 'Japan', 'Other'].map((o: string) => (
+                                <SelectItem key={o} value={o}>{o}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="zodiac" className="text-black dark:text-white">{t('profile.zodiac')}</Label>
-                    <Input 
-                      id="zodiac" 
-                      value={data.metadata?.zodiac_sign || ''} 
-                      onChange={(e) => setData({ ...data, metadata: { ...data.metadata, zodiac_sign: e.target.value } })}
-                      placeholder="e.g. Leo"
-                      className="bg-transparent dark:text-white dark:border-zinc-700"
-                    />
+                     <Select 
+                        value={data.metadata?.zodiac_sign} 
+                        onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, zodiac_sign: val } })}
+                    >
+                        <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                            <SelectValue placeholder={t('profile.zodiacPlaceholder') || "Select sign"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'].map((o: string) => (
+                                <SelectItem key={o} value={o}>{o}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="space-y-2">

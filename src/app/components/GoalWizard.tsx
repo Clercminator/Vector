@@ -1362,7 +1362,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
           <div className="w-full h-full flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-8 lg:px-12">
              <div className="space-y-2 pb-32 pt-4">
               <AnimatePresence mode="popLayout">
-                {messages.map((msg, i) => (
+                {(messages || []).map((msg, i) => (
                   <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'ai' ? 'justify-start' : 'justify-end'}`}>
                      <div className={`max-w-[85%] p-4 rounded-2xl ${msg.role === 'ai' ? 'bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 text-gray-800 dark:text-gray-200 shadow-sm' : 'bg-black dark:bg-white text-white dark:text-black'}`}>
                       <div className={`text-base md:text-lg leading-relaxed prose max-w-none ${
@@ -1416,9 +1416,9 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
 
           {/* Suggestion Chips */}
-          {!result && !isTyping && !isAgentRunning && suggestionChips.length > 0 && (
+          {!result && !isTyping && !isAgentRunning && (suggestionChips || []).length > 0 && (
              <div className="flex gap-2 mb-3 overflow-x-auto pb-2 scrollbar-none">
-                {suggestionChips.map((chip) => (
+                {(suggestionChips || []).map((chip) => (
                    <button 
                      key={chip}
                      onClick={() => runAgent(chip)}
