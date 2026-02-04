@@ -1,0 +1,2 @@
+[functions.mercado-pago-preference]
+verify_jwt = false
