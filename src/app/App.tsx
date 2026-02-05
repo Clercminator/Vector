@@ -125,30 +125,6 @@ function App() {
     };
   }, []);
 
-  // Payment Status Handler
-  useEffect(() => {
-      const paymentStatus = new URLSearchParams(window.location.search).get('payment');
-      if (paymentStatus === 'success') {
-          toast.success(t('app.payment.success'), { duration: 5000 });
-          // Force profile refresh if user logic is already loaded
-          if (userId && supabase) {
-              supabase.from('profiles').select('tier, credits, is_admin').eq('user_id', userId).single()
-              .then(({ data }) => {
-                  if (data) {
-                      setTier(data.tier as TierId);
-                      if (data.is_admin) setIsAdmin(true);
-                      // Force credits refresh in components by refetching or context (simplified here by just updating tier)
-                  }
-              });
-          }
-          // Clean URL
-          window.history.replaceState({}, document.title, window.location.pathname);
-      } else if (paymentStatus === 'failure') {
-          toast.error(t('app.payment.failure'), { duration: 5000 });
-          window.history.replaceState({}, document.title, window.location.pathname);
-      }
-  }, [userId, t]);
-
   useEffect(() => {
     // Check initial session
     supabase?.auth.getSession().then(({ data: { session } }) => {

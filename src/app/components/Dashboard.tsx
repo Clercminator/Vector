@@ -180,7 +180,7 @@ export function Dashboard({
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                   <input 
                     type="text" 
-                    placeholder="Search blueprints..." 
+                    placeholder={t('dashboard.searchPlaceholder')} 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-12 pr-4 py-3 rounded-2xl bg-gray-100 dark:bg-zinc-900 border-none focus:ring-2 focus:ring-blue-500 transition-all outline-none text-base"
@@ -197,7 +197,7 @@ export function Dashboard({
                             : 'bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600'
                         }`}
                       >
-                          {fw === 'ALL' ? 'All' : fw.charAt(0).toUpperCase() + fw.slice(1)}
+                          {fw === 'ALL' ? t('dashboard.filterAll') : fw.charAt(0).toUpperCase() + fw.slice(1)}
                       </button>
                   ))}
               </div>

@@ -153,10 +153,11 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
     if (!config || config.priceUsd <= 0) return;
     
     try {
-      await createCheckout({ 
-        tier: tierId.charAt(0).toUpperCase() + tierId.slice(1), 
-        amount: config.priceUsd, 
-        currency: 'USD' 
+      await createCheckout(supabase, {
+        tier: tierId.charAt(0).toUpperCase() + tierId.slice(1),
+        amount: config.priceUsd,
+        currency: 'USD',
+        userId,
       });
     } catch (e) {
       console.error(e);

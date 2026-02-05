@@ -183,7 +183,10 @@ export const translations = {
     'dashboard.exportAll': 'Export All',
     'dashboard.emptyTitle': 'No blueprints found',
     'dashboard.emptyDesc': 'Adjust your filters or create a new blueprint.',
-    
+    'dashboard.searchPlaceholder': 'Search blueprints...',
+    'dashboard.filterAll': 'All',
+    'dashboard.createFirst': 'Create your first blueprint',
+
     // Pricing
     'pricing.title': 'Transparent Blueprinting',
     'pricing.subtitle': 'Choose the level of architectural precision your ambition demands.',
@@ -732,6 +735,9 @@ export const translations = {
     'dashboard.exportAll': 'Exportar Todo',
     'dashboard.emptyTitle': 'No se encontraron planos',
     'dashboard.emptyDesc': 'Ajusta tus filtros o crea un nuevo plano.',
+    'dashboard.searchPlaceholder': 'Buscar planos...',
+    'dashboard.filterAll': 'Todos',
+    'dashboard.createFirst': 'Crear tu primer plano',
 
     // Pricing
     'pricing.title': 'Ofertas',
@@ -1180,6 +1186,11 @@ export const translations = {
     'dashboard.delete': 'Excluir',
     'dashboard.open': 'Abrir',
     'dashboard.created': 'Criado',
+    'dashboard.searchPlaceholder': 'Buscar projetos...',
+    'dashboard.filterAll': 'Todos',
+    'dashboard.createFirst': 'Crie seu primeiro projeto',
+    'dashboard.emptyTitle': 'Nenhum projeto encontrado',
+    'dashboard.emptyDesc': 'Ajuste seus filtros ou crie um novo projeto.',
 
     // Pricing
     'pricing.title': 'Preços Transparentes',
@@ -1503,6 +1514,11 @@ export const translations = {
     'dashboard.delete': 'Supprimer',
     'dashboard.open': 'Ouvrir',
     'dashboard.created': 'Créé',
+    'dashboard.searchPlaceholder': 'Rechercher des plans...',
+    'dashboard.filterAll': 'Tous',
+    'dashboard.createFirst': 'Créer votre premier plan',
+    'dashboard.emptyTitle': 'Aucun plan trouvé',
+    'dashboard.emptyDesc': 'Ajustez vos filtres ou créez un nouveau plan.',
 
     // Pricing
     'pricing.title': 'Tarification Transparente',
@@ -1824,6 +1840,11 @@ export const translations = {
     'dashboard.delete': 'Löschen',
     'dashboard.open': 'Öffnen',
     'dashboard.created': 'Erstellt',
+    'dashboard.searchPlaceholder': 'Pläne suchen...',
+    'dashboard.filterAll': 'Alle',
+    'dashboard.createFirst': 'Erstellen Sie Ihren ersten Plan',
+    'dashboard.emptyTitle': 'Keine Pläne gefunden',
+    'dashboard.emptyDesc': 'Passen Sie Ihre Filter an oder erstellen Sie einen neuen Plan.',
 
     // Pricing
     'pricing.title': 'Transparente Preise',

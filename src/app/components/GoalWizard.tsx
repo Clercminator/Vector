@@ -652,15 +652,18 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
             }
 
             // Handle streaming Logic (Ask Node & Consultant Node)
-            // We unify logic to prevent double bubbles. We only care about the LAST message from the agent in this step.
+            // LangGraph can yield per-node updates (event.consultant / event.ask) or state updates (event.messages)
             const agentNode = event?.ask || event?.consultant || event?.framework_setter;
-            
-            if (agentNode && agentNode.messages && agentNode.messages.length > 0) {
-                 const lastMsg = agentNode.messages[agentNode.messages.length - 1];
+            const messageList = agentNode?.messages ?? (Array.isArray(event?.messages) ? event.messages : null);
+
+            if (messageList && messageList.length > 0) {
+                 const lastMsg = messageList[messageList.length - 1];
                  
                  // IGNORE ToolMessages, only process AIMessages
                  if (lastMsg._getType() === 'ai') {
-                     const rawContent = lastMsg.content as string;
+                     // LangChain content can be string or array (multimodal); normalize to string
+                     const raw = lastMsg.content;
+                     const rawContent = typeof raw === 'string' ? raw : (Array.isArray(raw) ? (raw.map((c: any) => typeof c === 'string' ? c : c?.text ?? '')).join('') : String(raw ?? ''));
                      const { cleanText, suggestions, draft } = extractContent(rawContent);
                      
                      // De-duplication & Update
@@ -705,12 +708,12 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         });
         setMessages(prev => [...prev, { role: 'ai', content: "⚠️ **Connection Error**: I couldn't complete that thought. Please try asking again." }]);
     }
-// ...
-
-
     finally {
         isRunningRef.current = false;
-        if (isMounted.current) setIsAgentRunning(false);
+        if (isMounted.current) {
+            setIsAgentRunning(false);
+            setIsTyping(false); // Always clear typing when stream ends so UI never stays stuck on "Agent is thinking"
+        }
     }
   };
 
@@ -1354,15 +1357,15 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                       }`}>
                       <ReactMarkdown
                       components={{
-                        p: ({node, ...props}) => <p className="mb-4 leading-relaxed text-black dark:text-white last:mb-0" {...props} />,
+                        p: ({node, ...props}) => <p className="mb-4 leading-relaxed text-inherit last:mb-0" {...props} />,
                         ul: ({node, ...props}) => <ul className="mb-4 pl-4 space-y-2" {...props} />,
                         ol: ({node, ...props}) => <ol className="mb-4 pl-4 space-y-2" {...props} />,
-                        li: ({node, ...props}) => <li className="text-black dark:text-white pl-2 border-l-2 border-gray-200 dark:border-zinc-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors" {...props} />,
-                        h1: ({node, ...props}) => <h1 className="text-2xl font-bold mt-6 mb-4 text-black dark:text-white tracking-tight" {...props} />,
-                        h2: ({node, ...props}) => <h2 className="text-xl font-bold mt-5 mb-3 text-black dark:text-white tracking-tight" {...props} />,
-                        h3: ({node, ...props}) => <h3 className="text-lg font-bold mt-4 mb-2 text-gray-800 dark:text-gray-200" {...props} />,
-                        blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-blue-500/50 pl-4 py-2 my-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-r-lg italic text-gray-600 dark:text-gray-400" {...props} />,
-                        strong: ({node, ...props}) => <strong className="font-bold text-gray-900 dark:text-white" {...props} />,
+                        li: ({node, ...props}) => <li className="text-inherit pl-2 border-l-2 border-gray-200 dark:border-zinc-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors" {...props} />,
+                        h1: ({node, ...props}) => <h1 className="text-2xl font-bold mt-6 mb-4 text-inherit tracking-tight" {...props} />,
+                        h2: ({node, ...props}) => <h2 className="text-xl font-bold mt-5 mb-3 text-inherit tracking-tight" {...props} />,
+                        h3: ({node, ...props}) => <h3 className="text-lg font-bold mt-4 mb-2 text-inherit" {...props} />,
+                        blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-blue-500/50 pl-4 py-2 my-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-r-lg italic text-inherit opacity-90" {...props} />,
+                        strong: ({node, ...props}) => <strong className="font-bold text-inherit" {...props} />,
                         code: ({node, ...props}) => <code className="bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono text-pink-600 dark:text-pink-400" {...props} />,
                       }}
                       >{msg.content}</ReactMarkdown>
