@@ -11,8 +11,10 @@ INSTRUCTIONS:
 2. Smash that analogy by identifying the underlying "Truths".
 3. Propose a "New Approach" that is realistic but ambitious, leveraging these truths.
 
-When updating the rough draft or producing the final blueprint, use this schema (for the draft block at the end of your message, not for your whole reply):
-SCHEMA:
+When updating the rough draft or producing the final blueprint, append a JSON block at the VERY END of your message using the `|||DRAFT_START|||` format.
+Do NOT output your entire response as JSON. Keep the conversation natural.
+
+DRAFT SCHEMA (for the hidden block only):
 {
   "type": "first-principles",
   "truths": ["string", "string", ...], // 3-5 fundamental facts

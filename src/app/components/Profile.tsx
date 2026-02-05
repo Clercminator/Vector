@@ -32,6 +32,7 @@ interface ProfileData {
   branding_color?: string;
   tier?: string;
   extra_credits?: number;
+  credits_expires_at?: string;
   metadata?: {
     demographics?: string; // Deprecated but kept for type safety if needed
     age?: string;
@@ -66,6 +67,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
     level: 1,
     credits: 5,
     extra_credits: 0,
+    credits_expires_at: '',
     points: 0,
     streak_count: 0,
     branding_logo_url: '',
@@ -93,7 +95,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
         if (user) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('display_name, bio, avatar_url, level, credits, extra_credits, points, streak_count, branding_logo_url, branding_color, tier, metadata')
+            .select('display_name, bio, avatar_url, level, credits, extra_credits, credits_expires_at, points, streak_count, branding_logo_url, branding_color, tier, metadata')
             .eq('user_id', user.id)
             .single();
 
@@ -105,6 +107,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
               level: profile.level || 1,
               credits: profile.credits || 0,
               extra_credits: profile.extra_credits || 0,
+              credits_expires_at: profile.credits_expires_at || '',
               points: profile.points || 0,
               streak_count: profile.streak_count || 0,
               branding_logo_url: profile.branding_logo_url || '',
@@ -295,19 +298,20 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
              </div>
 
              <div className="space-y-4 mb-8">
+                {/* Normal Credits */}
                 <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/10">
                    <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center">
                          <Zap className="text-yellow-500" size={20} />
                       </div>
                       <div>
-                         <p className="text-sm font-bold">
-                            {data.credits}
-                            {data.extra_credits && data.extra_credits > 0 ? (
-                               <span className="text-xs text-green-500 ml-2">+{data.extra_credits} Extra</span>
-                            ) : null}
-                         </p>
-                         <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">{t('profile.creditsRemaining') || 'Credits Remaining'}</p>
+                         <p className="text-sm font-bold">{data.credits}</p>
+                         <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">{t('profile.normalCredits') || 'Normal Credits'}</p>
+                         {data.credits_expires_at && (
+                           <p className="text-[10px] text-zinc-400 mt-1">
+                             Expires: {new Date(data.credits_expires_at).toLocaleDateString()}
+                           </p>
+                         )}
                       </div>
                    </div>
                    <Button 
@@ -317,6 +321,21 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
                    >
                       {t('profile.buyMore') || 'Buy More'}
                    </Button>
+                </div>
+
+                {/* Extra Credits */}
+                {/* Always show extra credits section to be explicit, or only if > 0? User said "don't appear visually anywhere", implying they want to see it. */}
+                <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/10">
+                   <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                         <Star className="text-purple-500" size={20} />
+                      </div>
+                      <div>
+                         <p className="text-sm font-bold">{data.extra_credits || 0}</p>
+                         <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">{t('profile.extraCredits') || 'Extra Credits'}</p>
+                         <p className="text-[10px] text-zinc-400 mt-1">Never expire</p>
+                      </div>
+                   </div>
                 </div>
              </div>
 
