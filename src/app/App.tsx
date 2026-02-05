@@ -510,7 +510,7 @@ function App() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white transition-colors duration-300 font-sans selection:bg-purple-500/30">
+    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white transition-colors duration-300 font-sans selection:bg-purple-500/30 flex flex-col">
         {/* Loading Overlay for Checkout */}
         <AnimatePresence>
             {isCheckoutLoading && (
