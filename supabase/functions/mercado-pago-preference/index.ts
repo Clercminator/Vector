@@ -19,6 +19,7 @@ interface PreferenceBody {
   back_url_success?: string;
   back_url_failure?: string;
   back_url_pending?: string;
+  user_id?: string;
 }
 
 Deno.serve(async (req: Request): Promise<Response> => {
@@ -51,6 +52,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const backUrlSuccess = body.back_url_success ?? `${origin}/dashboard?payment=success`;
     const backUrlFailure = body.back_url_failure ?? `${origin}/pricing?payment=failure`;
     const backUrlPending = body.back_url_pending ?? `${origin}/dashboard?payment=pending`;
+    const userId = body.user_id;
+
+    if (!userId) {
+       console.warn("Creating preference without user_id - webhook will not be able to upgrade user automatically.");
+    }
 
     const preference = {
       items: [
@@ -67,6 +73,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         pending: backUrlPending,
       },
       auto_return: "approved" as const,
+      external_reference: userId,
     };
 
     const res = await fetch(MERCADOPAGO_PREFERENCES_URL, {

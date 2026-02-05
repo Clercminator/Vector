@@ -278,23 +278,26 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   };
 
   useEffect(() => {
-    // Fetch credits logic... (omitted for brevity, assume same)
-     if (supabase) {
+    if (supabase) {
         supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
             if (user) {
-                // Fetch full_name along with credits and tier
                 if (user.id) {
-                    supabase.from('profiles').select('credits,tier,full_name').eq('user_id', user.id).single()
+                    // Use credits,tier,display_name (full_name may be missing in some deployments)
+                    supabase.from('profiles').select('credits,tier,display_name').eq('user_id', user.id).single()
                     .then(({ data }: { data: any }) => {
                         if (data) {
-                            setCredits(data.credits);
+                            setCredits(data.credits ?? 3);
                             if (data.tier) setTier(data.tier as TierId);
-                            if (data.full_name) setUserName(data.full_name);
+                            if (data.display_name) setUserName(data.display_name);
                         }
+                    })
+                    .catch(() => {
+                        // Profile fetch can fail (e.g. 400 if column missing); don't block wizard
+                        setCredits(3);
                     });
                 }
             } else {
-                setCredits(3); 
+                setCredits(3);
             }
         });
     }

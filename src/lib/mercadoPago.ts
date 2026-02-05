@@ -22,6 +22,7 @@ export interface CreateCheckoutOptions {
   title?: string;
   amount?: number;
   currency?: string;
+  userId?: string;
 }
 
 /**
@@ -37,6 +38,7 @@ export async function createCheckout(supabase: SupabaseClient, options: CreateCh
       title: options.title,
       amount: options.amount,
       currency: options.currency,
+      user_id: options.userId,
       back_url_success: window.location.origin + "/dashboard?payment=success",
       back_url_failure: window.location.origin + "/pricing?payment=failure",
       back_url_pending: window.location.origin + "/dashboard?payment=pending",
@@ -57,5 +59,6 @@ export async function createCheckout(supabase: SupabaseClient, options: CreateCh
     throw new Error("No checkout URL returned");
   }
 
-  window.location.href = init_point;
+  // Open in new tab so the app tab stays open; back button and return URL work correctly
+  window.open(init_point, '_blank', 'noopener,noreferrer');
 }

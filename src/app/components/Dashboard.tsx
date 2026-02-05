@@ -43,7 +43,8 @@ export function Dashboard({
   onPublishBlueprint,
   onLoadMore,
   hasMore,
-  isLoadingMore
+  isLoadingMore,
+  syncError
 }: {
   blueprints: Blueprint[];
   loading?: boolean;

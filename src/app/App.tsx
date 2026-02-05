@@ -281,9 +281,11 @@ function App() {
 
   const refreshProfile = () => {
     if (userId && supabase) {
-        supabase.from('profiles').select('avatar_url, tier, credits').eq('user_id', userId).single()
+        supabase.from('profiles').select('avatar_url, tier, credits, is_admin').eq('user_id', userId).single()
         .then(({ data }) => {
             if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+            if (data?.tier) setTier(data.tier as TierId);
+            if (data?.is_admin) setIsAdmin(true);
         });
     }
   };
@@ -460,9 +462,11 @@ function App() {
             tier: config.id, // e.g. 'standard'
             title: `Vector - ${tierName}`, // e.g. 'Vector - Standard Plan'
             amount: config.priceUsd,
-            currency: 'USD' // Or configurable
+            currency: 'USD', // Or configurable
+            userId: userId
         });
-        
+        // Checkout opens in new tab; clear overlay so this tab is usable
+        setIsCheckoutLoading(false);
     } catch (e: any) {
         console.error("Checkout error", e);
         toast.error(e.message || "Failed to start checkout");
