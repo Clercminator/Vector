@@ -31,6 +31,7 @@ interface ProfileData {
   branding_logo_url?: string;
   branding_color?: string;
   tier?: string;
+  extra_credits?: number;
   metadata?: {
     demographics?: string; // Deprecated but kept for type safety if needed
     age?: string;
@@ -64,6 +65,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
     avatar_url: '',
     level: 1,
     credits: 5,
+    extra_credits: 0,
     points: 0,
     streak_count: 0,
     branding_logo_url: '',
@@ -91,7 +93,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
         if (user) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('display_name, bio, avatar_url, level, credits, points, streak_count, branding_logo_url, branding_color, tier, metadata')
+            .select('display_name, bio, avatar_url, level, credits, extra_credits, points, streak_count, branding_logo_url, branding_color, tier, metadata')
             .eq('user_id', user.id)
             .single();
 
@@ -102,6 +104,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
               avatar_url: profile.avatar_url || '',
               level: profile.level || 1,
               credits: profile.credits || 0,
+              extra_credits: profile.extra_credits || 0,
               points: profile.points || 0,
               streak_count: profile.streak_count || 0,
               branding_logo_url: profile.branding_logo_url || '',
@@ -298,7 +301,12 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
                          <Zap className="text-yellow-500" size={20} />
                       </div>
                       <div>
-                         <p className="text-sm font-bold">{data.credits}</p>
+                         <p className="text-sm font-bold">
+                            {data.credits}
+                            {data.extra_credits && data.extra_credits > 0 ? (
+                               <span className="text-xs text-green-500 ml-2">+{data.extra_credits} Extra</span>
+                            ) : null}
+                         </p>
                          <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">{t('profile.creditsRemaining') || 'Credits Remaining'}</p>
                       </div>
                    </div>
