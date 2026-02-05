@@ -21,6 +21,7 @@ This document explains **what the app does**, **how it’s built**, **how the pi
     - [4. Eisenhower Matrix](#4-eisenhower-matrix)
     - [5. OKR (Objectives and Key Results)](#5-okr-objectives-and-key-results)
   - [How the AI Works](#how-the-ai-works)
+    - [Planner Generator Coach agent (Goal Wizard chat)](#planner-generator-coach-agent-goal-wizard-chat--step-by-step)
   - [LangSmith Tracing (Debugging the AI)](#langsmith-tracing-debugging-the-ai)
     - [Fix: Agent Not Responding and "No API key found"](#fix-agent-not-responding-and-no-api-key-found-simple-explanation)
   - [How Levels and Credits Work](#how-levels-and-credits-work)
@@ -323,6 +324,57 @@ In the app, each framework has a **detail modal** (Learn more) with author, defi
 ## How the AI Works
 
 Vector uses **Open Router** to turn your questionnaire answers into a structured blueprint when an API key is configured.
+
+### Planner Generator Coach agent (Goal Wizard chat) — step-by-step
+
+When you chat with the “Planner Generator Coach” in the Goal Wizard, a **LangGraph agent** (`src/agent/goalAgent.ts`) runs in the browser. Here is how it works: flow, nodes, routes, tools, and timeouts.
+
+**1. Single run, one message**
+
+Each time you send a message, the app calls `graph.stream(inputs, config)` once. The graph runs until it reaches a “wait for user” state (END) or finishes generating a blueprint. So one user message can trigger several internal steps (nodes) before the next reply appears.
+
+**2. Nodes (what runs)**
+
+| Node | What it does | Calls Open Router? |
+|------|----------------|--------------------|
+| **consultant** | First reply: suggests frameworks, asks about goal/timeline. Runs when there is no framework set yet. | Yes (with tools) |
+| **ask** | Follow-up replies: refines the plan, asks 1–2 questions, can update a “draft” JSON. Runs when a framework is already chosen. | Yes (with tools) |
+| **framework_setter** | Applies the “switch framework” tool: updates state and adds a short confirmation message. | No |
+| **tools** | Runs the LLM’s tool calls (e.g. set_framework, generate_blueprint). | No |
+| **validator** | Checks the draft JSON block in the last message; if invalid, injects a correction and sends the flow back to consultant/ask. | No |
+| **draft** | Generates the final blueprint JSON from the conversation. | Yes (no tools) |
+| **critique** | Reviews the blueprint; if it fails, sends the flow back to draft. | Yes (no tools) |
+
+**3. Tools (what the LLM can “call”)**
+
+- **set_framework** — User asks to change method (e.g. from First Principles to OKR). The graph then goes to **framework_setter** and then back to **ask**.
+- **generate_blueprint** — User says they’re ready (e.g. “yes”, “listo”). The graph goes to **draft** to produce the final blueprint.
+
+**4. Routes (possible paths)**
+
+- **START** → If no framework: **consultant**. If framework already set: **ask**.
+- After **consultant** or **ask** → **validator** (always).
+- **validator** →  
+  - If draft JSON was invalid and we injected a correction → **consultant** or **ask** (to re-answer).  
+  - Else: **END** (wait for user), or **framework_setter** (LLM called set_framework), or **tools** (LLM called a tool), or **draft** (LLM called generate_blueprint).
+- **framework_setter** → **ask**.
+- **tools** → **ask**.
+- **draft** → **critique** → **draft** again (if critique failed) or **END**.
+
+So the “possible routes” are: consultant ↔ validator, ask ↔ validator, sometimes framework_setter → ask, tools → ask, and when the user is ready: validator → draft → critique → (draft again or END).
+
+**5. Model fallback and timeouts**
+
+- Every Open Router call goes through **invokeWithFallback**: it tries the **primary model** (DeepSeek V3.2) first, then, in order: Gemini 3 Flash Preview, Kimi K2.5, Gemini 2.0 Flash, OpenAI GPT-4o.
+- **Per-model timeout:** Each model attempt is limited to **35 seconds**. If that model doesn’t respond within 35s, the agent **does not** wait longer; it **tries the next model** in the list. So if DeepSeek is slow or stuck, the user gets a reply from a fallback model instead of a generic “timeout” error.
+- **Stream timeout (GoalWizard):** The UI waits up to **35 seconds** for the *first* reply from the agent (first event from the stream). If nothing arrives in 35s, the user sees “Timeout: Agent is taking too long to respond.” With the 35s per-model timeout inside the agent, the first reply should usually come within 35s (from either the primary or a fallback model), unless the network or Open Router is severely slow.
+
+**6. Why you might still see “took too long”**
+
+- Previously the **stream** timeout was 15s. So even if DeepSeek was going to answer in 20s, the UI gave up at 15s and showed a connection error. That timeout is now **35s** so it matches the per-model limit.
+- If the **first** model (e.g. DeepSeek) really takes more than 35s (e.g. cold start, overloaded provider), the agent now **automatically tries the next model** instead of failing the whole run. So the user can wait up to 35s for the first reply, and the fallback model is used when the first one is too slow.
+
+---
 
 1. **When it runs:** After you answer the last question in the Goal Wizard, the app sends your answers to Open Router (model: `openai/gpt-4o-mini` by default).
 2. **What is sent:** A **system prompt** (framework-specific) that describes the exact JSON shape (e.g. `truths`, `newApproach` for First Principles; `vital`, `trivial` for Pareto). The **user message** is: framework name + numbered list of your answers.

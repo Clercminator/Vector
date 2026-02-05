@@ -123,7 +123,10 @@ const FALLBACK_MODELS: string[] = [
 
 const ALL_MODELS = [PRIMARY_MODEL, ...FALLBACK_MODELS];
 
-/** Invoke Open Router with retry: try primary model, then each fallback until one succeeds. Uses getOpenRouterApiKey(). */
+/** Max time to wait for a single model before trying the next (ms). */
+const PER_MODEL_TIMEOUT_MS = 65_000;
+
+/** Invoke Open Router with retry: try primary model, then each fallback until one succeeds. Uses getOpenRouterApiKey(). Each model attempt is limited to PER_MODEL_TIMEOUT_MS; if it exceeds, the next model is tried. */
 async function invokeWithFallback(
   messages: BaseMessage[],
   options: { temperature?: number; bindTools?: boolean } = {}
@@ -140,7 +143,13 @@ async function invokeWithFallback(
         configuration: llmConfig,
       });
       const runnable = bindTools ? llm.bindTools(tools) : llm;
-      const response = await runnable.invoke(messages);
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`Model ${modelId} timed out after ${PER_MODEL_TIMEOUT_MS / 1000}s`)), PER_MODEL_TIMEOUT_MS)
+      );
+      const response = await Promise.race([
+        runnable.invoke(messages),
+        timeoutPromise,
+      ]);
       return response as AIMessage;
     } catch (e) {
       lastError = e;

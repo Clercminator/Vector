@@ -616,9 +616,10 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
         const streamPromise = graph.stream(inputs, config);
         
-        // 15s Safety Timeout
+        // Allow up to 65s for the first response (first model has 65s; fallbacks tried inside agent)
+        const STREAM_FIRST_RESPONSE_TIMEOUT_MS = 65_000;
         const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error("Timeout: Agent is taking too long to respond.")), 15000)
+            setTimeout(() => reject(new Error("Timeout: Agent is taking too long to respond.")), STREAM_FIRST_RESPONSE_TIMEOUT_MS)
         );
 
         // Race only the initial connection, not the whole stream iteration (which takes time)
