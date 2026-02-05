@@ -11,8 +11,7 @@ INSTRUCTIONS:
 2. Smash that analogy by identifying the underlying "Truths".
 3. Propose a "New Approach" that is realistic but ambitious, leveraging these truths.
 
-Return ONLY a valid JSON object matching the schema below. Do not include markdown formatting, explanations, or chatter.
-
+When updating the rough draft or producing the final blueprint, use this schema (for the draft block at the end of your message, not for your whole reply):
 SCHEMA:
 {
   "type": "first-principles",

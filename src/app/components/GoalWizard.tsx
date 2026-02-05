@@ -649,33 +649,35 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         for await (const event of stream) {
             if (!isMounted.current || !isAgentRunning) break; // Stop if unmounted or aborted via state
 
-            if (import.meta.env.DEV && event && typeof event === 'object') {
-                const keys = Object.keys(event).filter(k => !k.startsWith('_'));
-                if (keys.length > 0) console.debug('[Agent stream] event keys:', keys);
+            // LangGraph yields [mode, payload] when streamMode is "updates", e.g. ["updates", { ask: { messages: [...] } }]
+            const payload = Array.isArray(event) && event.length >= 2 && event[0] === 'updates' ? event[1] : event;
+            if (import.meta.env.DEV && payload && typeof payload === 'object') {
+                const keys = Object.keys(payload).filter(k => !k.startsWith('_'));
+                if (keys.length > 0) console.debug('[Agent stream] payload keys:', keys);
             }
 
             // Check for Framework Switching (Keep existing logic)
-            if (event?.framework_setter) {
-                 const newFw = event.framework_setter.framework;
+            if (payload?.framework_setter) {
+                 const newFw = payload.framework_setter.framework;
                 if (newFw && newFw !== framework && onSwitchFramework) {
                     isSwitchingRef.current = true;
                     setDraftResult(null); 
                     const isLocked = !canUseFramework(tier, newFw as FrameworkId);
                     onSwitchFramework(newFw as FrameworkId, isLocked); 
-                    if (event.framework_setter.messages) {
-                         const lastMsg = event.framework_setter.messages[event.framework_setter.messages.length - 1];
+                    if (payload.framework_setter.messages) {
+                         const lastMsg = payload.framework_setter.messages[payload.framework_setter.messages.length - 1];
                          setMessages(prev => [...prev, { role: 'ai', content: lastMsg.content as string }]);
                     }
                 }
             }
 
-            // Handle streaming: get messages from any node (consultant/ask/draft) or from full state (event.messages)
-            // Include event.draft so "Error generating blueprint" and "Here is your strategic blueprint." are shown
-            let messageList: any[] | null = (event?.ask || event?.consultant || event?.draft || event?.framework_setter)?.messages ?? null;
-            if (!messageList && Array.isArray(event?.messages)) messageList = event.messages;
-            if (!messageList && event && typeof event === 'object') {
-                for (const key of Object.keys(event)) {
-                    const val = (event as Record<string, unknown>)[key];
+            // Handle streaming: get messages from any node (consultant/ask/draft) or from full state
+            // Include draft so "Error generating blueprint" and "Here is your strategic blueprint." are shown
+            let messageList: any[] | null = (payload?.ask || payload?.consultant || payload?.draft || payload?.framework_setter)?.messages ?? null;
+            if (!messageList && Array.isArray(payload?.messages)) messageList = payload.messages;
+            if (!messageList && payload && typeof payload === 'object') {
+                for (const key of Object.keys(payload)) {
+                    const val = (payload as Record<string, unknown>)[key];
                     if (val && typeof val === 'object' && Array.isArray((val as any).messages)) {
                         messageList = (val as any).messages;
                         break;
