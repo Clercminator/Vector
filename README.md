@@ -242,6 +242,14 @@ The **openrouter-proxy** Edge Function runs on Supabase. It receives requests fr
 3. Open Router returns the AI response; the proxy returns it to the browser.
 4. The browser never sees the key; only Supabase and Open Router use it.
 
+### Using the correct key (e.g. Vector vs Optiland)
+
+When you use the **proxy** (`VITE_OPENROUTER_PROXY_URL`), the browser does **not** send your Open Router key to Open Router. The **Supabase Edge Function** sends the key that is stored in **Supabase Secrets**. So the key that appears in the Open Router dashboard as “Last used” is the one from **Supabase**, not from Vercel or `.env.backend`.
+
+- If Open Router shows the **wrong** key (e.g. “Optiland” instead of “Vector”): the proxy is using whatever is in Supabase Secrets.
+- **Fix:** In Supabase → **Edge Functions** → **Secrets**, set **`OPENROUTER_API_KEY_2`** to the key you want to use (e.g. copy the value of **`VITE_OPENROUTER_API_KEY_2`** from your `.env.backend` — the one named “Vector” in Open Router). The proxy prefers `OPENROUTER_API_KEY_2` over `OPENROUTER_API_KEY`. Save and redeploy the Edge Function if needed so the new secret is picked up.
+- After that, new completions will use the Vector key and it should show as “Last used” in Open Router for that key.
+
 ### Quick verification after deploy
 
 1. Open your deployed app (e.g. `https://your-app.vercel.app`).

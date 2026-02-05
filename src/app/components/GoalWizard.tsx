@@ -637,10 +637,14 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
         for await (const event of stream) {
             if (!isMounted.current || !isAgentRunning) break; // Stop if unmounted or aborted via state
-            
+
+            if (import.meta.env.DEV && event && typeof event === 'object') {
+                const keys = Object.keys(event).filter(k => !k.startsWith('_'));
+                if (keys.length > 0) console.debug('[Agent stream] event keys:', keys);
+            }
+
             // Check for Framework Switching (Keep existing logic)
             if (event?.framework_setter) {
-                 // ... existing framework switch logic ...
                  const newFw = event.framework_setter.framework;
                 if (newFw && newFw !== framework && onSwitchFramework) {
                     isSwitchingRef.current = true;
@@ -654,48 +658,47 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                 }
             }
 
-            // Handle streaming Logic (Ask Node & Consultant Node)
-            // LangGraph can yield per-node updates (event.consultant / event.ask) or state updates (event.messages)
-            const agentNode = event?.ask || event?.consultant || event?.framework_setter;
-            const messageList = agentNode?.messages ?? (Array.isArray(event?.messages) ? event.messages : null);
+            // Handle streaming: get messages from any node (consultant/ask) or from full state (event.messages)
+            let messageList: any[] | null = (event?.ask || event?.consultant)?.messages ?? null;
+            if (!messageList && Array.isArray(event?.messages)) messageList = event.messages;
+            if (!messageList && event && typeof event === 'object') {
+                for (const key of Object.keys(event)) {
+                    const val = (event as Record<string, unknown>)[key];
+                    if (val && typeof val === 'object' && Array.isArray((val as any).messages)) {
+                        messageList = (val as any).messages;
+                        break;
+                    }
+                }
+            }
 
             if (messageList && messageList.length > 0) {
-                 const lastMsg = messageList[messageList.length - 1];
-                 
-                 // IGNORE ToolMessages, only process AIMessages
-                 if (lastMsg._getType() === 'ai') {
-                     // LangChain content can be string or array (multimodal); normalize to string
+                 // Use last AI message (in case state has multiple)
+                 let lastMsg = messageList[messageList.length - 1];
+                 const aiIdx = messageList.map((m: any) => m?._getType?.()).lastIndexOf('ai');
+                 if (aiIdx >= 0) lastMsg = messageList[aiIdx];
+                 const msgType = lastMsg?._getType?.();
+                 const isAIMessage = msgType === 'ai' || (lastMsg?.content != null && msgType !== 'human' && msgType !== 'tool');
+
+                 if (isAIMessage && lastMsg?.content != null) {
                      const raw = lastMsg.content;
                      const rawContent = typeof raw === 'string' ? raw : (Array.isArray(raw) ? (raw.map((c: any) => typeof c === 'string' ? c : c?.text ?? '')).join('') : String(raw ?? ''));
                      const { cleanText, suggestions, draft } = extractContent(rawContent);
-                     
-                     // De-duplication & Update
+                     const textToShow = cleanText.trim() || rawContent.trim().slice(0, 2000) || (t('common.loading') ?? '…');
+
                      setMessages(prev => {
                          const lastPrev = prev[prev.length - 1];
-                         
-                         // If the last message in UI is user, we append.
-                         // If the last message is AI, we CHECK if it's the same content (streaming update vs new message)
-                         // Since we aren't doing real-time token streaming but chunk-based, we might just replace/update if it's the "thinking" placeholder.
-                         
-                         // Simple Dedup: If the new content is contained in the old content, ignore.
-                         // Or better: In this specific graph, the agent yields the FULL history or the NEW chunks? 
-                         // LangGraph usually yields the *update*.
-                         
-                         // FIX: Just append if it's a NEW distinct thought, otherwise ignore if it's just an intermediate step that looks like a dupe.
-                         if (lastPrev && lastPrev.role === 'ai' && lastPrev.content === cleanText) return prev;
-                         if (!cleanText.trim()) return prev;
-
-                         return [...prev, { role: 'ai', content: cleanText }];
+                         if (lastPrev && lastPrev.role === 'ai' && lastPrev.content === textToShow) return prev;
+                         if (!textToShow) return prev;
+                         return [...prev, { role: 'ai', content: textToShow }];
                      });
 
                      if (suggestions.length > 0) setSuggestionChips(suggestions);
                      if (draft) {
-                        // Check if draft has conceptually changed to trigger pulse
                         const currentDraftStr = JSON.stringify(draft);
                         const prevDraftStr = JSON.stringify(prevDraftRef.current);
                         if (currentDraftStr !== prevDraftStr) {
                             setDraftPulse(true);
-                            setTimeout(() => setDraftPulse(false), 800); // Reset pulse
+                            setTimeout(() => setDraftPulse(false), 800);
                             prevDraftRef.current = draft;
                         }
                         setDraftResult((prev: any) => ({ ...prev, ...draft, type: framework }));
