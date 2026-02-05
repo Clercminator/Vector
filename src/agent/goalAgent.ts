@@ -105,15 +105,50 @@ if (proxyUrl && supabaseKey) {
   llmConfig.defaultHeaders = { apikey: supabaseKey };
 }
 
-// 2. LLM Setup
-const model = new ChatOpenAI({
-  model: "openai/gpt-4o",
-  temperature: 0,
-  apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || "dummy",
-  configuration: llmConfig,
-});
+/** API key for Open Router. Prefer KEY_2 (e.g. from .env.backend) for deploy. */
+function getOpenRouterApiKey(): string {
+  const key2 = (import.meta.env.VITE_OPENROUTER_API_KEY_2 as string | undefined)?.trim();
+  const key1 = (import.meta.env.VITE_OPENROUTER_API_KEY as string | undefined)?.trim();
+  return key2 || key1 || "dummy";
+}
 
-const llm = model.bindTools(tools);
+// Model priority (Open Router): primary first, then fallbacks in order
+const PRIMARY_MODEL = "deepseek/deepseek-v3.2";
+const FALLBACK_MODELS: string[] = [
+  "google/gemini-3-flash-preview",
+  "moonshotai/kimi-k2.5",
+  "google/gemini-2.0-flash-001",
+  "openai/gpt-4o",
+];
+
+const ALL_MODELS = [PRIMARY_MODEL, ...FALLBACK_MODELS];
+
+/** Invoke Open Router with retry: try primary model, then each fallback until one succeeds. Uses getOpenRouterApiKey(). */
+async function invokeWithFallback(
+  messages: BaseMessage[],
+  options: { temperature?: number; bindTools?: boolean } = {}
+): Promise<AIMessage> {
+  const { temperature = 0, bindTools = true } = options;
+  const apiKey = getOpenRouterApiKey();
+  let lastError: unknown;
+  for (const modelId of ALL_MODELS) {
+    try {
+      const llm = new ChatOpenAI({
+        model: modelId,
+        temperature,
+        apiKey,
+        configuration: llmConfig,
+      });
+      const runnable = bindTools ? llm.bindTools(tools) : llm;
+      const response = await runnable.invoke(messages);
+      return response as AIMessage;
+    } catch (e) {
+      lastError = e;
+      continue;
+    }
+  }
+  throw lastError;
+}
 
 // 3. Framework Setter Node
 const frameworkSetterNode = async (state: typeof AgentState.State) => {
@@ -173,7 +208,7 @@ const consultantNode = async (state: typeof AgentState.State) => {
     // Filter out previous system messages to keep context clean
     const recentMessages = messages.filter(m => !(m instanceof SystemMessage));
     
-    const response = await llm.invoke([sysMsg, langMsg, ...recentMessages]);
+    const response = await invokeWithFallback([sysMsg, langMsg, ...recentMessages], { bindTools: true });
     return { messages: [response] };
 };
 
@@ -245,7 +280,7 @@ const askNode = async (state: typeof AgentState.State) => {
 
   // Filter messages to avoid duplicate system prompts or confusion with consultant phase
   // We keep history but ensure the latest system prompt is dominant.
-  const response = await llm.invoke([sysMsg, ...messages]);
+  const response = await invokeWithFallback([sysMsg, ...messages], { bindTools: true });
   return { messages: [response], steps: 1 };
 };
 
@@ -290,13 +325,6 @@ const draftNode = async (state: typeof AgentState.State) => {
   
   // Check if locked
   const isLocked = !validFrameworks.includes(framework || "");
-  
-  const draftLlm = new ChatOpenAI({
-     model: "openai/gpt-4o",
-     temperature: 0.2,
-     apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || "dummy",
-     configuration: llmConfig,
-  });
 
   let prompt = "";
   if (isLocked) {
@@ -334,7 +362,7 @@ const draftNode = async (state: typeof AgentState.State) => {
       Return ONLY the JSON.`;
   }
 
-  const response = await draftLlm.invoke([new SystemMessage(prompt)]);
+  const response = await invokeWithFallback([new SystemMessage(prompt)], { temperature: 0.2, bindTools: false });
   let content = response.content.toString().replace(/```json/g, '').replace(/```/g, '').trim();
 
   try {
@@ -348,14 +376,6 @@ const draftNode = async (state: typeof AgentState.State) => {
 const critiqueNode = async (state: typeof AgentState.State) => {
     const { blueprint, framework, critiqueAttempts } = state;
     if (critiqueAttempts > 0) return { critiqueAttempts: 1 };
-
-    const criticLlm = new ChatOpenAI({
-        model: "openai/gpt-4o-mini",
-        temperature: 0.3,
-        apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || "dummy",
-        configuration: llmConfig,
-    });
-    
     if (!blueprint) return { critiqueAttempts: 1 };
 
     const rubric: Record<string, string> = {
@@ -376,7 +396,7 @@ const critiqueNode = async (state: typeof AgentState.State) => {
     If it meets the criteria, return exactly "PASS".
     If it fails, return a concise (1 sentence) instruction on how to fix it.`;
     
-    const response = await criticLlm.invoke([new SystemMessage(prompt)]);
+    const response = await invokeWithFallback([new SystemMessage(prompt)], { temperature: 0.3, bindTools: false });
     const result = response.content.toString().trim();
     
     if (result === "PASS") return { critiqueAttempts: 0 }; // No increment
@@ -467,6 +487,14 @@ const routeValidator = (state: typeof AgentState.State) => {
 };
 
 // --- GRAPH ---
+// Audit: All nodes and flow (deploy-ready)
+// - START → routeStart → consultant | ask
+// - consultant → validator → routeValidator → END | consultant | framework_setter | tools | draft
+// - ask → validator → routeValidator → END | ask | framework_setter | tools | draft
+// - framework_setter → ask; tools → ask
+// - draft → critique → routeCritique → draft | END
+// LLM nodes (all use invokeWithFallback + getOpenRouterApiKey = VITE_OPENROUTER_API_KEY_2 || VITE_OPENROUTER_API_KEY):
+//   consultant, ask, draft, critique. Non-LLM: framework_setter, tools, validator.
 
 const workflow = new StateGraph(AgentState)
   .addNode("consultant", consultantNode)

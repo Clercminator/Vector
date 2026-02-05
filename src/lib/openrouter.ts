@@ -12,9 +12,11 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_MODEL = "deepseek/deepseek-v3.2";
 
 function getApiKey(): string {
-  const key = (import.meta.env.VITE_OPENROUTER_API_KEY as string | undefined) ?? "";
+  const key2 = (import.meta.env.VITE_OPENROUTER_API_KEY_2 as string | undefined)?.trim() ?? "";
+  const key1 = (import.meta.env.VITE_OPENROUTER_API_KEY as string | undefined)?.trim() ?? "";
+  const key = key2 || key1;
   if (key && import.meta.env.PROD && !import.meta.env.VITE_OPENROUTER_PROXY_URL) {
-      console.warn("Security Warning: VITE_OPENROUTER_API_KEY is exposed in the client. Use VITE_OPENROUTER_PROXY_URL for production.");
+      console.warn("Security Warning: Open Router API key is exposed in the client. Use VITE_OPENROUTER_PROXY_URL for production.");
   }
   return key;
 }

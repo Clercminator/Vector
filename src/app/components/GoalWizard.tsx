@@ -332,7 +332,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
   };
 
 
-  const isOpenRouterConfigured = () => !!import.meta.env.VITE_OPENROUTER_API_KEY || !!import.meta.env.VITE_OPENROUTER_PROXY_URL;
+  const isOpenRouterConfigured = () => !!import.meta.env.VITE_OPENROUTER_API_KEY_2 || !!import.meta.env.VITE_OPENROUTER_API_KEY || !!import.meta.env.VITE_OPENROUTER_PROXY_URL;
 
   // Helper to parse partial JSON (Streaming Support)
   const tryParsePartialJson = (jsonString: string): any => {
@@ -598,6 +598,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     try {
         const config = {
             configurable: { thread_id: threadId },
+            streamMode: "updates" as const, // Emit per-node updates (consultant/ask) so we can show agent replies
         };
         
         const allowedFrameworks = TIER_CONFIGS[tier]?.allowedFrameworks || [];
@@ -631,6 +632,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         // If we wanted to support real abort, we'd need to pass a signal to graph.stream if supported, or manually break.
         
         let deductionTriggered = false;
+        let didReceiveAgentMessage = false;
 
         for await (const event of stream) {
             if (!isMounted.current || !isAgentRunning) break; // Stop if unmounted or aborted via state
@@ -697,9 +699,16 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                         }
                         setDraftResult((prev: any) => ({ ...prev, ...draft, type: framework }));
                      }
+                     didReceiveAgentMessage = true;
                      setIsTyping(false); 
                  }
             }
+        }
+
+        // If stream ended without any agent message, show a fallback so the user isn't left with nothing
+        if (isMounted.current && !didReceiveAgentMessage && isAgentRunning) {
+            setMessages(prev => [...prev, { role: 'ai', content: "⚠️ **Connection Error**: I couldn't complete that thought. Please try asking again." }]);
+            toast.error(t('common.error'), { description: "The agent didn't respond. Check your connection and try again." });
         }
     } catch (e: any) {
         console.error("Agent Run Error:", e);
@@ -1419,6 +1428,8 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
           )}
           <form onSubmit={handleSubmit} className="w-full relative">
             <input 
+                id="wizard-chat-input"
+                name="wizardMessage"
                 autoFocus 
                 value={inputValue} 
                 onChange={(e) => setInputValue(e.target.value)} 

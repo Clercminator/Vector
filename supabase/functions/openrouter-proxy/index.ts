@@ -1,6 +1,7 @@
 // Supabase Edge Function: Open Router proxy
-// Keeps OPENROUTER_API_KEY on the server; frontend calls this URL instead of Open Router directly.
-// Set OPENROUTER_API_KEY in Supabase Dashboard → Edge Functions → Secrets.
+// Keeps the Open Router API key on the server; frontend calls this URL instead of Open Router directly.
+// Set in Supabase Dashboard → Edge Functions → Secrets:
+//   OPENROUTER_API_KEY_2 (preferred for deploy, e.g. from .env.backend) or OPENROUTER_API_KEY
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -23,10 +24,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
     );
   }
 
-  const apiKey = Deno.env.get("OPENROUTER_API_KEY");
-  if (!apiKey?.trim()) {
+  const apiKey = (Deno.env.get("OPENROUTER_API_KEY_2") ?? Deno.env.get("OPENROUTER_API_KEY"))?.trim();
+  if (!apiKey) {
     return new Response(
-      JSON.stringify({ error: "OPENROUTER_API_KEY not configured" }),
+      JSON.stringify({ error: "OPENROUTER_API_KEY_2 or OPENROUTER_API_KEY not configured" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

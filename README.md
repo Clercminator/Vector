@@ -13,6 +13,7 @@ This document explains **what the app does**, **how it’s built**, **how the pi
   - [What Vector Does (In Plain Language)](#what-vector-does-in-plain-language)
   - [What We Built \& Why](#what-we-built--why)
   - [How to Run the App](#how-to-run-the-app)
+  - [Deploying Vector: Open Router API Key (Beginner Guide)](#deploying-vector-open-router-api-key-beginner-guide)
   - [Frameworks: List and Explanation](#frameworks-list-and-explanation)
     - [1. First Principles (Elon Musk)](#1-first-principles-elon-musk)
     - [2. Pareto Principle (80/20)](#2-pareto-principle-8020)
@@ -142,9 +143,122 @@ This document explains **what the app does**, **how it’s built**, **how the pi
    - **send-email** — Sends transactional emails (receipt after purchase). Called by mercado-pago-webhook. Uses Resend (or similar); requires `RESEND_API_KEY` or equivalent in Supabase Secrets.
    - **handle-new-user** — Triggered by Supabase Database Webhook (INSERT on `auth.users`). Sends welcome email via Resend. Requires `RESEND_API_KEY` and a Database Webhook configured in Supabase Dashboard.
    
-   **Already deployed:** Edge Functions, Supabase Secrets (`OPENROUTER_API_KEY`, `MERCADOPAGO_ACCESS_TOKEN`), frontend env vars (`VITE_OPENROUTER_PROXY_URL`, `VITE_MERCADOPAGO_PUBLIC_KEY`), MercadoPago webhook configured. Ensure `profiles.tier` and the credit RPCs exist in your database.
+   **Already deployed:** Edge Functions, Supabase Secrets (`OPENROUTER_API_KEY_2` or `OPENROUTER_API_KEY` for the AI proxy, `MERCADOPAGO_ACCESS_TOKEN`), frontend env vars (`VITE_OPENROUTER_PROXY_URL`, `VITE_MERCADOPAGO_PUBLIC_KEY`), MercadoPago webhook configured. Ensure `profiles.tier` and the credit RPCs exist in your database. See **[Deploying Vector: Open Router API Key](#deploying-vector-open-router-api-key-beginner-guide)** for a step-by-step guide.
    
    **Stripe** (future US implementation): See **[integrations/pending/stripe/](integrations/pending/stripe/)**.
+
+---
+
+<a id="deploying-vector-open-router-api-key-beginner-guide"></a>
+## Deploying Vector: Open Router API Key (Beginner Guide)
+
+This section explains **exactly** where and how to set the Open Router API key so the AI (Planner Generator Coach and blueprint generation) works after you deploy. If you are new to deployment, read this step by step.
+
+### What “deploy” means here
+
+- **Local:** You run `npm run dev` on your computer. The app talks to Supabase and (if configured) to Open Router. This uses your `.env` and optionally `.env.backend`.
+- **Deploy:** You put the app on the internet (e.g. Vercel hosts the frontend, Supabase hosts the database and Edge Functions). The code no longer runs on your machine, so it cannot read your local `.env` or `.env.backend`. You must type the same values into the **hosting dashboards** (Vercel and Supabase) as **Environment Variables** or **Secrets**.
+
+### Why the Open Router key matters
+
+- The app uses **Open Router** to call AI models (e.g. DeepSeek, Gemini). Open Router needs an **API key** to know the requests are from you and to bill you.
+- That key is a long string (e.g. `sk-or-v1-...`). You get it from [Open Router](https://openrouter.ai/).
+- The app is built to prefer a key named **`VITE_OPENROUTER_API_KEY_2`** (you can also use `VITE_OPENROUTER_API_KEY`). In your **local** setup you might keep this in **`.env.backend`** (which is gitignored so it is never pushed to GitHub).
+
+### Two places that can use the key
+
+There are **two** ways the frontend can talk to Open Router:
+
+1. **Through the proxy (recommended for production)**  
+   - The **browser** sends the request to **your Supabase Edge Function** (`openrouter-proxy`).  
+   - The **Edge Function** then calls Open Router with **its own** key (stored in Supabase Secrets).  
+   - So the key never appears in the browser or in the frontend build. That is more secure.
+
+2. **Direct from the browser**  
+   - The **browser** calls Open Router directly.  
+   - The key must then be in the **frontend** environment (e.g. Vercel env vars).  
+   - Anyone can see it in the built JavaScript if they look. So we only recommend this for quick testing, not for production.
+
+The app is configured to use the **proxy** when you set **`VITE_OPENROUTER_PROXY_URL`**. Your `.env` already has that (pointing to the Supabase function). So in production we rely on the **proxy** and its key.
+
+### Deploy checklist (step-by-step)
+
+Do both parts: **1. Frontend (Vercel)** and **2. Backend (Supabase)**.
+
+---
+
+#### 1. Frontend (Vercel) — what the browser needs
+
+Vercel hosts the React app. At **build time**, Vite bakes environment variables that start with **`VITE_`** into the JavaScript. So you must define them in **Vercel**, not only in `.env` on your computer.
+
+**Steps:**
+
+1. Go to [Vercel](https://vercel.com) and open your **Vector** project.
+2. Open **Settings** → **Environment Variables**.
+3. Add or confirm these variables (use **Production**, and optionally **Preview** and **Development** if you use them):
+
+   | Name | Value | Notes |
+   |------|--------|--------|
+   | `VITE_OPENROUTER_PROXY_URL` | `https://YOUR_SUPABASE_PROJECT_REF.supabase.co/functions/v1/openrouter-proxy` | Replace `YOUR_SUPABASE_PROJECT_REF` with your real Supabase project ref (e.g. `rfemwgtomtzbwhfgpcuo`). Same as in your local `.env`. |
+   | `VITE_SUPABASE_URL` | `https://YOUR_SUPABASE_PROJECT_REF.supabase.co` | Your Supabase project URL. |
+   | `VITE_SUPABASE_PUBLISHABLE_KEY` or `VITE_SUPABASE_ANON_KEY` | Your Supabase anon/public key | So the app can talk to Supabase (auth, database). |
+
+   **Do you need to put the Open Router key in Vercel?**
+
+   - **If you use the proxy (recommended):** You do **not** need to put `VITE_OPENROUTER_API_KEY_2` or `VITE_OPENROUTER_API_KEY` in Vercel. The browser will call the proxy URL; the proxy (on Supabase) will use the key stored in Supabase Secrets.
+   - **If you ever want to call Open Router without the proxy** (e.g. for a quick test): You would add `VITE_OPENROUTER_API_KEY_2` (or `VITE_OPENROUTER_API_KEY`) in Vercel. But then the key is visible in the built app, so we do **not** recommend this for production.
+
+4. Save. Then trigger a **new deployment** (e.g. **Deployments** → **Redeploy** or push a new commit) so the new variables are used in the build.
+
+**Summary for Vercel:** Set `VITE_OPENROUTER_PROXY_URL` (and Supabase URL/keys). Do **not** put the Open Router API key in Vercel when using the proxy.
+
+---
+
+#### 2. Backend (Supabase) — what the proxy needs
+
+The **openrouter-proxy** Edge Function runs on Supabase. It receives requests from the browser and forwards them to Open Router. It needs the Open Router API key **only on the server** (Supabase), not in the browser.
+
+**Steps:**
+
+1. Go to [Supabase](https://supabase.com) and open your **Vector** project.
+2. In the left sidebar, open **Edge Functions** (or **Project Settings** → **Edge Functions**).
+3. Find where **Secrets** (or **Environment Variables** for Edge Functions) are set. This is often under **Project Settings** → **Edge Functions** → **Secrets**, or in the Edge Functions page.
+4. Add or edit a secret:
+   - **Name:** `OPENROUTER_API_KEY_2` (recommended) or `OPENROUTER_API_KEY`
+   - **Value:** Your Open Router API key (the long `sk-or-v1-...` string). You can copy it from your **`.env.backend`** file (the line `VITE_OPENROUTER_API_KEY_2=sk-or-v1-...` — copy only the part after the `=`).
+5. Save. The proxy code is written to use **`OPENROUTER_API_KEY_2`** first; if that is not set, it uses **`OPENROUTER_API_KEY`**. So one of them must be set.
+
+**Important:** Supabase Edge Functions do **not** read your local `.env.backend` file. You must paste the key into the Supabase dashboard. Treat it like a password: only put it in Supabase Secrets, and do not commit it to Git.
+
+**Summary for Supabase:** Set the secret **`OPENROUTER_API_KEY_2`** (or **`OPENROUTER_API_KEY`**) to your Open Router key so the proxy can call Open Router.
+
+---
+
+### How it works end-to-end (with the proxy)
+
+1. User types in the Goal Wizard → the browser sends a request to **`VITE_OPENROUTER_PROXY_URL`** (your Supabase Edge Function).
+2. The Edge Function reads **`OPENROUTER_API_KEY_2`** (or **`OPENROUTER_API_KEY`**) from its environment and calls Open Router with that key.
+3. Open Router returns the AI response; the proxy returns it to the browser.
+4. The browser never sees the key; only Supabase and Open Router use it.
+
+### Quick verification after deploy
+
+1. Open your deployed app (e.g. `https://your-app.vercel.app`).
+2. Go to the Goal Wizard (e.g. pick a framework and start a conversation).
+3. Send a message (e.g. “I want to run a marathon in 6 months”).  
+   - If the coach replies, the proxy and Open Router key are set correctly.  
+   - If you see an error like “OPENROUTER_API_KEY_2 or OPENROUTER_API_KEY not configured”, the Supabase secret is missing or the Edge Function was not redeployed after adding it.
+4. If you use the proxy, you can also check the **Supabase Edge Function logs** for the `openrouter-proxy` function to see if requests are coming in and if any errors are returned.
+
+### Summary table
+
+| Where | What to set | Why |
+|-------|-------------|-----|
+| **Vercel** (frontend) | `VITE_OPENROUTER_PROXY_URL`, `VITE_SUPABASE_URL`, Supabase anon key | So the built app knows where to call the proxy and Supabase. |
+| **Vercel** (frontend) | Do **not** set Open Router key when using proxy | The key stays on the server (Supabase). |
+| **Supabase** (Edge Function secrets) | `OPENROUTER_API_KEY_2` (or `OPENROUTER_API_KEY`) = your `sk-or-v1-...` key | So the openrouter-proxy can call Open Router on behalf of the app. |
+
+If you follow these steps, the deploy checklist for the Open Router key is complete: the frontend uses the proxy URL, and the proxy uses the key stored in Supabase.
 
 ---
 
