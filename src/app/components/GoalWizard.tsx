@@ -145,13 +145,10 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
             
             // Valid for 24 hours AND matches current framework
             if (Date.now() - timestamp < 24 * 60 * 60 * 1000 && savedFw === framework) {
+                 if (savedThreadId) setThreadId(savedThreadId);
                  if (savedMsgs.length > 0) setMessages(savedMsgs);
                  if (savedStep) setStep(savedStep);
                  if (savedDraft) setDraftResult(savedDraft);
-                 // Note: We can't easily restore threadId as it's state-initialized, but practically it matters less 
-                 // as long as the conversation flow continues. The agent uses it for checkpointer, so ideally we should.
-                 // Ideally: setThreadId(savedThreadId); if we exposed it. 
-                 // For now, we accept a new threadId for the *agent* session but restore the *chat UI*.
             }
         } catch (e) {
             console.error("Failed to restore session, clearing corrupted data", e);
@@ -182,21 +179,24 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
   const clearSession = () => {
       localStorage.removeItem('vector_wizard_session');
-      setMessages([]);
       setStep(0);
       setResult(null);
       setDraftResult(null);
       setFinalAnswers([]);
       setSuggestionChips([]);
-      const newThread = uuidv4();
-      setThreadId(newThread);
-      // Force clear checks
-      setIsTyping(true);
-      setTimeout(() => {
-           // Re-initialize welcome message logic logic manually if needed or let effect run if framework changes
-           // Quicker hack: Reload page to ensure clean slate if simple state reset is buggy
-           window.location.reload(); 
-      }, 100);
+      setThreadId(uuidv4());
+      const currentConfig = frameworkConfig[framework as keyof typeof frameworkConfig] || frameworkConfig['first-principles'];
+      const initialContext = (window.history.state?.usr?.context) || (location.state as any)?.context;
+      let initialMsg = "";
+      if (initialContext?.explanation) {
+        initialMsg = `${initialContext.explanation}\n\n${t(currentConfig.questions?.[0] || 'wizard.agentStart')}`;
+      } else if (currentConfig.questions?.[0]) {
+        initialMsg = t(currentConfig.questions[0]);
+      } else {
+        initialMsg = t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart');
+      }
+      setMessages([{ role: 'ai', content: initialMsg }]);
+      setIsTyping(false);
   };
 
   // Mobile Drawer State
@@ -537,6 +537,17 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
       return;
     }
 
+    // Skip default init if we have a valid saved session (restore handled by persistence effect)
+    const savedSession = localStorage.getItem('vector_wizard_session');
+    if (savedSession) {
+      try {
+        const { framework: savedFw, timestamp } = JSON.parse(savedSession);
+        if (Date.now() - (timestamp || 0) < 24 * 60 * 60 * 1000 && savedFw === framework) {
+          return;
+        }
+      } catch (_) {}
+    }
+
     // Default initialization (Fresh Start)
     setResult(null);
     setFinalAnswers([]);
@@ -658,8 +669,9 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                 }
             }
 
-            // Handle streaming: get messages from any node (consultant/ask) or from full state (event.messages)
-            let messageList: any[] | null = (event?.ask || event?.consultant)?.messages ?? null;
+            // Handle streaming: get messages from any node (consultant/ask/draft) or from full state (event.messages)
+            // Include event.draft so "Error generating blueprint" and "Here is your strategic blueprint." are shown
+            let messageList: any[] | null = (event?.ask || event?.consultant || event?.draft || event?.framework_setter)?.messages ?? null;
             if (!messageList && Array.isArray(event?.messages)) messageList = event.messages;
             if (!messageList && event && typeof event === 'object') {
                 for (const key of Object.keys(event)) {

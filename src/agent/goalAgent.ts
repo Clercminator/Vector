@@ -372,10 +372,16 @@ const draftNode = async (state: typeof AgentState.State) => {
   }
 
   const response = await invokeWithFallback([new SystemMessage(prompt)], { temperature: 0.2, bindTools: false });
-  let content = response.content.toString().replace(/```json/g, '').replace(/```/g, '').trim();
+  let content = response.content.toString().trim();
+
+  // Extract JSON robustly: model may return markdown, preamble text, or only JSON
+  const jsonBlock = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const rawJson = jsonBlock ? jsonBlock[1].trim() : content;
+  const braceMatch = rawJson.match(/\{[\s\S]*\}/);
+  const toParse = braceMatch ? braceMatch[0] : rawJson.replace(/```json/g, '').replace(/```/g, '').trim();
 
   try {
-    const blueprint = JSON.parse(content);
+    const blueprint = JSON.parse(toParse);
     return { blueprint, messages: [new AIMessage("Here is your strategic blueprint.")] };
   } catch (e) {
     return { messages: [new AIMessage("Error generating blueprint. Please try again.")] };
