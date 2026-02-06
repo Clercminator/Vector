@@ -20,7 +20,7 @@ import { EditableText, EditableList } from './Editable';
 import { ErrorBoundary } from './ErrorBoundary';
 
 interface Message {
-  role: 'ai' | 'user';
+  role: 'ai' | 'user' | 'system';
   content: string;
 }
 
@@ -515,9 +515,9 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
     if (initialBlueprint) {
        // ... existing load logic ...
       const baseMessages: Message[] = [
-        { role: 'ai', content: t('wizard.reopening').replace('{0}', currentConfig.title) },
+        { role: 'system', content: t('wizard.reopening').replace('{0}', currentConfig.title) },
         { role: 'user', content: initialBlueprint.title },
-        { role: 'ai', content: t('wizard.loaded') },
+        { role: 'system', content: t('wizard.loaded') },
       ];
       setMessages(baseMessages);
       setResult(initialBlueprint.result);
@@ -1364,9 +1364,20 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
         {/* Chat Area */}
         <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${draftResult ? 'lg:mr-96' : ''}`}>
         <div className="w-full flex-1 flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-8 lg:px-10">
-             <div className="mx-auto w-full space-y-2 pb-4 pt-4">
+             <div className={`mx-auto w-full space-y-2 pt-4 ${result ? 'pb-40' : 'pb-4'}`}>
               <AnimatePresence mode="popLayout">
-                {(messages || []).map((msg, i) => (
+                {(messages || []).map((msg, i) => {
+                  if (msg.role === 'system') {
+                    return (
+                       <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center py-2">
+                          <span className="text-xs font-medium text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-zinc-800/50 px-3 py-1 rounded-full border border-gray-200 dark:border-zinc-800">
+                            {msg.content}
+                          </span>
+                       </motion.div>
+                    );
+                  }
+                  
+                  return (
                   <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'ai' ? 'justify-start' : 'justify-end'}`}>
                      <div className={`max-w-[85%] p-4 rounded-2xl ${msg.role === 'ai' ? 'bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 text-black dark:text-white shadow-sm' : 'bg-black dark:bg-white text-white dark:text-black'}`}>
                       <div className={`text-base md:text-lg leading-relaxed prose max-w-none ${
@@ -1391,7 +1402,8 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                       </div>
                     </div>
                   </motion.div>
-                ))}
+                );
+                })}
                 {isTyping && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
                     <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-4 rounded-2xl rounded-tl-none shadow-sm">

@@ -402,6 +402,13 @@ export const translations = {
     'okr.keyResult': 'Key Result',
     'okr.initiative': 'Immediate Initiative',
 
+    'fp.title': 'First Principles',
+    'fp.q1': 'What is your core objective?',
+    'fp.q2': 'What are the undeniable truths about this problem?',
+    'fp.q3': 'Based on these truths, what is a new approach?',
+    'fp.truths': 'Undeniable Truths',
+    'fp.newApproach': 'New Approach',
+
     'gps.title': 'The GPS Method',
     'gps.title.long': 'The GPS Method (Goal, Plan, System)',
     'gps.goal': 'Goal',
@@ -950,6 +957,13 @@ export const translations = {
     'okr.northStar': 'La Estrella Polar de 90 Días',
     'okr.keyResult': 'Resultado Clave',
     'okr.initiative': 'Iniciativa Inmediata',
+
+    'fp.title': 'Primeros Principios',
+    'fp.q1': '¿Cuál es tu objetivo principal?',
+    'fp.q2': '¿Cuáles son las verdades innegables de este problema?',
+    'fp.q3': 'Basado en estas verdades, ¿cuál es un nuevo enfoque?',
+    'fp.truths': 'Verdades Innegables',
+    'fp.newApproach': 'Nuevo Enfoque',
 
     'gps.title': 'El Método GPS',
     'gps.title.long': 'El Método GPS (Objetivo, Plan, Sistema)',
