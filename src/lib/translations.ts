@@ -365,12 +365,14 @@ export const translations = {
     'frameworks.helpMeChoose': 'Help me find the right framework',
     
     // Framework Titles & Questions
-    'fp.title': 'First Principles Architect',
-    'fp.q1': "Hello! I'm your First Principles Architect. To build a solid foundation, I need to understand your context. What is your primary goal or the specific problem you're trying to solve? The more details you share, the better the blueprint.",
+    'fp.title': 'Goal Planner Generator',
+    'fp.q1': "Hello! I'm your Goal Planner Generator. To build a solid foundation, I need to understand your context. What is your primary goal or the specific problem you're trying to solve? The more details you share, the better the blueprint.",
     'fp.q2': "What are the fundamental truths you know for sure about this goal? Break it down to the non-negotiable facts.",
     'fp.q3': "Based on these truths, what's a completely new way to build this from the ground up?",
     'fp.truths': 'Fundamental Truths',
     'fp.newApproach': 'The New Architecture',
+    'common.addItem': 'Add Item',
+    'common.clickToEdit': 'Click to edit...',
 
     'pareto.title': 'Pareto (80/20) Optimizer',
     'pareto.q1': "What is the ultimate result you want to achieve?",
@@ -604,6 +606,8 @@ export const translations = {
     'common.close': 'Cerrar',
     'common.loading': 'Cargando...',
     'common.loadMore': 'Cargar Más',
+    'common.addItem': 'Agregar Ítem',
+    'common.clickToEdit': 'Clic para editar...',
     'common.error': 'Algo salió mal',
 
     // Onboarding
@@ -844,8 +848,8 @@ export const translations = {
     'wizard.welcome': "¡Hola! Soy tu {0}. Vamos a diseñar tu ambición.",
     'wizard.agentStart': "Dime, ¿qué tienes en mente?",
     // Framework Titles & Questions
-    'fp.title': 'Planner Generator Coach',
-    'fp.q1': "¡Hola! Soy tu Planner Generator Coach. Si estás aquí es porque buscas un cambio real y necesitas una estrategia sólida. Muchos fallan por falta de un plan de acción constante, pero estás en el lugar correcto. Cuéntame: ¿qué objetivo quieres alcanzar, en cuánto tiempo y qué importancia tiene para ti? Crearemos un plan a tu medida. Cuantos más detalles compartas, mejor será el resultado. Es momento de cambiar tu vida.",
+    'fp.title': 'Goal Planner Generator',
+    'fp.q1': "¡Hola! Soy tu Goal Planner Generator. Si estás aquí es porque buscas un cambio real y necesitas una estrategia sólida. Muchos fallan por falta de un plan de acción constante, pero estás en el lugar correcto. Cuéntame: ¿qué objetivo quieres alcanzar, en cuánto tiempo y qué importancia tiene para ti? Crearemos un plan a tu medida. Cuantos más detalles compartas, mejor será el resultado. Es momento de cambiar tu vida.",
     'fp.q2': "¿Cuáles son las verdades fundamentales que sabes con certeza? Desglosa el problema en hechos innegociables.",
     'fp.q3': "Basado en estas verdades, ¿cuál es una forma completamente nueva de construir esto desde cero?",
     
@@ -962,7 +966,7 @@ export const translations = {
     'okr.keyResult': 'Resultado Clave',
     'okr.initiative': 'Iniciativa Inmediata',
 
-    'fpf.title': 'Primeros Principios',
+    'fpf.title': 'First Principles',
     'fpf.q1': '¿Cuál es tu objetivo principal?',
     'fpf.q2': '¿Cuáles son las verdades innegables de este problema?',
     'fpf.q3': 'Basado en estas verdades, ¿cuál es un nuevo enfoque?',

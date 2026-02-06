@@ -54,7 +54,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
     const answers = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
     const bp: Blueprint = {
       id: props.initialBlueprint?.id ?? crypto.randomUUID(),
-      framework: props.framework,
+      framework: props.framework || 'first-principles', // Fallback for ID generation if undefined, likely overwritten by agent
       title: props.initialBlueprint?.title ?? blueprintTitleFromAnswers(answers),
       answers,
       result: result!, // Only called when result exists
@@ -86,7 +86,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
      if (!result) return;
       const bp: Blueprint = {
         id: props.initialBlueprint?.id ?? crypto.randomUUID(),
-        framework: props.framework,
+        framework: props.framework || 'first-principles',
         title: props.initialBlueprint?.title ?? blueprintTitleFromAnswers(finalAnswers),
         answers: finalAnswers,
         result,

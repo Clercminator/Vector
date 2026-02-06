@@ -3,30 +3,29 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/app/components/ui/button';
 import { ParticleBackground } from '@/app/components/ParticleBackground';
-import { FrameworkCard } from '@/app/components/FrameworkCard';
 import { Toaster } from '@/app/components/ui/sonner';
 import { AuthModal } from '@/app/components/AuthModal';
-import { Rocket, Brain, Layers, Target, ChevronRight, Menu, X, ArrowRight, WifiOff, Sparkles, BarChart } from 'lucide-react';
+import { WifiOff } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 import { ErrorBoundary } from '@/app/components/ErrorBoundary';
 import { Blueprint, loadLocalBlueprints, saveLocalBlueprints, upsertBlueprint, removeBlueprint, syncLocalBlueprintsToRemote, queueDeletedBlueprint, processDeletedQueue } from '@/lib/blueprints';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { createCheckout, isMercadoPagoConfigured } from '@/lib/mercadoPago';
 
-import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, canUseFramework } from '@/lib/tiers';
+import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID } from '@/lib/tiers';
 import { checkAndAwardAchievements } from '@/lib/gamification';
 
 import { useLanguage } from '@/app/components/language-provider';
 import { ShareButton } from '@/app/components/ShareButton';
-import { LanguageToggle } from '@/app/components/language-toggle';
-import { ThemeToggle } from '@/app/components/theme-toggle';
-import { InspirationalQuote } from '@/app/components/InspirationalQuote';
 import { FrameworkDetail } from '@/app/components/FrameworkDetail';
 import { OnboardingModal } from '@/app/components/OnboardingModal';
 import { HelpMeChooseModal } from '@/app/components/HelpMeChooseModal';
 import { Logo } from '@/app/components/Logo';
 
+import { LandingPage } from '@/pages/LandingPage';
+import { Header } from '@/app/components/layout/Header';
+import { MobileMenu } from '@/app/components/layout/MobileMenu';
 
 // Lazy load screens
 const GoalWizard = React.lazy(() => import('@/app/components/GoalWizard').then(module => ({ default: module.GoalWizard })));
@@ -38,10 +37,8 @@ const AdminDashboard = React.lazy(() => import('@/app/components/AdminDashboard'
 const FrameworkPage = React.lazy(() => import('@/pages/FrameworkPage').then(module => ({ default: module.FrameworkPage })));
 const AnalyticsPage = React.lazy(() => import('@/pages/AnalyticsPage').then(module => ({ default: module.AnalyticsPage })));
 const LegalPage = React.lazy(() => import('@/pages/LegalPage').then(module => ({ default: module.LegalPage })));
-import { trackEvent } from '@/lib/analytics';
 
 import { frameworks, Framework } from '@/lib/frameworks';
-import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 
 const LoadingFallback = () => (
     <div className="flex items-center justify-center min-h-[50vh]">
@@ -283,7 +280,7 @@ function App() {
     toast.success(t('app.auth.signedOut'));
   };
 
-  const handleStartWizard = (fwId: Framework, context?: any) => {
+  const handleStartWizard = (fwId: Framework = 'first-principles', context?: any) => {
     // Enforce Auth for Chat UI logic
     if (!userId) {
         toast.error(t('app.profile.signInRequired') || "Please sign in to start.");
@@ -489,21 +486,6 @@ function App() {
     }
   };
 
-  // Dynamic frameworks list with translation
-  const frameworksList = frameworks.map(f => ({
-    ...f,
-    title: t(`fw.${f.id}.title`) || f.title,
-    description: t(`fw.${f.id}.desc`) || f.description,
-    definition: t(`fw.${f.id}.definition`) || f.definition,
-    example: t(`fw.${f.id}.example`) || f.example,
-    pros: [0, 1, 2].map(i => t(`fw.${f.id}.pros.${i}`)).filter(Boolean).length > 0 
-          ? [0, 1, 2].map(i => t(`fw.${f.id}.pros.${i}`)) 
-          : f.pros,
-    cons: [0, 1, 2].map(i => t(`fw.${f.id}.cons.${i}`)).filter(Boolean).length > 0
-          ? [0, 1, 2].map(i => t(`fw.${f.id}.cons.${i}`)) 
-          : f.cons,
-  }));
-
   // Close mobile menu on route change
   useEffect(() => {
       setIsMenuOpen(false);
@@ -548,6 +530,7 @@ function App() {
             onClose={() => setViewingFramework(null)} 
             onStart={() => {
               setViewingFramework(null);
+              // handleStartWizard expects fwId
               handleStartWizard(viewingFramework.id);
             }} 
           />
@@ -567,112 +550,27 @@ function App() {
         )}
       </AnimatePresence>
 
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-gray-100 dark:border-zinc-800 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <Logo className="w-8 h-8 rounded-lg" />
-            <span className="text-xl font-bold tracking-tight text-black dark:text-white">VECTOR</span>
-          </div>
+      <Header 
+        userEmail={userEmail}
+        avatarUrl={avatarUrl}
+        isAdmin={isAdmin}
+        isMenuOpen={isMenuOpen}
+        onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
+        onSignOut={handleSignOut}
+        onSignIn={() => setAuthOpen(true)}
+        onGetStarted={() => handleStartWizard()}
+      />
 
-            {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-6">
-            <button onClick={() => navigate('/')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/' ? 'page' : undefined}>{t('nav.frameworks')}</button>
-            <button onClick={() => navigate('/community')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/community' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/community' ? 'page' : undefined}>{t('nav.community')}</button>
-            {userEmail && (
-                <button onClick={() => navigate('/dashboard')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/dashboard' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/dashboard' ? 'page' : undefined}>{t('nav.blueprints')}</button>
-            )}
-            <button onClick={() => navigate('/pricing')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/pricing' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/pricing' ? 'page' : undefined}>{t('nav.pricing')}</button>
-            
-            <div className="w-px h-4 bg-gray-200 dark:bg-gray-800 mx-2" />
-            
-            <ThemeToggle />
-            <LanguageToggle />
-
-             {userEmail && (
-                  <button onClick={() => navigate('/profile')} className="flex items-center gap-2 text-sm font-medium transition-colors cursor-pointer" aria-current={location.pathname === '/profile' ? 'page' : undefined}>
-                    <Avatar className="w-8 h-8 ring-2 ring-gray-100 dark:ring-zinc-800 transition-all hover:ring-4">
-                        <AvatarImage src={avatarUrl || ''} />
-                        <AvatarFallback className="bg-gray-100 dark:bg-zinc-800 text-xs text-black dark:text-white">
-                            {userEmail?.[0]?.toUpperCase()}
-                        </AvatarFallback>
-                    </Avatar>
-                  </button>
-             )}
-
-            {isAdmin && (
-                 <button onClick={() => navigate('/admin')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/admin' ? 'text-black dark:text-white font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/admin' ? 'page' : undefined}>
-                    {t('nav.admin')}
-                 </button>
-            )}
-
-            <button
-              onClick={() => (userEmail ? handleSignOut() : setAuthOpen(true))}
-              className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
-            >
-              {userEmail ? t('nav.signout') : t('nav.signin')}
-            </button>
-            <button
-              onClick={() => handleStartWizard('first-principles')}
-              className="px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer"
-            >
-              {t('nav.getStarted')}
-            </button>
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <button className="md:hidden text-gray-900 dark:text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-white dark:bg-zinc-950 pt-24 px-6 flex flex-col gap-6"
-          >
-            <button onClick={() => navigate('/')} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.frameworks')}</button>
-            <button onClick={() => navigate('/community')} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/community' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.community')}</button>
-            <button onClick={() => navigate('/dashboard')} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/dashboard' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.blueprints')}</button>
-            <button onClick={() => navigate('/pricing')} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/pricing' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.pricing')}</button>
-            
-            <div className="flex items-center gap-4 py-4">
-               <ThemeToggle />
-               <LanguageToggle />
-            </div>
-
-             {userEmail && (
-                <button onClick={() => navigate('/profile')} className="text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white flex items-center gap-3">
-                    <Avatar className="w-8 h-8">
-                        <AvatarImage src={avatarUrl || ''} />
-                        <AvatarFallback className="bg-gray-100 dark:bg-zinc-800 text-xs text-black dark:text-white">
-                            {userEmail?.[0]?.toUpperCase()}
-                        </AvatarFallback>
-                    </Avatar>
-                    {t('nav.profile')}
-                </button>
-             )}
-            {isAdmin && (
-               <button onClick={() => navigate('/admin')} className="text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white">{t('nav.admin')}</button>
-            )}
-            <button
-              onClick={() => {
-                setIsMenuOpen(false);
-                userEmail ? handleSignOut() : setAuthOpen(true);
-              }}
-              className="text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white"
-            >
-              {userEmail ? t('nav.signout') : t('nav.signin')}
-            </button>
-            <button onClick={() => handleStartWizard('first-principles')} className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-lg font-bold">{t('nav.getStarted')}</button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <MobileMenu
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        userEmail={userEmail}
+        avatarUrl={avatarUrl}
+        isAdmin={isAdmin}
+        onSignOut={handleSignOut}
+        onSignIn={() => setAuthOpen(true)}
+        onGetStarted={() => handleStartWizard()}
+      />
 
       <main id="main-content" className="relative pt-20 flex-grow" tabIndex={-1}>
         <ErrorBoundary fallback={<div className="p-8 text-center text-red-500">Failed to load content. Please refresh.</div>}>
@@ -680,111 +578,12 @@ function App() {
             <AnimatePresence mode="wait">
               <Routes location={location} key={location.pathname}>
                 <Route path="/" element={
-                   <motion.div
-                      key="landing"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="relative z-10"
-                    >
-                      {/* Hero Section */}
-                      <section className="px-6 pt-24 pb-32 md:pt-20 md:pb-48 text-center max-w-5xl mx-auto">
-                        <motion.div
-                          initial={{ opacity: 0, y: 30 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.8, ease: "easeOut" }}
-                        >
-                          <h1 className="text-6xl md:text-9xl font-bold tracking-tighter text-gray-900 mb-8 leading-[0.9]">
-                            {t('landing.hero.architectYour')} <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-red-500 to-yellow-500">{t('landing.hero.ambition')}</span>
-                          </h1>
-                          
-                          <InspirationalQuote />
-
-                          <p className="text-xl md:text-2xl text-gray-500 font-light max-w-2xl mx-auto mb-12 leading-relaxed">
-                            {t('landing.hero.subtitle')}
-                          </p>
-                          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-                            <button 
-                              onClick={() => handleStartWizard('first-principles')}
-                              className="group px-10 py-5 bg-black text-white rounded-full text-lg font-bold flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-black/20"
-                            >
-                              {t('landing.hero.startBuilding')}
-                              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                            </button>
-                            <button 
-                              onClick={() => navigate('/pricing')}
-                              className="px-10 py-5 bg-white border border-gray-200 text-gray-900 rounded-full text-lg font-bold hover:bg-gray-50 transition-colors"
-                            >
-                              {t('landing.hero.viewPricing')}
-                            </button>
-                          </div>
-                        </motion.div>
-                      </section>
-
-                      {/* Frameworks Section */}
-                      <section className="px-6 py-24 bg-gray-50/30 dark:bg-zinc-900/30 backdrop-blur-sm border-t border-gray-100 dark:border-zinc-800">
-                        <div className="max-w-7xl mx-auto">
-                          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
-                            <div className="max-w-2xl">
-                              <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-black dark:text-white">{t('frameworks.title')}</h2>
-                              <p className="text-lg text-gray-500 dark:text-gray-400 font-light">
-                                {t('frameworks.subtitle')}
-                              </p>
-                            </div>
-                            <Button 
-                                onClick={() => setShowHelpChoose(true)}
-                                variant="outline" 
-                                className="gap-2 dark:text-white dark:border-zinc-700"
-                            >
-                                <Sparkles size={16} className="text-purple-500" />
-                                {t('frameworks.helpMeChoose')}
-                            </Button>
-                          </div>
-
-                          <div className="grid md:grid-cols-3 gap-8">
-                            {frameworksList.map((fw) => (
-                              <FrameworkCard
-                                key={fw.id}
-                                {...fw}
-                                title={t(`fw.${fw.id}.title`) || fw.title}
-                                description={t(`fw.${fw.id}.desc`) || fw.description} 
-                                onClick={() => {
-                                  if (!canUseFramework(tier, fw.id)) {
-                                     toast.info("This framework is included in the Standard plan.", {
-                                         action: {
-                                             label: t('nav.pricing'),
-                                             onClick: () => navigate('/pricing')
-                                         },
-                                         duration: 4000
-                                     });
-                                     return;
-                                  }
-                                  handleStartWizard(fw.id);
-                                }}
-                                onLearnMore={() => setViewingFramework(fw)}
-                                isLocked={!canUseFramework(tier, fw.id)}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </section>
-
-                      {/* Experience Liftoff Footer-like Section */}
-                      <section className="px-6 py-40 text-center overflow-hidden">
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 1 }}
-                        >
-                          <p className="text-xl md:text-2xl font-light text-gray-400 mb-6 uppercase tracking-[0.4em]">{t('footer.liftoff')}</p>
-                          <p className="text-5xl md:text-8xl font-bold tracking-tighter text-gray-900 dark:text-white">
-                            {t('landing.liftoff.vector')}
-                          </p>
-                        </motion.div>
-                      </section>
-                    </motion.div>
+                   <LandingPage 
+                     onStartWizard={handleStartWizard}
+                     onShowHelpChoose={() => setShowHelpChoose(true)}
+                     onViewFramework={setViewingFramework}
+                     tier={tier}
+                   />
                 } />
 
                 <Route path="/wizard" element={

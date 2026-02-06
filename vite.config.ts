@@ -55,13 +55,13 @@ export default defineConfig(() => {
             if (id.includes('@langchain') || id.includes('langgraph') || id.includes('openai')) {
               return 'ai-vendor';
             }
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+            if (id.includes('react/') || id.includes('react-dom') || id.includes('react-router-dom')) {
               return 'react-vendor';
             }
             if (id.includes('@supabase')) {
               return 'supabase-vendor';
             }
-            if (id.includes('lucide-react') || id.includes('sonner') || id.includes('canvas-confetti')) {
+            if (id.includes('lucide-react') || id.includes('sonner') || id.includes('canvas-confetti') || id.includes('framer-motion')) {
               return 'ui-vendor';
             }
           }

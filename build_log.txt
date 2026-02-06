@@ -4,56 +4,28 @@
 
 [36mvite v6.3.5 [32mbuilding for production...[36m[39m
 transforming...
-[plugin vite:esbuild] src/lib/translations.ts: Duplicate key "fp.title" in object literal
-664|  
-665|      // Framework Titles & Questions
-666|      'fp.title': 'Arquitecto de Primeros Principios',
-   |      ^
-667|      'fp.q1': "┬íHola! Soy tu Arquitecto de Primeros Principios. Vamos a dise├▒ar tu ambici├│n. Para empezar, necesito contexto: ┬┐Cu├íl es tu objetivo principal o el problema que intentas resolver? Cuantos m├ís detalles me des, mejor ser├í el plan.",
-668|      'fp.q2': "┬┐Cu├íles son las verdades fundamentales que sabes con certeza? Desglosa el problema en hechos innegociables.",
-
-[plugin vite:esbuild] src/lib/translations.ts: Duplicate key "fp.q1" in object literal
-665|      // Framework Titles & Questions
-666|      'fp.title': 'Arquitecto de Primeros Principios',
-667|      'fp.q1': "┬íHola! Soy tu Arquitecto de Primeros Principios. Vamos a dise├▒ar tu ambici├│n. Para empezar, necesito contexto: ┬┐Cu├íl es tu objetivo principal o el problema que intentas resolver? Cuantos m├ís detalles me des, mejor ser├í el plan.",
-   |      ^
-668|      'fp.q2': "┬┐Cu├íles son las verdades fundamentales que sabes con certeza? Desglosa el problema en hechos innegociables.",
-669|      'fp.q3': "Basado en estas verdades, ┬┐cu├íl es una forma completamente nueva de construir esto desde cero?",
-
-[plugin vite:esbuild] src/lib/translations.ts: Duplicate key "fp.q2" in object literal
-666|      'fp.title': 'Arquitecto de Primeros Principios',
-667|      'fp.q1': "┬íHola! Soy tu Arquitecto de Primeros Principios. Vamos a dise├▒ar tu ambici├│n. Para empezar, necesito contexto: ┬┐Cu├íl es tu objetivo principal o el problema que intentas resolver? Cuantos m├ís detalles me des, mejor ser├í el plan.",
-668|      'fp.q2': "┬┐Cu├íles son las verdades fundamentales que sabes con certeza? Desglosa el problema en hechos innegociables.",
-   |      ^
-669|      'fp.q3': "Basado en estas verdades, ┬┐cu├íl es una forma completamente nueva de construir esto desde cero?",
-670|      'fp.truths': 'Verdades Fundamentales',
-
-[plugin vite:esbuild] src/lib/translations.ts: Duplicate key "fp.q3" in object literal
-667|      'fp.q1': "┬íHola! Soy tu Arquitecto de Primeros Principios. Vamos a dise├▒ar tu ambici├│n. Para empezar, necesito contexto: ┬┐Cu├íl es tu objetivo principal o el problema que intentas resolver? Cuantos m├ís detalles me des, mejor ser├í el plan.",
-668|      'fp.q2': "┬┐Cu├íles son las verdades fundamentales que sabes con certeza? Desglosa el problema en hechos innegociables.",
-669|      'fp.q3': "Basado en estas verdades, ┬┐cu├íl es una forma completamente nueva de construir esto desde cero?",
-   |      ^
-670|      'fp.truths': 'Verdades Fundamentales',
-671|      'fp.newApproach': 'La Nueva Arquitectura',
-
-[plugin vite:resolve] Module "node:async_hooks" has been externalized for browser compatibility, imported by "C:/Users/clerc/Documents/Vector Project/Vector/node_modules/@langchain/langgraph/dist/setup/async_local_storage.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
-[32mΓ£ô[39m 3976 modules transformed.
-Γ£ù Build failed in 5.72s
+[32mΓ£ô[39m 1681 modules transformed.
+Γ£ù Build failed in 2.61s
 error during build:
-[vite-plugin-pwa:build] There was an error during the build:
-  node_modules/@langchain/langgraph/dist/setup/async_local_storage.js (2:9): "AsyncLocalStorage" is not exported by "__vite-browser-external", imported by "node_modules/@langchain/langgraph/dist/setup/async_local_storage.js".
+[vite-plugin-pwa:build] [plugin vite-plugin-pwa:build] src/app/components/wizard/useGoalWizard.ts (208:14): There was an error during the build:
+  Transform failed with 1 error:
+C:/Users/clerc/Documents/Vector Project/Vector/src/app/components/wizard/useGoalWizard.ts:208:14: ERROR: The symbol "currentConfig" has already been declared
 Additionally, handling the error in the 'buildEnd' hook caused the following error:
-  node_modules/@langchain/langgraph/dist/setup/async_local_storage.js (2:9): "AsyncLocalStorage" is not exported by "__vite-browser-external", imported by "node_modules/@langchain/langgraph/dist/setup/async_local_storage.js".
-file: C:/Users/clerc/Documents/Vector Project/Vector/node_modules/@langchain/langgraph/dist/setup/async_local_storage.js:2:9
+  Transform failed with 1 error:
+C:/Users/clerc/Documents/Vector Project/Vector/src/app/components/wizard/useGoalWizard.ts:208:14: ERROR: The symbol "currentConfig" has already been declared
+file: C:/Users/clerc/Documents/Vector Project/Vector/src/app/components/wizard/useGoalWizard.ts:208:14
 
-1: import { AsyncLocalStorageProviderSingleton } from "@langchain/core/singletons";
-2: import { AsyncLocalStorage } from "node:async_hooks";
-            ^
-3: 
-4: //#region src/setup/async_local_storage.ts
+The symbol "currentConfig" has already been declared
+206|          
+207|          let initialMsg = "";
+208|          const currentConfig = getFrameworkConfig(framework || '');
+   |                ^
+209|  
+210|          const initialContext = (window.history.state?.usr?.context) || (location.state as any)?.context;
 
     at getRollupError (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/parseAst.js:402:41)
     at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/node-entry.js:23441:39
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
     at async catchUnfinishedHookActions (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/node-entry.js:22899:16)
     at async rollupInternal (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/rollup/dist/es/shared/node-entry.js:23424:5)
     at async buildEnvironment (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:46206:14)

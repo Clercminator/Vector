@@ -11,7 +11,7 @@ import { graph } from '@/agent/goalAgent';
 import { HumanMessage } from '@langchain/core/messages';
 
 export interface GoalWizardHookProps {
-    framework: FrameworkId;
+    framework?: FrameworkId;
     initialBlueprint?: Blueprint;
     onSaveBlueprint?: (bp: Blueprint) => Promise<void> | void;
     tier?: TierId;
@@ -99,6 +99,7 @@ export const useGoalWizard = ({
             'media': { title: t('misogi.title'), questions: [t('misogi.q1'), t('misogi.q2'), t('misogi.q3')] }, // Misogi mapped to media key? Checking original... no, 'misogi' key
             'misogi': { title: t('misogi.title'), questions: [t('misogi.q1'), t('misogi.q2'), t('misogi.q3')] }
         };
+        if (!fw) return { title: t('fp.title'), questions: [t('fp.q1')] }; // Default Goal Planner Generator
         return keys[fw] || keys['first-principles'];
     };
 
@@ -202,23 +203,31 @@ export const useGoalWizard = ({
         setResult(null);
         setFinalAnswers([]);
         setStep(0);
-        setIsTyping(true);
-        const tTimer = setTimeout(() => {
-            const initialContext = (window.history.state?.usr?.context) || (location.state as any)?.context;
-            let initialMsg = "";
-            
-            if (initialContext && initialContext.explanation) {
-                 initialMsg = `${initialContext.explanation}\n\n${t(currentConfig.questions?.[0] || 'wizard.agentStart')}`;
-            } else if (currentConfig.questions?.[0]) {
-               initialMsg = currentConfig.questions[0];
-            } else {
-               initialMsg = t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart');
-            }
-            
-            setMessages([{ role: 'ai', content: initialMsg }]); 
+        
+        let initialMsg = "";
+        
+        const initialContext = (window.history.state?.usr?.context) || (location.state as any)?.context;
+        
+        if (initialContext && initialContext.explanation) {
+             initialMsg = `${initialContext.explanation}\n\n${t(currentConfig.questions?.[0] || 'wizard.agentStart')}`;
+        } else if (currentConfig.questions?.[0]) {
+           initialMsg = currentConfig.questions[0];
+        } else {
+           initialMsg = t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart');
+        }
+
+        if (framework) {
+            setIsTyping(true);
+            const tTimer = setTimeout(() => {
+                setMessages([{ role: 'ai', content: initialMsg }]); 
+                setIsTyping(false);
+            }, 1000);
+            return () => clearTimeout(tTimer);
+        } else {
+            // Immediate start for general flow, no typing simulation needed for static welcome
+            setMessages([{ role: 'ai', content: t('fp.q1') }]);
             setIsTyping(false);
-        }, 1000);
-        return () => clearTimeout(tTimer);
+        }
     }, [framework, initialBlueprint, t]);
 
     // Offline & Voice
@@ -259,6 +268,7 @@ export const useGoalWizard = ({
 
     // Locked Framework Check
     useEffect(() => {
+        if (!framework) return;
         if (!isPreviewMode && !canUseFramework(tier, framework)) {
           toast.error(t('wizard.lockedError') || "This framework is not available in your plan.", { duration: 5000 });
           onBack();
@@ -280,8 +290,8 @@ export const useGoalWizard = ({
         setFinalAnswers([]);
         setSuggestionChips([]);
         setThreadId(uuidv4());
-        const currentConfig = getFrameworkConfig(framework);
-        const initialMsg = t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart');
+        const currentConfig = getFrameworkConfig(framework || '');
+        const initialMsg = currentConfig.questions?.[0] || t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart');
         setMessages([{ role: 'ai', content: initialMsg }]);
         setIsTyping(false);
     };
