@@ -91,7 +91,7 @@ interface EditableListProps {
   placeholder?: string;
 }
 
-export const EditableList: React.FC<EditableListProps> = ({ items, onChange, className = '', itemClassName = '', placeholder = "New Item" }) => {
+export const EditableList: React.FC<EditableListProps> = ({ items = [], onChange, className = '', itemClassName = '', placeholder = "New Item" }) => {
   
   const updateItem = (index: number, newVal: string) => {
     const newItems = [...items];

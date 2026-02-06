@@ -925,7 +925,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
             </div>
             
             <EditableList 
-              items={result.vital} 
+              items={result.vital || []} 
               onChange={(val) => updateResult(['vital'], val)}
               itemClassName="text-gray-800 dark:text-gray-100 font-medium text-lg leading-snug"
             />
@@ -943,7 +943,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
               <h4 className="font-bold text-xl uppercase tracking-wider">{t('pareto.trivial')}</h4>
             </div>
              <EditableList 
-              items={result.trivial} 
+              items={result.trivial || []} 
               onChange={(val) => updateResult(['trivial'], val)}
               itemClassName="text-base text-gray-600 dark:text-gray-400"
             />
@@ -965,7 +965,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                 {t('eisenhower.do')}
               </h4>
               <EditableList 
-                  items={result.q1} 
+                  items={result.q1 || []} 
                   onChange={(val) => updateResult(['q1'], val)}
                   itemClassName="p-2 bg-white dark:bg-zinc-950 rounded-xl shadow-sm text-base font-semibold dark:text-gray-100 border-l-4 border-red-500"
               />
@@ -978,7 +978,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                 {t('eisenhower.schedule')}
               </h4>
                <EditableList 
-                  items={result.q2} 
+                  items={result.q2 || []} 
                   onChange={(val) => updateResult(['q2'], val)}
                   itemClassName="p-2 bg-white dark:bg-zinc-950 rounded-xl shadow-sm text-base font-medium dark:text-gray-200 border-l-4 border-blue-500"
               />
@@ -990,16 +990,8 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                  <span className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center"><Share2 size={16} /></span>
                  {t('eisenhower.delegate')}
               </h4>
-              {/* The following code block is likely intended for a different part of the file, e.g., an async function like runAgent */}
-              {/* for await (const event of await graph.stream(
-                  inputs,
-                  { ...config, streamMode: "values" }
-              )) {
-                  // Zombie State Guard: Stop processing if unmounted
-                  if (!isMounted.current) break;
-              } */}
               <EditableList 
-                  items={result.q3} 
+                  items={result.q3 || []} 
                   onChange={(val) => updateResult(['q3'], val)}
                   itemClassName="p-2 bg-white dark:bg-zinc-950 rounded-xl shadow-sm text-sm font-medium dark:text-gray-300 opacity-90"
               />
@@ -1012,7 +1004,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                  {t('eisenhower.eliminate')}
               </h4>
                <EditableList 
-                  items={result.q4} 
+                  items={result.q4 || []} 
                   onChange={(val) => updateResult(['q4'], val)}
                   itemClassName="p-2 bg-white dark:bg-zinc-950 rounded-xl shadow-sm text-sm font-medium opacity-50 line-through dark:text-gray-500"
               />
@@ -1046,7 +1038,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
           <div className="p-10">
             <h4 className="text-center text-sm font-bold text-gray-400 uppercase tracking-widest mb-8">{t('okr.keyResult')}</h4>
             <div className="grid md:grid-cols-3 gap-6">
-              {result.keyResults.map((kr: string, i: number) => (
+              {(result.keyResults || []).map((kr: string, i: number) => (
                 <div key={i} className="group p-6 bg-white dark:bg-zinc-950 rounded-3xl border-2 border-transparent hover:border-purple-100 dark:hover:border-purple-900/30 shadow-lg hover:shadow-2xl transition-all duration-300">
                   <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-purple-700 dark:text-purple-400 font-bold mb-4">{i+1}</div>
                    <EditableText 
@@ -1094,7 +1086,7 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                <h4 className="text-xl font-bold uppercase tracking-widest">{t('fp.truths')}</h4>
             </div>
             <EditableList 
-              items={result.truths} 
+              items={result.truths || []} 
               onChange={(val) => updateResult(['truths'], val)}
               itemClassName="text-xl text-gray-800 dark:text-gray-200 font-light leading-relaxed pl-6 border-l-4 border-blue-500"
             />
