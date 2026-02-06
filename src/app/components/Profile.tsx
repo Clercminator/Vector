@@ -309,7 +309,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
                          <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">{t('profile.normalCredits') || 'Normal Credits'}</p>
                          {data.credits_expires_at && (
                            <p className="text-[10px] text-zinc-400 mt-1">
-                             Expires: {new Date(data.credits_expires_at).toLocaleDateString()}
+                             {t('profile.expires').replace('{0}', new Date(data.credits_expires_at).toLocaleDateString())}
                            </p>
                          )}
                       </div>
@@ -333,7 +333,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
                       <div>
                          <p className="text-sm font-bold">{data.extra_credits || 0}</p>
                          <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">{t('profile.extraCredits') || 'Extra Credits'}</p>
-                         <p className="text-[10px] text-zinc-400 mt-1">Never expire</p>
+                         <p className="text-[10px] text-zinc-400 mt-1">{t('profile.neverExpires')}</p>
                       </div>
                    </div>
                 </div>

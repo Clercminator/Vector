@@ -514,8 +514,11 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
 
     if (initialBlueprint) {
        // ... existing load logic ...
+      const openingMsg = currentConfig.questions?.[0] ? t(currentConfig.questions[0]) : t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart');
+
       const baseMessages: Message[] = [
         { role: 'system', content: t('wizard.reopening').replace('{0}', currentConfig.title) },
+        { role: 'ai', content: openingMsg },
         { role: 'user', content: initialBlueprint.title },
         { role: 'system', content: t('wizard.loaded') },
       ];
@@ -690,8 +693,12 @@ export const GoalWizard: React.FC<GoalWizardProps> = ({ framework, onBack, onSav
                  let lastMsg = messageList[messageList.length - 1];
                  const aiIdx = messageList.map((m: any) => m?._getType?.()).lastIndexOf('ai');
                  if (aiIdx >= 0) lastMsg = messageList[aiIdx];
-                 const msgType = lastMsg?._getType?.();
-                 const isAIMessage = msgType === 'ai' || (lastMsg?.content != null && msgType !== 'human' && msgType !== 'tool');
+                 
+                 const msgType = lastMsg?._getType?.() || lastMsg?.type || (lastMsg?.role === 'user' ? 'human' : undefined);
+                 
+                 // Robust check: Exclude ToolMessages even if type is missing (look for tool_call_id or specific names)
+                 const isTool = msgType === 'tool' || !!lastMsg.tool_call_id || lastMsg.name === 'set_framework' || lastMsg.name === 'generate_blueprint';
+                 const isAIMessage = !isTool && (msgType === 'ai' || (lastMsg?.content != null && msgType !== 'human'));
 
                  if (isAIMessage && lastMsg?.content != null) {
                      const raw = lastMsg.content;
