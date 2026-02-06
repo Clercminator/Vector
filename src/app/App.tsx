@@ -64,7 +64,7 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useState(new URLSearchParams(window.location.search));
-  const [selectedFramework, setSelectedFramework] = useState<Framework>('first-principles');
+  const [selectedFramework, setSelectedFramework] = useState<Framework | undefined>(undefined);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -280,7 +280,7 @@ function App() {
     toast.success(t('app.auth.signedOut'));
   };
 
-  const handleStartWizard = (fwId: Framework = 'first-principles', context?: any) => {
+  const handleStartWizard = (fwId?: Framework, context?: any) => {
     // Enforce Auth for Chat UI logic
     if (!userId) {
         toast.error(t('app.profile.signInRequired') || "Please sign in to start.");

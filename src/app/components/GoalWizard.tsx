@@ -106,7 +106,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
           onRestart={handleSafeRestart}
       />
 
-      <div className="flex-grow flex overflow-hidden relative">
+      <div className="flex-grow flex flex-col overflow-hidden relative">
         {/* Chat Area & Result */}
         <WizardChat
             messages={messages}

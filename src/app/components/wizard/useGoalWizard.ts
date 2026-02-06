@@ -501,7 +501,12 @@ export const useGoalWizard = ({
                      const isTool = msgType === 'tool' || !!lastMsg.tool_call_id || lastMsg.name === 'set_framework' || lastMsg.name === 'generate_blueprint';
                      
                      // Robust AI detection: check content AND type/role
-                     const isAIMessage = !isTool && (msgType === 'ai' || (lastMsg?.content && msgType !== 'human'));
+                     const isAIMessage = !isTool && (
+                        msgType === 'ai' || 
+                        lastMsg?.role === 'ai' ||
+                        lastMsg?.constructor?.name === 'AIMessage' ||
+                        (lastMsg?.content && msgType !== 'human' && msgType !== 'system')
+                     );
 
                      if (isAIMessage && lastMsg?.content) {
                          const raw = lastMsg.content;
