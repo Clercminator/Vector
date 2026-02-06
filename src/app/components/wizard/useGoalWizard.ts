@@ -466,6 +466,9 @@ export const useGoalWizard = ({
                     }
                 }
 
+                // Debug Logging
+                console.log("Agent Stream Event:", event);
+
                 // Extract Messages
                 // We scour the updateData for any 'messages' array, regardless of node name
                 let messageList: any[] | null = null;
@@ -488,6 +491,7 @@ export const useGoalWizard = ({
                 if (messageList && messageList.length > 0) {
                      // Get the last AI message
                      let lastMsg = messageList[messageList.length - 1];
+                     console.log("Found Message:", lastMsg);
                      
                      // Fallback: If last is not AI, find last AI (sometimes tool calls are appended)
                      if (lastMsg?.type !== 'ai' && lastMsg?.role !== 'ai') {
@@ -507,6 +511,8 @@ export const useGoalWizard = ({
                         lastMsg?.constructor?.name === 'AIMessage' ||
                         (lastMsg?.content && msgType !== 'human' && msgType !== 'system')
                      );
+
+                     console.log("Is AI Message?", isAIMessage, "Type:", msgType, "IsTool:", isTool);
 
                      if (isAIMessage && lastMsg?.content) {
                          const raw = lastMsg.content;

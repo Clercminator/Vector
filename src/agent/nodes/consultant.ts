@@ -17,8 +17,8 @@ export const consultantNode = async (state: AgentStateType) => {
         
     const systemPrompt = prompts.consultantSystem.replace(/{{language}}/g, language);
         
-    const sysMsg = new SystemMessage(promptText);
-    const langMsg = new SystemMessage(systemPrompt);
+    const combinedPrompt = `${promptText}\n\n${systemPrompt}`;
+    const sysMsg = new SystemMessage(combinedPrompt);
     
     // Filter out previous system messages to keep context clean
     const recentMessages = messages.filter(m => !(m instanceof SystemMessage));
@@ -27,6 +27,6 @@ export const consultantNode = async (state: AgentStateType) => {
     // We need invokeWithFallback. Since I haven't moved it yet, I'll temporarily import from a new utils file I should create.
     const { invokeWithFallback } = await import("../utils"); 
     
-    const response = await invokeWithFallback([sysMsg, langMsg, ...windowedMessages], { bindTools: true });
+    const response = await invokeWithFallback([sysMsg, ...windowedMessages], { bindTools: true });
     return { messages: [response] };
 };
