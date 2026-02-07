@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Mail, Award, Zap, Save, Loader2, ArrowLeft, Star, CheckCircle2, Camera, Info } from 'lucide-react';
+import { User, Mail, Award, Zap, Save, Loader2, ArrowLeft, Star, CheckCircle2, Camera, Info, Eye, EyeOff, TriangleAlert } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
@@ -12,6 +12,15 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { AchievementsList } from '@/app/components/AchievementsList';
 import { Flame } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/app/components/ui/dialog";
 
 interface ProfileProps {
   userId: string;
@@ -61,8 +70,14 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [identities, setIdentities] = useState<any[]>([]);
+  const [email, setEmail] = useState(userEmail || '');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
+
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [deleteInput, setDeleteInput] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [data, setData] = useState<ProfileData>({
     display_name: '',
@@ -147,6 +162,12 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
           metadata: data.metadata,
           updated_at: new Date().toISOString(),
         });
+
+      if (email && email !== userEmail) {
+        const { error: emailError } = await supabase.auth.updateUser({ email });
+        if (emailError) throw emailError;
+        toast.info("Check your new email to confirm the change.");
+      }
 
       if (error) throw error;
       toast.success(t('profile.success'));
@@ -242,7 +263,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
 
 const handleLinkAccount = async (provider: 'google' | 'github') => {
     try {
-        const { error } = await supabase.auth.signInWithOAuth({
+        const { error } = await supabase.auth.linkIdentity({
             provider,
             options: {
                 redirectTo: window.location.href,
@@ -255,23 +276,39 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
     }
 };
 
-const handleUnlinkAccount = async (identityId: string) => {
-    if (identities?.length <= 1) {
-         toast.error(t('profile.lastMethodError'));
-         return;
-    }
-    try {
-        const { error } = await supabase.auth.unlinkIdentity(identityId);
-        if (error) throw error;
-        
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) setIdentities(user.identities || []);
-        toast.success(t('profile.accountUnlinked'));
-    } catch (e: any) {
-        console.error(e);
-        toast.error(e.message);
-    }
-};
+    const handleUnlinkAccount = async (identityId: string) => {
+        if (identities?.length <= 1) {
+             toast.error(t('profile.lastMethodError'));
+             return;
+        }
+        try {
+            const { error } = await supabase.auth.unlinkIdentity(identityId);
+            if (error) throw error;
+            
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) setIdentities(user.identities || []);
+            toast.success(t('profile.accountUnlinked'));
+        } catch (e: any) {
+            console.error(e);
+            toast.error(e.message);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (deleteInput !== 'DELETE') return;
+        try {
+            setLoading(true); // Re-use main loading state or add a specific one? Main is fine as it blocks everything.
+            const { error } = await supabase.rpc('delete_own_account');
+            if (error) throw error;
+            
+            await supabase.auth.signOut();
+            window.location.href = '/'; 
+        } catch (e: any) {
+            console.error(e);
+            toast.error(e.message || t('profile.deleteError') || 'Failed to delete account');
+            setLoading(false);
+        }
+    };
 
   const currentTierConfig = TIER_CONFIGS[data.tier as TierId] || TIER_CONFIGS['architect'];
 
@@ -425,6 +462,17 @@ const handleUnlinkAccount = async (identityId: string) => {
           </h3>
           
           <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-black dark:text-white">{t('auth.emailAddress')}</Label>
+              <Input 
+                id="email" 
+                value={email} 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="bg-transparent dark:text-white dark:border-zinc-700"
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="displayName" className="text-black dark:text-white">{t('profile.displayName')}</Label>
               <Input 
@@ -585,25 +633,43 @@ const handleUnlinkAccount = async (identityId: string) => {
                 <div className="space-y-4">
                     <h4 className="font-semibold text-black dark:text-white">{t('profile.changePassword')}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
+                        <div className="space-y-2 relative">
                             <Label htmlFor="newPassword">{t('profile.newPassword')}</Label>
-                            <Input 
-                                id="newPassword" 
-                                type="password" 
-                                value={newPassword}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
-                                className="bg-transparent dark:text-white dark:border-zinc-700"
-                            />
+                            <div className="relative">
+                                <Input 
+                                    id="newPassword" 
+                                    type={showNewPassword ? "text" : "password"} 
+                                    value={newPassword}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
+                                    className="bg-transparent dark:text-white dark:border-zinc-700 pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowNewPassword(!showNewPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer"
+                                >
+                                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                </button>
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="confirmPassword">{t('profile.confirmPassword')}</Label>
-                            <Input 
-                                id="confirmPassword" 
-                                type="password" 
-                                value={confirmPassword}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
-                                className="bg-transparent dark:text-white dark:border-zinc-700"
-                            />
+                            <div className="relative">
+                                <Input 
+                                    id="confirmPassword" 
+                                    type={showConfirmPassword ? "text" : "password"} 
+                                    value={confirmPassword}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
+                                    className="bg-transparent dark:text-white dark:border-zinc-700 pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer"
+                                >
+                                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div className="flex justify-end">
@@ -662,7 +728,62 @@ const handleUnlinkAccount = async (identityId: string) => {
                     </div>
                 </div>
              </div>
-          </div>
+             </div>
+
+
+          {/* Danger Zone */}
+          <div className="mt-8 border-t border-red-100 dark:border-red-900/30 pt-8">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-red-600 dark:text-red-500">
+                    <TriangleAlert size={20} />
+                    {t('profile.dangerZone') || 'Danger Zone'}
+                </h3>
+                <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl p-6">
+                    <h4 className="font-bold text-red-900 dark:text-red-200 mb-2">{t('profile.deleteAccount') || 'Delete Account'}</h4>
+                    <p className="text-sm text-red-700 dark:text-red-300 mb-4">
+                        {t('profile.deleteAccountDescription') || 'Once you delete your account, there is no going back. Please be certain.'}
+                    </p>
+                    
+                    <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="destructive" className="cursor-pointer bg-red-600 hover:bg-red-700 text-white border-transparent">
+                                {t('profile.deleteAccount') || 'Delete Account'}
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+                            <DialogHeader>
+                                <DialogTitle className="text-black dark:text-white">{t('profile.deleteAccountConfirmationTitle') || 'Are you absolutely sure?'}</DialogTitle>
+                                <DialogDescription className="text-zinc-500 dark:text-zinc-400">
+                                    {t('profile.deleteAccountConfirmationDesc') || 'This action cannot be undone. This will permanently delete your account and remove your data from our servers.'}
+                                </DialogDescription>
+                            </DialogHeader>
+                            
+                            <div className="py-4 space-y-4">
+                                <Label htmlFor="delete-confirm" className="text-black dark:text-white">
+                                    {t('profile.typeDeleteToConfirm') || 'Type DELETE to confirm'}
+                                </Label>
+                                <Input 
+                                    id="delete-confirm"
+                                    value={deleteInput}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeleteInput(e.target.value)}
+                                    className="bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white border-zinc-200 dark:border-zinc-700"
+                                />
+                            </div>
+
+                            <DialogFooter>
+                                <Button 
+                                    variant="destructive" 
+                                    onClick={handleDeleteAccount}
+                                    disabled={deleteInput !== 'DELETE' || loading}
+                                    className="w-full sm:w-auto cursor-pointer bg-red-600 hover:bg-red-700 text-white border-transparent"
+                                >
+                                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {t('profile.confirmDelete') || 'Delete Account'}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </div>
+            </div>
           
           <div className="mt-8 border-t border-gray-100 dark:border-zinc-800 pt-8">
             <AchievementsList userId={userId} />
