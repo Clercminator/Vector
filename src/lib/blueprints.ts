@@ -1,4 +1,4 @@
-export type FrameworkId = "first-principles" | "pareto" | "rpm" | "eisenhower" | "okr";
+export type FrameworkId = "first-principles" | "pareto" | "rpm" | "eisenhower" | "okr" | "misogi" | "general";
 
 export type BlueprintResult =
   | { type: "first-principles"; truths: string[]; newApproach: string }

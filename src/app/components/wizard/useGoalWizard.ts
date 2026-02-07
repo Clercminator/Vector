@@ -96,8 +96,9 @@ export const useGoalWizard = ({
             'rpm': { title: t('rpm.title'), questions: [t('rpm.q1'), t('rpm.q2'), t('rpm.q3')] },
             'eisenhower': { title: t('eisenhower.title'), questions: [t('eisenhower.q1'), t('eisenhower.q2'), t('eisenhower.q3')] },
             'okr': { title: t('okr.title'), questions: [t('okr.q1'), t('okr.q2'), t('okr.q3')] },
-            'media': { title: t('misogi.title'), questions: [t('misogi.q1'), t('misogi.q2'), t('misogi.q3')] }, // Misogi mapped to media key? Checking original... no, 'misogi' key
-            'misogi': { title: t('misogi.title'), questions: [t('misogi.q1'), t('misogi.q2'), t('misogi.q3')] }
+            'media': { title: t('misogi.title'), questions: [t('misogi.q1'), t('misogi.q2'), t('misogi.q3')] },
+            'misogi': { title: t('misogi.title'), questions: [t('misogi.q1'), t('misogi.q2'), t('misogi.q3')] },
+            'general': { title: t('fp.title'), questions: [t('fp.q1')] }
         };
         if (!fw) return { title: t('fp.title'), questions: [t('fp.q1')] }; // Default Goal Planner Generator
         return keys[fw] || keys['first-principles'];
@@ -585,7 +586,7 @@ export const useGoalWizard = ({
              const answers = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
              const bp: Blueprint = {
                 id: initialBlueprint?.id ?? crypto.randomUUID(),
-                framework,
+                framework: framework || "general",
                 title: initialBlueprint?.title ?? blueprintTitleFromAnswers(answers),
                 answers,
                 result: result || { type: framework } as any,
@@ -618,7 +619,7 @@ export const useGoalWizard = ({
         const answers = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
         const bp: Blueprint = {
           id: initialBlueprint?.id ?? crypto.randomUUID(),
-          framework,
+          framework: framework || "general",
           title: initialBlueprint?.title ?? blueprintTitleFromAnswers(answers),
           answers,
           result,
