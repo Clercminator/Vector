@@ -11,6 +11,7 @@ interface CommunityProps {
   userId: string | null;
   onBack: () => void;
   onImport: (blueprint: any) => void;
+  onCreate: () => void;
 }
 
 interface Template {
@@ -26,7 +27,7 @@ interface Template {
 
 import { useLanguage } from '@/app/components/language-provider';
 
-export function Community({ userId, onBack, onImport }: CommunityProps) {
+export function Community({ userId, onBack, onImport, onCreate }: CommunityProps) {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'templates' | 'leaderboard'>('templates');
   const [searchQuery, setSearchQuery] = useState('');
@@ -279,7 +280,7 @@ export function Community({ userId, onBack, onImport }: CommunityProps) {
                     <div className="col-span-full flex flex-col items-center justify-center py-20 bg-gray-50 dark:bg-zinc-900 rounded-3xl border border-dashed border-gray-200 dark:border-zinc-800 text-gray-400">
                         <p className="mb-4 text-lg">{searchQuery ? t('community.noResults') : t('community.empty')}</p>
                         {!searchQuery && (
-                           <Button onClick={onBack} variant="outline" className="gap-2">
+                           <Button onClick={onCreate} variant="outline" className="gap-2">
                               <Plus size={16} />
                               {t('community.createFirst') || "Create your first Blueprint"}
                            </Button>

@@ -621,7 +621,7 @@ function App() {
                         loading={blueprintsLoading}
                         onOpenBlueprint={handleOpenBlueprint}
                         onDeleteBlueprint={handleDeleteBlueprint}
-                        onStartWizard={() => navigate('/')}
+                        onStartWizard={() => handleStartWizard()}
                         onPublishBlueprint={handlePublishBlueprint}
                         onLoadMore={handleLoadMore}
                         hasMore={hasMore}
@@ -633,7 +633,12 @@ function App() {
 
                  <Route path="/community" element={
                      <motion.div key="community" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-                        <Community userId={userId} onBack={() => navigate('/')} onImport={handleImportTemplate} />
+                        <Community 
+                            userId={userId} 
+                            onBack={() => navigate('/')} 
+                            onImport={handleImportTemplate}
+                            onCreate={() => handleStartWizard()}
+                        />
                      </motion.div>
                  } />
 
