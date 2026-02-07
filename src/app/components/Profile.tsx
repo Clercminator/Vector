@@ -60,6 +60,10 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [identities, setIdentities] = useState<any[]>([]);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const [data, setData] = useState<ProfileData>({
     display_name: '',
     bio: '',
@@ -93,6 +97,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
+          setIdentities(user.identities || []);
           const { data: profile } = await supabase
             .from('profiles')
             .select('display_name, bio, avatar_url, level, credits, extra_credits, credits_expires_at, points, streak_count, branding_logo_url, branding_color, tier, metadata')
@@ -215,6 +220,59 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
     }
   };
 
+  const handleUpdatePassword = async () => {
+    if (!newPassword) return;
+    if (newPassword !== confirmPassword) {
+        toast.error(t('auth.passwordsDoNotMatch') || "Passwords do not match");
+        return;
+    }
+    try {
+        setPasswordLoading(true);
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        toast.success(t('profile.passwordUpdated'));
+        setNewPassword('');
+        setConfirmPassword('');
+    } catch (e: any) {
+        toast.error(e.message || t('profile.passwordUpdateError'));
+    } finally {
+        setPasswordLoading(false);
+    }
+};
+
+const handleLinkAccount = async (provider: 'google' | 'github') => {
+    try {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider,
+            options: {
+                redirectTo: window.location.href,
+            }
+        });
+        if (error) throw error;
+    } catch (e: any) {
+       console.error(e);
+       toast.error(e.message);
+    }
+};
+
+const handleUnlinkAccount = async (identityId: string) => {
+    if (identities?.length <= 1) {
+         toast.error(t('profile.lastMethodError'));
+         return;
+    }
+    try {
+        const { error } = await supabase.auth.unlinkIdentity(identityId);
+        if (error) throw error;
+        
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) setIdentities(user.identities || []);
+        toast.success(t('profile.accountUnlinked'));
+    } catch (e: any) {
+        console.error(e);
+        toast.error(e.message);
+    }
+};
+
   const currentTierConfig = TIER_CONFIGS[data.tier as TierId] || TIER_CONFIGS['architect'];
 
   return (
@@ -225,7 +283,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
       className="max-w-5xl mx-auto px-6 py-12"
     >
       <div className="mb-8 flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={onBack} className="dark:text-white dark:hover:bg-zinc-800">
+        <Button variant="ghost" size="icon" onClick={onBack} className="dark:text-white dark:hover:bg-zinc-800 cursor-pointer">
           <ArrowLeft size={20} />
         </Button>
         <h1 className="text-3xl font-bold tracking-tight text-black dark:text-white">{t('profile.title')}</h1>
@@ -246,7 +304,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
                </div>
                
                <div className="relative">
-                 <Button variant="outline" size="sm" className="gap-2 relative z-10 dark:text-white dark:border-zinc-700 dark:hover:bg-zinc-800">
+                 <Button variant="outline" size="sm" className="gap-2 relative z-10 dark:text-white dark:border-zinc-700 dark:hover:bg-zinc-800 cursor-pointer">
                     {uploading ? <Loader2 className="animate-spin" size={14} /> : <Camera size={14} />}
                     {t('profile.upload') || "Upload Avatar"}
                  </Button>
@@ -317,7 +375,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
                    <Button 
                       size="sm" 
                       onClick={() => navigate('/pricing')}
-                      className="bg-white text-black hover:bg-zinc-200 rounded-xl font-bold h-10 px-4"
+                       className="bg-white text-black hover:bg-zinc-200 rounded-xl font-bold h-10 px-4 cursor-pointer"
                    >
                       {t('profile.buyMore') || 'Buy More'}
                    </Button>
@@ -465,7 +523,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
                   <Input 
                     id="interests" 
                     value={data.metadata?.interests || ''} 
-                    onChange={(e) => setData({ ...data, metadata: { ...data.metadata, interests: e.target.value } })}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, metadata: { ...data.metadata, interests: e.target.value } })}
                     placeholder="e.g. AI, startups, reading"
                     className="bg-transparent dark:text-white dark:border-zinc-700"
                   />
@@ -477,7 +535,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
                <Input 
                  id="skills" 
                  value={data.metadata?.skills || ''} 
-                 onChange={(e) => setData({ ...data, metadata: { ...data.metadata, skills: e.target.value } })}
+                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, metadata: { ...data.metadata, skills: e.target.value } })}
                  placeholder="e.g. Marketing, coding, design"
                  className="bg-transparent dark:text-white dark:border-zinc-700"
                />
@@ -488,7 +546,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
                <Input 
                  id="hobbies" 
                  value={data.metadata?.hobbies || ''} 
-                 onChange={(e) => setData({ ...data, metadata: { ...data.metadata, hobbies: e.target.value } })}
+                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, metadata: { ...data.metadata, hobbies: e.target.value } })}
                  placeholder="e.g. Hiking, chess, photography"
                  className="bg-transparent dark:text-white dark:border-zinc-700"
                />
@@ -497,7 +555,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
 
 
             <div className="pt-4 flex justify-end">
-              <Button onClick={handleSave} disabled={saving || loading} className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90">
+              <Button onClick={handleSave} disabled={saving || loading} className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 cursor-pointer">
                 {saving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -514,6 +572,97 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
           </div>
 
           {/* Branding Section Removed as per request */}
+          
+          {/* Security Section */}
+          <div className="mt-8 border-t border-gray-100 dark:border-zinc-800 pt-8">
+             <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-black dark:text-white">
+                <Lock size={20} className="text-gray-400" />
+                {t('profile.security')}
+             </h3>
+
+             <div className="space-y-8">
+                {/* Change Password */}
+                <div className="space-y-4">
+                    <h4 className="font-semibold text-black dark:text-white">{t('profile.changePassword')}</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="newPassword">{t('profile.newPassword')}</Label>
+                            <Input 
+                                id="newPassword" 
+                                type="password" 
+                                value={newPassword}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
+                                className="bg-transparent dark:text-white dark:border-zinc-700"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="confirmPassword">{t('profile.confirmPassword')}</Label>
+                            <Input 
+                                id="confirmPassword" 
+                                type="password" 
+                                value={confirmPassword}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
+                                className="bg-transparent dark:text-white dark:border-zinc-700"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex justify-end">
+                        <Button 
+                            onClick={handleUpdatePassword} 
+                            disabled={passwordLoading || !newPassword}
+                            className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black cursor-pointer"
+                        >
+                            {passwordLoading ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                t('profile.updatePassword')
+                            )}
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="h-px bg-gray-100 dark:bg-zinc-800" />
+
+                {/* Linked Accounts */}
+                <div className="space-y-4">
+                    <h4 className="font-semibold text-black dark:text-white">{t('profile.linkedAccounts')}</h4>
+                    <div className="space-y-3">
+                        {['google', 'github'].map((provider) => {
+                            const isLinked = identities?.some((id) => id.provider === provider);
+                            const identityId = identities?.find((id) => id.provider === provider)?.identity_id;
+
+                            return (
+                                <div key={provider} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="capitalize font-medium text-black dark:text-white">{t(`profile.provider.${provider}`) || provider}</div>
+                                        {isLinked && <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full">Connected</span>}
+                                    </div>
+                                    {isLinked ? (
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            onClick={() => identityId && handleUnlinkAccount(identityId)}
+                                            className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 cursor-pointer"
+                                        >
+                                            {t('profile.unlinkAccount')}
+                                        </Button>
+                                    ) : (
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            onClick={() => handleLinkAccount(provider as 'google' | 'github')}
+                                            className="cursor-pointer dark:text-white dark:border-zinc-700 dark:hover:bg-zinc-800"
+                                        >
+                                            {t('profile.linkAccount')}
+                                        </Button>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+             </div>
+          </div>
           
           <div className="mt-8 border-t border-gray-100 dark:border-zinc-800 pt-8">
             <AchievementsList userId={userId} />

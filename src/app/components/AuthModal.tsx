@@ -6,16 +6,25 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/app/components/ui/input";
 import { Button } from "@/app/components/ui/button";
 
-// Removed duplicate Mode definition
-
 import { useLanguage } from '@/app/components/language-provider';
 
-import { Rocket } from 'lucide-react';
+import { Rocket, Mail, Lock, ArrowLeft, Chrome, Github } from 'lucide-react';
 import { Logo } from '@/app/components/Logo';
 
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 
-type Mode = "signin" | "signup" | "ready";
+type Mode = "signin" | "signup" | "forgot_password" | "magic_link";
+
+// Simple Google Icon Component since lucide-react doesn't have brand icons usually
+const GoogleIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.21l.81-.63z" fill="#FBBC05" />
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+    </svg>
+);
+
 
 export function AuthModal({
   open,
@@ -26,21 +35,49 @@ export function AuthModal({
 }) {
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [mode, setMode] = useState<Mode>("signin");
   const [isLoading, setIsLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captchaRef = React.useRef<HCaptcha>(null);
   
-  const canSubmit = useMemo(() => email.trim().includes("@"), [email]);
+  const canSubmit = useMemo(() => {
+      if (mode === 'magic_link' || mode === 'forgot_password') {
+          return email.trim().includes("@");
+      }
+      return email.trim().includes("@") && password.length >= 6;
+  }, [email, password, mode]);
 
   const handleOpenChange = (next: boolean) => {
     if (!next) {
         setMode("signin");
         setEmail("");
+        setPassword("");
         setCaptchaToken(null);
         captchaRef.current?.resetCaptcha();
     }
     onOpenChange(next);
+  };
+
+  const handleSocialAuth = async (provider: 'google' | 'github') => {
+      if (!isSupabaseConfigured || !supabase) {
+          toast.error(t('auth.noSupabase'));
+          return;
+      }
+      setIsLoading(true);
+      try {
+          const { error } = await supabase.auth.signInWithOAuth({
+              provider,
+              options: {
+                  redirectTo: window.location.origin,
+              },
+          });
+          if (error) throw error;
+      } catch (e: any) {
+          console.error("Social auth error:", e);
+          toast.error(e.message || "Failed to sign in with " + provider);
+          setIsLoading(false);
+      }
   };
 
   const handleAuth = async () => {
@@ -49,11 +86,10 @@ export function AuthModal({
       return;
     }
 
-    const trimmed = email.trim();
-    if (!trimmed) return;
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) return;
 
-    // Supabase often requires Captcha for Magic Link (Sign In) too
-    if (!captchaToken) {
+    if (!captchaToken && (mode === 'signup' || mode === 'magic_link')) {
         toast.error("Please complete the captcha.");
         return;
     }
@@ -61,54 +97,70 @@ export function AuthModal({
     setIsLoading(true);
     const emailRedirectTo = window.location.origin;
 
-    console.log("Supabase Auth Debug:", {
-        url: import.meta.env.VITE_SUPABASE_URL,
-        keyStart: import.meta.env.VITE_SUPABASE_ANON_KEY ? import.meta.env.VITE_SUPABASE_ANON_KEY.substring(0, 10) + "..." : "MISSING",
-        redirect: emailRedirectTo,
-        hasCaptcha: !!captchaToken
-    });
-
-    const authAction = async () => {
-        console.log("Starting auth action...", { email: trimmed, redirect: emailRedirectTo });
-        
-        const { data, error } = await supabase.auth.signInWithOtp({
-            email: trimmed,
-            options: { 
-                emailRedirectTo,
-                captchaToken,
-            },
-        });
-
-        if (error) {
-            console.error("Supabase returned error:", error);
-            // Log specifically for SMTP or Captcha hints
-            console.log("Error status:", error.status);
-            console.log("Error message:", error.message);
-            throw error;
-        }
-        
-        console.log("Auth action successful. Data:", data);
-        return data;
-    };
-
-    const authPromise = authAction();
-    toast.promise(authPromise, {
-      loading: mode === "signin" ? t('auth.signingIn') || "Signing in..." : t('auth.creatingAccount') || "Creating your account...",
-      success: t('auth.success') || "Magic link sent! Check your inbox.",
-      error: (e: any) => {
-          console.error("Toast caught error:", e);
-          captchaRef.current?.resetCaptcha();
-          setCaptchaToken(null);
-          // Show the actual error message from Supabase in the Toast
-          return `Error: ${e.message || "Authentication failed"}`;
-      },
-    });
-
     try {
-        await authPromise;
-        setMode("ready");
-    } catch (err) {
-        console.error("Auth error details:", err);
+        let error;
+        let data;
+
+        if (mode === 'signin') {
+             const res = await supabase.auth.signInWithPassword({
+                 email: trimmedEmail,
+                 password,
+             });
+             error = res.error;
+             data = res.data;
+             if (!error) {
+                 toast.success(t('auth.welcomeBack') || "Welcome back!");
+                 onOpenChange(false);
+             }
+        } else if (mode === 'signup') {
+            const res = await supabase.auth.signUp({
+                email: trimmedEmail,
+                password,
+                options: {
+                    emailRedirectTo,
+                    captchaToken: captchaToken || undefined,
+                },
+            });
+            error = res.error;
+            data = res.data;
+            if (!error) {
+                 if (data.user && !data.session) {
+                     toast.success("Please check your email to confirm your account.");
+                 } else {
+                     toast.success("Account created successfully!");
+                     onOpenChange(false);
+                 }
+            }
+        } else if (mode === 'magic_link') {
+             const res = await supabase.auth.signInWithOtp({
+                 email: trimmedEmail,
+                 options: { 
+                     emailRedirectTo,
+                     captchaToken: captchaToken || undefined,
+                 },
+             });
+             error = res.error;
+            if (!error) {
+                toast.success(t('auth.success') || "Magic link sent! Check your inbox.");
+            }
+        } else if (mode === 'forgot_password') {
+            const res = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
+                redirectTo: `${window.location.origin}/reset-password`,
+                captchaToken: captchaToken || undefined,
+            });
+            error = res.error;
+            if (!error) {
+                 toast.success("Password reset link sent to your email.");
+            }
+        }
+
+        if (error) throw error;
+
+    } catch (e: any) {
+        console.error("Auth error:", e);
+        toast.error(e.message || "Authentication failed");
+        captchaRef.current?.resetCaptcha();
+        setCaptchaToken(null);
     } finally {
         setIsLoading(false);
     }
@@ -121,17 +173,22 @@ export function AuthModal({
             {/* Background Decorative Gradient */}
             <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-blue-600/10 via-transparent to-transparent -z-10" />
 
-            <DialogHeader className="mb-8">
-              <Logo className="w-12 h-12 rounded-2xl mb-6 shadow-xl transform -rotate-6" />
-              <DialogTitle className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                {mode === "ready" ? t('auth.checkEmail') || "Check your email" : 
-                 mode === "signin" ? t('auth.welcomeBack') || "Welcome back" : 
-                 t('auth.createAccount') || "Start your journey"}
+            <DialogHeader className="mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                  <Logo className="w-10 h-10 rounded-xl shadow-lg" />
+                  <span className="font-bold text-xl tracking-tight text-zinc-900 dark:text-white">Vector</span>
+              </div>
+              <DialogTitle className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                {mode === "signin" ? t('auth.welcomeBack') || "Welcome back" : 
+                 mode === "signup" ? t('auth.createAccount') || "Create an account" :
+                 mode === "forgot_password" ? "Reset Password" :
+                 "Sign in with Magic Link"}
               </DialogTitle>
-              <DialogDescription className="text-zinc-500 dark:text-zinc-400 text-lg">
-                {mode === "ready" ? t('auth.sentDesc') || "We've sent a magic link to your inbox." : 
-                 mode === "signin" ? t('auth.signinDesc') || "Sign in to continue your goal architecture." :
-                 t('auth.signupDesc') || "Join Vector to build deconstructed goal blueprints."}
+              <DialogDescription className="text-zinc-500 dark:text-zinc-400">
+                {mode === "signin" ? "Enter your credentials to access your account." :
+                 mode === "signup" ? "Start building your goal architecture today." :
+                 mode === "forgot_password" ? "Enter your email to receive a reset link." :
+                 "We'll send a magic link to your email."}
               </DialogDescription>
             </DialogHeader>
 
@@ -142,79 +199,151 @@ export function AuthModal({
               </div>
             )}
 
-            {mode !== "ready" ? (
-              <div className="space-y-6">
-                <div className="flex flex-col gap-6">
-                  <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 ml-1" htmlFor="email">
-                    {t('auth.emailAddress') || "Email Address"}
-                  </label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                    disabled={isLoading}
-                    autoFocus
-                    className="h-14 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 text-lg focus:ring-2 focus:ring-blue-500/20 transition-all dark:text-white"
-                  />
-                </div>
-                
-                {/* hCaptcha (Required for both Sign In and Sign Up if Supabase protection is enabled) */}
-                <div className="flex justify-center my-4">
-                    <HCaptcha
-                        ref={captchaRef}
-                        sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-000000000001"}
-                        onVerify={(token) => setCaptchaToken(token)}
-                        onExpire={() => setCaptchaToken(null)}
-                    />
-                </div>
-                
-                <Button 
-                    className="h-14 w-full bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-[0.98] rounded-2xl text-lg font-bold shadow-xl shadow-black/10 transition-all disabled:opacity-50" 
-                    onClick={handleAuth} 
-                    disabled={!canSubmit || isLoading || !captchaToken}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center gap-2">
-                         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                         {t('auth.loading') || "Processing..."}
+            <div className="space-y-4">
+                {/* Social Auth Buttons */}
+                {(mode === 'signin' || mode === 'signup') && (
+                    <div className="grid grid-cols-2 gap-3">
+                        <Button 
+                            variant="outline" 
+                            className="h-12 rounded-xl border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 dark:text-white flex items-center gap-2"
+                            onClick={() => handleSocialAuth('google')}
+                            disabled={isLoading}
+                        >
+                            <GoogleIcon className="w-5 h-5" />
+                            Google
+                        </Button>
+                        <Button 
+                            variant="outline" 
+                            className="h-12 rounded-xl border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 dark:text-white flex items-center gap-2"
+                            onClick={() => handleSocialAuth('github')}
+                            disabled={isLoading}
+                        >
+                            <Github className="w-5 h-5" />
+                            GitHub
+                        </Button>
                     </div>
-                  ) : (
-                    mode === "signin" ? t('auth.continueSignIn') || "Sign In with Magic Link" : t('auth.continueSignUp') || "Create Account"
-                  )}
-                </Button>
+                )}
 
-                <div className="text-center">
-                    <button 
-                        onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-                        className="text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white text-sm font-medium transition-colors cursor-pointer"
-                    >
-                        {mode === "signin" ? t('auth.needAccount') || "Don't have an account? Sign up" : t('auth.haveAccount') || "Already have an account? Sign in"}
-                    </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="rounded-2xl bg-zinc-50 dark:bg-zinc-900 p-6 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 text-center">
-                  <div className="mb-4 text-zinc-900 dark:text-white font-semibold">
-                       {t('auth.sentTo') || "Link sent to"}: <span className="text-blue-600 dark:text-blue-400 break-all">{email.trim()}</span>
+                {(mode === 'signin' || mode === 'signup') && (
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-zinc-200 dark:border-zinc-800" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-white dark:bg-zinc-950 px-2 text-zinc-500">Or continue with</span>
+                        </div>
+                    </div>
+                )}
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 ml-1" htmlFor="email">
+                      {t('auth.emailAddress') || "Email Address"}
+                    </label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                      disabled={isLoading}
+                      className="h-12 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-xl px-4 focus:ring-2 focus:ring-blue-500/20 transition-all dark:text-white"
+                    />
                   </div>
-                  <p className="text-sm">
-                      {t('auth.checkSpam') || "If you don't see it, check your spam folder."}
-                  </p>
+                  
+                  {(mode === 'signin' || mode === 'signup') && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 ml-1" htmlFor="password">
+                            Password
+                            </label>
+                            {mode === 'signin' && (
+                                <button 
+                                    onClick={() => setMode('forgot_password')}
+                                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                >
+                                    Forgot password?
+                                </button>
+                            )}
+                        </div>
+                        <Input
+                        id="password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                        disabled={isLoading}
+                        className="h-12 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-xl px-4 focus:ring-2 focus:ring-blue-500/20 transition-all dark:text-white"
+                        />
+                      </div>
+                  )}
+                  
+                  {/* Captcha for Sign Up, Magic Link, Forgot Password */}
+                  {(mode === 'signup' || mode === 'magic_link' || mode === 'forgot_password') && (
+                    <div className="flex justify-center my-2 scale-90 origin-center">
+                        <HCaptcha
+                            ref={captchaRef}
+                            sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-000000000001"}
+                            onVerify={(token) => setCaptchaToken(token)}
+                            onExpire={() => setCaptchaToken(null)}
+                        />
+                    </div>
+                  )}
+
+                  <Button 
+                      className="h-12 w-full bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-[0.98] rounded-xl font-bold shadow-xl shadow-black/10 transition-all disabled:opacity-50" 
+                      onClick={handleAuth} 
+                      disabled={!canSubmit || isLoading || ((mode === 'signup' || mode === 'magic_link') && !captchaToken)}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                           <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                           Processing...
+                      </div>
+                    ) : (
+                      mode === "signin" ? "Sign In" : 
+                      mode === "signup" ? "Create Account" :
+                      mode === "forgot_password" ? "Send Reset Link" :
+                      "Send Magic Link"
+                    )}
+                  </Button>
                 </div>
-                <Button 
-                    className="w-full bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700 h-14 rounded-2xl font-bold transition-all" 
-                    variant="ghost" 
-                    onClick={() => setMode("signin")}
-                >
-                  {t('auth.tryDifferentEmail') || "Try a different email"}
-                </Button>
-              </div>
-            )}
+
+                <div className="flex flex-col gap-2 text-center mt-4">
+                    {mode === 'signin' ? (
+                        <>
+                            <button 
+                                onClick={() => setMode("signup")}
+                                className="text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white text-sm transition-colors cursor-pointer"
+                            >
+                                Don't have an account? <span className="font-semibold underline">Sign up</span>
+                            </button>
+                            <button 
+                                onClick={() => setMode("magic_link")}
+                                className="text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white text-xs transition-colors cursor-pointer flex items-center justify-center gap-1"
+                            >
+                                <Mail className="w-3 h-3" /> Sign in with Magic Link instead
+                            </button>
+                        </>
+                    ) : mode === 'signup' ? (
+                        <button 
+                            onClick={() => setMode("signin")}
+                            className="text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white text-sm transition-colors cursor-pointer"
+                        >
+                            Already have an account? <span className="font-semibold underline">Sign in</span>
+                        </button>
+                    ) : (
+                        <button 
+                            onClick={() => setMode("signin")}
+                            className="text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white text-sm transition-colors cursor-pointer flex items-center justify-center gap-2"
+                        >
+                            <ArrowLeft className="w-4 h-4" /> Back to Sign In
+                        </button>
+                    )}
+                </div>
+            </div>
             
-            <p className="mt-8 text-center text-xs text-zinc-400 dark:text-zinc-500 px-4">
+            <p className="mt-6 text-center text-[10px] text-zinc-400 dark:text-zinc-600 px-4">
                 {t('auth.terms') || "By continuing, you agree to Vector's Terms of Service and Privacy Policy."}
             </p>
         </div>
@@ -222,4 +351,5 @@ export function AuthModal({
     </Dialog>
   );
 }
+
 
