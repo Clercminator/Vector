@@ -591,6 +591,15 @@ export const translations = {
     'profile.provider.github': 'GitHub',
     'profile.provider.email': 'Email',
 
+    // Account Deletion
+    'profile.dangerZone': 'Danger Zone',
+    'profile.deleteAccount': 'Delete Account',
+    'profile.deleteAccountDescription': 'Once you delete your account, there is no going back. Please be certain.',
+    'profile.deleteAccountConfirmationTitle': 'Are you absolutely sure?',
+    'profile.deleteAccountConfirmationDesc': 'This action cannot be undone. This will permanently delete your account and remove your data from our servers.',
+    'profile.typeDeleteToConfirm': 'Type DELETE to confirm',
+    'profile.confirmDelete': 'Delete Account',
+
   },
   es: {
     // ... existing ES translations (managed by next block below via AllowMultiple? No, need to be careful with structure)
@@ -625,6 +634,15 @@ export const translations = {
     'profile.provider.google': 'Google',
     'profile.provider.github': 'GitHub',
     'profile.provider.email': 'Correo',
+
+    // Account Deletion
+    'profile.dangerZone': 'Zona de Peligro',
+    'profile.deleteAccount': 'Eliminar Cuenta',
+    'profile.deleteAccountDescription': 'Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate.',
+    'profile.deleteAccountConfirmationTitle': '¿Estás absolutamente seguro?',
+    'profile.deleteAccountConfirmationDesc': 'Esta acción no se puede deshacer. Esto eliminará permanentemente tu cuenta y borrará tus datos de nuestros servidores.',
+    'profile.typeDeleteToConfirm': 'Escribe DELETE para confirmar',
+    'profile.confirmDelete': 'Eliminar Cuenta',
 
     // Navigation
     'nav.frameworks': 'Métodos',
