@@ -85,6 +85,7 @@ export const useGoalWizard = ({
     const [isListening, setIsListening] = useState(false);
     const [isSpeechSupported, setIsSpeechSupported] = useState(false);
     const recognitionRef = useRef<any>(null);
+    const lastAppendedContentRef = useRef<string | null>(null);
 
     // Framework Config Helper (Simplified for hook)
     const getFrameworkConfig = (fw: string) => {
@@ -448,6 +449,7 @@ export const useGoalWizard = ({
 
             let didReceiveAgentMessage = false;
             let eventIndex = 0;
+            lastAppendedContentRef.current = null;
 
             for await (const event of generator) {
                 eventIndex++;
@@ -565,19 +567,22 @@ export const useGoalWizard = ({
                          const textToShow = cleanText.trim() || rawContent.trim().slice(0, 2000) || (t('common.loading') ?? '…');
                          LOG(`event #${eventIndex} WILL setMessages`, { rawContentLength: rawContent.length, cleanTextLength: cleanText.length, textToShowPreview: textToShow.slice(0, 120), suggestionsCount: suggestions.length });
     
-                         setMessages(prev => {
-                             const lastPrev = prev[prev.length - 1];
-                             if (lastPrev && lastPrev.role === 'ai' && lastPrev.content === textToShow) {
-                                 LOG(`event #${eventIndex} setMessages: no-op (duplicate)`);
-                                 return prev;
-                             }
-                             if (!textToShow) {
-                                 LOG(`event #${eventIndex} setMessages: no-op (empty textToShow)`);
-                                 return prev;
-                             }
-                             LOG(`event #${eventIndex} setMessages: APPENDING ai message`, { length: textToShow.length });
-                             return [...prev, { role: 'ai', content: textToShow }];
-                         });
+                         if (lastAppendedContentRef.current === textToShow) {
+                             LOG(`event #${eventIndex} setMessages: no-op (duplicate, ref check)`);
+                         } else if (!textToShow) {
+                             LOG(`event #${eventIndex} setMessages: no-op (empty textToShow)`);
+                         } else {
+                             lastAppendedContentRef.current = textToShow;
+                             setMessages(prev => {
+                                 const lastPrev = prev[prev.length - 1];
+                                 if (lastPrev && lastPrev.role === 'ai' && lastPrev.content === textToShow) {
+                                     LOG(`event #${eventIndex} setMessages: no-op (duplicate, state check)`);
+                                     return prev;
+                                 }
+                                 LOG(`event #${eventIndex} setMessages: APPENDING ai message`, { length: textToShow.length });
+                                 return [...prev, { role: 'ai', content: textToShow }];
+                             });
+                         }
     
                          if (suggestions.length > 0) setSuggestionChips(suggestions);
                          if (draft) {

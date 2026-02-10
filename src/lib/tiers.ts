@@ -4,7 +4,7 @@
  * IDs: architect (free), standard (paid), max (premium), enterprise (contact).
  */
 
-export type FrameworkId = 'first-principles' | 'pareto' | 'rpm' | 'eisenhower' | 'okr' | 'dsss' | 'mandalas' | 'general';
+export type FrameworkId = 'first-principles' | 'pareto' | 'rpm' | 'eisenhower' | 'okr' | 'dsss' | 'mandalas' | 'gps' | 'misogi' | 'general';
 
 /** Frameworks available on free tier (first 3). Standard and Max get all. */
 export const FREE_TIER_FRAMEWORKS: FrameworkId[] = ['first-principles', 'pareto', 'rpm', 'general'];
@@ -17,6 +17,8 @@ export const ALL_FRAMEWORKS: FrameworkId[] = [
   'okr',
   'dsss',
   'mandalas',
+  'gps',
+  'misogi',
   'general',
 ];
 
