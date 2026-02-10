@@ -110,7 +110,10 @@ export const prompts = {
       Goal: "{{goal}}"
       History: {{history}}
       
-      CRITICAL: Use ONLY information the user has explicitly stated in the conversation. NEVER invent or assume facts (e.g. "student", "10 hours/week", "employed") that the user did not provide. If the user did not answer a question, leave that part generic or use a placeholder like "User to specify" rather than fabricating.
+      CRITICAL - NO FABRICATION:
+      - Use ONLY facts the user explicitly stated. Do NOT invent: job status, hours available, student status, income, location, timeline, or any other details.
+      - If you asked "What's your situation?" or "How many hours per week?" and the user never answered, write "User to specify" or keep it generic.
+      - If the user said "learn Portuguese for Brazil," do NOT add "10 hours/week" or "student" unless they said it. Infer nothing.
       
       Output Schema (JSON ONLY):
       - 'pareto': { "type": "pareto", "vital": ["..."], "trivial": ["..."] }

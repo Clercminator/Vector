@@ -72,6 +72,23 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
               );
           }
   
+          if (draft.type === 'first-principles') {
+              return (
+                  <div className="space-y-4">
+                      <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200/80 dark:border-zinc-700/80">
+                          <h5 className="font-bold text-slate-600 dark:text-slate-400 text-sm mb-2">{t('fp.truths')}</h5>
+                          <ul className="space-y-2 pl-4 border-l-2 border-slate-200 dark:border-zinc-600">
+                              {(draft.truths || []).map((truth: string, i: number) => <li key={i} className="text-sm text-gray-700 dark:text-gray-300">{truth}</li>)}
+                          </ul>
+                      </div>
+                      <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-blue-100 dark:border-blue-900/40">
+                          <h5 className="font-bold text-blue-600 dark:text-blue-400 text-sm mb-2">{t('fp.newApproach')}</h5>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{draft.newApproach || "..."}</p>
+                      </div>
+                  </div>
+              );
+          }
+
           if (draft.type === 'okr') {
               return (
                   <div className="space-y-4">

@@ -427,7 +427,10 @@ export const useGoalWizard = ({
         setSuggestionChips([]);
         setIsTyping(true);
         setIsAgentRunning(true);
-    
+        // Clear previous result/draft so we don't show a stale blueprint from checkpoint restore
+        setResult(null);
+        setDraftResult(null);
+
         try {
             const config = { configurable: { thread_id: threadId }, streamMode: ["updates", "values"] as const };
             const allowedFrameworks = TIER_CONFIGS[tier]?.allowedFrameworks || [];
@@ -466,16 +469,19 @@ export const useGoalWizard = ({
                 const updateKeys = updateData && typeof updateData === 'object' ? Object.keys(updateData) : [];
                 LOG(`event #${eventIndex}`, { isTuple, streamMode, updateKeys, hasMessages: !!(updateData?.messages), messagesLength: updateData?.messages?.length });
 
-                // Handle blueprint from stream. LangGraph emits:
-                // - "values": full state → updateData.blueprint
-                // - "updates": node output keyed by node name → updateData.draft?.blueprint (or other nodes)
-                let blueprintFromStream = updateData?.blueprint ?? (updateData?.draft?.blueprint ?? null);
-                if (!blueprintFromStream && streamMode === 'updates' && updateData && typeof updateData === 'object') {
-                    for (const key of Object.keys(updateData)) {
-                        const nodeOut = (updateData as Record<string, unknown>)[key];
-                        if (nodeOut && typeof nodeOut === 'object' && (nodeOut as any).blueprint) {
-                            blueprintFromStream = (nodeOut as any).blueprint;
-                            break;
+                // Handle blueprint from stream. ONLY promote from "updates" (draft node in current run).
+                // "values" events can contain checkpoint-restored state with a STALE blueprint from a
+                // previous conversation—promoting that hides the input and shows wrong/old content.
+                let blueprintFromStream: any = null;
+                if (streamMode === 'updates' && updateData && typeof updateData === 'object') {
+                    blueprintFromStream = updateData?.draft?.blueprint ?? null;
+                    if (!blueprintFromStream) {
+                        for (const key of Object.keys(updateData)) {
+                            const nodeOut = (updateData as Record<string, unknown>)[key];
+                            if (nodeOut && typeof nodeOut === 'object' && (nodeOut as any).blueprint) {
+                                blueprintFromStream = (nodeOut as any).blueprint;
+                                break;
+                            }
                         }
                     }
                 }
