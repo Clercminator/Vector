@@ -572,13 +572,18 @@ export const useGoalWizard = ({
                          } else if (!textToShow) {
                              LOG(`event #${eventIndex} setMessages: no-op (empty textToShow)`);
                          } else {
-                             lastAppendedContentRef.current = textToShow;
                              setMessages(prev => {
+                                 const alreadyExists = prev.some(m => m.role === 'ai' && m.content === textToShow);
+                                 if (alreadyExists) {
+                                     LOG(`event #${eventIndex} setMessages: no-op (already in state, from checkpoint)`);
+                                     return prev;
+                                 }
                                  const lastPrev = prev[prev.length - 1];
                                  if (lastPrev && lastPrev.role === 'ai' && lastPrev.content === textToShow) {
                                      LOG(`event #${eventIndex} setMessages: no-op (duplicate, state check)`);
                                      return prev;
                                  }
+                                 lastAppendedContentRef.current = textToShow;
                                  LOG(`event #${eventIndex} setMessages: APPENDING ai message`, { length: textToShow.length });
                                  return [...prev, { role: 'ai', content: textToShow }];
                              });

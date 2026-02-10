@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import { ThinkingIndicator } from './ThinkingIndicator';
+import { ScrollArea } from '@/app/components/ui/scroll-area';
 
 interface Message {
   role: 'ai' | 'user' | 'system';
@@ -26,9 +27,9 @@ export const WizardChat: React.FC<WizardChatProps> = ({
   children 
 }) => {
   return (
-    <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${draftResult ? 'lg:mr-96' : ''}`}>
-        <div className="w-full flex-1 flex flex-col overflow-y-auto min-h-0 overflow-x-hidden px-4 md:px-8 lg:px-10">
-             <div className={`mx-auto w-full space-y-2 pt-4 ${result ? 'pb-40' : 'pb-4'}`}>
+    <div className={`flex-1 flex flex-col min-w-0 min-h-0 transition-all duration-300 relative ${draftResult ? 'lg:mr-96' : ''}`}>
+        <ScrollArea className="flex-1 min-h-0 w-full">
+             <div className={`mx-auto w-full space-y-2 pt-4 px-4 md:px-8 lg:px-10 ${result ? 'pb-40' : 'pb-4'}`}>
               <AnimatePresence mode="popLayout">
                 {(messages || []).map((msg, i) => {
                   if (msg.role === 'system') {
@@ -80,7 +81,7 @@ export const WizardChat: React.FC<WizardChatProps> = ({
             {children}
             <div ref={messagesEndRef} />
           </div>
-        </div>
+        </ScrollArea>
     </div>
   );
 };
