@@ -14,14 +14,14 @@ export const setFrameworkTool = tool(async ({ framework }) => {
 });
 
 const generateBlueprintSchema = z.object({
-  reason: z.string().describe("The reason for generating the blueprint now (e.g. 'User confirmed readiness', 'Sufficient information gathered').")
+  reason: z.string().describe("Must cite the user's explicit confirmation, e.g. 'User said: Ready to generate' or 'User confirmed: Yes, proceed'.")
 });
 
 export const generateBlueprintTool = tool(async () => {
   return "READY_TO_GENERATE";
 }, {
   name: "generate_blueprint",
-  description: "Signal that you have gathered enough information and are ready to generate the final strategic blueprint. Call this when the user says 'ready', 'yes', 'listo', or when you have all necessary details.",
+  description: "ONLY call when the user has EXPLICITLY confirmed they are ready (e.g. 'yes', 'ready', 'listo', 'proceed', 'generate it'). NEVER call after YOU have asked questions—you must WAIT for the user to answer those questions and then confirm readiness. Do not assume or infer answers the user never gave.",
   schema: generateBlueprintSchema
 });
 

@@ -226,36 +226,33 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
     if (result.type === 'first-principles') {
        return (
         <Wrapper>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-8 w-full max-w-4xl mx-auto space-y-8">
-          <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-gray-200 dark:border-zinc-800 rounded-3xl p-10 shadow-lg">
-            <div className="flex items-center gap-4 mb-8">
-               <div className="w-12 h-12 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center">
-                 <span className="font-bold text-xl">1</span>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-8 w-full max-w-4xl mx-auto space-y-6">
+          <div className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-zinc-700/80 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-6">
+               <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 flex items-center justify-center font-semibold">
+                 1
                </div>
-               <h4 className="text-xl font-bold uppercase tracking-widest">{t('fp.truths')}</h4>
+               <h4 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">{t('fp.truths')}</h4>
             </div>
             <EditableList 
               items={result.truths || []} 
               onChange={(val) => updateResult(['truths'], val)}
-              itemClassName="text-xl text-gray-800 dark:text-gray-200 font-light leading-relaxed pl-6 border-l-4 border-blue-500"
+              itemClassName="text-base md:text-lg text-gray-700 dark:text-gray-200 leading-relaxed pl-5 py-2 border-l-2 border-slate-300 dark:border-zinc-600 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
             />
           </div>
-          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-3xl p-10 shadow-2xl relative overflow-hidden">
-             <div className="absolute -right-20 -top-20 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-             <div className="flex items-center gap-4 mb-6 relative z-10">
-               <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                 <span className="font-bold text-xl">2</span>
+          <div className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-blue-100 dark:border-blue-900/40 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+             <div className="flex items-center gap-3 mb-6">
+               <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-semibold">
+                 2
                </div>
-               <h4 className="text-lg font-bold text-blue-100 uppercase tracking-widest">{t('fp.newApproach')}</h4>
+               <h4 className="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">{t('fp.newApproach')}</h4>
              </div>
-             <div className="relative z-10">
-                <EditableText 
-                    value={result.newApproach} 
-                    onChange={(val) => updateResult(['newApproach'], val)} 
-                    multiline 
-                    className="text-3xl leading-relaxed font-bold bg-transparent border-white/30"
-                />
-             </div>
+             <EditableText 
+                value={result.newApproach} 
+                onChange={(val) => updateResult(['newApproach'], val)} 
+                multiline 
+                className="text-lg md:text-xl text-gray-800 dark:text-gray-100 leading-relaxed"
+             />
           </div>
         </motion.div>
         </Wrapper>

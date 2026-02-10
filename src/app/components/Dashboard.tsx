@@ -191,7 +191,7 @@ export function Dashboard({
                       <button
                         key={fw}
                         onClick={() => setFilterFramework(fw)}
-                        className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all border ${
+                        className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all border cursor-pointer ${
                             filterFramework === fw 
                             ? 'bg-black dark:bg-white text-white dark:text-black border-transparent shadow-md' 
                             : 'bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600'
@@ -226,7 +226,7 @@ export function Dashboard({
                 Retry
               </Button>
           ) : (!searchQuery && onStartWizard && (
-              <Button onClick={onStartWizard} size="lg" className="rounded-full px-8 bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-500/20">
+              <Button onClick={onStartWizard} size="lg" className="rounded-full px-8 bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-500/20 cursor-pointer">
                 {t('dashboard.createFirst')}
               </Button>
           ))}
@@ -261,7 +261,7 @@ export function Dashboard({
                             </div>
                             <button 
                                 onClick={(e) => togglePin(e, bp.id)}
-                                className={`p-2 rounded-full transition-colors hover:bg-white/50 dark:hover:bg-black/20 ${isPinned ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600 hover:text-yellow-400'}`}
+                                className={`cursor-pointer p-2 rounded-full transition-colors hover:bg-white/50 dark:hover:bg-black/20 ${isPinned ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600 hover:text-yellow-400'}`}
                             >
                                 <Star size={20} fill={isPinned ? "currentColor" : "none"} />
                             </button>
@@ -293,7 +293,7 @@ export function Dashboard({
                                     e.stopPropagation();
                                     setDeleteId(bp.id); // Trigger dialog
                                 }}
-                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
                                 title="Delete"
                              >
                                  <Trash2 size={16} />
