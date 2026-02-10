@@ -444,10 +444,11 @@ export const useGoalWizard = ({
     
             const generator = await graph.stream(inputs, config);
             LOG('graph.stream() returned generator, starting for-await loop');
+            isRunningRef.current = true;
 
             let didReceiveAgentMessage = false;
             let eventIndex = 0;
-            
+
             for await (const event of generator) {
                 eventIndex++;
                 if (!isMounted.current || !isRunningRef.current) {
