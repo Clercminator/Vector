@@ -87,6 +87,7 @@ export const useGoalWizard = ({
     const recognitionRef = useRef<any>(null);
     const lastAppendedContentRef = useRef<string | null>(null);
     const hasDeductedCreditThisRunRef = useRef(false);
+    const seenDraftUpdateThisRunRef = useRef(false);
 
     // Framework Config Helper (Simplified for hook)
     const getFrameworkConfig = (fw: string) => {
@@ -455,6 +456,7 @@ export const useGoalWizard = ({
             let eventIndex = 0;
             lastAppendedContentRef.current = null;
             hasDeductedCreditThisRunRef.current = false;
+            seenDraftUpdateThisRunRef.current = false;
 
             for await (const event of generator) {
                 eventIndex++;
@@ -469,9 +471,13 @@ export const useGoalWizard = ({
                 const updateKeys = updateData && typeof updateData === 'object' ? Object.keys(updateData) : [];
                 LOG(`event #${eventIndex}`, { isTuple, streamMode, updateKeys, hasMessages: !!(updateData?.messages), messagesLength: updateData?.messages?.length });
 
-                // Handle blueprint from stream. ONLY promote from "updates" (draft node in current run).
-                // "values" events can contain checkpoint-restored state with a STALE blueprint from a
-                // previous conversation—promoting that hides the input and shows wrong/old content.
+                // Track when draft node ran this turn (for fallback promotion from values)
+                if (streamMode === 'updates' && updateData && typeof updateData === 'object' && 'draft' in updateData) {
+                    seenDraftUpdateThisRunRef.current = true;
+                }
+
+                // Handle blueprint from stream. Prefer "updates" (draft node). Fallback: "values" only when
+                // we've seen a draft update this run (avoids promoting stale checkpoint blueprints).
                 let blueprintFromStream: any = null;
                 if (streamMode === 'updates' && updateData && typeof updateData === 'object') {
                     blueprintFromStream = updateData?.draft?.blueprint ?? null;
@@ -484,6 +490,9 @@ export const useGoalWizard = ({
                             }
                         }
                     }
+                }
+                if (!blueprintFromStream && streamMode === 'values' && seenDraftUpdateThisRunRef.current && updateData?.blueprint) {
+                    blueprintFromStream = updateData.blueprint;
                 }
                 if (blueprintFromStream && typeof blueprintFromStream === 'object' && blueprintFromStream.type && !(blueprintFromStream as any).isTeaser) {
                     const bp = blueprintFromStream as BlueprintResult;
