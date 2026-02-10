@@ -86,6 +86,7 @@ export const useGoalWizard = ({
     const [isSpeechSupported, setIsSpeechSupported] = useState(false);
     const recognitionRef = useRef<any>(null);
     const lastAppendedContentRef = useRef<string | null>(null);
+    const hasDeductedCreditThisRunRef = useRef(false);
 
     // Framework Config Helper (Simplified for hook)
     const getFrameworkConfig = (fw: string) => {
@@ -450,6 +451,7 @@ export const useGoalWizard = ({
             let didReceiveAgentMessage = false;
             let eventIndex = 0;
             lastAppendedContentRef.current = null;
+            hasDeductedCreditThisRunRef.current = false;
 
             for await (const event of generator) {
                 eventIndex++;
@@ -463,7 +465,57 @@ export const useGoalWizard = ({
                 const updateData: any = isTuple ? event[1] : event;
                 const updateKeys = updateData && typeof updateData === 'object' ? Object.keys(updateData) : [];
                 LOG(`event #${eventIndex}`, { isTuple, streamMode, updateKeys, hasMessages: !!(updateData?.messages), messagesLength: updateData?.messages?.length });
-                
+
+                // Handle blueprint from stream. LangGraph emits:
+                // - "values": full state → updateData.blueprint
+                // - "updates": node output keyed by node name → updateData.draft?.blueprint (or other nodes)
+                let blueprintFromStream = updateData?.blueprint ?? (updateData?.draft?.blueprint ?? null);
+                if (!blueprintFromStream && streamMode === 'updates' && updateData && typeof updateData === 'object') {
+                    for (const key of Object.keys(updateData)) {
+                        const nodeOut = (updateData as Record<string, unknown>)[key];
+                        if (nodeOut && typeof nodeOut === 'object' && (nodeOut as any).blueprint) {
+                            blueprintFromStream = (nodeOut as any).blueprint;
+                            break;
+                        }
+                    }
+                }
+                if (blueprintFromStream && typeof blueprintFromStream === 'object' && blueprintFromStream.type && !(blueprintFromStream as any).isTeaser) {
+                    const bp = blueprintFromStream as BlueprintResult;
+                    if (isMounted.current) {
+                        let graphMessages = updateData?.messages;
+                        if (!graphMessages && streamMode === 'updates' && updateData && typeof updateData === 'object') {
+                            for (const key of Object.keys(updateData)) {
+                                const nodeOut = (updateData as Record<string, unknown>)[key];
+                                if (nodeOut && typeof nodeOut === 'object' && Array.isArray((nodeOut as any).messages)) {
+                                    graphMessages = (nodeOut as any).messages;
+                                    break;
+                                }
+                            }
+                        }
+                        const userAnswers = Array.isArray(graphMessages)
+                            ? graphMessages.filter((m: any) => m.role === 'user' || m._getType?.() === 'human').map((m: any) => typeof m.content === 'string' ? m.content : String(m.content ?? ''))
+                            : [];
+                        setResult(bp);
+                        setFinalAnswers(userAnswers.length > 0 ? userAnswers : messages.filter(m => m.role === 'user').map(m => m.content));
+                        setDraftResult((prev: any) => prev ? { ...prev, ...bp } : bp);
+                        if (supabase && !hasDeductedCreditThisRunRef.current) {
+                            hasDeductedCreditThisRunRef.current = true;
+                            supabase.auth.getUser().then(({ data: { user } }) => {
+                                if (user?.id) {
+                                    supabase.rpc('decrement_credits', { amount_to_deduct: 1 })
+                                        .then(({ data, error }) => {
+                                            if (!error && data != null) {
+                                                setCredits(data as number);
+                                            }
+                                        })
+                                        .catch(() => {});
+                                }
+                            });
+                        }
+                        LOG('blueprint from stream → setResult, decrement_credits');
+                    }
+                }
+
                 if (streamMode === 'values' && updateData?.messages) {
                     LOG(`event #${eventIndex} values.messages`, { count: updateData.messages.length, lastRole: updateData.messages[updateData.messages.length - 1]?.role ?? updateData.messages[updateData.messages.length - 1]?.type });
                 }
@@ -564,13 +616,15 @@ export const useGoalWizard = ({
                              continue;
                          }
                          const { cleanText, suggestions, draft } = extractContent(rawContent);
-                         const textToShow = cleanText.trim() || rawContent.trim().slice(0, 2000) || (t('common.loading') ?? '…');
+                         const textToShow = (cleanText.trim() || rawContent.trim().slice(0, 2000)).trim();
+                         const loadingPlaceholders = ['Loading...', 'Loading..', 'Loading', 'Cargando...', 'Carregando...', 'Chargement...', 'Laden...'];
+const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToShow) || textToShow === (t('common.loading') ?? 'Loading...');
                          LOG(`event #${eventIndex} WILL setMessages`, { rawContentLength: rawContent.length, cleanTextLength: cleanText.length, textToShowPreview: textToShow.slice(0, 120), suggestionsCount: suggestions.length });
     
                          if (lastAppendedContentRef.current === textToShow) {
                              LOG(`event #${eventIndex} setMessages: no-op (duplicate, ref check)`);
-                         } else if (!textToShow) {
-                             LOG(`event #${eventIndex} setMessages: no-op (empty textToShow)`);
+                         } else if (!textToShow || isLoadingPlaceholder) {
+                             LOG(`event #${eventIndex} setMessages: no-op (empty or loading placeholder)`);
                          } else {
                              setMessages(prev => {
                                  const alreadyExists = prev.some(m => m.role === 'ai' && m.content === textToShow);
@@ -675,6 +729,23 @@ export const useGoalWizard = ({
         setResult(newResult);
     };
 
+    const promoteDraftToResult = () => {
+        if (!draftResult || !draftResult.type || draftResult.isTeaser) return;
+        setResult(draftResult as BlueprintResult);
+        setFinalAnswers(messages.filter(m => m.role === 'user').map(m => m.content));
+        if (supabase) {
+            supabase.auth.getUser().then(({ data: { user } }) => {
+                if (user?.id) {
+                    supabase.rpc('decrement_credits', { amount_to_deduct: 1 })
+                        .then(({ data, error }) => {
+                            if (!error && data != null) setCredits(data as number);
+                        })
+                        .catch(() => {});
+                }
+            });
+        }
+    };
+
     const handleSave = async () => {
         const answers = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
         const bp: Blueprint = {
@@ -728,6 +799,7 @@ export const useGoalWizard = ({
         handleSafeRestart,
         handleSave,
         updateResult,
+        promoteDraftToResult,
         toggleHardMode
     };
 };

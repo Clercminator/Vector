@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, FileText } from 'lucide-react';
+import { X, FileText, CheckCircle2 } from 'lucide-react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { useLanguage } from '@/app/components/language-provider';
 
@@ -33,13 +33,19 @@ interface WizardDraftProps {
     showMobileDraft: boolean;
     setShowMobileDraft: (show: boolean) => void;
     draftPulse?: boolean;
+    onFinalize?: () => void;
+    isTyping?: boolean;
+    isAgentRunning?: boolean;
 }
 
 export const WizardDraft: React.FC<WizardDraftProps> = ({
     draftResult,
     showMobileDraft,
     setShowMobileDraft,
-    draftPulse = false
+    draftPulse = false,
+    onFinalize,
+    isTyping = false,
+    isAgentRunning = false
 }) => {
     const { t } = useLanguage();
 
@@ -116,7 +122,7 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
                          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                              <span className="capitalize">{draft.type?.replace('-', ' ') || "Plan"}</span>
                          </h3>
-                         <p className="text-xs text-gray-400 mt-1">Live Blueprint Preview</p>
+                         <p className="text-xs text-gray-400 mt-1">Building your plan – updates as we talk</p>
                      </div>
                      {draft.score !== undefined && <ScoreIndicator score={draft.score} />}
                  </div>
@@ -130,7 +136,7 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
     return (
         <>
             {/* Desktop Drawer */}
-            <motion.div 
+             <motion.div 
                initial={{ opacity: 0, x: 50 }}
                animate={{ opacity: 1, x: 0 }}
                exit={{ opacity: 0, x: 50 }}
@@ -138,9 +144,18 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
              >
                 <div className="flex items-center gap-2 mb-6 text-gray-400 uppercase tracking-widest text-xs font-bold">
                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    Live Draft
+                    {isTyping || isAgentRunning ? 'Live Draft' : 'Your Blueprint'}
                 </div>
-                <div className="pointer-events-none opacity-80 scale-90 origin-top">
+                {!draftResult?.isTeaser && draftResult?.type && onFinalize && !isTyping && !isAgentRunning && (
+                    <button
+                        onClick={onFinalize}
+                        className="w-full mb-6 py-3 px-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-semibold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-lg"
+                    >
+                        <CheckCircle2 size={18} />
+                        {t('wizard.viewFullBlueprint')}
+                    </button>
+                )}
+                <div className={`origin-top ${!draftResult?.isTeaser && draftResult?.type ? '' : 'pointer-events-none opacity-80 scale-90'}`}>
                     <ErrorBoundary name="Live Draft">
                       {renderDraftContent(draftResult)}
                     </ErrorBoundary>
@@ -170,12 +185,23 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
                         <div className="flex-none p-4 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between">
                             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500">
                                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                Live Draft
+                                {isTyping || isAgentRunning ? 'Live Draft' : 'Your Blueprint'}
                             </div>
-                            <button onClick={() => setShowMobileDraft(false)} className="p-2 bg-gray-100 dark:bg-zinc-800 rounded-full">
+                            <button onClick={() => setShowMobileDraft(false)} className="p-2 bg-gray-100 dark:bg-zinc-800 rounded-full" aria-label="Close draft panel">
                                 <X size={16} />
                             </button>
                         </div>
+                        {!draftResult?.isTeaser && draftResult?.type && onFinalize && !isTyping && !isAgentRunning && (
+                            <div className="flex-none px-4 pb-4">
+                                <button
+                                    onClick={onFinalize}
+                                    className="w-full py-3 px-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-semibold flex items-center justify-center gap-2"
+                                >
+                                    <CheckCircle2 size={18} />
+                                    {t('wizard.viewFullBlueprint')}
+                                </button>
+                            </div>
+                        )}
                         <div className="flex-grow overflow-y-auto p-6">
                              <ErrorBoundary name="Mobile Draft">
                                {renderDraftContent(draftResult)}

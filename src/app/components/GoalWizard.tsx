@@ -46,6 +46,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
       handleSafeRestart,
       handleSave,
       updateResult,
+      promoteDraftToResult,
       toggleHardMode
   } = useGoalWizard(props);
 
@@ -147,6 +148,9 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                 showMobileDraft={showMobileDraft}
                 setShowMobileDraft={setShowMobileDraft}
                 draftPulse={draftPulse}
+                onFinalize={promoteDraftToResult}
+                isTyping={isTyping}
+                isAgentRunning={isAgentRunning}
              />
         )}
       </div>
@@ -161,28 +165,28 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
           {/* Calendar Export */}
           <button 
              onClick={handleExport} 
-             disabled={!TIER_CONFIGS[props.tier || 'free'].canExportCalendar}
+             disabled={!TIER_CONFIGS[props.tier || 'architect'].canExportCalendar}
              className={`flex items-center gap-2 px-6 py-3 rounded-full shadow-lg transition-all font-medium cursor-pointer ${
-                 !TIER_CONFIGS[props.tier || 'free'].canExportCalendar 
+                 !TIER_CONFIGS[props.tier || 'architect'].canExportCalendar 
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                   : 'bg-blue-600 text-white hover:shadow-xl'
              }`}
           >
-             {TIER_CONFIGS[props.tier || 'free'].canExportCalendar ? <Calendar size={18} /> : <Lock size={16} />}
+             {TIER_CONFIGS[props.tier || 'architect'].canExportCalendar ? <Calendar size={18} /> : <Lock size={16} />}
              {t('wizard.export')}
           </button>
 
           {/* PDF Export */}
           <button 
              onClick={handlePdfExport} 
-             disabled={!TIER_CONFIGS[props.tier || 'free'].canExportPdf}
+             disabled={!TIER_CONFIGS[props.tier || 'architect'].canExportPdf}
              className={`flex items-center gap-2 px-6 py-3 rounded-full shadow-lg transition-all font-medium ${
-                 !TIER_CONFIGS[props.tier || 'free'].canExportPdf 
+                 !TIER_CONFIGS[props.tier || 'architect'].canExportPdf 
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                   : 'bg-red-600 text-white hover:shadow-xl'
              }`}
           >
-             {TIER_CONFIGS[props.tier || 'free'].canExportPdf ? <Download size={18} /> : <Lock size={16} />}
+             {TIER_CONFIGS[props.tier || 'architect'].canExportPdf ? <Download size={18} /> : <Lock size={16} />}
              PDF
           </button>
 

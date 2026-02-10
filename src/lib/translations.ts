@@ -290,6 +290,7 @@ export const translations = {
     'wizard.exportIcs': "Downloaded a .ics file.",
     'wizard.exportError': "Failed to export calendar events.",
     'wizard.saveSuccess': "Blueprint saved successfully!",
+    'wizard.viewFullBlueprint': 'View full blueprint, save & export',
     'wizard.pdfSuccess': "PDF Downloaded!",
     'wizard.ruleBased': " (Rule-based due to low credits)",
     
@@ -578,6 +579,7 @@ export const translations = {
     'wizard.exportIcs': "ICS file downloaded.",
     'wizard.exportError': "Error exporting events.",
     'wizard.saveSuccess': "Plan saved successfully!",
+    'wizard.viewFullBlueprint': 'View full blueprint, save & export',
     'wizard.pdfSuccess': "PDF downloaded!",
     'wizard.ruleBased': " (Rule-based due to low credits)",
 
@@ -1403,6 +1405,7 @@ export const translations = {
     'wizard.exportIcs': "Arquivo .ics baixado.",
     'wizard.exportError': "Erro ao exportar eventos.",
     'wizard.saveSuccess': "Projeto salvo com sucesso!",
+    'wizard.viewFullBlueprint': 'Ver plano completo, salvar e exportar',
     'wizard.pdfSuccess': "PDF Baixado!",
     'wizard.ruleBased': " (Baseado em regras devido a poucos créditos)",
 
@@ -1731,6 +1734,7 @@ export const translations = {
     'wizard.exportIcs': "Fichier .ics téléchargé.",
     'wizard.exportError': "Échec de l'exportation des événements.",
     'wizard.saveSuccess': "Plan enregistré avec succès !",
+    'wizard.viewFullBlueprint': 'Voir le plan complet, enregistrer et exporter',
     'wizard.pdfSuccess': "PDF Téléchargé !",
     'wizard.ruleBased': " (Basé sur des règles en raison de crédits faibles)",
 
@@ -2057,6 +2061,7 @@ export const translations = {
     'wizard.exportIcs': ".ics Datei heruntergeladen.",
     'wizard.exportError': "Fehler beim Exportieren der Termine.",
     'wizard.saveSuccess': "Plan erfolgreich gespeichert!",
+    'wizard.viewFullBlueprint': 'Vollständigen Plan anzeigen, speichern & exportieren',
     'wizard.pdfSuccess': "PDF Heruntergeladen!",
     'wizard.ruleBased': " (Regelbasiert wegen weniger Credits)",
 

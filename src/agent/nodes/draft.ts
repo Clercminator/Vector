@@ -35,7 +35,11 @@ export const draftNode = async (state: AgentStateType) => {
 
   try {
     const blueprint = JSON.parse(toParse);
-    return { blueprint, messages: [new AIMessage("Here is your strategic blueprint.")] };
+    const frameworkLabel = framework ? String(framework).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '';
+    const closingMessage = frameworkLabel
+      ? `Your ${frameworkLabel} blueprint is ready below. Review your personalized plan and refine as needed.`
+      : "Your blueprint is ready below. Review your personalized plan and refine as needed.";
+    return { blueprint, messages: [new AIMessage(closingMessage)] };
   } catch (e) {
     return { messages: [new AIMessage("Error generating blueprint. Please try again.")] };
   }
