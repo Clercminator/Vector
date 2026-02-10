@@ -90,7 +90,7 @@ export function AuthModal({
     if (!trimmedEmail) return;
 
     if (!captchaToken && (mode === 'signup' || mode === 'magic_link')) {
-        toast.error("Please complete the captcha.");
+        toast.error(t('auth.completeCaptcha'));
         return;
     }
 
@@ -109,7 +109,7 @@ export function AuthModal({
              error = res.error;
              data = res.data;
              if (!error) {
-                 toast.success(t('auth.welcomeBack') || "Welcome back!");
+                 toast.success(t('auth.welcomeBack'));
                  onOpenChange(false);
              }
         } else if (mode === 'signup') {
@@ -179,16 +179,16 @@ export function AuthModal({
                   <span className="font-bold text-xl tracking-tight text-zinc-900 dark:text-white">Vector</span>
               </div>
               <DialogTitle className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                {mode === "signin" ? t('auth.welcomeBack') || "Welcome back" : 
-                 mode === "signup" ? t('auth.createAccount') || "Create an account" :
-                 mode === "forgot_password" ? "Reset Password" :
-                 "Sign in with Magic Link"}
+                {mode === "signin" ? t('auth.welcomeBack') : 
+                 mode === "signup" ? t('auth.createAccount') :
+                 mode === "forgot_password" ? t('auth.resetPassword') :
+                 t('auth.continueSignIn')}
               </DialogTitle>
               <DialogDescription className="text-zinc-500 dark:text-zinc-400">
-                {mode === "signin" ? "Enter your credentials to access your account." :
-                 mode === "signup" ? "Start building your goal architecture today." :
-                 mode === "forgot_password" ? "Enter your email to receive a reset link." :
-                 "We'll send a magic link to your email."}
+                {mode === "signin" ? t('auth.credentialsDesc') :
+                 mode === "signup" ? t('auth.signupDesc2') :
+                 mode === "forgot_password" ? t('auth.resetDesc') :
+                 t('auth.magicLinkDesc')}
               </DialogDescription>
             </DialogHeader>
 
@@ -230,7 +230,7 @@ export function AuthModal({
                             <span className="w-full border-t border-zinc-200 dark:border-zinc-800" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-white dark:bg-zinc-950 px-2 text-zinc-500">Or continue with</span>
+                            <span className="bg-white dark:bg-zinc-950 px-2 text-zinc-500">{t('auth.orContinueWith')}</span>
                         </div>
                     </div>
                 )}
@@ -238,12 +238,12 @@ export function AuthModal({
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 ml-1" htmlFor="email">
-                      {t('auth.emailAddress') || "Email Address"}
+                      {t('auth.emailAddress')}
                     </label>
                     <Input
                       id="email"
                       type="email"
-                      placeholder="you@example.com"
+                      placeholder={t('auth.placeholder')}
                       value={email}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                       disabled={isLoading}
@@ -255,14 +255,14 @@ export function AuthModal({
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                             <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 ml-1" htmlFor="password">
-                            Password
+                            {t('auth.password')}
                             </label>
                             {mode === 'signin' && (
                                 <button 
                                     onClick={() => setMode('forgot_password')}
                                     className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
                                 >
-                                    Forgot password?
+                                    {t('auth.forgotPassword')}
                                 </button>
                             )}
                         </div>
@@ -298,13 +298,13 @@ export function AuthModal({
                     {isLoading ? (
                       <div className="flex items-center gap-2">
                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                           Processing...
+                           {t('auth.loading')}
                       </div>
                     ) : (
-                      mode === "signin" ? "Sign In" : 
-                      mode === "signup" ? "Create Account" :
-                      mode === "forgot_password" ? "Send Reset Link" :
-                      "Send Magic Link"
+                      mode === "signin" ? t('auth.signIn') : 
+                      mode === "signup" ? t('auth.continueSignUp') :
+                      mode === "forgot_password" ? t('auth.sendResetLink') :
+                      t('auth.sendMagicLink')
                     )}
                   </Button>
                 </div>
@@ -316,13 +316,13 @@ export function AuthModal({
                                 onClick={() => setMode("signup")}
                                 className="text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white text-sm transition-colors cursor-pointer"
                             >
-                                Don't have an account? <span className="font-semibold underline">Sign up</span>
+                                {t('auth.needAccount')}
                             </button>
                             <button 
                                 onClick={() => setMode("magic_link")}
                                 className="text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white text-xs transition-colors cursor-pointer flex items-center justify-center gap-1"
                             >
-                                <Mail className="w-3 h-3" /> Sign in with Magic Link instead
+                                <Mail className="w-3 h-3" /> {t('auth.signInWithMagicLink')}
                             </button>
                         </>
                     ) : mode === 'signup' ? (
@@ -330,21 +330,21 @@ export function AuthModal({
                             onClick={() => setMode("signin")}
                             className="text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white text-sm transition-colors cursor-pointer"
                         >
-                            Already have an account? <span className="font-semibold underline">Sign in</span>
+                            {t('auth.haveAccount')}
                         </button>
                     ) : (
                         <button 
                             onClick={() => setMode("signin")}
                             className="text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white text-sm transition-colors cursor-pointer flex items-center justify-center gap-2"
                         >
-                            <ArrowLeft className="w-4 h-4" /> Back to Sign In
+                            <ArrowLeft className="w-4 h-4" /> {t('auth.backToSignIn')}
                         </button>
                     )}
                 </div>
             </div>
             
             <p className="mt-6 text-center text-[10px] text-zinc-400 dark:text-zinc-600 px-4">
-                {t('auth.terms') || "By continuing, you agree to Vector's Terms of Service and Privacy Policy."}
+                {t('auth.terms')}
             </p>
         </div>
       </DialogContent>

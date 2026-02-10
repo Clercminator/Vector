@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { translations, Language } from '@/lib/translations';
+import { translations, Language, SUPPORTED_LANGUAGES } from '@/lib/translations';
 
 interface LanguageContextType {
   language: Language;
@@ -9,8 +9,21 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+function getBrowserLanguage(): Language {
+  if (typeof navigator === 'undefined') return 'en';
+  const raw = navigator.language || (navigator as any).userLanguage || '';
+  const code = raw.split(/[-_]/)[0].toLowerCase();
+  const supported = SUPPORTED_LANGUAGES.map((x) => x.code);
+  if (supported.includes(code as Language)) return code as Language;
+  return 'en';
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem('vector.language') as Language | null;
+    if (saved && Object.keys(translations).includes(saved)) return saved;
+    return getBrowserLanguage();
+  });
 
   useEffect(() => {
     const saved = localStorage.getItem('vector.language') as Language;

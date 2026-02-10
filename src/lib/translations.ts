@@ -170,6 +170,14 @@ export const translations = {
     'auth.signingIn': 'Signing in...',
     'auth.creatingAccount': 'Creating your account...',
     'auth.success': 'Magic link sent! Check your inbox.',
+    'auth.credentialsDesc': 'Enter your credentials to access your account.',
+    'auth.signupDesc2': 'Start building your goal architecture today.',
+    'auth.resetPassword': 'Reset Password',
+    'auth.resetDesc': 'Enter your email to receive a reset link.',
+    'auth.magicLinkDesc': "We'll send a magic link to your email.",
+    'auth.signIn': 'Sign In',
+    'auth.sendMagicLink': 'Send Magic Link',
+    'auth.completeCaptcha': 'Please complete the captcha.',
 
     // Dashboard
     // Dashboard
@@ -286,6 +294,7 @@ export const translations = {
     'wizard.refineError': "I couldn't update the blueprint. Please try clarifying your request.",
     'wizard.configError': "AI is not configured for refinement.",
     'wizard.creditError': "You have 0 credits. Upgrade to continue!",
+    'wizard.lockedError': "This framework is not included in your plan. Upgrade to use it.",
     'wizard.exportSuccess': "Exported to Google Calendar!",
     'wizard.exportIcs': "Downloaded a .ics file.",
     'wizard.exportError': "Failed to export calendar events.",
@@ -575,6 +584,7 @@ export const translations = {
     'wizard.refineError': "I couldn't update the plan. Please try to clarify your request.",
     'wizard.configError': "AI is not configured for refinement.",
     'wizard.creditError': "You have 0 credits. Upgrade required!",
+    'wizard.lockedError': "This framework is not included in your plan. Upgrade to use it.",
     'wizard.exportSuccess': "Exported to Google Calendar!",
     'wizard.exportIcs': "ICS file downloaded.",
     'wizard.exportError': "Error exporting events.",
@@ -838,6 +848,14 @@ export const translations = {
     'auth.signingIn': 'Iniciando sesión...',
     'auth.creatingAccount': 'Creando tu cuenta...',
     'auth.success': '¡Enlace enviado! Revisa tu correo.',
+    'auth.credentialsDesc': 'Introduce tus datos para acceder a tu cuenta.',
+    'auth.signupDesc2': 'Empieza a construir tu arquitectura de objetivos hoy.',
+    'auth.resetPassword': 'Restablecer contraseña',
+    'auth.resetDesc': 'Introduce tu correo para recibir un enlace de restablecimiento.',
+    'auth.magicLinkDesc': 'Te enviaremos un enlace mágico a tu correo.',
+    'auth.signIn': 'Iniciar sesión',
+    'auth.sendMagicLink': 'Enviar enlace mágico',
+    'auth.completeCaptcha': 'Completa el captcha, por favor.',
 
     // Dashboard
     // Dashboard
@@ -948,6 +966,7 @@ export const translations = {
     'wizard.loaded': 'Plano cargado. Puedes exportarlo o reiniciar para reconstruirlo.',
     'wizard.welcome': "¡Hola! Soy tu {0}. Vamos a diseñar tu ambición.",
     'wizard.agentStart': "Dime, ¿qué tienes en mente?",
+    'wizard.lockedError': "Este marco no está incluido en tu plan. Actualiza para usarlo.",
     // Framework Titles & Questions
     'fp.title': 'Goal Planner Generator',
     'fp.q1': "¡Hola! Soy tu Goal Planner Generator. Si estás aquí es porque buscas un cambio real y necesitas una estrategia sólida. Muchos fallan por falta de un plan de acción constante, pero estás en el lugar correcto. Cuéntame: ¿qué objetivo quieres alcanzar, en cuánto tiempo y qué importancia tiene para ti? Crearemos un plan a tu medida. Cuantos más detalles compartas, mejor será el resultado. Es momento de cambiar tu vida.",
@@ -1401,6 +1420,7 @@ export const translations = {
     'wizard.refineError': "Não consegui atualizar o projeto. Tente esclarecer seu pedido.",
     'wizard.configError': "IA não configurada para refinamento.",
     'wizard.creditError': "Você tem 0 créditos. Atualize seu plano!",
+    'wizard.lockedError': "Este framework não está incluído no seu plano. Atualize para usá-lo.",
     'wizard.exportSuccess': "Exportado para o Google Calendar!",
     'wizard.exportIcs': "Arquivo .ics baixado.",
     'wizard.exportError': "Erro ao exportar eventos.",
@@ -1730,6 +1750,7 @@ export const translations = {
     'wizard.refineError': "Je n'ai pas pu mettre à jour le plan. Veuillez essayer de clarifier votre demande.",
     'wizard.configError': "L'IA n'est pas configurée pour l'affinement.",
     'wizard.creditError': "Vous avez 0 crédits. Mettez votre plan à niveau !",
+    'wizard.lockedError': "Ce framework n'est pas inclus dans votre offre. Passez à une offre supérieure pour l'utiliser.",
     'wizard.exportSuccess': "Exporté vers Google Calendar !",
     'wizard.exportIcs': "Fichier .ics téléchargé.",
     'wizard.exportError': "Échec de l'exportation des événements.",
@@ -2057,6 +2078,7 @@ export const translations = {
     'wizard.refineError': "Konnte den Plan nicht aktualisieren. Bitte versuchen Sie, Ihre Anfrage zu präzisieren.",
     'wizard.configError': "KI ist nicht für Verfeinerung konfiguriert.",
     'wizard.creditError': "Sie haben 0 Credits. Upgrade erforderlich!",
+    'wizard.lockedError': "Dieses Framework ist in Ihrem Plan nicht enthalten. Upgraden Sie, um es zu nutzen.",
     'wizard.exportSuccess': "Erfolgreich zu Google Calendar exportiert!",
     'wizard.exportIcs': ".ics Datei heruntergeladen.",
     'wizard.exportError': "Fehler beim Exportieren der Termine.",
