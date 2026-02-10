@@ -61,7 +61,7 @@ export const WizardInput: React.FC<WizardInputProps> = ({
             value={inputValue} 
             onChange={(e) => setInputValue(e.target.value)} 
             disabled={isTyping || isAgentRunning || isOffline}
-            placeholder={isOffline ? "You are offline. Please reconnect to continue." : (isTyping ? "Agent is thinking..." : isListening ? "Listening..." : t('wizard.placeholder'))}
+            placeholder={isOffline ? "You are offline. Please reconnect to continue." : (isTyping ? "Agent is thinking..." : isListening ? "Listening..." : (t('wizard.placeholder') || 'Write your answer...'))}
             className={`w-full bg-gray-100 dark:bg-zinc-800 text-black dark:text-white rounded-[2rem] pl-12 pr-14 py-4 focus:outline-none focus:ring-2 focus:ring-black/5 dark:focus:ring-white/10 shadow-inner transition-all ${isOffline ? 'opacity-50 cursor-not-allowed pl-24' : ''}`}
         />
         {/* Offline Indicator in Input Area */}

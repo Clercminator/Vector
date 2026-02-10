@@ -25,13 +25,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   const t = (key: string): string => {
-    const keys = key.split('.');
-    let current: any = translations[language];
-    
-    // Direct lookup for now since our structure is flat-ish strings or just nested once
-    // Actually our structure in translations.ts is flat keys like 'nav.frameworks'
-    // so we can just look it up directly.
-    return current[key] || key;
+    const current = translations[language] ?? translations.en;
+    const value = current?.[key];
+    if (value != null && typeof value === 'string') return value;
+    const en = translations.en as Record<string, string>;
+    return en?.[key] ?? key;
   };
 
   return (

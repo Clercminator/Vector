@@ -385,6 +385,25 @@ export const useGoalWizard = ({
         }
     };
 
+    /** Normalize OpenRouter/LangChain message content to string. Handles: string, array of { text?, content? }, single block object. */
+    const normalizeMessageContent = (content: unknown): string | null => {
+        if (content == null) return null;
+        if (typeof content === 'string') return content;
+        if (Array.isArray(content)) {
+            return content.map((c: any) => {
+                if (typeof c === 'string') return c;
+                if (c && typeof c === 'object') return c.text ?? c.content ?? '';
+                return '';
+            }).join('');
+        }
+        if (typeof content === 'object' && content !== null) {
+            const c = content as Record<string, unknown>;
+            if (typeof c.text === 'string') return c.text;
+            if (typeof c.content === 'string') return c.content;
+        }
+        return String(content);
+    };
+
     // --- Actions ---
 
     const runAgent = async (userText: string) => {
@@ -404,7 +423,7 @@ export const useGoalWizard = ({
         setIsAgentRunning(true);
     
         try {
-            const config = { configurable: { thread_id: threadId }, streamMode: "updates" as const };
+            const config = { configurable: { thread_id: threadId }, streamMode: ["updates", "values"] as const };
             const allowedFrameworks = TIER_CONFIGS[tier]?.allowedFrameworks || [];
             const currentLang = t('language_code') || 'en';
             const inputs = {
@@ -431,27 +450,20 @@ export const useGoalWizard = ({
             for await (const event of generator) {
                 if (!isMounted.current || !isAgentRunning) break; 
                 
-                // LangGraph "updates" mode can return:
-                // 1. [nodeName, stateUpdate] (Tuple)
-                // 2. { nodeName: stateUpdate } (Object)
-                // 3. ["updates", { nodeName: stateUpdate }] (Envelope?)
-                
+                // LangGraph stream can yield: single mode -> raw chunk; multi mode streamMode: ["updates", "values"] -> [mode, chunk].
+                // "updates" chunk: { nodeName: stateUpdate }. "values" chunk: full state.
+                // OpenRouter/LLM: AIMessage with content (string or content blocks) and optional tool_calls; we show content even when tool_calls exist.
+                let streamMode: string | null = null;
                 let updateData: any = event;
-                
-                // Handle Tuple [key, val]
                 if (Array.isArray(event) && event.length === 2 && typeof event[0] === 'string') {
-                    // Check if it's the "updates" envelope or just a node update
-                    if (event[0] === 'updates') {
-                         updateData = event[1];
-                    } else {
-                         // It's likely [nodeName, value]
-                         updateData = event[1];
-                    }
+                    streamMode = event[0];
+                    updateData = event[1];
+                } else if (event && typeof event === 'object') {
+                    updateData = event;
                 }
 
                 // Handle Frame Switching (can be nested or root)
-                const frameworkSetter = updateData?.framework_setter || (event?.[0] === 'framework_setter' ? event[1] : null);
-                
+                const frameworkSetter = updateData?.framework_setter || (Array.isArray(event) && event?.[0] === 'framework_setter' && event?.[1] ? event[1] : null);
                 if (frameworkSetter) {
                      const newFw = frameworkSetter.framework;
                     if (newFw && newFw !== framework && onSwitchFramework) {
@@ -459,81 +471,80 @@ export const useGoalWizard = ({
                         setDraftResult(null); 
                         const isLocked = !canUseFramework(tier, newFw as FrameworkId);
                         onSwitchFramework(newFw as FrameworkId, isLocked); 
-                        if (frameworkSetter.messages) {
+                        if (frameworkSetter.messages && frameworkSetter.messages.length > 0) {
                              const lastMsg = frameworkSetter.messages[frameworkSetter.messages.length - 1];
-                             setMessages(prev => [...prev, { role: 'ai', content: lastMsg.content as string }]);
-                             didReceiveAgentMessage = true;
+                             const content = normalizeMessageContent(lastMsg?.content);
+                             if (content) {
+                                 setMessages(prev => [...prev, { role: 'ai', content }]);
+                                 didReceiveAgentMessage = true;
+                             }
                         }
                     }
                 }
 
-                // Debug Logging
-                console.log("Agent Stream Event:", event);
-
-                // Extract Messages
-                // We scour the updateData for any 'messages' array, regardless of node name
+                // Extract Messages: from "values" (full state) or "updates" (node output)
                 let messageList: any[] | null = null;
-                
-                // Direct check (if updateData IS the state)
-                if (updateData?.messages && Array.isArray(updateData.messages)) {
+                if (streamMode === 'values' && updateData?.messages && Array.isArray(updateData.messages)) {
                     messageList = updateData.messages;
-                } 
-                // Nested check (if updateData is { ask: { messages: ... } })
-                else if (updateData && typeof updateData === 'object') {
-                    for (const key of Object.keys(updateData)) {
-                        const val = (updateData as Record<string, unknown>)[key];
-                        if (val && typeof val === 'object' && Array.isArray((val as any).messages)) {
-                            messageList = (val as any).messages;
-                            break;
+                } else if (updateData?.messages && Array.isArray(updateData.messages)) {
+                    messageList = updateData.messages;
+                } else if (updateData && typeof updateData === 'object') {
+                    if (streamMode === 'values') {
+                        messageList = updateData.messages ?? null;
+                    } else {
+                        for (const key of Object.keys(updateData)) {
+                            const val = (updateData as Record<string, unknown>)[key];
+                            if (val && typeof val === 'object' && Array.isArray((val as any).messages)) {
+                                messageList = (val as any).messages;
+                                break;
+                            }
                         }
                     }
                 }
 
                 if (messageList && messageList.length > 0) {
-                     // Get the last AI message
+                     // Get the last AI message (prefer last message that has AI content)
                      let lastMsg = messageList[messageList.length - 1];
-                     console.log("Found Message:", lastMsg);
                      
-                     // Fallback: If last is not AI, find last AI (sometimes tool calls are appended)
-                     if (lastMsg?.type !== 'ai' && lastMsg?.role !== 'ai') {
-                         const aiIdx = messageList.map((m: any) => m?.type || m?.role || m?._getType?.()).lastIndexOf('ai');
+                     const getMsgType = (m: any) => {
+                         if (!m) return undefined;
+                         if (typeof m._getType === 'function') return m._getType();
+                         if (m.type) return m.type;
+                         if (m.role === 'assistant' || m.role === 'ai') return 'ai';
+                         if (m.role === 'user') return 'human';
+                         if (m.role === 'system') return 'system';
+                         if (m.role === 'tool') return 'tool';
+                         if (m.lc_kwargs?.type) return m.lc_kwargs.type;
+                         return (m as any).constructor?.name === 'AIMessage' ? 'ai' : undefined;
+                     };
+                     
+                     if (getMsgType(lastMsg) !== 'ai') {
+                         const aiIdx = messageList.map((m: any) => getMsgType(m)).lastIndexOf('ai');
                          if (aiIdx >= 0) lastMsg = messageList[aiIdx];
                      }
                      
-                     const msgType = lastMsg?._getType?.() || lastMsg?.type || (lastMsg?.role === 'user' ? 'human' : (lastMsg?.role === 'ai' ? 'ai' : undefined));
-                     
-                     // Ensure it's not a tool call/result only
-                     const isTool = msgType === 'tool' || !!lastMsg.tool_call_id || lastMsg.name === 'set_framework' || lastMsg.name === 'generate_blueprint';
-                     
-                     // Robust AI detection: check content AND type/role
+                     const msgType = getMsgType(lastMsg);
+                     // Only treat as tool when it's a ToolMessage (tool_call_id or name = tool). AIMessage with tool_calls still has displayable content.
+                     const isTool = msgType === 'tool' || !!lastMsg?.tool_call_id || (lastMsg?.name && ['set_framework', 'generate_blueprint'].includes(lastMsg.name));
                      const isAIMessage = !isTool && (
                         msgType === 'ai' || 
                         lastMsg?.role === 'ai' ||
+                        lastMsg?.role === 'assistant' ||
                         lastMsg?.constructor?.name === 'AIMessage' ||
-                        (lastMsg?.content && msgType !== 'human' && msgType !== 'system')
+                        (lastMsg?.content != null && lastMsg?.content !== '' && msgType !== 'human' && msgType !== 'system')
                      );
 
-                     console.log("Is AI Message?", isAIMessage, "Type:", msgType, "IsTool:", isTool);
-
-                     if (isAIMessage && lastMsg?.content) {
-                         const raw = lastMsg.content;
-                         const rawContent = typeof raw === 'string' ? raw : (Array.isArray(raw) ? (raw.map((c: any) => typeof c === 'string' ? c : c?.text ?? '')).join('') : String(raw ?? ''));
+                     // Show AI message when it has any displayable content (including when tool_calls are also present, e.g. set_framework / generate_blueprint)
+                     if (isAIMessage && lastMsg?.content != null) {
+                         const rawContent = normalizeMessageContent(lastMsg.content);
+                         if (rawContent == null) continue;
                          const { cleanText, suggestions, draft } = extractContent(rawContent);
                          const textToShow = cleanText.trim() || rawContent.trim().slice(0, 2000) || (t('common.loading') ?? '…');
     
                          setMessages(prev => {
                              const lastPrev = prev[prev.length - 1];
-                             // Avoid duplication
                              if (lastPrev && lastPrev.role === 'ai' && lastPrev.content === textToShow) return prev;
                              if (!textToShow) return prev;
-                             // If the last message was AI but content changed (streaming update), update it
-                             // NOTE: Since we are using "updates" (node level), we typically get the FULL node output.
-                             // But if using a singleton agent node, it might just keep appending.
-                             // For now, we append if different.
-                             
-                             // Optimization: If the content is "..." or loading, replace it?
-                             // Currently we just append. To support true streaming updates we'd need to identify message IDs.
-                             // For now, simple append works because "updates" mode usually emits finalized node states in sequence.
                              return [...prev, { role: 'ai', content: textToShow }];
                          });
     
