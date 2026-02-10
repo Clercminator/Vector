@@ -10,6 +10,7 @@ const dynamicRoutes = frameworkIds.map(id => `/frameworks/${id}`);
 
 export default defineConfig(() => {
   return {
+    base: '/',
     plugins: [
     react(),
     tailwindcss(),
@@ -21,24 +22,8 @@ export default defineConfig(() => {
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
-      manifest: {
-        name: 'Vector',
-        short_name: 'Vector',
-        description: 'Architect Your Ambition',
-        theme_color: '#ffffff',
-        icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      }
+      manifest: false,
+      useCredentials: false,
     }),
   ],
   resolve: {
@@ -48,6 +33,7 @@ export default defineConfig(() => {
     },
   },
   build: {
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks(id) {

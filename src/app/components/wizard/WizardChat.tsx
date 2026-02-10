@@ -25,6 +25,11 @@ export const WizardChat: React.FC<WizardChatProps> = ({
   messagesEndRef,
   children 
 }) => {
+  const aiCount = (messages || []).filter(m => m.role === 'ai').length;
+  const userCount = (messages || []).filter(m => m.role === 'user').length;
+  if ((messages?.length ?? 0) > 0) {
+    console.log('[Wizard:Chat] render', { messageCount: messages?.length ?? 0, aiCount, userCount, lastRole: messages?.[messages.length - 1]?.role, lastContentPreview: messages?.[messages.length - 1]?.content?.slice(0, 60) });
+  }
   return (
     <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 relative ${draftResult ? 'lg:mr-96' : ''}`}>
         <div className="w-full flex-1 flex flex-col overflow-y-auto min-h-0 [&::-webkit-scrollbar]:hidden px-4 md:px-8 lg:px-10">

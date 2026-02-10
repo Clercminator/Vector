@@ -34,7 +34,7 @@ export const useGoalWizard = ({
     onBack,
     isPreviewMode = false 
 }: GoalWizardHookProps) => {
-    const { t } = useLanguage();
+    const { t, language: appLanguage } = useLanguage();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -406,6 +406,10 @@ export const useGoalWizard = ({
 
     // --- Actions ---
 
+    const LOG = (label: string, data?: unknown) => {
+        console.log(`[Wizard:Agent] ${label}`, data !== undefined ? data : '');
+    };
+
     const runAgent = async (userText: string) => {
         if (!userText.trim()) return;
         if (credits !== null && credits <= 0) {
@@ -425,7 +429,7 @@ export const useGoalWizard = ({
         try {
             const config = { configurable: { thread_id: threadId }, streamMode: ["updates", "values"] as const };
             const allowedFrameworks = TIER_CONFIGS[tier]?.allowedFrameworks || [];
-            const currentLang = t('language_code') || 'en';
+            const currentLang = appLanguage || 'en';
             const inputs = {
                 messages: [new HumanMessage(userText)],
                 goal: userText, 
@@ -435,31 +439,39 @@ export const useGoalWizard = ({
                 hardMode: isHardMode,
                 language: currentLang
             };
-    
-            // Wrap generation in a promise to race against timeout properly
-            // Note: graph.stream returns an AsyncGenerator, which is not a Promise, so we must consume it or wrap the creation if it was async.
-            // Since graph.stream is sync-ish (returns generator), we race the *first event* or use a wrapper.
-            // Simplified: Just start iterating. Timeouts for streams are tricky, better to rely on internal timeouts or handle hang by UI state.
-            // But to keep the "connection error" safety, we can race the first next() call.
-            
-            const generator = await graph.stream(inputs, config);
 
-            // Robust stream consumption
+            LOG('runAgent START', { threadId, framework, currentLang, goalLength: userText.length });
+    
+            const generator = await graph.stream(inputs, config);
+            LOG('graph.stream() returned generator, starting for-await loop');
+
             let didReceiveAgentMessage = false;
+            let eventIndex = 0;
             
             for await (const event of generator) {
-                if (!isMounted.current || !isAgentRunning) break; 
+                eventIndex++;
+                if (!isMounted.current || !isAgentRunning) {
+                    LOG('break: unmounted or agent stopped', { isMounted: isMounted.current, isAgentRunning });
+                    break;
+                }
                 
-                // LangGraph stream can yield: single mode -> raw chunk; multi mode streamMode: ["updates", "values"] -> [mode, chunk].
-                // "updates" chunk: { nodeName: stateUpdate }. "values" chunk: full state.
-                // OpenRouter/LLM: AIMessage with content (string or content blocks) and optional tool_calls; we show content even when tool_calls exist.
-                let streamMode: string | null = null;
-                let updateData: any = event;
-                if (Array.isArray(event) && event.length === 2 && typeof event[0] === 'string') {
-                    streamMode = event[0];
-                    updateData = event[1];
-                } else if (event && typeof event === 'object') {
-                    updateData = event;
+                const isTuple = Array.isArray(event) && event.length === 2 && typeof event[0] === 'string';
+                const streamMode: string | null = isTuple ? (event[0] as string) : null;
+                const updateData: any = isTuple ? event[1] : event;
+                const updateKeys = updateData && typeof updateData === 'object' ? Object.keys(updateData) : [];
+                LOG(`event #${eventIndex}`, { isTuple, streamMode, updateKeys, hasMessages: !!(updateData?.messages), messagesLength: updateData?.messages?.length });
+                
+                if (streamMode === 'values' && updateData?.messages) {
+                    LOG(`event #${eventIndex} values.messages`, { count: updateData.messages.length, lastRole: updateData.messages[updateData.messages.length - 1]?.role ?? updateData.messages[updateData.messages.length - 1]?.type });
+                }
+                if (streamMode !== 'values' && updateKeys.length > 0) {
+                    for (const k of updateKeys) {
+                        const v = (updateData as Record<string, unknown>)[k];
+                        if (v && typeof v === 'object' && Array.isArray((v as any).messages)) {
+                            LOG(`event #${eventIndex} nested messages under key "${k}"`, { count: (v as any).messages.length });
+                            break;
+                        }
+                    }
                 }
 
                 // Handle Frame Switching (can be nested or root)
@@ -475,6 +487,7 @@ export const useGoalWizard = ({
                              const lastMsg = frameworkSetter.messages[frameworkSetter.messages.length - 1];
                              const content = normalizeMessageContent(lastMsg?.content);
                              if (content) {
+                                 LOG('framework_setter: adding AI message', { contentPreview: content.slice(0, 80) });
                                  setMessages(prev => [...prev, { role: 'ai', content }]);
                                  didReceiveAgentMessage = true;
                              }
@@ -484,18 +497,23 @@ export const useGoalWizard = ({
 
                 // Extract Messages: from "values" (full state) or "updates" (node output)
                 let messageList: any[] | null = null;
+                let messageListSource = '';
                 if (streamMode === 'values' && updateData?.messages && Array.isArray(updateData.messages)) {
                     messageList = updateData.messages;
+                    messageListSource = 'values (direct)';
                 } else if (updateData?.messages && Array.isArray(updateData.messages)) {
                     messageList = updateData.messages;
+                    messageListSource = 'updateData.messages';
                 } else if (updateData && typeof updateData === 'object') {
                     if (streamMode === 'values') {
                         messageList = updateData.messages ?? null;
+                        messageListSource = 'values (fallback)';
                     } else {
                         for (const key of Object.keys(updateData)) {
                             const val = (updateData as Record<string, unknown>)[key];
                             if (val && typeof val === 'object' && Array.isArray((val as any).messages)) {
                                 messageList = (val as any).messages;
+                                messageListSource = `key "${key}"`;
                                 break;
                             }
                         }
@@ -503,7 +521,6 @@ export const useGoalWizard = ({
                 }
 
                 if (messageList && messageList.length > 0) {
-                     // Get the last AI message (prefer last message that has AI content)
                      let lastMsg = messageList[messageList.length - 1];
                      
                      const getMsgType = (m: any) => {
@@ -518,13 +535,13 @@ export const useGoalWizard = ({
                          return (m as any).constructor?.name === 'AIMessage' ? 'ai' : undefined;
                      };
                      
-                     if (getMsgType(lastMsg) !== 'ai') {
+                     const lastMsgType = getMsgType(lastMsg);
+                     if (lastMsgType !== 'ai') {
                          const aiIdx = messageList.map((m: any) => getMsgType(m)).lastIndexOf('ai');
                          if (aiIdx >= 0) lastMsg = messageList[aiIdx];
                      }
                      
                      const msgType = getMsgType(lastMsg);
-                     // Only treat as tool when it's a ToolMessage (tool_call_id or name = tool). AIMessage with tool_calls still has displayable content.
                      const isTool = msgType === 'tool' || !!lastMsg?.tool_call_id || (lastMsg?.name && ['set_framework', 'generate_blueprint'].includes(lastMsg.name));
                      const isAIMessage = !isTool && (
                         msgType === 'ai' || 
@@ -534,17 +551,30 @@ export const useGoalWizard = ({
                         (lastMsg?.content != null && lastMsg?.content !== '' && msgType !== 'human' && msgType !== 'system')
                      );
 
-                     // Show AI message when it has any displayable content (including when tool_calls are also present, e.g. set_framework / generate_blueprint)
+                     const contentPreview = typeof lastMsg?.content === 'string' ? lastMsg.content.slice(0, 100) : JSON.stringify(lastMsg?.content)?.slice(0, 100);
+                     LOG(`event #${eventIndex} messageList`, { source: messageListSource, count: messageList.length, msgType, isTool, isAIMessage, hasContent: lastMsg?.content != null, contentPreview });
+
                      if (isAIMessage && lastMsg?.content != null) {
                          const rawContent = normalizeMessageContent(lastMsg.content);
-                         if (rawContent == null) continue;
+                         if (rawContent == null) {
+                             LOG(`event #${eventIndex} SKIP: normalizeMessageContent returned null`);
+                             continue;
+                         }
                          const { cleanText, suggestions, draft } = extractContent(rawContent);
                          const textToShow = cleanText.trim() || rawContent.trim().slice(0, 2000) || (t('common.loading') ?? '…');
+                         LOG(`event #${eventIndex} WILL setMessages`, { rawContentLength: rawContent.length, cleanTextLength: cleanText.length, textToShowPreview: textToShow.slice(0, 120), suggestionsCount: suggestions.length });
     
                          setMessages(prev => {
                              const lastPrev = prev[prev.length - 1];
-                             if (lastPrev && lastPrev.role === 'ai' && lastPrev.content === textToShow) return prev;
-                             if (!textToShow) return prev;
+                             if (lastPrev && lastPrev.role === 'ai' && lastPrev.content === textToShow) {
+                                 LOG(`event #${eventIndex} setMessages: no-op (duplicate)`);
+                                 return prev;
+                             }
+                             if (!textToShow) {
+                                 LOG(`event #${eventIndex} setMessages: no-op (empty textToShow)`);
+                                 return prev;
+                             }
+                             LOG(`event #${eventIndex} setMessages: APPENDING ai message`, { length: textToShow.length });
                              return [...prev, { role: 'ai', content: textToShow }];
                          });
     
@@ -561,14 +591,22 @@ export const useGoalWizard = ({
                          }
                          didReceiveAgentMessage = true;
                          setIsTyping(false); 
+                     } else {
+                         if (messageList.length > 0 && !isAIMessage) {
+                             LOG(`event #${eventIndex} SKIP: not treating as AI`, { msgType, isTool, hasContent: lastMsg?.content != null });
+                         }
+                     }
+                } else {
+                     if (eventIndex <= 5 || updateKeys.length > 0) {
+                         LOG(`event #${eventIndex} no messageList`, { streamMode, updateKeys, hasUpdateDataMessages: !!(updateData?.messages) });
                      }
                 }
             }
     
+            LOG('stream loop DONE', { eventCount: eventIndex, didReceiveAgentMessage, isMounted: isMounted.current, isAgentRunning });
+    
             if (isMounted.current && !didReceiveAgentMessage && isAgentRunning) {
-                // If stream finished but no messages, it might be a silent failure or just no output.
-                // We'll log it as an error to be safe.
-                console.warn("Agent finished but no AI messages received.");
+                console.warn("[Wizard:Agent] Agent finished but no AI messages received.");
                 setMessages(prev => [...prev, { role: 'ai', content: "⚠️ **Connection Error**: I couldn't complete that thought. Please try asking again." }]);
             }
         } catch (e: any) {
