@@ -9,7 +9,7 @@ export const setFrameworkTool = tool(async ({ framework }) => {
   return `Framework switched to ${framework}.`; 
 }, {
   name: "set_framework",
-  description: "Switch the strategic framework (e.g., from 'first-principles' to 'okr'). Use this if the user explicitly asks to change methods.",
+  description: "Switch to the chosen framework and start building the plan. Call this when the user confirms they want to proceed (e.g. 'Yes', 'Proceed', 'Build it', 'Let's go'). Use the framework you just recommended.",
   schema: setFrameworkSchema
 });
 

@@ -45,7 +45,7 @@ export const WizardInput: React.FC<WizardInputProps> = ({
                  key={chip}
                  onClick={() => onRunAgent(chip)}
                  disabled={isTyping || isAgentRunning}
-                 className="px-4 py-1.5 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                 className="cursor-pointer px-4 py-1.5 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                >
                  {chip}
                </button>

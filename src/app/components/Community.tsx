@@ -218,14 +218,14 @@ export function Community({ userId, onBack, onImport, onCreate }: CommunityProps
            <div className="flex bg-gray-100 dark:bg-zinc-800 p-1 rounded-lg">
               <button 
                   onClick={() => setActiveTab('templates')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'templates' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
+                  className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'templates' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
               >
                   <LayoutGrid size={16} />
                   {t('community.title')}
               </button>
               <button 
                    onClick={() => setActiveTab('leaderboard')}
-                   className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'leaderboard' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
+                   className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'leaderboard' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
               >
                   <Trophy size={16} />
                   {t('leaderboard.title')}
@@ -252,13 +252,13 @@ export function Community({ userId, onBack, onImport, onCreate }: CommunityProps
              <div className="flex bg-gray-100 dark:bg-zinc-800 p-1 rounded-lg shrink-0">
                 <button 
                     onClick={() => setSortBy('recent')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${sortBy === 'recent' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
+                    className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium transition-all ${sortBy === 'recent' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
                 >
                     {t('community.sort.recent')}
                 </button>
                 <button 
                      onClick={() => setSortBy('top')}
-                     className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${sortBy === 'top' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
+                     className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium transition-all ${sortBy === 'top' ? 'bg-white dark:bg-black text-black dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
                 >
                     {t('community.sort.top')}
                 </button>
