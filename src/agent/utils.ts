@@ -2,14 +2,18 @@ import { ChatOpenAI } from "@langchain/openai";
 import { BaseMessage, AIMessage } from "@langchain/core/messages";
 import { tools } from "./tools";
 
-// Build LLM config. When using Supabase openrouter-proxy, we must add the apikey header
-// or the Supabase gateway rejects with "No API key found in request".
+// Build LLM config. When using Supabase openrouter-proxy, we must add the apikey (and optionally
+// Authorization) header or the Supabase gateway can reject with "No API key found" / CORS.
 const proxyUrl = import.meta.env.VITE_OPENROUTER_PROXY_URL as string | undefined;
+// Vercel typically sets VITE_SUPABASE_PUBLISHABLE_KEY; fallback to anon key
 const supabaseKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY) as string | undefined;
 const baseURL = proxyUrl || "https://openrouter.ai/api/v1";
 const llmConfig: { baseURL: string; defaultHeaders?: Record<string, string> } = { baseURL };
 if (proxyUrl && supabaseKey) {
-  llmConfig.defaultHeaders = { apikey: supabaseKey };
+  llmConfig.defaultHeaders = {
+    apikey: supabaseKey,
+    Authorization: `Bearer ${supabaseKey}`,
+  };
 }
 
 /** API key for Open Router. Prefer KEY_2 (e.g. from .env.backend) for deploy. */

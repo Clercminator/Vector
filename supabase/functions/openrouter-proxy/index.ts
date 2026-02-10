@@ -14,29 +14,33 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey, x-stainless-os, x-stainless-arch, x-stainless-platform, x-stainless-runtime, x-stainless-runtime-version, x-stainless-lang, x-stainless-package-version, x-stainless-retry-count",
 };
 
+function jsonResponse(data: unknown, status: number, headers: Record<string, string> = corsHeaders) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...headers, "Content-Type": "application/json" },
+  });
+}
+
 Deno.serve(async (req: Request): Promise<Response> => {
-  // CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders });
-  }
-
-  if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Method not allowed" }),
-      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
-
-  // Prefer OPENROUTER_API_KEY_2 (e.g. Vector key); fallback to OPENROUTER_API_KEY. Do NOT use the request body/headers — key is server-only.
-  const apiKey = (Deno.env.get("OPENROUTER_API_KEY_2") ?? Deno.env.get("OPENROUTER_API_KEY"))?.trim();
-  if (!apiKey) {
-    return new Response(
-      JSON.stringify({ error: "OPENROUTER_API_KEY_2 or OPENROUTER_API_KEY not configured in Supabase Secrets" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
-
   try {
+    // CORS preflight — required when invoking from browser (e.g. Vercel app)
+    if (req.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
+    if (req.method !== "POST") {
+      return jsonResponse({ error: "Method not allowed" }, 405);
+    }
+
+    // Prefer OPENROUTER_API_KEY_2 (e.g. Vector key); fallback to OPENROUTER_API_KEY. Do NOT use the request body/headers — key is server-only.
+    const apiKey = (Deno.env.get("OPENROUTER_API_KEY_2") ?? Deno.env.get("OPENROUTER_API_KEY"))?.trim();
+    if (!apiKey) {
+      return jsonResponse(
+        { error: "OPENROUTER_API_KEY_2 or OPENROUTER_API_KEY not configured in Supabase Secrets" },
+        500
+      );
+    }
+
     const body = await req.json();
     const res = await fetch(OPENROUTER_URL, {
       method: "POST",
@@ -48,15 +52,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
       body: JSON.stringify(body),
     });
 
-    const data = await res.json();
-    return new Response(JSON.stringify(data), {
-      status: res.status,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const raw = await res.text();
+    let data: unknown;
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      data = { error: { message: "Invalid JSON from upstream", raw: raw.slice(0, 200) } };
+    }
+    return jsonResponse(data, res.status);
   } catch (e) {
-    return new Response(
-      JSON.stringify({ error: String(e) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ error: String(e) }, 500);
   }
 });

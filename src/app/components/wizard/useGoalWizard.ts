@@ -88,6 +88,7 @@ export const useGoalWizard = ({
     const lastAppendedContentRef = useRef<string | null>(null);
     const hasDeductedCreditThisRunRef = useRef(false);
     const seenDraftUpdateThisRunRef = useRef(false);
+    const blueprintReceivedThisRunRef = useRef<BlueprintResult | null>(null);
 
     // Framework Config Helper (Simplified for hook)
     const getFrameworkConfig = (fw: string) => {
@@ -457,6 +458,7 @@ export const useGoalWizard = ({
             lastAppendedContentRef.current = null;
             hasDeductedCreditThisRunRef.current = false;
             seenDraftUpdateThisRunRef.current = false;
+            blueprintReceivedThisRunRef.current = null;
 
             for await (const event of generator) {
                 eventIndex++;
@@ -510,6 +512,7 @@ export const useGoalWizard = ({
                         const userAnswers = Array.isArray(graphMessages)
                             ? graphMessages.filter((m: any) => m.role === 'user' || m._getType?.() === 'human').map((m: any) => typeof m.content === 'string' ? m.content : String(m.content ?? ''))
                             : [];
+                        blueprintReceivedThisRunRef.current = bp;
                         setResult(bp);
                         setFinalAnswers(userAnswers.length > 0 ? userAnswers : messages.filter(m => m.role === 'user').map(m => m.content));
                         setDraftResult((prev: any) => prev ? { ...prev, ...bp } : bp);
@@ -688,6 +691,10 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
             if (isMounted.current && !didReceiveAgentMessage && isRunningRef.current) {
                 console.warn("[Wizard:Agent] Agent finished but no AI messages received.");
                 setMessages(prev => [...prev, { role: 'ai', content: "⚠️ **Connection Error**: I couldn't complete that thought. Please try asking again." }]);
+            }
+            // Ensure blueprint is applied even if React batched updates; avoids "blueprint is ready below" with no panel
+            if (isMounted.current && blueprintReceivedThisRunRef.current) {
+                setResult(blueprintReceivedThisRunRef.current);
             }
         } catch (e: any) {
             console.error("Agent Run Error:", e);
