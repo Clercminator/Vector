@@ -450,8 +450,8 @@ export const useGoalWizard = ({
             
             for await (const event of generator) {
                 eventIndex++;
-                if (!isMounted.current || !isAgentRunning) {
-                    LOG('break: unmounted or agent stopped', { isMounted: isMounted.current, isAgentRunning });
+                if (!isMounted.current || !isRunningRef.current) {
+                    LOG('break: unmounted or agent stopped', { isMounted: isMounted.current, isRunningRef: isRunningRef.current });
                     break;
                 }
                 
@@ -603,9 +603,9 @@ export const useGoalWizard = ({
                 }
             }
     
-            LOG('stream loop DONE', { eventCount: eventIndex, didReceiveAgentMessage, isMounted: isMounted.current, isAgentRunning });
+            LOG('stream loop DONE', { eventCount: eventIndex, didReceiveAgentMessage, isMounted: isMounted.current, isRunningRef: isRunningRef.current });
     
-            if (isMounted.current && !didReceiveAgentMessage && isAgentRunning) {
+            if (isMounted.current && !didReceiveAgentMessage && isRunningRef.current) {
                 console.warn("[Wizard:Agent] Agent finished but no AI messages received.");
                 setMessages(prev => [...prev, { role: 'ai', content: "⚠️ **Connection Error**: I couldn't complete that thought. Please try asking again." }]);
             }
