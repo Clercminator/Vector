@@ -9,6 +9,22 @@ interface Message {
   content: string;
 }
 
+/** If content looks like a JSON array of strings, format as markdown list for readable display. */
+function formatMessageContent(content: string): string {
+  const trimmed = content.trim();
+  if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed) && parsed.every((x) => typeof x === 'string')) {
+        return parsed.map((line: string) => `- ${line}`).join('\n');
+      }
+    } catch {
+      // not valid JSON, use as-is
+    }
+  }
+  return content;
+}
+
 interface WizardChatProps {
   messages: Message[];
   isTyping: boolean;
@@ -63,7 +79,7 @@ export const WizardChat: React.FC<WizardChatProps> = ({
                         strong: ({node, ...props}) => <strong className="font-bold text-inherit" {...props} />,
                         code: ({node, ...props}) => <code className="bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono text-pink-600 dark:text-pink-400" {...props} />,
                       }}
-                      >{msg.content}</ReactMarkdown>
+                      >{formatMessageContent(msg.content)}</ReactMarkdown>
                       </div>
                     </div>
                   </motion.div>

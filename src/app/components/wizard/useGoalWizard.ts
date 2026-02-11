@@ -288,6 +288,7 @@ export const useGoalWizard = ({
     // --- Helpers ---
 
     const clearSession = () => {
+        lastAppendedContentRef.current = null;
         localStorage.removeItem('vector_wizard_session');
         setStep(0);
         setResult(null);
@@ -389,16 +390,17 @@ export const useGoalWizard = ({
         }
     };
 
-    /** Normalize OpenRouter/LangChain message content to string. Handles: string, array of { text?, content? }, single block object. */
+    /** Normalize OpenRouter/LangChain message content to string. Handles: string, array of { text?, content? }, array of strings (e.g. tool results). */
     const normalizeMessageContent = (content: unknown): string | null => {
         if (content == null) return null;
         if (typeof content === 'string') return content;
         if (Array.isArray(content)) {
-            return content.map((c: any) => {
+            const parts = content.map((c: any) => {
                 if (typeof c === 'string') return c;
                 if (c && typeof c === 'object') return c.text ?? c.content ?? '';
                 return '';
-            }).join('');
+            }).filter(Boolean);
+            return parts.join('\n');
         }
         if (typeof content === 'object' && content !== null) {
             const c = content as Record<string, unknown>;
@@ -732,7 +734,7 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
              try {
                  await onSaveBlueprint?.(bp);
                  if (supabase) await syncBlueprintMessages(supabase, bp.id, messages);
-                 toast.success("Draft saved to 'My Blueprints'");
+                 toast.success(t('wizard.draftSavedToBlueprints'));
              } catch (e) {
                  if (!confirm("Auto-save failed. Restart anyway?")) return;
              }
