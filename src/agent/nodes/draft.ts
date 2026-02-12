@@ -34,7 +34,22 @@ export const draftNode = async (state: AgentStateType) => {
   const toParse = braceMatch ? braceMatch[0] : rawJson.replace(/```json/g, '').replace(/```/g, '').trim();
 
   try {
-    const blueprint = JSON.parse(toParse);
+    let blueprint = JSON.parse(toParse);
+
+    // Normalize so UI always has valid shape; ensure RPM plan is always an array
+    if (blueprint && blueprint.type === 'rpm') {
+      blueprint = {
+        ...blueprint,
+        result: typeof blueprint.result === 'string' ? blueprint.result : (blueprint.result != null ? String(blueprint.result) : ''),
+        purpose: typeof blueprint.purpose === 'string' ? blueprint.purpose : (blueprint.purpose != null ? String(blueprint.purpose) : ''),
+        plan: Array.isArray(blueprint.plan)
+          ? blueprint.plan.filter(Boolean).map((s: unknown) => typeof s === 'string' ? s : String(s))
+          : typeof blueprint.plan === 'string' && blueprint.plan.trim()
+            ? [blueprint.plan.trim()]
+            : [],
+      };
+    }
+
     const frameworkLabel = framework ? String(framework).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '';
     const closingMessage = frameworkLabel
       ? `Your ${frameworkLabel} blueprint is ready below. Review your personalized plan and refine as needed.`

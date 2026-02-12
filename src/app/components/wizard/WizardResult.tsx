@@ -304,7 +304,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
              </div>
              
              <EditableList 
-                items={result.plan} 
+                items={result.plan ?? []} 
                 onChange={(val) => updateResult(['plan'], val)}
                 itemClassName="font-medium text-lg text-gray-700 dark:text-gray-300"
             />

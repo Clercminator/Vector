@@ -267,7 +267,8 @@ export async function suggestFramework(
     stakes: string, 
     horizon: string, 
     userName?: string,
-    language?: string
+    language?: string,
+    extraContext?: { obstacle?: string; successLookLike?: string }
 ): Promise<{ id: FrameworkId; explanation: string } | null> {
     if (!isOpenRouterConfigured()) return null;
 
@@ -277,6 +278,8 @@ export async function suggestFramework(
     - Stakes (Risk/Importance): "${stakes}"
     - Horizon (Timeline): "${horizon}"
     ${userName ? `- User Name: ${userName}` : ''}
+    ${extraContext?.obstacle ? `- Biggest obstacle / current situation: "${extraContext.obstacle}"` : ''}
+    ${extraContext?.successLookLike ? `- What success looks like for them: "${extraContext.successLookLike}"` : ''}
     
     Task: Analyze the user's goal and select the BEST strategic framework from the list below.
     

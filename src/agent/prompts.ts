@@ -100,7 +100,7 @@ export const prompts = {
       Output Schema (JSON ONLY):
       - 'pareto': { "type": "pareto", "vital": ["One Vital Task"], "trivial": ["Upgrade to see..."], "isTeaser": true }
       - 'first-principles': { "type": "first-principles", "truths": ["One Truth..."], "newApproach": "Upgrade to reveal...", "isTeaser": true }
-      - 'rpm': { "type": "rpm", "result": "The Result...", "purpose": "Upgrade...", "plan": ["Task 1..."], "isTeaser": true }
+      - 'rpm': { "type": "rpm", "result": "The Result...", "purpose": "Upgrade...", "plan": ["One concrete step...", "Upgrade to unlock more"], "isTeaser": true }
       - 'eisenhower': { "type": "eisenhower", "q1": ["Do This..."], "q2": ["Upgrade..."], "q3": [], "q4": [], "isTeaser": true }
       - 'okr': { "type": "okr", "objective": "The Objective...", "keyResults": ["KR 1..."], "initiative": "Upgrade...", "isTeaser": true }
       
@@ -118,7 +118,7 @@ export const prompts = {
       Output Schema (JSON ONLY):
       - 'pareto': { "type": "pareto", "vital": ["..."], "trivial": ["..."] }
       - 'first-principles': { "type": "first-principles", "truths": ["..."], "newApproach": "..." }
-      - 'rpm': { "type": "rpm", "result": "...", "purpose": "...", "plan": ["..."] }
+      - 'rpm': { "type": "rpm", "result": "...", "purpose": "...", "plan": ["step 1", "step 2", ...] } — plan MUST be a non-empty array of 3–8 concrete action steps (Massive Action Plan) from the conversation. Never return an empty plan.
       - 'eisenhower': { "type": "eisenhower", "q1": [...], "q2": [...], "q3": [...], "q4": [...] }
       - 'okr': { "type": "okr", "objective": "...", "keyResults": ["..."], "initiative": "..." }
       - 'gps': { "type": "gps", "goal": "...", "plan": ["..."], "system": ["..."], "anti_goals": ["..."] }

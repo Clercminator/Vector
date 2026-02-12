@@ -31,26 +31,23 @@ export const PricingSection: React.FC<{
     const features: string[] =
       id === 'architect'
         ? [
-            t('pricing.feature.architect.frameworks').replace('{0}', String(config.allowedFrameworks.length)),
-            t('pricing.feature.architect.blueprints').replace('{0}', String(config.maxBlueprints)),
-            t('pricing.feature.architect.credits').replace('{0}', String(config.credits)),
+            t('pricing.feature.architect.plans').replace('{0}', String(config.credits)),
+            t('pricing.feature.architect.frameworks'),
             t('pricing.feature.architect.ai'),
           ]
         : id === 'standard'
           ? [
-              t('pricing.feature.standard.credits').replace('{0}', String(config.credits)),
+              t('pricing.feature.standard.plans').replace('{0}', String(config.credits)),
               t('pricing.feature.standard.frameworks'),
-              t('pricing.feature.standard.blueprints').replace('{0}', String(config.maxBlueprints)),
               t('pricing.feature.standard.ai'),
             ]
           : id === 'max'
             ? [
-                t('pricing.feature.max.credits').replace('{0}', String(config.credits)),
+                t('pricing.feature.max.plans').replace('{0}', String(config.credits)),
                 t('pricing.feature.max.frameworks'),
                 t('pricing.feature.max.calendar'),
                 t('pricing.feature.max.pdf'),
                 t('pricing.feature.max.priority'),
-                t('pricing.feature.max.blueprints').replace('{0}', String(config.maxBlueprints)),
               ]
             : [
                 t('pricing.feature.enterprise.workspaces'),

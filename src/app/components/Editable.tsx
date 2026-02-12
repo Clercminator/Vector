@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Pencil, Check, X, Plus, Trash2 } from 'lucide-react';
+import { useLanguage } from '@/app/components/language-provider';
 
 interface EditableTextProps {
   value: string;
@@ -92,7 +93,7 @@ interface EditableListProps {
 }
 
 export const EditableList: React.FC<EditableListProps> = ({ items = [], onChange, className = '', itemClassName = '', placeholder = "New Item" }) => {
-  
+  const { t } = useLanguage();
   const updateItem = (index: number, newVal: string) => {
     const newItems = [...items];
     newItems[index] = newVal;
@@ -134,7 +135,7 @@ export const EditableList: React.FC<EditableListProps> = ({ items = [], onChange
         className="flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-blue-500 transition-colors mt-2 px-2 py-1 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
       >
         <Plus size={16} />
-        Add Item
+        {t('common.addItem')}
       </button>
     </div>
   );

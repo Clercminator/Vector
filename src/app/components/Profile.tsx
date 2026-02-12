@@ -84,7 +84,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
     bio: '',
     avatar_url: '',
     level: 1,
-    credits: 5,
+    credits: 1,
     extra_credits: 0,
     credits_expires_at: '',
     points: 0,
@@ -377,7 +377,7 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
               </div>
           </div>
 
-          {/* Plan & Credits Section */}
+          {/* Plan & plans count */}
           <div className="bg-gradient-to-br from-zinc-900 to-black dark:from-zinc-900 dark:to-zinc-950 p-8 rounded-3xl border border-zinc-800 shadow-2xl text-white">
              <div className="flex justify-between items-start mb-6">
                 <div>
@@ -393,7 +393,7 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
              </div>
 
              <div className="space-y-4 mb-8">
-                {/* Normal Credits */}
+                {/* Plans (included in tier) */}
                 <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/10">
                    <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center">
@@ -418,7 +418,7 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
                    </Button>
                 </div>
 
-                {/* Extra Credits */}
+                {/* Bonus plans */}
                 {/* Always show extra credits section to be explicit, or only if > 0? User said "don't appear visually anywhere", implying they want to see it. */}
                 <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/10">
                    <div className="flex items-center gap-3">

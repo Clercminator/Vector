@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, ArrowRight, Loader2, X, Target, AlertTriangle, Clock } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Sparkles, ArrowRight, Loader2, X, Target, AlertTriangle, Clock, Mountain, Trophy } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { suggestFramework } from '@/lib/openrouter';
 import { FrameworkId } from '@/lib/blueprints';
@@ -18,6 +18,8 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
   const [objective, setObjective] = useState('');
   const [stakes, setStakes] = useState('');
   const [horizon, setHorizon] = useState('');
+  const [obstacle, setObstacle] = useState('');
+  const [successLookLike, setSuccessLookLike] = useState('');
   
   const [loading, setLoading] = useState(false);
   const [suggestion, setSuggestion] = useState<FrameworkId | null>(null);
@@ -30,7 +32,17 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
     setExplanation('');
     
     try {
-        const result = await suggestFramework(objective, stakes, horizon, undefined, language === 'es' ? 'Spanish' : 'English');
+        const extra = (obstacle.trim() || successLookLike.trim())
+          ? { obstacle: obstacle.trim() || undefined, successLookLike: successLookLike.trim() || undefined }
+          : undefined;
+        const result = await suggestFramework(
+          objective,
+          stakes,
+          horizon,
+          undefined,
+          language === 'es' ? 'Spanish' : 'English',
+          extra
+        );
         if (result) {
             setSuggestion(result.id);
             setExplanation(result.explanation);
@@ -64,7 +76,7 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
                 </div>
                 <p className="text-gray-500 dark:text-gray-400 max-w-md">{t('intake.subtitle')}</p>
             </div>
-            <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
+            <button type="button" onClick={onClose} aria-label={t('common.close') || 'Close'} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
                 <X size={24} />
             </button>
         </div>
@@ -112,6 +124,32 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
                                 onChange={(e) => setHorizon(e.target.value)}
                             />
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
+                            <Mountain size={16} className="inline mr-2 text-gray-400" />
+                            {t('intake.obstacle.label')}
+                        </label>
+                        <input 
+                            className="w-full h-12 p-4 bg-gray-50 dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 focus:border-black dark:focus:border-white focus:ring-0 transition-all dark:text-white placeholder:text-gray-400"
+                            placeholder={t('intake.obstacle.placeholder')}
+                            value={obstacle}
+                            onChange={(e) => setObstacle(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
+                            <Trophy size={16} className="inline mr-2 text-gray-400" />
+                            {t('intake.successLookLike.label')}
+                        </label>
+                        <textarea 
+                            className="w-full h-20 p-4 bg-gray-50 dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 focus:border-black dark:focus:border-white focus:ring-0 resize-none transition-all dark:text-white placeholder:text-gray-400"
+                            placeholder={t('intake.successLookLike.placeholder')}
+                            value={successLookLike}
+                            onChange={(e) => setSuccessLookLike(e.target.value)}
+                        />
                     </div>
 
                     <Button 

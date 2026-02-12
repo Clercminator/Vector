@@ -257,15 +257,15 @@ export const useGoalWizard = ({
                         supabase.from('profiles').select('credits,tier,display_name').eq('user_id', user.id).single()
                         .then(({ data }: { data: any }) => {
                             if (data) {
-                                setCredits(data.credits ?? 3);
+                                setCredits(data.credits ?? 1);
                                 if (data.tier) setTier(data.tier as TierId);
                                 if (data.display_name) setUserName(data.display_name);
                             }
                         })
-                        .catch(() => setCredits(3));
+                        .catch(() => setCredits(1));
                     }
                 } else {
-                    setCredits(3);
+                    setCredits(1);
                 }
             });
         }
@@ -549,7 +549,7 @@ export const useGoalWizard = ({
                     }
                 }
 
-                // Handle Frame Switching (can be nested or root)
+                // Handle Frame Switching (internal only — do not add "Switched to X" to chat)
                 const frameworkSetter = updateData?.framework_setter || (Array.isArray(event) && event?.[0] === 'framework_setter' && event?.[1] ? event[1] : null);
                 if (frameworkSetter) {
                      const newFw = frameworkSetter.framework;
@@ -557,16 +557,8 @@ export const useGoalWizard = ({
                         isSwitchingRef.current = true;
                         setDraftResult(null); 
                         const isLocked = !canUseFramework(tier, newFw as FrameworkId);
-                        onSwitchFramework(newFw as FrameworkId, isLocked); 
-                        if (frameworkSetter.messages && frameworkSetter.messages.length > 0) {
-                             const lastMsg = frameworkSetter.messages[frameworkSetter.messages.length - 1];
-                             const content = normalizeMessageContent(lastMsg?.content);
-                             if (content) {
-                                 LOG('framework_setter: adding AI message', { contentPreview: content.slice(0, 80) });
-                                 setMessages(prev => [...prev, { role: 'ai', content }]);
-                                 didReceiveAgentMessage = true;
-                             }
-                        }
+                        onSwitchFramework(newFw as FrameworkId, isLocked);
+                        // framework_setter message is for logs only; do not show "Switched to rpm" in chat
                     }
                 }
 
@@ -636,7 +628,12 @@ export const useGoalWizard = ({
                              continue;
                          }
                          const { cleanText, suggestions, draft } = extractContent(rawContent);
-                         const textToShow = (cleanText.trim() || rawContent.trim().slice(0, 2000)).trim();
+                         let textToShow = (cleanText.trim() || rawContent.trim().slice(0, 2000)).trim();
+                         if (/^Your .+ blueprint is ready below\. Review your personalized plan and refine as needed\.$/.test(textToShow) || textToShow === 'Your blueprint is ready below. Review your personalized plan and refine as needed.') {
+                             const label = (framework && String(framework).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())) || '';
+                             const translated = (t('wizard.blueprintReadyBelow') || '').replace('{0}', label).trim();
+                             if (translated) textToShow = translated;
+                         }
                          const loadingPlaceholders = ['Loading...', 'Loading..', 'Loading', 'Cargando...', 'Carregando...', 'Chargement...', 'Laden...'];
 const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToShow) || textToShow === (t('common.loading') ?? 'Loading...');
                          LOG(`event #${eventIndex} WILL setMessages`, { rawContentLength: rawContent.length, cleanTextLength: cleanText.length, textToShowPreview: textToShow.slice(0, 120), suggestionsCount: suggestions.length });
@@ -655,6 +652,11 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
                                  const lastPrev = prev[prev.length - 1];
                                  if (lastPrev && lastPrev.role === 'ai' && lastPrev.content === textToShow) {
                                      LOG(`event #${eventIndex} setMessages: no-op (duplicate, state check)`);
+                                     return prev;
+                                 }
+                                 const isGreetingOnly = /^[¡]?Hola!?\s*\.?$/i.test(textToShow.trim()) || /^Hello!?\s*\.?$/i.test(textToShow.trim());
+                                 if (isGreetingOnly && lastPrev?.role === 'ai' && /^[¡]?Hola!?|^Hello!?/i.test(String(lastPrev.content).trim())) {
+                                     LOG(`event #${eventIndex} setMessages: no-op (duplicate greeting)`);
                                      return prev;
                                  }
                                  lastAppendedContentRef.current = textToShow;

@@ -98,11 +98,11 @@ async function handleWebhook(req: Request): Promise<Response> {
     let creditsToAdd = 5;
     let newTier = "architect";
 
-    if (amount >= 35) {
-      creditsToAdd = 40;
+    if (amount >= 10) {
+      creditsToAdd = 20;
       newTier = "max";
-    } else if (amount >= 15) {
-      creditsToAdd = 15;
+    } else if (amount >= 5) {
+      creditsToAdd = 5;
       newTier = "standard";
     }
 

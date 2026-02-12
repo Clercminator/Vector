@@ -1,13 +1,10 @@
 /**
  * Tier configuration: credits, allowed frameworks, and feature flags.
- * Use this to enforce limits in GoalWizard, Dashboard, and export flows.
- * IDs: architect (free), standard (paid), max (premium), enterprise (contact).
+ * All tiers get all frameworks; free tier gets 1 full-experience plan (export, etc.).
+ * IDs: architect (free, 1 plan), standard/builder (5 plans, $5.99), max (20 plans, $12.99), enterprise (contact).
  */
 
 export type FrameworkId = 'first-principles' | 'pareto' | 'rpm' | 'eisenhower' | 'okr' | 'dsss' | 'mandalas' | 'gps' | 'misogi' | 'general';
-
-/** Frameworks available on free tier (first 3). Standard and Max get all. */
-export const FREE_TIER_FRAMEWORKS: FrameworkId[] = ['first-principles', 'pareto', 'rpm', 'general'];
 
 export const ALL_FRAMEWORKS: FrameworkId[] = [
   'first-principles',
@@ -26,15 +23,14 @@ export type TierId = 'architect' | 'standard' | 'max' | 'enterprise';
 
 export interface TierConfig {
   id: TierId;
-  /** Credits granted (free tier uses a default in DB; paid tiers grant on purchase). */
+  /** Number of plans: create + save. Free = 1, Builder = 5, Max = 20, Enterprise = unlimited. */
   credits: number;
-  /** Max blueprints saved (0 = use default from product). */
+  /** Same as credits: one plan = one creation + one saved slot. Kept for display only. */
   maxBlueprints: number;
-  /** Framework IDs the user can run. */
+  /** All tiers can use all frameworks (no gating). */
   allowedFrameworks: FrameworkId[];
   canExportCalendar: boolean;
   canExportPdf: boolean;
-  /** Priority / higher-quality AI (e.g. better model or longer context). */
   priorityAi: boolean;
   /** One-time price in USD (0 = free, -1 = custom/contact). */
   priceUsd: number;
@@ -43,33 +39,33 @@ export interface TierConfig {
 export const TIER_CONFIGS: Record<TierId, TierConfig> = {
   architect: {
     id: 'architect',
-    credits: 5,
-    maxBlueprints: 5,
-    allowedFrameworks: FREE_TIER_FRAMEWORKS,
-    canExportCalendar: false,
-    canExportPdf: false,
+    credits: 1,
+    maxBlueprints: 1,
+    allowedFrameworks: ALL_FRAMEWORKS,
+    canExportCalendar: true,
+    canExportPdf: true,
     priorityAi: false,
     priceUsd: 0,
   },
   standard: {
     id: 'standard',
-    credits: 15,
-    maxBlueprints: 50,
+    credits: 5,
+    maxBlueprints: 5,
     allowedFrameworks: ALL_FRAMEWORKS,
-    canExportCalendar: false,
-    canExportPdf: false,
+    canExportCalendar: true,
+    canExportPdf: true,
     priorityAi: false,
-    priceUsd: 19,
+    priceUsd: 5.99,
   },
   max: {
     id: 'max',
-    credits: 40,
-    maxBlueprints: 200,
+    credits: 20,
+    maxBlueprints: 20,
     allowedFrameworks: ALL_FRAMEWORKS,
     canExportCalendar: true,
     canExportPdf: true,
     priorityAi: true,
-    priceUsd: 39,
+    priceUsd: 12.99,
   },
   enterprise: {
     id: 'enterprise',
@@ -83,10 +79,9 @@ export const TIER_CONFIGS: Record<TierId, TierConfig> = {
   },
 };
 
-/** Check if a framework is allowed for the given tier. */
-export function canUseFramework(tierId: TierId, frameworkId: FrameworkId): boolean {
-  const tier = TIER_CONFIGS[tierId];
-  if (!tier) return false;
+/** Check if a framework is allowed for the given tier. All tiers currently have all frameworks. */
+export function canUseFramework(tierId: TierId | undefined, frameworkId: FrameworkId): boolean {
+  const tier = (tierId != null && TIER_CONFIGS[tierId]) ? TIER_CONFIGS[tierId] : TIER_CONFIGS[DEFAULT_TIER_ID];
   return tier.allowedFrameworks.includes(frameworkId);
 }
 

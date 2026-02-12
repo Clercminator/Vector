@@ -110,14 +110,45 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
               );
           }
   
+          if (draft.type === 'rpm') {
+              const hasPlan = draft.plan != null && Array.isArray(draft.plan) && draft.plan.length > 0;
+              return (
+                  <div className="space-y-4">
+                      {draft.result != null && draft.result !== '' && (
+                          <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+                              <h5 className="font-bold text-gray-500 text-sm mb-2">{t('rpm.outcome')}</h5>
+                              <p className="text-sm text-black dark:text-white">{draft.result}</p>
+                          </div>
+                      )}
+                      {draft.purpose != null && draft.purpose !== '' && (
+                          <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+                              <h5 className="font-bold text-gray-500 text-sm mb-2">{t('rpm.purpose')}</h5>
+                              <p className="text-sm text-black dark:text-white">{draft.purpose}</p>
+                          </div>
+                      )}
+                      <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+                          <h5 className="font-bold text-gray-500 text-sm mb-2">{t('rpm.map')}</h5>
+                          {hasPlan ? (
+                              <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                                  {draft.plan.map((v: string, i: number) => <li key={i}>{v}</li>)}
+                              </ul>
+                          ) : (
+                              <p className="text-sm text-gray-400 dark:text-gray-500 italic">{t('wizard.planStepsPlaceholder')}</p>
+                          )}
+                      </div>
+                  </div>
+              );
+          }
+
           // Fallback
           return (
               <div className="space-y-4">
                   {Object.entries(draft).map(([key, val]) => {
                       if (key === 'type' || key === 'score' || !val) return null;
+                      const labelKey = draft.type === 'rpm' && (key === 'result' || key === 'purpose' || key === 'plan') ? (key === 'result' ? 'rpm.outcome' : key === 'purpose' ? 'rpm.purpose' : 'rpm.map') : null;
                       return (
                           <div key={key} className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
-                              <h5 className="font-bold text-gray-500 text-sm mb-2 capitalize">{key}</h5>
+                              <h5 className="font-bold text-gray-500 text-sm mb-2">{labelKey ? t(labelKey) : (key as string)}</h5>
                               {Array.isArray(val) ? (
                                   <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
                                       {(val as string[]).map((v, i) => <li key={i}>{v}</li>)}
@@ -139,7 +170,7 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
                          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                              <span className="capitalize">{draft.type?.replace('-', ' ') || "Plan"}</span>
                          </h3>
-                         <p className="text-xs text-gray-400 mt-1">Building your plan – updates as we talk</p>
+                         <p className="text-xs text-gray-400 mt-1">{t('wizard.buildingPlanUpdates')}</p>
                      </div>
                      {draft.score !== undefined && <ScoreIndicator score={draft.score} />}
                  </div>
@@ -161,7 +192,7 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
              >
                 <div className="flex items-center gap-2 mb-6 text-gray-400 uppercase tracking-widest text-xs font-bold">
                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    {isTyping || isAgentRunning ? 'Live Draft' : 'Your Blueprint'}
+                    {isTyping || isAgentRunning ? t('wizard.liveDraft') : t('wizard.yourBlueprint')}
                 </div>
                 {!draftResult?.isTeaser && draftResult?.type && onFinalize && !isTyping && !isAgentRunning && (
                     <button
@@ -186,7 +217,7 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
                style={{ bottom: "5rem", top: 'auto'}} 
              >
                 {showMobileDraft ? <X size={12} /> : <FileText size={12} />}
-                {showMobileDraft ? "Close Draft" : "View Draft"}
+                {showMobileDraft ? t('wizard.closeDraft') : t('wizard.viewDraft')}
              </button>
 
              {/* Mobile Drawer */}
@@ -202,7 +233,7 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
                         <div className="flex-none p-4 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between">
                             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500">
                                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                {isTyping || isAgentRunning ? 'Live Draft' : 'Your Blueprint'}
+                                {isTyping || isAgentRunning ? t('wizard.liveDraft') : t('wizard.yourBlueprint')}
                             </div>
                             <button onClick={() => setShowMobileDraft(false)} className="p-2 bg-gray-100 dark:bg-zinc-800 rounded-full" aria-label="Close draft panel">
                                 <X size={16} />
