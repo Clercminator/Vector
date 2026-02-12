@@ -247,7 +247,7 @@ export function Dashboard({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 whileHover={{ y: -5 }}
-                className={`group relative bg-gradient-to-br ${theme.bg} rounded-[2rem] p-6 border ${theme.border} shadow-sm hover:shadow-xl transition-all cursor-pointer overflow-hidden`}
+                className={`cursor-pointer group relative bg-gradient-to-br ${theme.bg} rounded-[2rem] p-6 border ${theme.border} shadow-sm hover:shadow-xl transition-all cursor-pointer overflow-hidden`}
                 onClick={() => onOpenBlueprint(bp)}
               >
                 {/* Background Decor */}

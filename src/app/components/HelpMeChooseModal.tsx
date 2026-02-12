@@ -76,7 +76,7 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
                 </div>
                 <p className="text-gray-500 dark:text-gray-400 max-w-md">{t('intake.subtitle')}</p>
             </div>
-            <button type="button" onClick={onClose} aria-label={t('common.close') || 'Close'} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
+            <button type="button" onClick={onClose} aria-label={t('common.close') || 'Close'} className="cursor-pointer p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
                 <X size={24} />
             </button>
         </div>
@@ -96,6 +96,7 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
                             onChange={(e) => setObjective(e.target.value)}
                             autoFocus
                         />
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">{t('intake.objective.hint')}</p>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -127,9 +128,10 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
-                            <Mountain size={16} className="inline mr-2 text-gray-400" />
+                        <label className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                            <Mountain size={16} className="text-gray-400 shrink-0" />
                             {t('intake.obstacle.label')}
+                            <span className="text-xs font-normal text-gray-400 dark:text-gray-500">({t('intake.optional')})</span>
                         </label>
                         <input 
                             className="w-full h-12 p-4 bg-gray-50 dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 focus:border-black dark:focus:border-white focus:ring-0 transition-all dark:text-white placeholder:text-gray-400"
@@ -140,9 +142,10 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
-                            <Trophy size={16} className="inline mr-2 text-gray-400" />
+                        <label className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                            <Trophy size={16} className="text-gray-400 shrink-0" />
                             {t('intake.successLookLike.label')}
+                            <span className="text-xs font-normal text-gray-400 dark:text-gray-500">({t('intake.optional')})</span>
                         </label>
                         <textarea 
                             className="w-full h-20 p-4 bg-gray-50 dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 focus:border-black dark:focus:border-white focus:ring-0 resize-none transition-all dark:text-white placeholder:text-gray-400"
@@ -152,10 +155,11 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
                         />
                     </div>
 
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-6 mb-2 text-center">{t('intake.reassurance')}</p>
                     <Button 
                         onClick={handleAnalyze} 
                         disabled={loading || !objective.trim()} 
-                        className="w-full h-14 text-lg bg-black hover:bg-zinc-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black rounded-xl shadow-lg mt-4 transition-all"
+                        className="w-full h-14 text-lg bg-black hover:bg-zinc-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black rounded-xl shadow-lg transition-all"
                     >
                         {loading ? (
                             <>

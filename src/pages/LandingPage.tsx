@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'motion/react'; // Keeping consistent with App.tsx
 import { useNavigate } from 'react-router-dom';
 import { FrameworkCard } from '@/app/components/FrameworkCard';
 import { InspirationalQuote } from '@/app/components/InspirationalQuote';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Target, MessageSquare, Download } from 'lucide-react';
 import { useLanguage } from '@/app/components/language-provider';
 import { frameworks, Framework } from '@/lib/frameworks';
 import { canUseFramework, DEFAULT_TIER_ID, TierId } from '@/lib/tiers';
@@ -25,6 +25,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     const { t } = useLanguage();
     const tier = tierProp ?? DEFAULT_TIER_ID;
     const navigate = useNavigate();
+    const howItWorksRef = useRef<HTMLElement>(null);
 
     // Dynamic frameworks list with translation
     const frameworksList = frameworks.map(f => ({
@@ -69,7 +70,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <div className="flex justify-center">
                         <motion.button
                             onClick={onShowHelpChoose}
-                            className="group relative px-12 py-6 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-xl md:text-2xl font-bold flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-2xl shadow-black/25 dark:shadow-white/10 border-2 border-transparent hover:border-gray-300 dark:hover:border-zinc-600 overflow-hidden"
+                            className="cursor-pointer group relative px-12 py-6 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-xl md:text-2xl font-bold flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-2xl shadow-black/25 dark:shadow-white/10 border-2 border-transparent hover:border-gray-300 dark:hover:border-zinc-600 overflow-hidden"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             initial={{ opacity: 0, y: 10 }}
@@ -88,7 +89,74 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                             </motion.span>
                         </motion.button>
                     </div>
+                    <button
+                        type="button"
+                        onClick={() => howItWorksRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                        className="mt-8 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline underline-offset-2"
+                    >
+                        {t('landing.hero.newHere')}
+                    </button>
                 </motion.div>
+            </section>
+
+            {/* How it works — value prop & steps */}
+            <section
+                ref={howItWorksRef}
+                className="px-6 py-16 md:py-20 border-t border-gray-100 dark:border-zinc-800/80"
+            >
+                <div className="max-w-5xl mx-auto">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: '-50px' }}
+                        transition={{ duration: 0.5 }}
+                        className="text-center mb-12"
+                    >
+                        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-3">
+                            {t('landing.howItWorks.title')}
+                        </h2>
+                        <p className="text-base md:text-lg text-gray-500 dark:text-gray-400 font-light max-w-2xl mx-auto">
+                            {t('landing.howItWorks.subtitle')}
+                        </p>
+                    </motion.div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                        {[
+                            { Icon: Target, titleKey: 'landing.howItWorks.step1.title', descKey: 'landing.howItWorks.step1.desc', color: 'text-blue-500', step: 1 },
+                            { Icon: Sparkles, titleKey: 'landing.howItWorks.step2.title', descKey: 'landing.howItWorks.step2.desc', color: 'text-amber-500', step: 2 },
+                            { Icon: MessageSquare, titleKey: 'landing.howItWorks.step3.title', descKey: 'landing.howItWorks.step3.desc', color: 'text-emerald-500', step: 3 },
+                            { Icon: Download, titleKey: 'landing.howItWorks.step4.title', descKey: 'landing.howItWorks.step4.desc', color: 'text-violet-500 dark:text-violet-400', step: 4 },
+                        ].map(({ Icon, titleKey, descKey, color, step }, i) => {
+                            const hoverRing = step === 1 ? 'hover:shadow-blue-500/15 hover:ring-blue-500/25 dark:hover:shadow-blue-400/10 dark:hover:ring-blue-400/20' :
+                                step === 2 ? 'hover:shadow-amber-500/15 hover:ring-amber-500/25 dark:hover:shadow-amber-400/10 dark:hover:ring-amber-400/20' :
+                                step === 3 ? 'hover:shadow-emerald-500/15 hover:ring-emerald-500/25 dark:hover:shadow-emerald-400/10 dark:hover:ring-emerald-400/20' :
+                                'hover:shadow-violet-500/15 hover:ring-violet-500/25 dark:hover:shadow-violet-400/10 dark:hover:ring-violet-400/20';
+                            return (
+                                <motion.div
+                                    key={titleKey}
+                                    initial={{ opacity: 0, y: 16 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, margin: '-30px' }}
+                                    transition={{ duration: 0.4, delay: i * 0.08 }}
+                                    whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                                    className={`group relative p-6 rounded-2xl bg-gray-50/90 dark:bg-zinc-900/60 border border-gray-100 dark:border-zinc-800/80 text-left overflow-hidden transition-all duration-300 hover:shadow-xl hover:ring-2 ${hoverRing}`}
+                                >
+                                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-gradient-to-br from-white/10 via-transparent to-transparent dark:from-white/5" />
+                                    <div className="relative">
+                                        <motion.div
+                                            className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${color} bg-current/10 ring-1 ring-current/10 group-hover:ring-current/20 transition-all duration-300`}
+                                            whileHover={{ scale: 1.08, rotate: [0, -3, 3, 0] }}
+                                            transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                                        >
+                                            <Icon size={22} className={color} strokeWidth={2} />
+                                        </motion.div>
+                                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1.5">{t(titleKey)}</h3>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{t(descKey)}</p>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+                </div>
             </section>
 
             {/* Frameworks Section */}
