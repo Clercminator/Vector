@@ -16,7 +16,8 @@ import {
   Star, 
   MoreHorizontal,
   RefreshCcw,
-  ArrowLeft
+  ArrowLeft,
+  MessageCircle
 } from 'lucide-react';
 import { 
   Tabs, 
@@ -70,6 +71,11 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
   const [loadingTemplates, setLoadingTemplates] = useState(false);
   const [templatesPage, setTemplatesPage] = useState(0);
 
+  // Feedback State
+  const [feedbackList, setFeedbackList] = useState<any[]>([]);
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [feedbackPage, setFeedbackPage] = useState(0);
+  const FEEDBACK_PAGE_SIZE = 15;
 
   useEffect(() => {
     fetchStats();
@@ -157,6 +163,30 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
     if (activeTab === 'templates') fetchTemplates();
   }, [activeTab, templatesPage]); // Re-fetch on page change
 
+  const fetchFeedback = async () => {
+    if (!supabase) return;
+    setLoadingFeedback(true);
+    try {
+      const from = feedbackPage * FEEDBACK_PAGE_SIZE;
+      const to = from + FEEDBACK_PAGE_SIZE - 1;
+      const { data, error } = await supabase
+        .from('feedback')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .range(from, to);
+      if (error) throw error;
+      setFeedbackList(data || []);
+    } catch (error) {
+      toast.error('Failed to fetch feedback');
+      console.error(error);
+    } finally {
+      setLoadingFeedback(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'feedback') fetchFeedback();
+  }, [activeTab, feedbackPage]);
 
   const handleUpdateUser = async (userId: string, updates: any) => {
     if (!supabase) return;
@@ -236,6 +266,10 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
           <TabsTrigger value="analytics" className="gap-2 px-6 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-black">
             <BarChart3 size={16} />
             {t('admin.tabs.analytics')}
+          </TabsTrigger>
+          <TabsTrigger value="feedback" className="gap-2 px-6 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-black">
+            <MessageCircle size={16} />
+            {t('feedback.admin.title')}
           </TabsTrigger>
         </TabsList>
 
@@ -436,6 +470,60 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
 
         <TabsContent value="analytics" className="space-y-6">
            <AdminAnalytics />
+        </TabsContent>
+
+        <TabsContent value="feedback" className="space-y-6">
+          <Card className="dark:bg-zinc-900 border-none shadow-sm">
+            <CardHeader>
+              <CardTitle>{t('feedback.admin.title')}</CardTitle>
+              <CardDescription>Feedback submitted via the Feedback button across the app.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50/50 dark:bg-zinc-800/50">
+                      <TableHead>{t('feedback.admin.rating')}</TableHead>
+                      <TableHead>{t('feedback.admin.page')}</TableHead>
+                      <TableHead className="min-w-[200px]">{t('feedback.admin.message')}</TableHead>
+                      <TableHead>{t('feedback.admin.contact')}</TableHead>
+                      <TableHead>{t('feedback.admin.date')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loadingFeedback ? (
+                      <TableRow><TableCell colSpan={5} className="text-center py-8">{t('common.loading')}</TableCell></TableRow>
+                    ) : feedbackList.length === 0 ? (
+                      <TableRow><TableCell colSpan={5} className="text-center py-8">{t('feedback.admin.empty')}</TableCell></TableRow>
+                    ) : (
+                      feedbackList.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            {row.rating != null ? (
+                              <span className="flex items-center gap-1">
+                                <Star size={14} className="text-amber-400 fill-amber-400" />
+                                {row.rating}/5
+                              </span>
+                            ) : '—'}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-sm font-mono">{row.page_context || '—'}</TableCell>
+                          <TableCell className="max-w-xs truncate" title={row.message}>{row.message}</TableCell>
+                          <TableCell className="text-sm">{row.email || (row.user_id ? 'Signed in' : '—')}</TableCell>
+                          <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
+                            {row.created_at ? new Date(row.created_at).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : '—'}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="flex items-center justify-end gap-2 p-4 border-t border-gray-100 dark:border-zinc-800">
+                <Button variant="outline" size="sm" onClick={() => setFeedbackPage(p => Math.max(0, p - 1))} disabled={feedbackPage === 0 || loadingFeedback}>Previous</Button>
+                <Button variant="outline" size="sm" onClick={() => setFeedbackPage(p => p + 1)} disabled={feedbackList.length < FEEDBACK_PAGE_SIZE || loadingFeedback}>Next</Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </motion.div>

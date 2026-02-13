@@ -21,6 +21,7 @@ import { ShareButton } from '@/app/components/ShareButton';
 import { FrameworkDetail } from '@/app/components/FrameworkDetail';
 import { OnboardingModal } from '@/app/components/OnboardingModal';
 import { HelpMeChooseModal } from '@/app/components/HelpMeChooseModal';
+import { FeedbackButton } from '@/app/components/FeedbackButton';
 import { Logo } from '@/app/components/Logo';
 
 import { LandingPage } from '@/pages/LandingPage';
@@ -570,6 +571,12 @@ function App() {
         onSignOut={handleSignOut}
         onSignIn={() => setAuthOpen(true)}
         onGetStarted={() => handleStartWizard()}
+      />
+
+      <FeedbackButton
+        pageContext={location.pathname}
+        userEmail={userEmail}
+        userId={userId}
       />
 
       <main id="main-content" className="relative pt-20 flex-grow" tabIndex={-1}>
