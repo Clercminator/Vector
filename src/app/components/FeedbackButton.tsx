@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageCircle, X, Star, Loader2 } from 'lucide-react';
+import { MessageCircle, X, Star, Loader2, Send } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Textarea } from '@/app/components/ui/textarea';
 import { supabase } from '@/lib/supabase';
@@ -26,11 +26,11 @@ export function FeedbackButton({ pageContext, userEmail, userId }: FeedbackButto
     e.preventDefault();
     const trimmed = message.trim();
     if (!trimmed) {
-      toast.error(t('feedback.messageRequired') || 'Please enter your feedback.');
+      toast.error(t('feedback.messageRequired'));
       return;
     }
     if (!supabase) {
-      toast.error(t('common.error') || 'Something went wrong.');
+      toast.error(t('common.error'));
       return;
     }
     setSubmitting(true);
@@ -44,7 +44,7 @@ export function FeedbackButton({ pageContext, userEmail, userId }: FeedbackButto
       });
       if (error) throw error;
       setSubmitted(true);
-      toast.success(t('feedback.thankYou') || 'Thank you! Your feedback helps us improve.');
+      toast.success(t('feedback.thankYou'));
       setTimeout(() => {
         setOpen(false);
         setSubmitted(false);
@@ -54,7 +54,7 @@ export function FeedbackButton({ pageContext, userEmail, userId }: FeedbackButto
       }, 1500);
     } catch (err) {
       console.error('Feedback submit error', err);
-      toast.error(t('common.error') || 'Something went wrong.');
+      toast.error(t('common.error'));
     } finally {
       setSubmitting(false);
     }
@@ -65,63 +65,70 @@ export function FeedbackButton({ pageContext, userEmail, userId }: FeedbackButto
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-black dark:bg-white text-white dark:text-black px-4 py-3 shadow-lg hover:scale-105 active:scale-95 transition-transform cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500"
-        aria-label={t('feedback.buttonLabel') || 'Send feedback'}
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full px-5 py-3 shadow-xl border border-gray-200/50 dark:border-white/20 bg-white/95 dark:bg-zinc-900/95 text-gray-900 dark:text-white backdrop-blur-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500 dark:focus-visible:ring-white/50"
+        aria-label="Feedback"
       >
-        <MessageCircle size={20} />
-        <span className="text-sm font-medium">{t('feedback.button') || 'Feedback'}</span>
+        <MessageCircle size={20} className="text-gray-600 dark:text-gray-300 shrink-0" />
+        <span className="text-sm font-semibold tracking-tight">Feedback</span>
       </button>
 
       <AnimatePresence>
         {open && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.96, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white dark:bg-zinc-950 w-full max-w-md rounded-3xl shadow-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden"
+              exit={{ opacity: 0, scale: 0.96, y: 16 }}
+              transition={{ type: 'spring', damping: 26, stiffness: 300 }}
+              className="bg-white dark:bg-zinc-950 w-full max-w-lg rounded-2xl shadow-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden"
             >
-              <div className="p-6 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-start">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                    {t('feedback.title') || 'Send feedback'}
-                  </h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {t('feedback.subtitle') || 'Your input helps us improve Vector.'}
-                  </p>
+              <div className="p-6 pb-5 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-start gap-4">
+                <div className="flex gap-4 items-start min-w-0">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-lg">
+                    <MessageCircle size={24} className="text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Feedback</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                      {t('feedback.subtitle')}
+                    </p>
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => !submitting && setOpen(false)}
-                  aria-label={t('common.close') || 'Close'}
-                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors cursor-pointer disabled:opacity-50"
+                  aria-label={t('common.close')}
+                  className="p-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors cursor-pointer disabled:opacity-50 shrink-0"
                 >
-                  <X size={22} />
+                  <X size={20} />
                 </button>
               </div>
 
               {submitted ? (
-                <div className="p-8 text-center text-gray-600 dark:text-gray-400">
-                  <p className="font-medium">{t('feedback.thankYou') || 'Thank you! Your feedback helps us improve.'}</p>
+                <div className="p-10 text-center">
+                  <div className="w-14 h-14 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                    <Send size={28} className="text-emerald-500" />
+                  </div>
+                  <p className="font-semibold text-gray-700 dark:text-gray-300">{t('feedback.thankYou')}</p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleSubmit} className="p-6 space-y-5">
                   <div>
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
-                      {t('feedback.ratingLabel') || 'How would you rate your experience?'} <span className="text-gray-400">({t('feedback.optional') || 'optional'})</span>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                      {t('feedback.ratingLabel')} <span className="text-gray-400 font-normal">({t('feedback.optional')})</span>
                     </label>
-                    <div className="flex gap-1">
+                    <div className="flex gap-0.5">
                       {[1, 2, 3, 4, 5].map((n) => (
                         <button
                           key={n}
                           type="button"
                           onClick={() => setRating(n)}
-                          className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer"
                           aria-label={`${n} ${n === 1 ? 'star' : 'stars'}`}
                         >
                           <Star
-                            size={24}
-                            className={rating !== null && n <= rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300 dark:text-gray-600'}
+                            size={26}
+                            className={`transition-colors ${rating !== null && n <= rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300 dark:text-zinc-600 hover:text-amber-400/60'}`}
                           />
                         </button>
                       ))}
@@ -129,24 +136,24 @@ export function FeedbackButton({ pageContext, userEmail, userId }: FeedbackButto
                   </div>
 
                   <div>
-                    <label htmlFor="feedback-message" className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
-                      {t('feedback.messageLabel') || 'Your feedback'} *
+                    <label htmlFor="feedback-message" className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                      {t('feedback.messageLabel')} <span className="text-red-500">*</span>
                     </label>
                     <Textarea
                       id="feedback-message"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder={t('feedback.messagePlaceholder') || 'What could we do better? What do you love?'}
+                      placeholder={t('feedback.messagePlaceholder')}
                       rows={4}
-                      className="w-full resize-none"
+                      className="w-full resize-none rounded-xl border-gray-200 dark:border-zinc-700 focus-visible:ring-2 focus-visible:ring-violet-500/30"
                       disabled={submitting}
                     />
                   </div>
 
                   {!userEmail && (
                     <div>
-                      <label htmlFor="feedback-email" className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
-                        {t('feedback.emailLabel') || 'Email'} <span className="text-gray-400">({t('feedback.optional') || 'optional'})</span>
+                      <label htmlFor="feedback-email" className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                        {t('feedback.emailLabel')} <span className="text-gray-400 font-normal">({t('feedback.optional')})</span>
                       </label>
                       <input
                         id="feedback-email"
@@ -154,34 +161,37 @@ export function FeedbackButton({ pageContext, userEmail, userId }: FeedbackButto
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
-                        className="w-full rounded-md border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
+                        className="w-full rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 dark:focus:ring-violet-400/30"
                         disabled={submitting}
                       />
                     </div>
                   )}
 
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex gap-3 pt-1">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setOpen(false)}
                       disabled={submitting}
-                      className="flex-1 cursor-pointer"
+                      className="flex-1 rounded-xl cursor-pointer"
                     >
-                      {t('common.close') || 'Close'}
+                      {t('common.close')}
                     </Button>
                     <Button
                       type="submit"
                       disabled={submitting || !message.trim()}
-                      className="flex-1 cursor-pointer"
+                      className="flex-1 rounded-xl cursor-pointer bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-violet-500/25"
                     >
                       {submitting ? (
                         <>
                           <Loader2 size={18} className="animate-spin" />
-                          {t('common.loading') || 'Loading...'}
+                          {t('common.loading')}
                         </>
                       ) : (
-                        t('feedback.submit') || 'Send feedback'
+                        <>
+                          <Send size={18} />
+                          Feedback
+                        </>
                       )}
                     </Button>
                   </div>

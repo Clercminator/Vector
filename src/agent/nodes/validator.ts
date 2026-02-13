@@ -1,19 +1,43 @@
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
 import { AgentStateType } from "../state";
+import { MAX_VALIDATION_ATTEMPTS } from "../constants";
+
+const DRAFT_BLOCK_REGEX = /\|\|\|DRAFT_START\|\|\|([\s\S]*?)\|\|\|DRAFT_END\|\|\|/;
 
 export const validatorNode = async (state: AgentStateType) => {
     const { messages, validationAttempts, framework } = state;
-    const lastMsg = messages[messages.length - 1] as AIMessage;
-    
-    // Safety check: ensure we don't loop forever
-    if (validationAttempts >= 2) {
-         // Fallback: Strip bad JSON
-         const cleanContent = lastMsg.content.toString().replace(/\|\|\|DRAFT_START\|\|\|[\s\S]*?\|\|\|DRAFT_END\|\|\|/, '');
-         return { validationAttempts: 0 };
-    }
+    if (!messages?.length) return { validationAttempts: 0 };
+
+    const lastMsg = messages[messages.length - 1];
+    const isAIMessage = lastMsg instanceof AIMessage;
+
+    // Only validate and replace when last message is from the AI
+    if (!isAIMessage) return { validationAttempts: 0 };
 
     const content = lastMsg.content.toString();
-    const draftMatch = content.match(/\|\|\|DRAFT_START\|\|\|([\s\S]*?)\|\|\|DRAFT_END\|\|\|/);
+
+    // Malformed block: DRAFT_START without matching DRAFT_END — treat as invalid
+    const hasUnclosedDraftStart = /^\|\|\|DRAFT_START\|\|\|/.test(content.trim()) || content.includes("|||DRAFT_START|||");
+    const hasValidBlock = DRAFT_BLOCK_REGEX.test(content);
+    if (hasUnclosedDraftStart && !hasValidBlock) {
+        const fw = framework ? ` for the "${framework}" framework` : "";
+        return {
+            validationAttempts: validationAttempts + 1,
+            messages: [new HumanMessage(`SYSTEM ERROR: The "Rough Draft" block was incomplete (missing |||DRAFT_END|||). Please REWRITE your message with a complete JSON block${fw}.`)],
+        };
+    }
+
+    // Safety check: ensure we don't loop forever
+    if (validationAttempts >= MAX_VALIDATION_ATTEMPTS) {
+         const cleanContent = content.replace(/\|\|\|DRAFT_START\|\|\|[\s\S]*?\|\|\|DRAFT_END\|\|\|/, '').trim();
+         const cleanedMessage = new AIMessage({
+             content: cleanContent || "(Draft block removed due to validation errors.)",
+             id: (lastMsg as { id?: string }).id,
+         });
+         return { validationAttempts: 0, messages: [cleanedMessage] };
+    }
+
+    const draftMatch = content.match(DRAFT_BLOCK_REGEX);
     
     if (draftMatch) {
         try {
@@ -27,7 +51,9 @@ export const validatorNode = async (state: AgentStateType) => {
                     'first-principles': ['truths', 'newApproach'],
                     'okr': ['objective', 'keyResults', 'initiative'],
                     'rpm': ['result', 'purpose', 'plan'],
-                    'misogi': ['challenge', 'gap', 'purification']
+                    'misogi': ['challenge', 'gap', 'purification'],
+                    'dsss': ['deconstruct', 'selection', 'sequence', 'stakes'],
+                    'mandalas': ['centralGoal', 'categories']
                 };
                 
                 const expected = requiredKeys[framework];

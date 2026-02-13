@@ -6,6 +6,7 @@ import { SupabaseCheckpointer } from '@/lib/supabaseCheckpointer';
 
 import { AgentState, AgentStateType } from "./state";
 import { tools } from "./tools";
+import { MAX_STEPS_BEFORE_DRAFT, MAX_CRITIQUE_RETRIES } from "./constants";
 
 // Import Nodes
 import { consultantNode } from "./nodes/consultant";
@@ -28,20 +29,20 @@ const routeStart = (state: AgentStateType) => {
 };
 
 const routeConsultant = (state: AgentStateType) => {
-    const lastMsg = state.messages[state.messages.length - 1] as AIMessage;
-    // Check if the generic last message has tool calls with the specific name
+    const { messages } = state;
+    if (!messages?.length) return END;
+    const lastMsg = messages[messages.length - 1] as AIMessage;
     if (lastMsg.tool_calls?.some(tc => tc.name === 'set_framework')) {
         return "framework_setter";
     }
-    return END; // Wait for user input
+    return END;
 };
 
 const routeStep = (state: AgentStateType) => {
   const { messages, steps } = state;
+  if (!messages?.length) return END;
   const lastMsg = messages[messages.length - 1] as AIMessage;
-  
-  if (steps > 10) return "draft"; // Lower limit to 10
-  
+  if (steps > MAX_STEPS_BEFORE_DRAFT) return "draft";
   if (lastMsg.tool_calls && lastMsg.tool_calls.length > 0) {
       if (lastMsg.tool_calls.some(tc => tc.name === 'generate_blueprint')) {
           return "draft";
@@ -55,14 +56,14 @@ const routeStep = (state: AgentStateType) => {
 };
 
 const routeCritique = (state: AgentStateType) => {
-    if (state.critiqueAttempts === 1) return "draft";
+    if (state.critiqueAttempts === MAX_CRITIQUE_RETRIES) return "draft";
     return END;
 };
 
 const routeValidator = (state: AgentStateType) => {
     const { validationAttempts, framework, messages } = state;
+    if (!messages?.length) return END;
     const lastMsg = messages[messages.length - 1];
-    
     // If we just added a correction prompt, loop back
     if (validationAttempts > 0 && lastMsg instanceof HumanMessage && lastMsg.content.toString().includes("SYSTEM ERROR")) {
         // Route back to the node that generated it

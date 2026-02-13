@@ -3,7 +3,10 @@ import { Annotation, MessagesAnnotation } from "@langchain/langgraph";
 // Define the State
 export const AgentState = Annotation.Root({
   ...MessagesAnnotation.spec,
-  goal: Annotation<string>,
+  goal: Annotation<string>({
+      reducer: (x, y) => (x && String(x).trim() ? x : (y && String(y).trim() ? y : x || y)),
+      default: () => "",
+  }),
   framework: Annotation<string | null>({
       reducer: (x, y) => y ?? x,
       default: () => null,

@@ -1,0 +1,85 @@
+================================================================================
+PROMPT: Deep research to extend framework guides (for frameworkGuides.ts)
+================================================================================
+Give this to a deep-research LLM that can spend 30+ minutes investigating.
+Output: Revised or expanded content that can replace the body of the strings in
+the file below, keeping the exact structure and keys.
+
+--------------------------------------------------------------------------------
+FILE TO EXTEND (exact path)
+--------------------------------------------------------------------------------
+src/lib/prompts/frameworkGuides.ts
+
+This is a TypeScript file. It exports:
+1. frameworkGuides: Record<string, string> — one long string per framework (keys: "pareto", "rpm", "first-principles", "eisenhower", "okr", "gps", "misogi").
+2. frameworkGuideForConsultant: string — one condensed block covering all frameworks for the "consultant" agent that recommends a framework before the user picks one.
+
+The content is injected into an AI strategy coach. The coach does NOT search the web at runtime; it relies entirely on this file for framework definitions, authors, impact, and examples. So your research output becomes the agent's sole reference.
+
+--------------------------------------------------------------------------------
+YOUR TASK (deep research)
+--------------------------------------------------------------------------------
+1. For EACH of the 7 frameworks (Pareto, RPM, First Principles, Eisenhower, OKR, GPS, Misogi):
+   - Research the AUTHOR(S) and ORIGIN: who created or popularized it, in what book/company/context, when. Prefer primary sources (e.g. Grove's writings for OKR, Robbins' for RPM, Covey for Eisenhower, Koch for Pareto).
+   - Research how the AUTHORS THEMSELVES use or describe the framework: e.g. how does Tony Robbins run an RPM session? How did Andy Grove use OKRs at Intel? How does Jesse Itzler describe or do a Misogi? What did Eisenhower actually say or do that led to the matrix?
+   - Research IMPACT: where it's used (companies, communities), common misconceptions, and what "doing it right" looks like according to practitioners.
+   - Research HOW IT'S USUALLY USED: step-by-step or typical workflow in practice (not just theory).
+   - Create or refine EXAMPLES for these goal types (use the exact "I want to..." phrasing where possible so the agent can match user language):
+     * I want to read more
+     * I want to get fit
+     * I want to learn a language
+     * I want to travel to [place]
+     * I want to buy [house/car]
+     * I want to start a business
+     * I want to get organized
+     * (Add 2–4 more high-value goal types if you find them relevant, e.g. switch career, save money, build a habit, run a marathon, improve a relationship)
+   For each example: one clear line showing how this framework applies (e.g. for Pareto: "Vital few: X; Trivial many: Y." For RPM: "Result: ...; Purpose: ...; Map: ..."). Base examples on how the framework is actually applied by experts, not generic advice.
+
+2. For frameworkGuideForConsultant: Write a condensed version for the consultant. One short paragraph per framework (2–4 sentences) that includes: author/origin, one-line impact, "Best for: [situations]", and one concrete example goal + how the framework applies in one line. The consultant uses this to choose which framework to recommend, so it must be accurate and distinctive.
+
+--------------------------------------------------------------------------------
+FORMAT CONSTRAINTS (strict — output must drop into the file)
+--------------------------------------------------------------------------------
+- Each framework value in frameworkGuides is a single template literal string (no backticks inside the string; use straight quotes if needed). Use the exact section headers below so the agent parses consistently.
+- Section order and headers for each framework string:
+  [FRAMEWORK NAME] — REFERENCE
+  Author/Origin: ...
+  Impact: ...
+  How it's usually used: ...
+
+  EXAMPLES — How to apply [Framework name] to common goal types:
+  - "I want to read more" → ...
+  - "I want to get fit" → ...
+  (etc.)
+
+- Keep each example to 1–2 sentences. No bullet nesting inside the arrow (→) part.
+- frameworkGuideForConsultant: use the same structure as in the current file: a short intro line, then one bullet per framework in the form:
+  - **Name:** Author/origin. One sentence on what it is. Best for: ... Example: "Goal" → one-line application.
+
+- Total length: Each framework block will be injected into an LLM context window. Be comprehensive but concise. Aim for roughly 300–600 words per framework for frameworkGuides; 80–120 words total for frameworkGuideForConsultant.
+
+--------------------------------------------------------------------------------
+QUALITY BAR
+--------------------------------------------------------------------------------
+- Prefer primary sources: the author's own words, their books, interviews, or official materials.
+- If the author uses the framework in a specific way (e.g. Robbins' exact RPM flow, Grove's OKR cadence), include that.
+- Distinguish "how experts use it" from "generic internet summary."
+- Examples should be concrete enough that the agent can mirror them (e.g. "Run a 5K in under 30 min" not "get healthier").
+- No hallucination: if you're unsure about origin or usage, say so or keep the current line; do not invent citations.
+
+--------------------------------------------------------------------------------
+OUTPUT FORMAT FOR THE RESEARCH LLM
+--------------------------------------------------------------------------------
+Produce your answer in two parts:
+
+PART 1 — Revised frameworkGuides content
+For each key ("pareto", "rpm", "first-principles", "eisenhower", "okr", "gps", "misogi"), output the exact string content that should go inside the backticks (the value of that key). Use the section headers above. The recipient will paste each block into the existing frameworkGuides.ts file, replacing the current value for that key.
+
+PART 2 — Revised frameworkGuideForConsultant content
+Output the exact string that should replace the current frameworkGuideForConsultant body (the trim() content). Same structure: intro line, then one bullet per framework.
+
+If you prefer to output the full updated TypeScript file instead (with all keys and the consultant block), you may do so; the recipient will replace the entire file content. In that case, preserve the top comment and the exact export names and structure.
+
+================================================================================
+END OF PROMPT
+================================================================================

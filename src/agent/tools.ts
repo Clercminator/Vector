@@ -2,7 +2,7 @@ import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 
 const setFrameworkSchema = z.object({
-  framework: z.enum(["first-principles", "pareto", "rpm", "eisenhower", "okr", "gps", "misogi"]).describe("The framework ID to switch to.")
+  framework: z.enum(["first-principles", "pareto", "rpm", "eisenhower", "okr", "gps", "misogi", "dsss", "mandalas"]).describe("The framework ID to switch to.")
 });
 
 export const setFrameworkTool = tool(async ({ framework }) => {
