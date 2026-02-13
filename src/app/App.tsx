@@ -282,16 +282,18 @@ function App() {
   };
 
   const handleStartWizard = (fwId?: Framework, context?: any) => {
-    // Enforce Auth for Chat UI logic
     if (!userId) {
         toast.error(t('app.profile.signInRequired') || "Please sign in to start.");
         setAuthOpen(true);
         return;
     }
     setSelectedFramework(fwId);
-    setActiveBlueprint(undefined); // New blueprint
+    setActiveBlueprint(undefined);
     navigate('/wizard', { state: { framework: fwId, context } });
   };
+
+  /** Entry point for "Help me find the best framework" flow: wizard starts with consultant (no pre-selected framework). Used by Get Started, + New Plan, Create your first plan. */
+  const startHelpMeFindFrameworkFlow = () => handleStartWizard();
 
   const handleOpenBlueprint = (bp: Blueprint) => {
     setSelectedFramework(bp.framework as Framework);
@@ -559,7 +561,7 @@ function App() {
         onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
         onSignOut={handleSignOut}
         onSignIn={() => setAuthOpen(true)}
-        onGetStarted={() => handleStartWizard()}
+        onGetStarted={startHelpMeFindFrameworkFlow}
       />
 
       <MobileMenu
@@ -570,7 +572,7 @@ function App() {
         isAdmin={isAdmin}
         onSignOut={handleSignOut}
         onSignIn={() => setAuthOpen(true)}
-        onGetStarted={() => handleStartWizard()}
+        onGetStarted={startHelpMeFindFrameworkFlow}
       />
 
       <FeedbackButton
@@ -628,7 +630,7 @@ function App() {
                         loading={blueprintsLoading}
                         onOpenBlueprint={handleOpenBlueprint}
                         onDeleteBlueprint={handleDeleteBlueprint}
-                        onStartWizard={() => handleStartWizard()}
+                        onStartWizard={startHelpMeFindFrameworkFlow}
                         onPublishBlueprint={handlePublishBlueprint}
                         onLoadMore={handleLoadMore}
                         hasMore={hasMore}
