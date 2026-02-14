@@ -53,3 +53,9 @@ export const ZODIACS = [
   'aquarius',
   'pisces'
 ] as const;
+
+/** How much the user relies on zodiac for personality description. */
+export const ZODIAC_IMPORTANCE = ['super', 'somewhat', 'nothing'] as const;
+
+/** Preferred plan style for agent personalization. */
+export const PLAN_STYLES = ['action_focused', 'reflective', 'balanced'] as const;

@@ -565,9 +565,9 @@ function App() {
         {showHelpChoose && (
             <HelpMeChooseModal 
                 onClose={() => setShowHelpChoose(false)} 
-                onSelect={(fw) => {
+                onSelect={(fw, context) => {
                     setShowHelpChoose(false);
-                    handleStartWizard(fw);
+                    handleStartWizard(fw, context);
                 }}
             />
         )}

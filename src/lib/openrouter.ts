@@ -121,7 +121,12 @@ export async function chat(
 
 
 
-function buildSystemPrompt(framework: FrameworkId, userName?: string): string {
+function buildSystemPrompt(
+  framework: FrameworkId,
+  userName?: string,
+  userProfile?: string,
+  formContext?: string
+): string {
   let prompt = "";
   switch (framework) {
     case "first-principles":
@@ -139,10 +144,15 @@ function buildSystemPrompt(framework: FrameworkId, userName?: string): string {
     default:
       prompt = fpPrompt;
   }
-  
+
   if (userName) {
-    // Inject user name into the persona
     prompt = prompt.replace("You are a world-class", `You are a world-class architectural strategist assisting ${userName}. You are a world-class`);
+  }
+  if (userProfile?.trim()) {
+    prompt += `\n\nUSER PROFILE (personalize the plan to this person): ${userProfile.trim()}`;
+  }
+  if (formContext?.trim()) {
+    prompt += `\n\nINTAKE CONTEXT (what the user wrote in the form — use it): ${formContext.trim()}`;
   }
   return prompt;
 }
@@ -223,12 +233,14 @@ function validateAndSanitize(framework: FrameworkId, obj: unknown): BlueprintRes
 export async function generateBlueprintResult(
   framework: FrameworkId,
   answers: string[],
-  userName?: string
+  userName?: string,
+  userProfile?: string,
+  formContext?: string
 ): Promise<BlueprintResult | null> {
   if (!isOpenRouterConfigured()) return null;
 
   const userContent = `Framework: ${framework}\n\nAnswers (in order):\n${answers.map((a, i) => `${i + 1}. ${a}`).join("\n")}\n\nReturn the JSON object only.`;
-  const systemContent = buildSystemPrompt(framework, userName);
+  const systemContent = buildSystemPrompt(framework, userName, userProfile, formContext);
 
   let attempts = 0;
   const maxAttempts = 2; // 1 initial + 1 retry

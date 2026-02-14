@@ -7,7 +7,7 @@ import { invokeWithFallback } from "../utils";
 import { MESSAGE_WINDOW_SIZE, getEmptyMessageReply, MAX_USER_MESSAGE_CHARS, getLongMessageReply } from "../constants";
 
 export const askNode = async (state: AgentStateType) => {
-  const { goal, framework, messages, steps, language } = state;
+  const { goal, framework, messages, steps, language, userProfile = "", formContext = "" } = state;
   if (!framework) return {};
 
   const lastMsg = messages?.length ? messages[messages.length - 1] : null;
@@ -37,6 +37,8 @@ export const askNode = async (state: AgentStateType) => {
         .replace('{{frameworkContext}}', frameworkContexts[framework] || "")
         .replace('{{frameworkGuide}}', frameworkGuides[framework] || "")
         .replace('{{commonGoalsPatterns}}', commonGoalsAndPatterns)
+        .replace('{{userProfile}}', userProfile || "(none provided)")
+        .replace('{{formContext}}', formContext || "(none provided)")
         .replace('{{goal}}', goal)
         .replace('{{steps}}', steps.toString())
         .replace('{{toneInstructions}}', toneInstructions);

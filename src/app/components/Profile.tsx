@@ -48,16 +48,20 @@ interface ProfileData {
     gender?: string;
     country?: string;
     zodiac_sign?: string;
+    zodiac_importance?: string; // super | somewhat | nothing
     hobbies?: string;
     skills?: string;
     interests?: string;
     values?: string;
     vision?: string;
+    other_observations?: string;
+    preferred_plan_style?: string; // action_focused | reflective | balanced
+    stay_on_track?: string; // what helps the user stay on track
   };
 }
 
 import { TIER_CONFIGS, TierId } from '@/lib/tiers';
-import { COUNTRIES, GENDERS, ZODIACS } from '@/lib/constants';
+import { COUNTRIES, GENDERS, ZODIACS, ZODIAC_IMPORTANCE, PLAN_STYLES } from '@/lib/constants';
 import { Lock } from 'lucide-react';
 
 import { useLanguage } from '@/app/components/language-provider';
@@ -98,11 +102,15 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
       gender: '',
       country: '',
       zodiac_sign: '',
+      zodiac_importance: '',
       hobbies: '',
       skills: '',
       interests: '',
       values: '',
-      vision: ''
+      vision: '',
+      other_observations: '',
+      preferred_plan_style: '',
+      stay_on_track: ''
     }
   });
 
@@ -133,7 +141,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
               branding_logo_url: profile.branding_logo_url || '',
               branding_color: profile.branding_color || '#000000',
               tier: profile.tier || 'free',
-              metadata: profile.metadata || { demographics: '', age: '', gender: '', country: '', zodiac_sign: '', hobbies: '', skills: '', interests: '', values: '', vision: '' },
+              metadata: profile.metadata || { demographics: '', age: '', gender: '', country: '', zodiac_sign: '', zodiac_importance: '', hobbies: '', skills: '', interests: '', values: '', vision: '', other_observations: '', preferred_plan_style: '', stay_on_track: '' },
             });
           }
         }
@@ -460,7 +468,9 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
             <User size={20} className="text-gray-400" />
             {t('profile.personalInfo')}
           </h3>
-          
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-4">
+            {t('profile.personalInfoHint')}
+          </p>
           <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-black dark:text-white">{t('auth.emailAddress')}</Label>
@@ -532,7 +542,7 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
                     </Select>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="country" className="text-black dark:text-white">{t('profile.country')}</Label>
                     <Select 
@@ -561,6 +571,22 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
                         <SelectContent>
                             {ZODIACS.map((o: string) => (
                                 <SelectItem key={o} value={o}>{t(`zodiac.${o}`)}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="zodiac_importance" className="text-black dark:text-white">{t('profile.zodiacImportance')}</Label>
+                    <Select 
+                        value={data.metadata?.zodiac_importance || ''} 
+                        onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, zodiac_importance: val } })}
+                    >
+                        <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                            <SelectValue placeholder={t('profile.zodiacImportancePlaceholder') || "Select"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {ZODIAC_IMPORTANCE.map((o: string) => (
+                                <SelectItem key={o} value={o}>{t(`profile.zodiacImportance.${o}`)}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -600,7 +626,45 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
                />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="preferred_plan_style" className="text-black dark:text-white">{t('profile.preferredPlanStyle')}</Label>
+              <Select 
+                value={data.metadata?.preferred_plan_style || ''} 
+                onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, preferred_plan_style: val } })}
+              >
+                <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                  <SelectValue placeholder={t('profile.preferredPlanStylePlaceholder') || "Select style"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {PLAN_STYLES.map((o: string) => (
+                    <SelectItem key={o} value={o}>{t(`profile.planStyle.${o}`)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="stay_on_track" className="text-black dark:text-white">{t('profile.stayOnTrack')}</Label>
+              <Input 
+                id="stay_on_track" 
+                value={data.metadata?.stay_on_track || ''} 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, metadata: { ...data.metadata, stay_on_track: e.target.value } })}
+                placeholder={t('profile.stayOnTrackPlaceholder') || "e.g. Deadlines, accountability partner, daily reminders"}
+                className="bg-transparent dark:text-white dark:border-zinc-700"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="other_observations" className="text-black dark:text-white">{t('profile.otherObservations')}</Label>
+              <textarea 
+                id="other_observations" 
+                value={data.metadata?.other_observations || ''} 
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setData({ ...data, metadata: { ...data.metadata, other_observations: e.target.value } })}
+                placeholder={t('profile.otherObservationsPlaceholder') || "Anything else you want the agent to know when generating your plans..."}
+                rows={4}
+                className="w-full p-3 rounded-lg border border-gray-200 dark:border-zinc-700 bg-transparent dark:text-white placeholder:text-gray-400 resize-y min-h-[100px]"
+              />
+            </div>
 
             <div className="pt-4 flex justify-end">
               <Button onClick={handleSave} disabled={saving || loading} className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 cursor-pointer">

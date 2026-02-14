@@ -7,7 +7,7 @@ import { invokeWithFallback } from "../utils";
 import { MESSAGE_WINDOW_SIZE, getEmptyMessageReply, MAX_USER_MESSAGE_CHARS, getLongMessageReply } from "../constants";
 
 export const consultantNode = async (state: AgentStateType) => {
-    const { goal, tier, validFrameworks, messages, language } = state;
+    const { goal, tier, validFrameworks, messages, language, userProfile = "", formContext = "" } = state;
 
     const lastMsg = messages?.length ? messages[messages.length - 1] : null;
     if (lastMsg instanceof HumanMessage) {
@@ -26,6 +26,8 @@ export const consultantNode = async (state: AgentStateType) => {
         .replace("{{tier}}", tier)
         .replace("{{valid_frameworks}}", validFrameworks.join(", "))
         .replace("{{all_frameworks}}", Object.keys(frameworkContexts).join(", "))
+        .replace("{{userProfile}}", userProfile || "(none provided)")
+        .replace("{{formContext}}", formContext || "(none provided)")
         .replace("{{framework_guide}}", frameworkGuideForConsultant)
         .replace("{{common_goals_patterns}}", commonGoalsAndPatterns);
         

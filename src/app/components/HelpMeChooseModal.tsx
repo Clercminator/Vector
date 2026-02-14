@@ -8,9 +8,18 @@ import { frameworks } from '@/lib/frameworks';
 import { toast } from 'sonner';
 import { useLanguage } from './language-provider';
 
+export interface IntakeFormContext {
+  explanation: string;
+  objective: string;
+  stakes?: string;
+  horizon?: string;
+  obstacle?: string;
+  successLookLike?: string;
+}
+
 interface HelpMeChooseModalProps {
   onClose: () => void;
-  onSelect: (id: FrameworkId, context?: { explanation: string; objective: string }) => void;
+  onSelect: (id: FrameworkId, context?: IntakeFormContext) => void;
 }
 
 export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps) {
@@ -209,7 +218,7 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
                          <Button variant="ghost" onClick={() => setSuggestion(null)} className="h-14 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-900">
                             {t('intake.tryAgain')}
                          </Button>
-                         <Button onClick={() => onSelect(suggestion!, { explanation, objective })} className="h-14 rounded-xl bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-gray-200 shadow-xl">
+                         <Button onClick={() => onSelect(suggestion!, { explanation, objective, stakes, horizon, obstacle, successLookLike })} className="h-14 rounded-xl bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-gray-200 shadow-xl">
                             {t('intake.useFramework')} <ArrowRight size={20} className="ml-2" />
                          </Button>
                     </div>

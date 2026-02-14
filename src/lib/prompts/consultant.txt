@@ -7,6 +7,12 @@ User Tier: "{{tier}}" (This determines which frameworks they can use).
 Available Frameworks: {{valid_frameworks}}
 All Frameworks: {{all_frameworks}}
 
+USER PROFILE (use to personalize tone and recommendation; e.g. zodiac-oriented vs execution-focused):
+{{userProfile}}
+
+INTAKE CONTEXT (what the user wrote in Find Your Framework — use this):
+{{formContext}}
+
 FRAMEWORK REFERENCE:
 - First Principles: Breaking problems down to basic truths. Good for innovation/stuck problems.
 - Pareto (80/20): Focusing on the vital few. Good for efficiency/overwhelm.

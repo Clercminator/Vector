@@ -39,6 +39,16 @@ export const AgentState = Annotation.Root({
   language: Annotation<string>({
     reducer: (x, y) => y ?? x,
     default: () => "en"
+  }),
+  /** Summary of user profile (display name, bio, age, gender, country, zodiac, interests, skills, hobbies) for personalized plans. */
+  userProfile: Annotation<string>({
+    reducer: (x, y) => y ?? x,
+    default: () => ""
+  }),
+  /** Intake form context: objective, stakes, horizon, obstacle, success look-like, explanation — so the agent uses what the user wrote. */
+  formContext: Annotation<string>({
+    reducer: (x, y) => y ?? x,
+    default: () => ""
   })
 });
 

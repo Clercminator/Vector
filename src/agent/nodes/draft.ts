@@ -5,7 +5,7 @@ import { invokeWithFallback } from "../utils";
 import { DRAFT_HISTORY_MAX_CHARS } from "../constants";
 
 export const draftNode = async (state: AgentStateType) => {
-  const { goal, framework, messages, tier, validFrameworks } = state;
+  const { goal, framework, messages, tier, validFrameworks, userProfile = "", formContext = "" } = state;
 
   const isLocked = !validFrameworks.includes(framework || "");
 
@@ -20,12 +20,16 @@ export const draftNode = async (state: AgentStateType) => {
       prompt = prompts.draftLocked
           .replace("{{framework}}", framework || "")
           .replace("{{goal}}", goal)
-          .replace("{{history}}", history);
+          .replace("{{history}}", history)
+          .replace("{{userProfile}}", userProfile || "(none)")
+          .replace("{{formContext}}", formContext || "(none)");
   } else {
       prompt = prompts.draftFull
           .replace("{{framework}}", framework || "")
           .replace("{{goal}}", goal)
-          .replace("{{history}}", history);
+          .replace("{{history}}", history)
+          .replace("{{userProfile}}", userProfile || "(none)")
+          .replace("{{formContext}}", formContext || "(none)");
   }
 
   const extractAndParse = (rawContent: string): object | null => {

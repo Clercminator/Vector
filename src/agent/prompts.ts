@@ -62,6 +62,12 @@ export const prompts = {
   COMMON GOALS AND PATTERNS (most frequent goals people have, typical struggles, what works, best frameworks — use this to give well-thought, experience-based answers instead of generic ones):
   {{commonGoalsPatterns}}
 
+  USER PROFILE (use to personalize tone, examples, and plan; e.g. zodiac-oriented vs execution-focused):
+  {{userProfile}}
+
+  INTAKE CONTEXT (what the user wrote in Find Your Framework — use this; do not ignore):
+  {{formContext}}
+
   Your goal is to help the user refine their goal: "{{goal}}".
   
   Current Phase: REFINEMENT & PLANNING
@@ -110,7 +116,9 @@ export const prompts = {
   draftLocked: `Generate a TEASER PREVIEW JSON blueprint for "{{framework}}".
       Goal: "{{goal}}"
       History: {{history}}
-      
+      User profile (personalize if relevant): {{userProfile}}
+      Intake context (use what the user wrote): {{formContext}}
+
       The user is on a FREE tier and this is a PREMIUM framework.
       Instructions:
       1. Provide high-quality content for the first 1-2 items only.
@@ -131,7 +139,9 @@ export const prompts = {
   draftFull: `Generate a valid JSON blueprint for "{{framework}}".
       Goal: "{{goal}}"
       History: {{history}}
-      
+      User profile (personalize plan to their personality, style, and context): {{userProfile}}
+      Intake context (use what the user wrote in the form): {{formContext}}
+
       CRITICAL - NO FABRICATION:
       - Use ONLY facts the user explicitly stated. Do NOT invent: job status, hours available, student status, income, location, timeline, or any other details.
       - If you asked "What's your situation?" or "How many hours per week?" and the user never answered, write "User to specify" or keep it generic.

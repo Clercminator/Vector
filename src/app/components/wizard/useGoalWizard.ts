@@ -50,6 +50,10 @@ export const useGoalWizard = ({
     const [tier, setTier] = useState<TierId>(propTier || DEFAULT_TIER_ID);
     const [userName, setUserName] = useState<string | undefined>(undefined);
     const [suggestionChips, setSuggestionChips] = useState<string[]>([]);
+    /** Summary of user profile for the agent (personalization). */
+    const [agentUserProfile, setAgentUserProfile] = useState<string>('');
+    /** Intake form context for the agent (what the user wrote in Find Your Framework). */
+    const [agentFormContext, setAgentFormContext] = useState<string>('');
     
     // Agent State
     const [threadId, setThreadId] = useState<string>(() => {
@@ -215,6 +219,9 @@ export const useGoalWizard = ({
         
         if (initialContext && initialContext.explanation) {
              initialMsg = `${initialContext.explanation}\n\n${t(currentConfig.questions?.[0] || 'wizard.agentStart')}`;
+             if (initialContext.objective) {
+               initialMsg += `\n\n${t('wizard.yourGoal') || "Your goal:"} "${initialContext.objective}"`;
+             }
         } else if (currentConfig.questions?.[0]) {
            initialMsg = currentConfig.questions[0];
         } else {
@@ -248,28 +255,64 @@ export const useGoalWizard = ({
         };
     }, []);
 
-    // User Profile
+    // User Profile (credits, tier, display_name + full profile for agent personalization)
     useEffect(() => {
-        if (supabase) {
-            supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
-                if (user) {
-                    if (user.id) {
-                        supabase.from('profiles').select('credits,tier,display_name').eq('user_id', user.id).single()
-                        .then(({ data }: { data: any }) => {
-                            if (data) {
-                                setCredits(data.credits ?? 1);
-                                if (data.tier) setTier(data.tier as TierId);
-                                if (data.display_name) setUserName(data.display_name);
-                            }
-                        })
-                        .catch(() => setCredits(1));
+        if (!supabase) return;
+        supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
+            if (!user?.id) {
+                setCredits(1);
+                return;
+            }
+            supabase.from('profiles')
+                .select('credits,tier,display_name,bio,metadata')
+                .eq('user_id', user.id)
+                .single()
+                .then(({ data }: { data: any }) => {
+                    if (data) {
+                        setCredits(data.credits ?? 1);
+                        if (data.tier) setTier(data.tier as TierId);
+                        if (data.display_name) setUserName(data.display_name);
+                        // Build profile summary for the agent (personality-aware plans)
+                        const meta = data.metadata || {};
+                        const parts: string[] = [];
+                        if (data.display_name) parts.push(`Name: ${data.display_name}`);
+                        if (data.bio) parts.push(`Bio/Mission: ${data.bio}`);
+                        if (meta.age) parts.push(`Age: ${meta.age}`);
+                        if (meta.gender) parts.push(`Gender: ${meta.gender}`);
+                        if (meta.country) parts.push(`Country: ${meta.country}`);
+                        if (meta.zodiac_sign) parts.push(`Zodiac: ${meta.zodiac_sign}`);
+                        if (meta.zodiac_importance) parts.push(`Zodiac importance for personality: ${meta.zodiac_importance}`);
+                        if (meta.interests) parts.push(`Interests: ${meta.interests}`);
+                        if (meta.skills) parts.push(`Skills: ${meta.skills}`);
+                        if (meta.hobbies) parts.push(`Hobbies: ${meta.hobbies}`);
+                        if (meta.values) parts.push(`Values: ${meta.values}`);
+                        if (meta.vision) parts.push(`Vision: ${meta.vision}`);
+                        if (meta.preferred_plan_style) parts.push(`Preferred plan style: ${meta.preferred_plan_style}`);
+                        if (meta.stay_on_track) parts.push(`What helps them stay on track: ${meta.stay_on_track}`);
+                        if (meta.other_observations) parts.push(`Other observations: ${meta.other_observations}`);
+                        setAgentUserProfile(parts.length ? parts.join('. ') : '');
                     }
-                } else {
-                    setCredits(1);
-                }
-            });
-        }
+                })
+                .catch(() => setCredits(1));
+        });
     }, []);
+
+    // Intake form context (from Find Your Framework) for the agent
+    useEffect(() => {
+        const ctx = (window.history.state?.usr?.context) || (location.state as { context?: { objective?: string; explanation?: string; stakes?: string; horizon?: string; obstacle?: string; successLookLike?: string } })?.context;
+        if (!ctx) {
+            setAgentFormContext('');
+            return;
+        }
+        const parts: string[] = [];
+        if (ctx.objective) parts.push(`Objective: ${ctx.objective}`);
+        if (ctx.stakes) parts.push(`Stakes: ${ctx.stakes}`);
+        if (ctx.horizon) parts.push(`Time horizon: ${ctx.horizon}`);
+        if (ctx.obstacle) parts.push(`Obstacle/situation: ${ctx.obstacle}`);
+        if (ctx.successLookLike) parts.push(`Success looks like: ${ctx.successLookLike}`);
+        if (ctx.explanation) parts.push(`Why this framework fits: ${ctx.explanation}`);
+        setAgentFormContext(parts.length ? parts.join('. ') : '');
+    }, [location.state]);
 
     // Locked Framework Check
     useEffect(() => {
@@ -446,7 +489,9 @@ export const useGoalWizard = ({
                 tier: tier,
                 validFrameworks: allowedFrameworks,
                 hardMode: isHardMode,
-                language: currentLang
+                language: currentLang,
+                userProfile: agentUserProfile,
+                formContext: agentFormContext
             };
 
             LOG('runAgent START', { threadId, framework, currentLang, goalLength: userText.length });
