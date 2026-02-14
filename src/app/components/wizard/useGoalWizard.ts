@@ -106,6 +106,7 @@ export const useGoalWizard = ({
             'okr': { title: t('okr.title'), questions: [t('okr.q1'), t('okr.q2'), t('okr.q3')] },
             'media': { title: t('misogi.title'), questions: [t('misogi.q1'), t('misogi.q2'), t('misogi.q3')] },
             'misogi': { title: t('misogi.title'), questions: [t('misogi.q1'), t('misogi.q2'), t('misogi.q3')] },
+            'dsss': { title: t('fw.dsss.title'), questions: [t('wizard.dsss.firstQuestion')] },
             'general': { title: t('fp.title'), questions: [t('fp.q1')] }
         };
         if (!fw) return { title: t('fp.title'), questions: [t('fp.q1')] }; // Default Goal Planner Generator
@@ -219,9 +220,7 @@ export const useGoalWizard = ({
         
         if (initialContext && initialContext.explanation) {
              initialMsg = `${initialContext.explanation}\n\n${t(currentConfig.questions?.[0] || 'wizard.agentStart')}`;
-             if (initialContext.objective) {
-               initialMsg += `\n\n${t('wizard.yourGoal') || "Your goal:"} "${initialContext.objective}"`;
-             }
+             // Do not append "Your goal: ..." here — the goal is already in form context for the agent; appending it made the first message look like the agent was answering its own question.
         } else if (currentConfig.questions?.[0]) {
            initialMsg = currentConfig.questions[0];
         } else {

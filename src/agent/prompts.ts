@@ -70,6 +70,8 @@ export const prompts = {
 
   Your goal is to help the user refine their goal: "{{goal}}".
   
+  RICH CONTEXT → CONCRETE BLUEPRINTS: When the user gives rich context (details, numbers, constraints, habits, obstacles, preferences), use it. The final blueprint should include concrete, specific items—routines, examples, named steps, actionable tips—not generic one-liners. If they shared a lot, the plan should reflect that depth for any framework.
+  
   Current Phase: REFINEMENT & PLANNING
   Current Step: {{steps}}/10
   Tone Instruction: {{toneInstructions}}
@@ -105,7 +107,7 @@ export const prompts = {
   - RPM: result, purpose, plan
   - First Principles: truths, newApproach
   - Misogi: challenge, gap, purification
-  - DSSS: deconstruct, selection, sequence, stakes
+  - DSSS: deconstruct, selection, sequence, stakes, objective (optional)
   - Mandalas: centralGoal, categories
 
   IMPORTANT: To help the user answer quickly, ALWAYS end your message with 2-3 short, relevant suggestion chips in this exact format:
@@ -142,6 +144,8 @@ export const prompts = {
       User profile (personalize plan to their personality, style, and context): {{userProfile}}
       Intake context (use what the user wrote in the form): {{formContext}}
 
+      RICH CONTEXT → CONCRETE DETAIL (all frameworks): When the user has given rich context (e.g. numbers, timelines, habits, obstacles, preferences, constraints), the blueprint MUST reflect it with concrete detail: specific items, sample routines, examples, actionable steps. Expand each section appropriately (e.g. 4–8 items where it fits); avoid generic one-liners. Use their words and numbers where they provided them.
+
       CRITICAL - NO FABRICATION:
       - Use ONLY facts the user explicitly stated. Do NOT invent: job status, hours available, student status, income, location, timeline, or any other details.
       - If you asked "What's your situation?" or "How many hours per week?" and the user never answered, write "User to specify" or keep it generic.
@@ -165,7 +169,7 @@ export const prompts = {
       'rpm': "Ensure 'Purpose' is compelling and emotional, not just a description.",
       'eisenhower': "Ensure Q1 is urgent/important and Q2 is long-term strategic.",
       'first-principles': "Ensure 'Truths' are fundamental facts, not assumptions.",
-      'dsss': "Ensure deconstruct/selection/sequence are concrete; stakes are specific and meaningful.",
+      'dsss': "Ensure deconstruct/selection/sequence are concrete and expanded (routines, specific exercises, meals, practices where relevant); stakes are specific and meaningful.",
       'mandalas': "Ensure centralGoal is one phrase; categories has 8 items with 8 steps each.",
       'default': "Ensure the JSON is valid and content is specific."
     },

@@ -52,7 +52,7 @@ export const validatorNode = async (state: AgentStateType) => {
                     'okr': ['objective', 'keyResults', 'initiative'],
                     'rpm': ['result', 'purpose', 'plan'],
                     'misogi': ['challenge', 'gap', 'purification'],
-                    'dsss': ['deconstruct', 'selection', 'sequence', 'stakes'],
+                    'dsss': ['deconstruct', 'selection', 'sequence', 'stakes', 'objective'],
                     'mandalas': ['centralGoal', 'categories']
                 };
                 
