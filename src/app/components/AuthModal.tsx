@@ -177,13 +177,13 @@ export function AuthModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md dark:bg-zinc-950 border-none shadow-2xl p-0 overflow-hidden rounded-3xl">
-        <div className="relative p-8 pt-10">
+      <DialogContent className="sm:max-w-md dark:bg-zinc-950 border-none shadow-2xl p-0 overflow-hidden rounded-3xl max-h-[90vh] flex flex-col">
+        <div className="relative p-6 pt-8 overflow-y-auto flex-1 min-h-0">
             {/* Background Decorative Gradient */}
-            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-blue-600/10 via-transparent to-transparent -z-10" />
+            <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-blue-600/10 via-transparent to-transparent -z-10" />
 
-            <DialogHeader className="mb-6">
-              <div className="flex items-center gap-3 mb-4">
+            <DialogHeader className="mb-4">
+              <div className="flex items-center gap-3 mb-3">
                   <Logo className="w-10 h-10 rounded-xl shadow-lg" />
                   <span className="font-bold text-xl tracking-tight text-zinc-900 dark:text-white">Vector</span>
               </div>
@@ -354,7 +354,7 @@ export function AuthModal({
                 </div>
             </div>
             
-            <p className="mt-6 text-center text-[10px] text-zinc-400 dark:text-zinc-600 px-4">
+            <p className="mt-4 text-center text-[10px] text-zinc-400 dark:text-zinc-600 px-2">
                 {t('auth.terms')}
             </p>
         </div>

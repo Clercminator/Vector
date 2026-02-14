@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 interface LandingPageProps {
     onStartWizard: (fwId?: Framework) => void;
     onShowHelpChoose: () => void;
+    /** Hero CTA: when not logged in opens auth modal, when logged in opens help-choose modal */
+    onHeroGetStarted?: () => void;
     onViewFramework: (fw: typeof frameworks[0]) => void;
     tier: TierId;
 }
@@ -20,6 +22,7 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ 
     onStartWizard, 
     onShowHelpChoose, 
+    onHeroGetStarted, 
     onViewFramework, 
     tier: tierProp 
 }) => {
@@ -70,7 +73,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </p>
                     <div className="flex justify-center">
                         <motion.button
-                            onClick={onShowHelpChoose}
+                            onClick={onHeroGetStarted ?? onShowHelpChoose}
                             className="cursor-pointer group relative px-12 py-6 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-xl md:text-2xl font-bold flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-2xl shadow-black/25 dark:shadow-white/10 border-2 border-transparent hover:border-gray-300 dark:hover:border-zinc-600 overflow-hidden"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}

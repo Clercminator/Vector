@@ -610,6 +610,15 @@ function App() {
                    <LandingPage 
                      onStartWizard={handleStartWizard}
                      onShowHelpChoose={() => setShowHelpChoose(true)}
+                     onHeroGetStarted={() => {
+                       if (!userId) {
+                         setAuthReason('signup_to_try');
+                         toast.info(t('app.auth.createAccountToTry') || 'Create an account to try the service.');
+                         setAuthOpen(true);
+                       } else {
+                         setShowHelpChoose(true);
+                       }
+                     }}
                      onViewFramework={setViewingFramework}
                      tier={tier}
                    />
