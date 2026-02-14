@@ -38,6 +38,7 @@ const AdminDashboard = React.lazy(() => import('@/app/components/AdminDashboard'
 const FrameworkPage = React.lazy(() => import('@/pages/FrameworkPage').then(module => ({ default: module.FrameworkPage })));
 const AnalyticsPage = React.lazy(() => import('@/pages/AnalyticsPage').then(module => ({ default: module.AnalyticsPage })));
 const LegalPage = React.lazy(() => import('@/pages/LegalPage').then(module => ({ default: module.LegalPage })));
+const AboutPage = React.lazy(() => import('@/pages/AboutPage').then(module => ({ default: module.AboutPage })));
 
 import { frameworks, Framework } from '@/lib/frameworks';
 
@@ -88,6 +89,10 @@ function App() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
+  const [authReason, setAuthReason] = useState<'signup_to_try' | null>(null);
+
+  const PROTECTED_PATHS = ['/wizard', '/dashboard', '/community', '/profile', '/analytics'];
 
   useEffect(() => {
     // Check if user has returned from payment
@@ -161,12 +166,14 @@ function App() {
         setTier(DEFAULT_TIER_ID);
         setHasMore(false); // Local blueprints don't support pagination yet
       }
+      setAuthReady(true);
     });
     
     if (!supabase) {
         setBlueprints(loadLocalBlueprints());
         setTier(DEFAULT_TIER_ID);
         setHasMore(false);
+        setAuthReady(true);
         return;
     }
 
@@ -200,6 +207,18 @@ function App() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Require account for protected routes: redirect to landing and ask to create account
+  useEffect(() => {
+    if (!authReady || userId) return;
+    const path = location.pathname;
+    const isProtected = PROTECTED_PATHS.some((p) => path === p || path.startsWith(p + '/'));
+    if (isProtected) {
+      navigate('/', { replace: true });
+      setAuthReason('signup_to_try');
+      setAuthOpen(true);
+    }
+  }, [authReady, userId, location.pathname, navigate]);
 
   const handleOnboardingComplete = () => {
     localStorage.setItem('vector.onboarding_done', 'true');
@@ -283,7 +302,8 @@ function App() {
 
   const handleStartWizard = (fwId?: Framework, context?: any) => {
     if (!userId) {
-        toast.error(t('app.profile.signInRequired') || "Please sign in to start.");
+        setAuthReason('signup_to_try');
+        toast.info(t('app.auth.createAccountToTry') || "Create an account to try the service.");
         setAuthOpen(true);
         return;
     }
@@ -517,7 +537,7 @@ function App() {
       </a>
       <ParticleBackground />
       <Toaster />
-      <AuthModal open={authOpen} onOpenChange={setAuthOpen} />
+      <AuthModal open={authOpen} onOpenChange={(open) => { setAuthOpen(open); if (!open) setAuthReason(null); }} reason={authReason} />
       
       {isOffline && (
           <div className="fixed bottom-4 left-4 z-50 bg-red-500 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
@@ -688,7 +708,18 @@ function App() {
                      </motion.div>
                  } />
 
-                <Route path="/legal" element={
+                <Route path="/about" element={
+                     <motion.div
+                       key="about"
+                       initial={{ opacity: 0, y: 20 }}
+                       animate={{ opacity: 1, y: 0 }}
+                       exit={{ opacity: 0, y: -20 }}
+                     >
+                        <AboutPage />
+                     </motion.div>
+                 } />
+
+                 <Route path="/legal" element={
                      <motion.div
                        key="legal"
                        initial={{ opacity: 0, y: 20 }}
@@ -750,7 +781,10 @@ function App() {
               <ShareButton />
             </span>
           </div>
-          <p className="text-sm text-gray-400">{t('footer.copyright')}</p>
+          <div className="flex flex-col items-center md:items-end gap-1">
+            <p className="text-sm text-gray-400">{t('footer.copyright')}</p>
+            <button onClick={() => navigate('/about')} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer">{t('footer.builtBy')}</button>
+          </div>
         </div>
       </footer>
       )}

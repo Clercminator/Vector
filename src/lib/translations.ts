@@ -9,6 +9,7 @@ export const translations = {
     'nav.signin': 'Sign in',
     'nav.signout': 'Sign out',
     'nav.getStarted': 'Get Started',
+    'nav.about': 'About',
     'nav.admin': 'Admin',
     
     // Hero
@@ -28,6 +29,7 @@ export const translations = {
     'footer.security': 'Security',
     'footer.contact': 'Contact',
     'footer.copyright': '© 2026 Vector Architect AI',
+    'footer.builtBy': 'Created by David Clerc',
     'footer.liftoff': 'Experience liftoff',
 
     // Framework Card
@@ -233,6 +235,37 @@ export const translations = {
     'pricing.feature.enterprise.admin': 'Admin dashboard & analytics',
     'pricing.feature.enterprise.integration': 'Custom framework integration',
     'pricing.feature.enterprise.support': 'Dedicated support',
+
+    // Pricing FAQ / How it works
+    'pricing.faq.title': 'Understanding plans & features',
+    'pricing.faq.whatIsPlan.q': 'What is a plan?',
+    'pricing.faq.whatIsPlan.a': 'A plan is one full goal-architecture session: you pick a framework (e.g. first principles, Pareto), answer the guided questions, and get a structured blueprint with action steps. Each saved blueprint counts as one plan toward your tier limit.',
+    'pricing.faq.finalProduct.q': "What's the final product?",
+    'pricing.faq.finalProduct.a': 'You get a visual blueprint: a clear breakdown of your goal into phases, milestones, and concrete next steps. You can export it as PDF or add actions to your calendar (Google, Outlook) so you can execute it in the real world.',
+    'pricing.faq.modifiable.q': 'Is it modifiable?',
+    'pricing.faq.modifiable.a': 'Yes. You can refine your blueprint in the wizard (e.g. "add a task to check email daily") and re-export. Edits and re-saves of the same blueprint do not consume extra plans; only creating new blueprints counts toward your plan limit.',
+    'pricing.faq.framework.q': "What's a framework?",
+    'pricing.faq.framework.a': 'A framework is a mental model we use to deconstruct your goal—e.g. first-principles thinking, Pareto (80/20), or other structured approaches. You choose one per plan; all frameworks are included in every tier. The difference between tiers is how many plans you can create, not which frameworks you can use.',
+    'pricing.faq.refunds.q': 'How do refunds work?',
+    'pricing.faq.refunds.a': 'Paid tiers are one-time payments. If you are not satisfied, contact us with your purchase details and we will handle refund requests on a case-by-case basis in line with our terms of service.',
+    'pricing.faq.exporting.q': 'How does exporting work?',
+    'pricing.faq.exporting.a': 'You can export your blueprint as a PDF for offline use, and (on supported tiers) add action items to Google Calendar or Outlook via .ics. Export is available for every plan you create within your tier.',
+
+    // About
+    'about.title': 'About Vector',
+    'about.tagline': 'Why Vector exists and how it\'s different.',
+    'about.purpose.title': 'What is Vector?',
+    'about.purpose.body': 'Vector is an AI goal architect. It doesn\'t just chat—it uses proven mental models (first principles, Pareto, and others) to turn a vague ambition into a concrete blueprint: phases, milestones, and actionable next steps. You get a structured plan you can export and follow, not a long thread of generic advice.',
+    'about.vsLLM.title': 'Vector vs. ChatGPT, Gemini, Claude',
+    'about.vsLLM.body': 'Standard LLMs are great for open-ended conversation and broad knowledge. Vector is built for one job: deconstructing goals into executable plans. It guides you through a chosen framework step by step, keeps your answers in context, and produces a single, shareable blueprint. Think of it as a dedicated architect for your goals, not a generalist assistant.',
+    'about.founder.title': 'Who\'s behind Vector?',
+    'about.founder.body': 'Vector was created by David Clerc. You can trust that the product is built with a clear vision and care for how people set and pursue goals. Connect with David on LinkedIn to say hi or ask questions.',
+    'about.founder.name': 'David Clerc',
+    'about.founder.role': 'Founder',
+    'about.founder.linkedin': 'LinkedIn',
+    'about.video.title': 'Why Vector?',
+    'about.video.body': 'A short video from the founder on what inspired Vector and why it exists. Coming soon.',
+    'about.video.comingSoon': 'Video coming soon',
     
     // Community
     'community.title': 'Community Templates',
@@ -363,6 +396,8 @@ export const translations = {
     'app.sync.error': 'Could not sync blueprints',
     'app.sync.failed': 'Sync failed, saved locally',
     'app.auth.signedOut': 'Signed out',
+    'app.auth.createAccountToTry': 'Create an account to try the service.',
+    'app.profile.signInRequired': 'Please sign in to continue.',
     'app.blueprint.saved': 'Plan saved!',
     'app.blueprint.deleted': 'Plan deleted',
     'app.pricing.enterprise': 'Contact us for Enterprise',
@@ -407,6 +442,14 @@ export const translations = {
     'landing.howItWorks.step3.desc': 'Chat with Vector to create your step-by-step plan.',
     'landing.howItWorks.step4.title': 'Export or save',
     'landing.howItWorks.step4.desc': 'Download PDF, add to calendar, or save to your account.',
+    'landing.inspiredBy.title': 'Inspired by great minds',
+    'landing.inspiredBy.subtitle': 'Vector applies frameworks and methods from thought leaders you already trust.',
+    'authors.tonyRobbins.tagline': 'RPM Method',
+    'authors.timFerriss.tagline': 'DSSS & 4-Hour methods',
+    'authors.elonMusk.tagline': 'First principles',
+    'authors.eisenhower.tagline': 'Eisenhower Matrix',
+    'authors.pareto.tagline': '80/20 Principle',
+    'authors.johnDoerr.tagline': 'OKRs',
     'frameworks.helpMeChoose': 'Help me find the right framework',
     
     // Framework Titles & Questions
@@ -707,6 +750,7 @@ export const translations = {
     'nav.signin': 'Iniciar sesión',
     'nav.signout': 'Cerrar sesión',
     'nav.getStarted': 'Empezar',
+    'nav.about': 'Sobre nosotros',
     'nav.admin': 'Admin',
 
     // Hero
@@ -726,6 +770,7 @@ export const translations = {
     'footer.security': 'Seguridad',
     'footer.contact': 'Contacto',
     'footer.copyright': '© 2026 Vector Architect AI',
+    'footer.builtBy': 'Creado por David Clerc',
     'footer.liftoff': 'Experimenta el despegue',
 
      // Framework Card
@@ -933,6 +978,37 @@ export const translations = {
     'pricing.feature.enterprise.integration': 'Integración de métodos personalizados',
     'pricing.feature.enterprise.support': 'Soporte dedicado',
 
+    // Pricing FAQ / How it works
+    'pricing.faq.title': 'Entender los planes y las funciones',
+    'pricing.faq.whatIsPlan.q': '¿Qué es un plano?',
+    'pricing.faq.whatIsPlan.a': 'Un plano es una sesión completa de arquitectura de objetivos: eliges un método (p. ej. primeros principios, Pareto), respondes las preguntas guiadas y obtienes un blueprint estructurado con pasos de acción. Cada blueprint guardado cuenta como un plano dentro del límite de tu nivel.',
+    'pricing.faq.finalProduct.q': '¿Cuál es el resultado final?',
+    'pricing.faq.finalProduct.a': 'Obtienes un blueprint visual: un desglose claro de tu objetivo en fases, hitos y próximos pasos concretos. Puedes exportarlo en PDF o añadir acciones a tu calendario (Google, Outlook) para ejecutarlo en el día a día.',
+    'pricing.faq.modifiable.q': '¿Se puede modificar?',
+    'pricing.faq.modifiable.a': 'Sí. Puedes refinar tu blueprint en el asistente (p. ej. "añade una tarea para revisar el email a diario") y volver a exportar. Las ediciones y guardados del mismo blueprint no consumen planes adicionales; solo crear nuevos blueprints cuenta para tu límite.',
+    'pricing.faq.framework.q': '¿Qué es un método?',
+    'pricing.faq.framework.a': 'Un método es un modelo mental que usamos para desglosar tu objetivo—p. ej. primeros principios, Pareto (80/20) u otros enfoques estructurados. Eliges uno por plano; todos los métodos están incluidos en todos los niveles. La diferencia entre niveles es cuántos planos puedes crear, no qué métodos puedes usar.',
+    'pricing.faq.refunds.q': '¿Cómo funcionan los reembolsos?',
+    'pricing.faq.refunds.a': 'Los niveles de pago son pagos únicos. Si no estás satisfecho, contáctanos con los datos de tu compra y gestionaremos las solicitudes de reembolso caso por caso según nuestros términos de servicio.',
+    'pricing.faq.exporting.q': '¿Cómo funciona la exportación?',
+    'pricing.faq.exporting.a': 'Puedes exportar tu blueprint como PDF para uso offline y (en niveles compatibles) añadir acciones a Google Calendar o Outlook mediante .ics. La exportación está disponible para cada plano que crees dentro de tu nivel.',
+
+    // About
+    'about.title': 'Sobre Vector',
+    'about.tagline': 'Por qué existe Vector y en qué se diferencia.',
+    'about.purpose.title': '¿Qué es Vector?',
+    'about.purpose.body': 'Vector es un arquitecto de objetivos con IA. No solo conversa: usa modelos mentales probados (primeros principios, Pareto y otros) para convertir una ambición vaga en un blueprint concreto: fases, hitos y próximos pasos accionables. Obtienes un plan estructurado que puedes exportar y seguir, no un hilo largo de consejos genéricos.',
+    'about.vsLLM.title': 'Vector frente a ChatGPT, Gemini, Claude',
+    'about.vsLLM.body': 'Los LLM estándar son buenos para conversación abierta y conocimiento amplio. Vector está hecho para una cosa: desglosar objetivos en planes ejecutables. Te guía paso a paso por un método elegido, mantiene tus respuestas en contexto y produce un único blueprint compartible. Piénsalo como un arquitecto dedicado a tus objetivos, no un asistente generalista.',
+    'about.founder.title': '¿Quién está detrás de Vector?',
+    'about.founder.body': 'Vector fue creado por David Clerc. Puedes confiar en que el producto está construido con una visión clara y cuidado por cómo la gente define y persigue sus objetivos. Conecta con David en LinkedIn para saludar o hacer preguntas.',
+    'about.founder.name': 'David Clerc',
+    'about.founder.role': 'Fundador',
+    'about.founder.linkedin': 'LinkedIn',
+    'about.video.title': '¿Por qué Vector?',
+    'about.video.body': 'Un vídeo breve del fundador sobre qué inspiró Vector y por qué existe. Próximamente.',
+    'about.video.comingSoon': 'Vídeo próximamente',
+
     // Community
     'community.title': 'Plantillas de la Comunidad',
     'community.subtitle': 'Descubre y construye sobre las ambiciones de otros.',
@@ -1054,6 +1130,8 @@ export const translations = {
     'app.sync.error': 'No se pudieron sincronizar los planos',
     'app.sync.failed': 'Sincronización fallida, guardado localmente',
     'app.auth.signedOut': 'Sesión cerrada',
+    'app.auth.createAccountToTry': 'Crea una cuenta para probar el servicio.',
+    'app.profile.signInRequired': 'Inicia sesión para continuar.',
     'app.blueprint.saved': '¡Plano guardado!',
     'app.blueprint.deleted': 'Plano eliminado',
     'app.pricing.enterprise': 'Contáctanos para el plan Empresarial',
@@ -1080,9 +1158,9 @@ export const translations = {
     'feedback.admin.message': 'Mensaje',
     'feedback.admin.contact': 'Contacto',
     'feedback.admin.date': 'Fecha',
-    'landing.hero.architectYour': 'Arquitecta Tu',
+    'landing.hero.architectYour': 'Planifica Tu',
     'landing.hero.ambition': 'Ambición.',
-    'landing.hero.subtitle': 'Vector utiliza el pensamiento de primeros principios para convertir metas abstractas en planos arquitectónicos precisos.',
+    'landing.hero.subtitle': 'Vector utiliza el razonamiento profundo para convertir metas abstractas en planes de acción precisos.',
     'landing.hero.startBuilding': 'Empieza gratis',
     'landing.hero.viewPricing': 'Ver precios',
     'landing.hero.helpMePlan': 'Ayúdame a planear mi futuro',
@@ -1098,6 +1176,14 @@ export const translations = {
     'landing.howItWorks.step3.desc': 'Chatea con Vector para crear tu plan paso a paso.',
     'landing.howItWorks.step4.title': 'Exporta o guarda',
     'landing.howItWorks.step4.desc': 'Descarga PDF, añade al calendario o guarda en tu cuenta.',
+    'landing.inspiredBy.title': 'Inspirado por grandes mentes',
+    'landing.inspiredBy.subtitle': 'Vector aplica marcos y métodos de líderes de pensamiento en los que ya confías.',
+    'authors.tonyRobbins.tagline': 'Método RPM',
+    'authors.timFerriss.tagline': 'DSSS y métodos 4-Hour',
+    'authors.elonMusk.tagline': 'Primeros principios',
+    'authors.eisenhower.tagline': 'Matriz Eisenhower',
+    'authors.pareto.tagline': 'Principio 80/20',
+    'authors.johnDoerr.tagline': 'OKRs',
     'frameworks.helpMeChoose': 'Ayúdame a elegir el método adecuado',
 
     // Intake Modal
@@ -1302,6 +1388,7 @@ export const translations = {
     'nav.signin': 'Entrar',
     'nav.signout': 'Sair',
     'nav.getStarted': 'Começar',
+    'nav.about': 'Sobre',
     'nav.admin': 'Admin',
     'wizard.newConversation': 'Nova Conversa',
     'dashboard.new': 'Novo Modelo',
@@ -1324,6 +1411,7 @@ export const translations = {
     'footer.security': 'Segurança',
     'footer.contact': 'Contato',
     'footer.copyright': '© 2026 Vector Architect AI',
+    'footer.builtBy': 'Criado por David Clerc',
     'footer.liftoff': 'Decole',
 
     // Framework Card
@@ -1645,6 +1733,7 @@ export const translations = {
     'nav.signin': 'Se connecter',
     'nav.signout': 'Déconnexion',
     'nav.getStarted': 'Commencer',
+    'nav.about': 'À propos',
     'nav.admin': 'Admin',
     'wizard.newConversation': 'Nouvelle Conversation',
     'dashboard.new': 'Nouveau Modèle',
@@ -1667,6 +1756,7 @@ export const translations = {
     'footer.security': 'Sécurité',
     'footer.contact': 'Contact',
     'footer.copyright': '© 2026 Vector Architect AI',
+    'footer.builtBy': 'Créé par David Clerc',
     'footer.liftoff': 'Décollage',
 
     // Framework Card
@@ -1988,6 +2078,7 @@ export const translations = {
     'nav.signin': 'Anmelden',
     'nav.signout': 'Abmelden',
     'nav.getStarted': 'Starten',
+    'nav.about': 'Über uns',
     'nav.admin': 'Admin',
 
     // Hero
@@ -2008,6 +2099,7 @@ export const translations = {
     'footer.security': 'Sicherheit',
     'footer.contact': 'Kontakt',
     'footer.copyright': '© 2026 Vector Architect AI',
+    'footer.builtBy': 'Erstellt von David Clerc',
     'footer.liftoff': 'Erleben Sie den Start',
 
     // Framework Card

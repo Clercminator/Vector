@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { FrameworkCard } from '@/app/components/FrameworkCard';
 import { InspirationalQuote } from '@/app/components/InspirationalQuote';
 import { ArrowRight, Sparkles, Target, MessageSquare, Download } from 'lucide-react';
+import { InspiredBySection } from '@/app/components/InspiredBySection';
 import { useLanguage } from '@/app/components/language-provider';
 import { frameworks, Framework } from '@/lib/frameworks';
 import { canUseFramework, DEFAULT_TIER_ID, TierId } from '@/lib/tiers';
@@ -158,6 +159,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </div>
                 </div>
             </section>
+
+            {/* Inspired by — thought leaders behind the frameworks */}
+            <InspiredBySection />
 
             {/* Frameworks Section */}
             <section className="px-6 py-24 bg-gray-50/30 dark:bg-zinc-900/30 backdrop-blur-sm border-t border-gray-100 dark:border-zinc-800">

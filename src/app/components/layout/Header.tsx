@@ -48,6 +48,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <button onClick={() => navigate('/dashboard')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/dashboard' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/dashboard' ? 'page' : undefined}>{t('nav.blueprints')}</button>
                     )}
                     <button onClick={() => navigate('/pricing')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/pricing' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/pricing' ? 'page' : undefined}>{t('nav.pricing')}</button>
+                    <button onClick={() => navigate('/about')} className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === '/about' ? 'text-black dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'}`} aria-current={location.pathname === '/about' ? 'page' : undefined}>{t('nav.about')}</button>
                     
                     <div className="w-px h-4 bg-gray-200 dark:bg-gray-800 mx-2" />
                     

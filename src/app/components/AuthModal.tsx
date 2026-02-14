@@ -29,14 +29,23 @@ const GoogleIcon = ({ className }: { className?: string }) => (
 export function AuthModal({
   open,
   onOpenChange,
+  reason = null,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  reason?: 'signup_to_try' | null;
 }) {
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<Mode>("signin");
+
+  // When we need account to try the service, default to signup and show that message
+  React.useEffect(() => {
+    if (open && reason === 'signup_to_try') {
+      setMode('signup');
+    }
+  }, [open, reason]);
   const [isLoading, setIsLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captchaRef = React.useRef<HCaptcha>(null);
@@ -179,13 +188,15 @@ export function AuthModal({
                   <span className="font-bold text-xl tracking-tight text-zinc-900 dark:text-white">Vector</span>
               </div>
               <DialogTitle className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                {mode === "signin" ? t('auth.welcomeBack') : 
+                {reason === 'signup_to_try' ? t('auth.createAccount') :
+                 mode === "signin" ? t('auth.welcomeBack') : 
                  mode === "signup" ? t('auth.createAccount') :
                  mode === "forgot_password" ? t('auth.resetPassword') :
                  t('auth.continueSignIn')}
               </DialogTitle>
               <DialogDescription className="text-zinc-500 dark:text-zinc-400">
-                {mode === "signin" ? t('auth.credentialsDesc') :
+                {reason === 'signup_to_try' ? (t('app.auth.createAccountToTry') || 'Create an account to try the service.') :
+                 mode === "signin" ? t('auth.credentialsDesc') :
                  mode === "signup" ? t('auth.signupDesc2') :
                  mode === "forgot_password" ? t('auth.resetDesc') :
                  t('auth.magicLinkDesc')}

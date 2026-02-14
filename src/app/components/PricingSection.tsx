@@ -150,6 +150,39 @@ export const PricingSection: React.FC<{
           </motion.div>
         ))}
       </div>
+
+      {/* FAQ / How it works — clarify plans, product, framework, refunds, export */}
+      <div className="mt-24 max-w-3xl mx-auto border-t border-gray-100 dark:border-zinc-800 pt-16">
+        <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-10 text-black dark:text-white text-center">
+          {t('pricing.faq.title')}
+        </h3>
+        <dl className="space-y-8">
+          <div>
+            <dt className="text-base font-semibold text-gray-900 dark:text-white mb-2">{t('pricing.faq.whatIsPlan.q')}</dt>
+            <dd className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{t('pricing.faq.whatIsPlan.a')}</dd>
+          </div>
+          <div>
+            <dt className="text-base font-semibold text-gray-900 dark:text-white mb-2">{t('pricing.faq.finalProduct.q')}</dt>
+            <dd className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{t('pricing.faq.finalProduct.a')}</dd>
+          </div>
+          <div>
+            <dt className="text-base font-semibold text-gray-900 dark:text-white mb-2">{t('pricing.faq.modifiable.q')}</dt>
+            <dd className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{t('pricing.faq.modifiable.a')}</dd>
+          </div>
+          <div>
+            <dt className="text-base font-semibold text-gray-900 dark:text-white mb-2">{t('pricing.faq.framework.q')}</dt>
+            <dd className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{t('pricing.faq.framework.a')}</dd>
+          </div>
+          <div>
+            <dt className="text-base font-semibold text-gray-900 dark:text-white mb-2">{t('pricing.faq.refunds.q')}</dt>
+            <dd className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{t('pricing.faq.refunds.a')}</dd>
+          </div>
+          <div>
+            <dt className="text-base font-semibold text-gray-900 dark:text-white mb-2">{t('pricing.faq.exporting.q')}</dt>
+            <dd className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{t('pricing.faq.exporting.a')}</dd>
+          </div>
+        </dl>
+      </div>
     </section>
   );
 };
