@@ -1,21 +1,24 @@
 /**
  * Featured thought leaders whose frameworks appear in Vector.
- * Add photos at public/authors/{slug}.jpg for each; fallback shows initials.
+ * Add photos at public/images/authors/{slug}.{ext} for each (avif, webp, jpg, png supported); fallback shows initials.
  */
+export const AUTHOR_IMAGE_EXTENSIONS = ['avif', 'webp', 'jpg', 'png'] as const;
 export interface FeaturedAuthor {
   slug: string;
   name: string;
   /** Translation key for short attribution, e.g. "RPM Method" */
   taglineKey: string;
+  /** Optional exact filename in public/images/authors/ (e.g. "Tony Robbins.png"); if set, used instead of slug + extension */
+  imageFile?: string;
 }
 
 export const FEATURED_AUTHORS: FeaturedAuthor[] = [
-  { slug: 'tony-robbins', name: 'Tony Robbins', taglineKey: 'authors.tonyRobbins.tagline' },
-  { slug: 'tim-ferriss', name: 'Tim Ferriss', taglineKey: 'authors.timFerriss.tagline' },
-  { slug: 'elon-musk', name: 'Elon Musk', taglineKey: 'authors.elonMusk.tagline' },
-  { slug: 'dwight-eisenhower', name: 'Dwight D. Eisenhower', taglineKey: 'authors.eisenhower.tagline' },
-  { slug: 'vilfredo-pareto', name: 'Vilfredo Pareto', taglineKey: 'authors.pareto.tagline' },
-  { slug: 'john-doerr', name: 'John Doerr', taglineKey: 'authors.johnDoerr.tagline' },
+  { slug: 'tony-robbins', name: 'Tony Robbins', taglineKey: 'authors.tonyRobbins.tagline', imageFile: 'tony robbins.avif' },
+  { slug: 'tim-ferriss', name: 'Tim Ferriss', taglineKey: 'authors.timFerriss.tagline', imageFile: 'Tim-Ferriss.png' },
+  { slug: 'elon-musk', name: 'Elon Musk', taglineKey: 'authors.elonMusk.tagline', imageFile: 'elon musk 1.jpg' },
+  { slug: 'dwight-eisenhower', name: 'Dwight D. Eisenhower', taglineKey: 'authors.eisenhower.tagline', imageFile: 'dwight-d-eisenhower.jpg' },
+  { slug: 'vilfredo-pareto', name: 'Vilfredo Pareto', taglineKey: 'authors.pareto.tagline', imageFile: 'Vilfredo_Pareto.jpg' },
+  { slug: 'john-doerr', name: 'John Doerr', taglineKey: 'authors.johnDoerr.tagline', imageFile: 'John Doerr.webp' },
 ];
 
 /** Get initials for fallback avatar (e.g. "Tony Robbins" → "TR") */

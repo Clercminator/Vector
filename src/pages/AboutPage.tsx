@@ -1,12 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ArrowLeft, Linkedin, User } from 'lucide-react';
+import { ArrowLeft, Github, Linkedin, User } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { useLanguage } from '@/app/components/language-provider';
 import { InspiredBySection } from '@/app/components/InspiredBySection';
 
 const FOUNDER_LINKEDIN = 'https://www.linkedin.com/in/david-clerc';
+const FOUNDER_GITHUB = 'https://github.com/Clercminator';
 
 export function AboutPage() {
   const navigate = useNavigate();
@@ -14,8 +15,8 @@ export function AboutPage() {
   const [founderImgError, setFounderImgError] = React.useState(false);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950 text-gray-900 dark:text-gray-50 px-6 py-12">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-gray-50/30 dark:bg-zinc-900/30 backdrop-blur-sm text-gray-900 dark:text-gray-50 px-6 py-12">
+      <div className="max-w-3xl mx-auto relative z-10">
         <Button
           variant="ghost"
           onClick={() => navigate('/')}
@@ -63,7 +64,7 @@ export function AboutPage() {
             <InspiredBySection />
           </section>
 
-          {/* Founder / author credibility: face, name, role, LinkedIn */}
+          {/* Founder / author credibility: face, name, role, bio, LinkedIn, GitHub */}
           <section className="border-t border-gray-100 dark:border-zinc-800 pt-12">
             <h2 className="text-xl font-bold text-black dark:text-white mb-6">
               {t('about.founder.title')}
@@ -71,32 +72,45 @@ export function AboutPage() {
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-8">
               {t('about.founder.body')}
             </p>
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-              <div className="w-24 h-24 rounded-2xl bg-gray-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
-                {/* Add your photo at public/about/david-clerc.jpg to show it here */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
+              <div className="w-52 h-52 sm:w-64 sm:h-64 rounded-2xl bg-gray-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                 {!founderImgError ? (
                   <img
-                    src="/about/david-clerc.jpg"
+                    src="/images/authors/David%20Clerc%20empresarial%20traje.png"
                     alt={t('about.founder.name')}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                     onError={() => setFounderImgError(true)}
                   />
                 ) : (
                   <User size={40} className="text-gray-400 dark:text-gray-500" aria-hidden />
                 )}
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="font-bold text-lg text-black dark:text-white">{t('about.founder.name')}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{t('about.founder.role')}</p>
-                <a
-                  href={FOUNDER_LINKEDIN}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  <Linkedin size={18} />
-                  {t('about.founder.linkedin')}
-                </a>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{t('about.founder.role')}</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-4">
+                  {t('about.founder.bio')}
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <a
+                    href={FOUNDER_LINKEDIN}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    <Linkedin size={18} />
+                    {t('about.founder.linkedin')}
+                  </a>
+                  <a
+                    href={FOUNDER_GITHUB}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:underline"
+                  >
+                    <Github size={18} />
+                    {t('about.founder.github')}
+                  </a>
+                </div>
               </div>
             </div>
           </section>

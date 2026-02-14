@@ -100,10 +100,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </motion.div>
             </section>
 
-            {/* How it works — value prop & steps */}
+            {/* How it works — value prop & steps (same speckled background as "Elige tu método") */}
             <section
                 ref={howItWorksRef}
-                className="px-6 py-16 md:py-20 border-t border-gray-100 dark:border-zinc-800/80"
+                className="px-6 py-16 md:py-20 border-t border-gray-100 dark:border-zinc-800/80 bg-gray-50/30 dark:bg-zinc-900/30 backdrop-blur-sm"
             >
                 <div className="max-w-5xl mx-auto">
                     <motion.div

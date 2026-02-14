@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { useLanguage } from '@/app/components/language-provider';
-import { FEATURED_AUTHORS, getAuthorInitials } from '@/lib/featuredAuthors';
+import { FEATURED_AUTHORS, getAuthorInitials, AUTHOR_IMAGE_EXTENSIONS } from '@/lib/featuredAuthors';
 
 export function InspiredBySection() {
   const { t } = useLanguage();
-  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  /** Per-author index into AUTHOR_IMAGE_EXTENSIONS; when >= length, show initials */
+  const [formatIndex, setFormatIndex] = useState<Record<string, number>>({});
 
   const handleImageError = (slug: string) => {
-    setImageErrors((prev) => ({ ...prev, [slug]: true }));
+    setFormatIndex((prev) => {
+      const next = (prev[slug] ?? 0) + 1;
+      return { ...prev, [slug]: next };
+    });
   };
 
   return (
@@ -31,7 +35,15 @@ export function InspiredBySection() {
 
         <div className="flex flex-wrap justify-center gap-6 md:gap-8">
           {FEATURED_AUTHORS.map((author, i) => {
-            const showFallback = imageErrors[author.slug];
+            const idx = formatIndex[author.slug] ?? 0;
+            const useCustomFile = !!author.imageFile;
+            const showFallback = useCustomFile
+              ? (formatIndex[author.slug] ?? 0) >= 1
+              : idx >= AUTHOR_IMAGE_EXTENSIONS.length;
+            const ext = AUTHOR_IMAGE_EXTENSIONS[idx];
+            const src = useCustomFile
+              ? `/images/authors/${encodeURIComponent(author.imageFile!)}`
+              : `/images/authors/${author.slug}.${ext}`;
             return (
               <motion.div
                 key={author.slug}
@@ -44,7 +56,7 @@ export function InspiredBySection() {
                 <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-gray-200/80 dark:ring-zinc-700/80 group-hover:ring-gray-300 dark:group-hover:ring-zinc-600 transition-all">
                   {!showFallback ? (
                     <img
-                      src={`/authors/${author.slug}.jpg`}
+                      src={src}
                       alt={author.name}
                       className="w-full h-full object-cover"
                       onError={() => handleImageError(author.slug)}

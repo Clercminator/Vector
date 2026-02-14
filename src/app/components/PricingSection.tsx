@@ -4,6 +4,7 @@ import { Check } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '@/app/components/language-provider';
 import { TIER_CONFIGS, type TierId } from '@/lib/tiers';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/app/components/ui/accordion';
 
 export const PricingSection: React.FC<{ 
   onSelectTier?: (tierName: string, tierId?: string) => void;
@@ -152,36 +153,60 @@ export const PricingSection: React.FC<{
       </div>
 
       {/* FAQ / How it works — clarify plans, product, framework, refunds, export */}
-      <div className="mt-24 max-w-3xl mx-auto border-t border-gray-100 dark:border-zinc-800 pt-16">
+      <div className="mt-24 max-w-5xl mx-auto border-t border-gray-100 dark:border-zinc-800 pt-16">
         <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-10 text-black dark:text-white text-center">
           {t('pricing.faq.title')}
         </h3>
-        <dl className="space-y-8">
-          <div>
-            <dt className="text-base font-semibold text-gray-900 dark:text-white mb-2">{t('pricing.faq.whatIsPlan.q')}</dt>
-            <dd className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{t('pricing.faq.whatIsPlan.a')}</dd>
-          </div>
-          <div>
-            <dt className="text-base font-semibold text-gray-900 dark:text-white mb-2">{t('pricing.faq.finalProduct.q')}</dt>
-            <dd className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{t('pricing.faq.finalProduct.a')}</dd>
-          </div>
-          <div>
-            <dt className="text-base font-semibold text-gray-900 dark:text-white mb-2">{t('pricing.faq.modifiable.q')}</dt>
-            <dd className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{t('pricing.faq.modifiable.a')}</dd>
-          </div>
-          <div>
-            <dt className="text-base font-semibold text-gray-900 dark:text-white mb-2">{t('pricing.faq.framework.q')}</dt>
-            <dd className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{t('pricing.faq.framework.a')}</dd>
-          </div>
-          <div>
-            <dt className="text-base font-semibold text-gray-900 dark:text-white mb-2">{t('pricing.faq.refunds.q')}</dt>
-            <dd className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{t('pricing.faq.refunds.a')}</dd>
-          </div>
-          <div>
-            <dt className="text-base font-semibold text-gray-900 dark:text-white mb-2">{t('pricing.faq.exporting.q')}</dt>
-            <dd className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{t('pricing.faq.exporting.a')}</dd>
-          </div>
-        </dl>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="whatIsPlan" className="border-gray-200 dark:border-zinc-700">
+            <AccordionTrigger className="text-base font-semibold text-gray-900 dark:text-white hover:no-underline py-5">
+              {t('pricing.faq.whatIsPlan.q')}
+            </AccordionTrigger>
+            <AccordionContent className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+              {t('pricing.faq.whatIsPlan.a')}
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="finalProduct" className="border-gray-200 dark:border-zinc-700">
+            <AccordionTrigger className="text-base font-semibold text-gray-900 dark:text-white hover:no-underline py-5">
+              {t('pricing.faq.finalProduct.q')}
+            </AccordionTrigger>
+            <AccordionContent className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+              {t('pricing.faq.finalProduct.a')}
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="modifiable" className="border-gray-200 dark:border-zinc-700">
+            <AccordionTrigger className="text-base font-semibold text-gray-900 dark:text-white hover:no-underline py-5">
+              {t('pricing.faq.modifiable.q')}
+            </AccordionTrigger>
+            <AccordionContent className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+              {t('pricing.faq.modifiable.a')}
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="framework" className="border-gray-200 dark:border-zinc-700">
+            <AccordionTrigger className="text-base font-semibold text-gray-900 dark:text-white hover:no-underline py-5">
+              {t('pricing.faq.framework.q')}
+            </AccordionTrigger>
+            <AccordionContent className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+              {t('pricing.faq.framework.a')}
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="refunds" className="border-gray-200 dark:border-zinc-700">
+            <AccordionTrigger className="text-base font-semibold text-gray-900 dark:text-white hover:no-underline py-5">
+              {t('pricing.faq.refunds.q')}
+            </AccordionTrigger>
+            <AccordionContent className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+              {t('pricing.faq.refunds.a')}
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="exporting" className="border-gray-200 dark:border-zinc-700">
+            <AccordionTrigger className="text-base font-semibold text-gray-900 dark:text-white hover:no-underline py-5">
+              {t('pricing.faq.exporting.q')}
+            </AccordionTrigger>
+            <AccordionContent className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+              {t('pricing.faq.exporting.a')}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
     </section>
   );
