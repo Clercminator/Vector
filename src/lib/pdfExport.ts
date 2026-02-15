@@ -3,11 +3,11 @@ import { Blueprint } from "@/lib/blueprints";
 
 /** Vector app theme (from theme.css) — used when branding is not provided */
 const VECTOR_THEME = {
-  primary: [3, 2, 19] as [number, number, number],       // #030213
-  muted: [113, 113, 130] as [number, number, number],     // #717182
-  border: [0, 0, 0],                                      // rgba(0,0,0,0.1) → light gray
-  background: [255, 255, 255] as [number, number, number],
-  body: [0, 0, 0] as [number, number, number],
+  primary: [255, 255, 255] as [number, number, number],   // #FFFFFF (White text)
+  muted: [161, 161, 170] as [number, number, number],     // #A1A1AA (Zinc-400 equivalent for muted)
+  border: [51, 51, 51],                                   // #333333 (Dark border)
+  background: [17, 17, 17] as [number, number, number],   // #111111 (Dark background)
+  body: [228, 228, 231] as [number, number, number],      // #E4E4E7 (Zinc-200 for body text)
 };
 
 export interface PdfBranding {
@@ -54,10 +54,29 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
   // Vector theme colors (branding overrides primary only when provided)
   const primaryRgb = branding?.primaryColor ? hexToRgb(branding.primaryColor) : VECTOR_THEME.primary;
   const mutedRgb = VECTOR_THEME.muted;
+  const bgRgb = VECTOR_THEME.background;
+
   const setPrimary = () => doc.setTextColor(primaryRgb[0], primaryRgb[1], primaryRgb[2]);
   const setMuted = () => doc.setTextColor(mutedRgb[0], mutedRgb[1], mutedRgb[2]);
   const setBody = () => doc.setTextColor(VECTOR_THEME.body[0], VECTOR_THEME.body[1], VECTOR_THEME.body[2]);
   const setDrawPrimary = () => doc.setDrawColor(primaryRgb[0], primaryRgb[1], primaryRgb[2]);
+  const setDrawBorder = () => doc.setDrawColor(VECTOR_THEME.border[0], VECTOR_THEME.border[1], VECTOR_THEME.border[2]);
+
+  // Helper to fill background
+  const fillBackground = () => {
+      doc.setFillColor(bgRgb[0], bgRgb[1], bgRgb[2]);
+      doc.rect(0, 0, pageWidth, pageHeight, 'F');
+  };
+
+  // Helper to add new page with background
+  const addNewPage = () => {
+      doc.addPage();
+      fillBackground();
+      y = margin;
+  };
+
+  // Initial page background
+  fillBackground();
 
   // Branding: Logo
   if (branding?.logoUrl) {
@@ -85,8 +104,8 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
   doc.text(`Created: ${new Date(blueprint.createdAt).toLocaleDateString()}`, pageWidth - margin - 55, y);
   y += 14;
 
-  // Divider — Vector primary
-  setDrawPrimary();
+  // Divider — Vector border
+  setDrawBorder();
   doc.setLineWidth(0.8);
   doc.line(margin, y, pageWidth - margin, y);
   y += 14;
@@ -287,7 +306,7 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
   y += 14;
 
   // Divider before Q&A
-  setDrawPrimary();
+  setDrawBorder();
   doc.setLineWidth(0.5);
   doc.line(margin, y, pageWidth - margin, y);
   y += 12;
@@ -315,8 +334,7 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
       y += lines.length * 5 + 8;
 
       if (y > pageHeight - 30) {
-          doc.addPage();
-          y = margin;
+          addNewPage();
       }
   });
 
