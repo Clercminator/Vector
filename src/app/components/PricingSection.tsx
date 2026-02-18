@@ -5,6 +5,7 @@ import confetti from 'canvas-confetti';
 import { useLanguage } from '@/app/components/language-provider';
 import { TIER_CONFIGS, type TierId } from '@/lib/tiers';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/app/components/ui/accordion';
+import { trackEvent } from '@/lib/analytics';
 
 export const PricingSection: React.FC<{ 
   onSelectTier?: (tierName: string, tierId?: string) => void;
@@ -12,6 +13,10 @@ export const PricingSection: React.FC<{
   userEmail?: string | null;
 }> = ({ onSelectTier, currentTier, userEmail }) => {
   const { t } = useLanguage();
+
+  React.useEffect(() => {
+    trackEvent('view_pricing');
+  }, []);
 
   const tierIds: TierId[] = ['architect', 'standard', 'max', 'enterprise'];
   const tiers = tierIds.map((id) => {

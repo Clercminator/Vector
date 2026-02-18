@@ -12,6 +12,7 @@ import { ErrorBoundary } from '@/app/components/ErrorBoundary';
 import { Blueprint, loadLocalBlueprints, saveLocalBlueprints, upsertBlueprint, removeBlueprint, syncLocalBlueprintsToRemote, queueDeletedBlueprint, processDeletedQueue } from '@/lib/blueprints';
 import { supabase } from '@/lib/supabase';
 import { createCheckout, isMercadoPagoConfigured } from '@/lib/mercadoPago';
+import { trackEvent } from '@/lib/analytics'; // Imported trackEvent
 
 import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID } from '@/lib/tiers';
 import { checkAndAwardAchievements } from '@/lib/gamification';
@@ -143,6 +144,19 @@ function App() {
     };
   }, []);
 
+  // Referral Tracking
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get('ref');
+    if (refCode) {
+      // Basic validation: must be alphanumeric/underscore/dash, max 50 chars
+      if (/^[a-zA-Z0-9_-]{1,50}$/.test(refCode)) {
+        localStorage.setItem('vector_ref_code', refCode);
+        localStorage.setItem('vector_ref_timestamp', Date.now().toString());
+      }
+    }
+  }, []);
+
   useEffect(() => {
     // Check initial session
     supabase?.auth.getSession().then(({ data: { session } }) => {
@@ -217,6 +231,38 @@ function App() {
          setIsAdmin(false);
          setAvatarUrl(null);
          setHasMore(false);
+      }
+      
+      // Handle Referral Attribution on Auth (both Sign In and Sign Up)
+      if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && session?.user) {
+         const refCode = localStorage.getItem('vector_ref_code');
+         // Check if we have a ref code and it's not expired (e.g. 30 days)
+         const refTimestamp = localStorage.getItem('vector_ref_timestamp');
+         const isExpired = refTimestamp && (Date.now() - parseInt(refTimestamp) > 30 * 24 * 60 * 60 * 1000);
+         
+         if (refCode && !isExpired) {
+             // We optimistically try to set it. If user already has one, it might fail or be ignored depending on RLS/Backend.
+             // But simpler here: check if profile already has one or just update. 
+             // Ideally we only set it if it's null.
+             supabase!.from('profiles').select('referrer_code').eq('user_id', session.user.id).single()
+             .then(({ data }) => {
+                 if (data && !data.referrer_code) {
+                     supabase!.from('profiles').update({ referrer_code: refCode }).eq('user_id', session.user.id)
+                     .then(({ error }) => {
+                         if (!error) {
+                             trackEvent('signup_referred', { referrer_code: refCode });
+                             // Clear it so we don't re-attribute (though check above handles it)
+                             localStorage.removeItem('vector_ref_code'); 
+                             localStorage.removeItem('vector_ref_timestamp');
+                         }
+                     });
+                 } else {
+                     // Already has referrer or error reading, clear local storage
+                     localStorage.removeItem('vector_ref_code');
+                     localStorage.removeItem('vector_ref_timestamp');
+                 }
+             });
+         }
       }
     });
 
@@ -370,7 +416,26 @@ function App() {
                       toast.success(`🎉 Level Up! You are now Level ${newLevel}!`, { duration: 5000 });
                       confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
                   }
+              }
 
+              // Analytics: Blueprint Created
+              // Check if this is the first blueprint for the user
+              // We can check local 'blueprints' state length BEFORE this save, 
+              // but since we updated state optimistically above (lines 341-348), 'blueprints' might already include it if we aren't careful?
+              // Actually 'handleSaveBlueprint' updates local state first.
+              // Let's use the DB count for accuracy or the 'existingIndex' check.
+              // If existingIndex === -1, it's a new insert.
+              if (existingIndex === -1) {
+                  // It's a creation
+                  const { count } = await supabase!.from('blueprints').select('*', { count: 'exact', head: true }).eq('user_id', userId);
+                  // If count is 1 (the one we just inserted), then it is first. 
+                  // Because upsert happened above. 
+                  // Note: upsertBlueprint usually returns data, but we didn't capture it returned.
+                  // Simpler: fire event. 'is_first' might be slightly off if parallel saves, but fine for analytics.
+                  trackEvent('blueprint_created', { 
+                      framework: bp.framework, 
+                      is_first: (count === 1) 
+                  });
               }
 
               // Check achievements

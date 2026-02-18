@@ -30,6 +30,7 @@ export interface CreateCheckoutOptions {
  * Requires: VITE_SUPABASE_URL (or VITE_supabase_url) set, and mercado-pago-preference Edge Function deployed with MERCADOPAGO_ACCESS_TOKEN in Secrets.
  */
 import { SupabaseClient } from "@supabase/supabase-js";
+import { trackEvent } from "./analytics";
 
 export async function createCheckout(supabase: SupabaseClient, options: CreateCheckoutOptions = {}): Promise<void> {
   const { data, error } = await supabase.functions.invoke('mercado-pago-preference', {
@@ -58,6 +59,12 @@ export async function createCheckout(supabase: SupabaseClient, options: CreateCh
   if (!init_point) {
     throw new Error("No checkout URL returned");
   }
+
+  // Track checkout started
+  // We don't await this to avoid delaying redirect, and we catch errors silently (implied by trackEvent)
+  trackEvent('checkout_started', { 
+    tier: options.tier 
+  });
 
   // Open in new tab so the app tab stays open; back button and return URL work correctly
   window.open(init_point, '_blank', 'noopener,noreferrer');

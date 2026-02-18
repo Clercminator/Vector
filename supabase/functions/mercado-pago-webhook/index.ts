@@ -124,6 +124,24 @@ async function handleWebhook(req: Request): Promise<Response> {
       metadata: paymentData,
     });
 
+    // Check for Referrer
+    const { data: profile } = await supabase.from("profiles").select("referrer_code").eq("user_id", targetUserId).single();
+    if (profile?.referrer_code) {
+        // Fire analytics event for commission tracking
+        await supabase.from("analytics_events").insert({
+            user_id: targetUserId,
+            event_type: 'payment_referred',
+            data: {
+                referrer_code: profile.referrer_code,
+                amount: amount,
+                currency: paymentData.currency_id || "USD",
+                tier: newTier,
+                payment_id: String(paymentId)
+            }
+        });
+        console.log(`Attributed payment to referrer: ${profile.referrer_code}`);
+    }
+
     if (payerEmail) {
       const tierLabel = newTier.charAt(0).toUpperCase() + newTier.slice(1);
       const emailBody = JSON.stringify({

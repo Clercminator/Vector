@@ -578,6 +578,10 @@ export const useGoalWizard = ({
                             });
                         }
                         LOG('blueprint from stream → setResult, decrement_credits');
+                        
+                        // Analytics: Wizard Completed
+                        // Only fire if it's a final blueprint (which is implied by !isTeaser logic above)
+                        trackEvent('wizard_completed', { framework: framework || bp.framework });
                     }
                 }
 
@@ -817,6 +821,7 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
                 }
             });
         }
+        trackEvent('wizard_completed', { framework: framework || (draftResult as any).framework });
     };
 
     const handleSave = async () => {

@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, useAnimation, AnimatePresence } from 'motion/react';
-import { Minimize2, ZoomIn, ZoomOut, RotateCcw, Copy, ArrowLeft, ArrowRight, Grid, Layout, MousePointerClick, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Minimize2, Copy, Grid, Layout, MousePointerClick, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { EditableText } from '../Editable';
 import { toast } from 'sonner';
 import { cn } from '../ui/utils';
@@ -103,7 +103,7 @@ const MandalaCell = ({
                             className="p-1.5 text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
                             title="Move Next"
                         >
-                            <ArrowRight size={14} />
+                            <ChevronRight size={14} /> 
                         </button>
                     </div>
                 )}
@@ -119,16 +119,12 @@ const MandalaCell = ({
     );
 };
 
-const ClusterValues = ({ 
+const ClusterDrillDown = ({ 
   title, 
   items, 
   isCenter = false,
   onTitleChange,
   onItemChange,
-  onFocus,
-  onDoubleClick,
-  isFocused, 
-  isZoomedIn,
   onReorder,
   onCopy
 }: { 
@@ -137,10 +133,6 @@ const ClusterValues = ({
   isCenter?: boolean,
   onTitleChange: (val: string) => void,
   onItemChange: (idx: number, val: string) => void,
-  onFocus?: () => void,
-  onDoubleClick?: () => void,
-  isFocused?: boolean,
-  isZoomedIn?: boolean,
   onReorder: (fromIdx: number, toIdx: number) => void,
   onCopy: (text: string) => void
 }) => {
@@ -152,30 +144,15 @@ const ClusterValues = ({
 
   return (
     <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.2 }}
       className={cn(
-        // FIX: Grid Rows 3 ensures it splits height evenly. h-full fills the parent.
-        "grid grid-cols-3 grid-rows-3 gap-2 md:gap-3 p-2 md:p-3 rounded-2xl border transition-all duration-300 h-full min-h-0", 
-        isCenter 
-          ? "bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700/50" 
-          : "bg-white/50 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-800",
-        isFocused && !isZoomedIn && "ring-2 ring-blue-500 shadow-xl z-10 bg-white dark:bg-black/40",
-         // When zoomed in, remove borders/bg from the cluster container to let cells breathe? Or keep them?
-         // Keeping them provides structure.
-        isZoomedIn && "gap-4 md:gap-6 p-6 md:p-10 border-none bg-transparent shadow-none"
+        "w-full h-full grid grid-cols-3 grid-rows-3 gap-4 md:gap-6 p-4 md:p-10",
+        // No border/bg for the container itself in drill-down, let cells float
+        "bg-transparent"
       )}
-      onClick={(e) => { 
-          if(onFocus) {
-              e.stopPropagation(); 
-              onFocus(); 
-          }
-      }}
-      onDoubleClick={(e) => {
-          if (onDoubleClick) {
-              e.stopPropagation();
-              onDoubleClick();
-          }
-      }}
-      layoutId={isCenter ? 'center-cluster' : undefined}
     >
       {Array.from({ length: 9 }).map((_, cellIndex) => {
         const { value, isTitle, itemIndex } = getCellData(cellIndex);
@@ -190,12 +167,10 @@ const ClusterValues = ({
             onMoveNext={() => !isTitle && itemIndex !== undefined ? onReorder(itemIndex, itemIndex + 1) : undefined}
             canMovePrev={itemIndex !== undefined && itemIndex > 0}
             canMoveNext={itemIndex !== undefined && itemIndex < 7}
-            isFocused={!!isFocused}
+            isFocused={true} // Always show controls in drill-down
             className={cn(
-                // h-full ensures it fills the row
-                "h-full min-h-0", 
-                isTitle && "md:col-span-1",
-                isZoomedIn && "shadow-lg text-lg min-h-[120px]" 
+                "h-full min-h-0 shadow-lg",
+                isTitle ? "text-lg md:text-xl lg:text-2xl" : "text-base md:text-lg"
             )}
           />
         );
@@ -204,15 +179,61 @@ const ClusterValues = ({
   );
 };
 
+const OverviewCard = ({
+    title,
+    isCenter,
+    onClick,
+    onChange
+}: {
+    title: string;
+    isCenter: boolean;
+    onClick: () => void;
+    onChange: (val: string) => void;
+}) => {
+    return (
+        <motion.div
+            layoutId={isCenter ? 'center-cluster-card' : undefined}
+            onClick={onClick}
+            className={cn(
+                "group cursor-pointer relative flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 h-full",
+                isCenter 
+                    ? "bg-blue-600 text-white border-blue-500 shadow-lg ring-4 ring-blue-500/10 hover:ring-blue-500/30" 
+                    : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-blue-400 dark:hover:border-blue-500/50 hover:shadow-lg"
+            )}
+        >
+             <div className="w-full text-center pointer-events-none group-hover:pointer-events-auto">
+                 {/* We allow editing even in overview, but clicking mostly triggers navigation unless clicking directly on text input */}
+                 <div onClick={(e) => e.stopPropagation()}> 
+                    <EditableText
+                        value={title}
+                        onChange={onChange}
+                        multiline
+                        className={cn(
+                            "text-center font-bold bg-transparent border-transparent w-full resize-none",
+                            isCenter 
+                                ? "text-lg md:text-xl text-white placeholder:text-blue-200 cursor-text" 
+                                : "text-base md:text-lg text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 cursor-text"
+                        )}
+                        placeholder={isCenter ? "Central Goal" : "Category"}
+                    />
+                 </div>
+             </div>
+             
+             {/* Hover Hint */}
+             <div className="absolute inset-x-0 bottom-2 opacity-0 group-hover:opacity-100 transition-opacity flex justify-center pointer-events-none">
+                <span className={cn("text-xs uppercase tracking-wider font-medium", isCenter ? "text-blue-100" : "text-zinc-400")}>
+                    Click to Open
+                </span>
+             </div>
+        </motion.div>
+    );
+};
+
 export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }) => {
   // State
   const [zoomIndex, setZoomIndex] = useState<number | null>(null); // null = overview, 0-8 = focused cluster
-  const [viewMode, setViewMode] = useState<'spatial' | 'list'>('spatial'); // Spatial = Prezi, List = Tabs
+  const [viewMode, setViewMode] = useState<'spatial' | 'list'>('spatial'); 
   const [showHint, setShowHint] = useState(true);
-  
-  // Animation Control
-  const containerRef = useRef<HTMLDivElement>(null);
-  const controls = useAnimation();
   
   // Dismiss hint
   useEffect(() => {
@@ -234,38 +255,10 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [viewMode, zoomIndex]);
 
-  // Update Animation when zoomIndex changes
-  useEffect(() => {
-      if (viewMode !== 'spatial') return;
-
-      if (zoomIndex === null) {
-          // Reset to Overview
-          // We removed scale(0.68) because the layout is now fully responsive (h-full w-full)
-          controls.start({
-              scale: 1,
-              x: 0,
-              y: 0,
-              transition: { duration: 0.6, type: "spring", bounce: 0.2 }
-          });
-      } else {
-          // Zoom into specific cluster
-          const pos = GRID_POSITIONS[zoomIndex];
-          const zoomLevel = 3.2; 
-          const xOffset = -(pos.x - 1) * 33.33 * zoomLevel; 
-          const yOffset = -(pos.y - 1) * 33.33 * zoomLevel;
-
-          controls.start({
-              scale: zoomLevel,
-              x: `${xOffset}%`,
-              y: `${yOffset}%`,
-              transition: { duration: 0.8, type: "spring", bounce: 0.2 }
-          });
-      }
-  }, [zoomIndex, viewMode]);
-
   const navigate = (direction: -1 | 1) => {
       if (zoomIndex === null) return;
       if (zoomIndex === CENTER_INDEX) {
+          // Navigating from center usually goes to first category or stays
           setZoomIndex(0);
           return;
       }
@@ -366,7 +359,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
   }
 
   return (
-    <div className="relative w-full h-[85vh] bg-slate-50 dark:bg-[#0a0a0a] rounded-[2rem] border border-slate-200 dark:border-white/5 shadow-inner select-none group overflow-hidden">
+    <div className="relative w-full h-[85vh] bg-slate-50 dark:bg-[#0a0a0a] rounded-[2rem] border border-slate-200 dark:border-white/5 shadow-inner select-none group overflow-hidden flex flex-col">
         
         {/* Background Grid Pattern */}
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" 
@@ -392,7 +385,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
             </button>
         </div>
 
-        {/* Navigation Overlays (Only when zoomed) */}
+        {/* Navigation & Back Button (Only when zoomed) */}
         <AnimatePresence>
             {zoomIndex !== null && (
                 <>
@@ -405,9 +398,9 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                     >
                         <button 
                             onClick={() => setZoomIndex(null)}
-                            className="flex items-center gap-2 px-4 py-2 bg-black/70 text-white rounded-full backdrop-blur-md hover:bg-black/90 transition-colors shadow-xl"
+                            className="flex items-center gap-2 px-4 py-2 bg-white/90 dark:bg-zinc-900/90 text-zinc-800 dark:text-zinc-200 rounded-full border border-white/20 backdrop-blur-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shadow-md"
                         >
-                            <Minimize2 size={16} /> <span className="text-sm font-medium">Overview</span>
+                            <Minimize2 size={16} /> <span className="text-sm font-medium">Back to Overview</span>
                         </button>
                     </motion.div>
 
@@ -447,69 +440,92 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                     className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 bg-black/70 text-white px-6 py-3 rounded-full backdrop-blur-md text-sm pointer-events-none flex items-center gap-2 shadow-xl border border-white/10"
                 >
                     <MousePointerClick size={16} className="animate-pulse" />
-                    Double-click any cluster to dive in
+                    Click any card to edit details
                 </motion.div>
             )}
         </AnimatePresence>
 
-        {/* Main Infinite Canvas */}
-        <div ref={containerRef} className="w-full h-full flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing">
-            <motion.div
-                animate={controls}
-                initial={{ scale: 1, x: 0, y: 0 }}
-                drag={zoomIndex === null}
-                dragConstraints={{ left: -100, right: 100, top: -100, bottom: 100 }}
-                dragElastic={0.1}
-                onDragStart={() => setShowHint(false)}
-                // THE FIX: w-full h-full matches container, grid-rows-3 ensures vertical fit
-                // Removed fixed aspect ratios and max-width that cause vertical overflow
-                className="w-full h-full max-w-[1600px] grid grid-cols-3 grid-rows-3 gap-2 md:gap-4 lg:gap-6 p-4 md:p-6 origin-center"
-            >
-                {GRID_POSITIONS.map((pos, gridIndex) => {
-                    const isCenter = gridIndex === CENTER_INDEX;
-                    const isZoomedIn = zoomIndex === gridIndex;
-                    
-                    if (isCenter) {
-                        return (
-                            <ClusterValues 
-                                key={gridIndex}
-                                title={result.centralGoal}
-                                items={(result.categories ?? []).map(c => c.name)}
-                                isCenter={true}
-                                onTitleChange={(val) => updateResult(['centralGoal'], val)}
-                                onItemChange={(idx, val) => updateCategoryName(idx, val)}
-                                onFocus={() => setZoomIndex(gridIndex)}
-                                onDoubleClick={() => setZoomIndex(gridIndex)}
-                                isFocused={zoomIndex === null} 
-                                isZoomedIn={isZoomedIn}
-                                onReorder={(from, to) => reorderCategories(from, to)}
-                                onCopy={handleCopy}
-                            />
-                        );
-                    } else {
-                        const catIndex = CATEGORY_GRID_INDICES.indexOf(gridIndex);
-                        const category = result.categories?.[catIndex];
-                        if (!category) return <div key={gridIndex} className="bg-transparent" />;
-                        
-                        return (
-                            <ClusterValues 
-                                key={gridIndex}
-                                title={category?.name ?? ""}
-                                items={category?.steps ?? []}
-                                isCenter={false}
-                                onTitleChange={(val) => updateCategoryName(catIndex, val)}
-                                onItemChange={(stepIdx, val) => updateStep(catIndex, stepIdx, val)}
-                                onFocus={() => setZoomIndex(gridIndex)}
-                                onDoubleClick={() => setZoomIndex(gridIndex)}
-                                isFocused={zoomIndex === null} 
-                                isZoomedIn={isZoomedIn}
-                                onReorder={(from, to) => reorderSteps(catIndex, from, to)}
-                                onCopy={handleCopy}
-                            />
-                        );
-                    }
-                })}
-            </motion.div>
+        {/* Main Content Area */}
+        <div className="w-full h-full flex items-center justify-center p-4 md:p-8 lg:p-12 overflow-hidden">
+            <AnimatePresence mode="wait">
+                {zoomIndex === null ? (
+                    // OVERVIEW MODE
+                    <motion.div 
+                        key="overview"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.3 }}
+                        className="w-full h-full max-w-[1200px] grid grid-cols-3 grid-rows-3 gap-3 md:gap-4 lg:gap-6"
+                    >
+                        {GRID_POSITIONS.map((_, gridIndex) => {
+                            const isCenter = gridIndex === CENTER_INDEX;
+                            if (isCenter) {
+                                return (
+                                    <OverviewCard
+                                        key={gridIndex}
+                                        title={result.centralGoal}
+                                        isCenter={true}
+                                        onClick={() => setZoomIndex(gridIndex)}
+                                        onChange={(val) => updateResult(['centralGoal'], val)}
+                                    />
+                                );
+                            } else {
+                                const catIndex = CATEGORY_GRID_INDICES.indexOf(gridIndex);
+                                const category = result.categories?.[catIndex];
+                                return (
+                                    <OverviewCard
+                                        key={gridIndex}
+                                        title={category?.name ?? ""}
+                                        isCenter={false}
+                                        onClick={() => setZoomIndex(gridIndex)}
+                                        onChange={(val) => updateCategoryName(catIndex, val)}
+                                    />
+                                );
+                            }
+                        })}
+                    </motion.div>
+                ) : (
+                    // DRILL-DOWN MODE
+                    <motion.div 
+                        key="drilldown"
+                        className="w-full h-full max-w-[1200px] flex items-center justify-center"
+                    >
+                         {/* We render the specific DrillDown cluster based on zoomIndex */}
+                         {(() => {
+                             if (zoomIndex === CENTER_INDEX) {
+                                  return (
+                                      <ClusterDrillDown 
+                                        title={result.centralGoal}
+                                        items={(result.categories ?? []).map(c => c.name)}
+                                        isCenter={true}
+                                        onTitleChange={(val) => updateResult(['centralGoal'], val)}
+                                        onItemChange={(idx, val) => updateCategoryName(idx, val)}
+                                        onReorder={(from, to) => reorderCategories(from, to)}
+                                        onCopy={handleCopy}
+                                      />
+                                  );
+                             } else {
+                                 const catIndex = CATEGORY_GRID_INDICES.indexOf(zoomIndex);
+                                 const category = result.categories?.[catIndex];
+                                 if (!category) return null;
+                                 
+                                 return (
+                                     <ClusterDrillDown 
+                                        title={category?.name ?? ""}
+                                        items={category?.steps ?? []}
+                                        isCenter={false}
+                                        onTitleChange={(val) => updateCategoryName(catIndex, val)}
+                                        onItemChange={(stepIdx, val) => updateStep(catIndex, stepIdx, val)}
+                                        onReorder={(from, to) => reorderSteps(catIndex, from, to)}
+                                        onCopy={handleCopy}
+                                     />
+                                 );
+                             }
+                         })()}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     </div>
   );

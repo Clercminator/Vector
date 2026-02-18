@@ -6,7 +6,13 @@ export type EventType =
   | 'export_pdf' 
   | 'login'
   | 'view_dashboard'
-  | 'view_community';
+  | 'view_community'
+  | 'wizard_started'
+  | 'wizard_completed'
+  | 'view_pricing'
+  | 'checkout_started'
+  | 'signup_referred'
+  | 'payment_referred';
 
 export async function trackEvent(eventType: EventType, meta: Record<string, any> = {}) {
   if (!supabase) return;

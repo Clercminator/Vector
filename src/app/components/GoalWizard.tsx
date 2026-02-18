@@ -7,6 +7,7 @@ import { blueprintToEvents, downloadIcs, exportEventsToGoogleCalendar, getGoogle
 import { exportToPdf } from '@/lib/pdfExport';
 import { TIER_CONFIGS, TierId } from '@/lib/tiers';
 import { useLanguage } from '@/app/components/language-provider';
+import { trackEvent } from '@/lib/analytics';
 
 import { WizardHeader } from './wizard/WizardHeader';
 import { WizardChat } from './wizard/WizardChat';
@@ -21,6 +22,12 @@ export type { GoalWizardHookProps as GoalWizardProps };
 export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
   const { t } = useLanguage();
   const [showMobileDraft, setShowMobileDraft] = useState(false);
+
+  React.useEffect(() => {
+      // Fire wizard_started once per session/mount
+      // We pass framework if available
+      trackEvent('wizard_started', { framework: props.framework });
+  }, []);
 
   // Hook handles all state logic
   const {
