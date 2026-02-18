@@ -325,14 +325,14 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
 
     return (
         <>
-            {/* Desktop Drawer */}
+            {/* Desktop Drawer — full height of container, overflow-hidden so inner scroll gets a proper height and isn't clipped */}
              <motion.div 
                initial={{ opacity: 0, x: 50 }}
                animate={{ opacity: 1, x: 0 }}
                exit={{ opacity: 0, x: 50 }}
-               className="hidden lg:flex lg:flex-col absolute right-0 top-0 bottom-0 w-96 bg-gray-50 dark:bg-zinc-900/50 border-l border-gray-200 dark:border-zinc-800 backdrop-blur-sm z-10 min-h-0"
+               className="hidden lg:flex lg:flex-col absolute right-0 top-0 bottom-0 w-96 bg-gray-50 dark:bg-zinc-900/50 border-l border-gray-200 dark:border-zinc-800 backdrop-blur-sm z-10 min-h-0 overflow-hidden"
              >
-                <div className="flex-none pt-4 px-4 pb-2">
+                <div className="flex-none shrink-0 pt-4 px-4 pb-2">
                     <div className="flex items-center gap-2 text-gray-400 uppercase tracking-widest text-xs font-bold">
                         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                         {isTyping || isAgentRunning ? t('wizard.liveDraft') : t('wizard.yourBlueprint')}
