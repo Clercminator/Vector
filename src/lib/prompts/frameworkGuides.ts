@@ -148,6 +148,18 @@ EXAMPLES — How to apply Mandala Chart to common goal types:
 - "I want to start a business" → Central goal: "Profitable [offer] by [date]"; 8 categories: Product, Marketing, Sales, Delivery, Finance, Team, Learning, Health; 8 steps each.
 - "I want to learn a language" → Central goal: "Conversational [language]"; 8 categories: Vocabulary, Grammar, Listening, Speaking, Reading, Writing, Immersion, Accountability; 8 steps each (e.g. Vocabulary: top 500 words by month 1, etc.).
 - "I want to balance life and work" → Central goal: "Integrated life"; 8 categories: Career, Health, Family, Friends, Learning, Fun, Finance, Contribution; 8 steps each to make each area concrete.`,
+
+  "ikigai": `IKIGAI — REFERENCE
+Author/Origin: Japanese concept (生き甲斐) meaning "reason for being" or "that which makes life worth living." Mieko Kamiya (1914–1979), psychiatrist and author of "Ikigai-ni-tsuite" (On the Meaning of Life), brought ikigai into psychological and popular discourse. The four-circle diagram (what you love, what you're good at, what the world needs, what you can be paid for) is a Western adaptation that crystallizes the search for purpose at the intersection of these domains.
+Impact: Reduces existential drift; bridges passion and livelihood. When all four overlap, the center is your ikigai—work or life direction that feels meaningful and sustainable. Not a quick fix; requires honest self-reflection and sometimes iteration (e.g. "world needs" can evolve).
+Especially strong for: Career change or "what should I do with my life"; burnout (reconnect to love and purpose); side projects (find overlap with paid work); retirement or semi-retirement (what gives meaning beyond salary); life design (align daily actions with reason for being).
+How it's usually used: (1) What you love: activities or topics that make you lose track of time; passion without obligation. (2) What you're good at: skills, strengths, what people ask you for. (3) What the world needs: problems you care about, causes, gaps you see. (4) What you can be paid for: where skills meet demand, viable work. (5) Purpose: one phrase at the intersection—your ikigai. Refine until it feels true.
+Pitfalls: The "perfect" intersection can feel narrow or unreachable; treat it as a direction, not a single job title. Avoid mistaking "what you're good at" for "what you love"—they can differ. Ikigai can evolve; revisit as life changes.
+
+EXAMPLES — How to apply Ikigai to common goal types:
+- "What should I do with my life?" → Love: teaching, storytelling; Good at: simplifying complexity, writing; World needs: science literacy, critical thinking; Paid for: curriculum design, content strategy; Purpose: "Making complex ideas accessible so people can make better decisions."
+- "I want to escape burnout" → Map all four; often "love" and "purpose" are buried under "paid for" and "good at" that no longer align; purpose might be "Work that leaves energy for family and creativity" and lead to a role or side-project shift.
+- "I want to start a side project" → Find the overlap of love + world needs + (eventually) paid for; good at can be developed; purpose = one-sentence North Star for the project.`,
 };
 
 /**
@@ -176,4 +188,6 @@ When to choose which: Overwhelm or "too much to do" → Pareto or Eisenhower. La
 - **DSSS (Tim Ferriss):** Deconstruct, Select (20%), Sequence, Stakes. Meta-learning for rapid skill acquisition. Especially strong for language learning—Ferriss is famous for learning languages extremely fast using DSSS. Best for: any skill with clear subcomponents (language, instrument, sport, career). Pitfall: needs good analysis; stakes should be meaningful not destructive. Example: "Learn a language" → Deconstruct grammar/vocab, Select top 1,200 words, Sequence sentence structures, Stakes $100 on conversation test.
 
 - **Mandala Chart:** 9x9 grid: 1 central goal + 8 categories × 8 steps = 64 items. Used by Shohei Ohtani and others. Best for: one big holistic goal (best player, life balance) with many dimensions. Pitfall: 64 items can be complex; choose 8 categories carefully. Example: Central goal "Best player"; 8 areas: Fitness, Mental, Control, Speed, Luck, Human Quality, etc., each with 8 steps.
+
+- **Ikigai (Mieko Kamiya):** Japanese "reason for being." Four circles: what you love, what you're good at, what the world needs, what you can be paid for; center = purpose. Best for: career/life direction, burnout, "what should I do with my life." Pitfall: intersection can feel narrow; treat as direction. Example: Love teaching, good at explaining, world needs STEM educators, paid for curriculum design → Purpose: making science accessible.
 `.trim();

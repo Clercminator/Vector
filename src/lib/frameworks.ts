@@ -1,4 +1,4 @@
-import { Brain, Layers, Target, Rocket, Compass, Flame } from "lucide-react";
+import { Brain, Layers, Target, Rocket, Compass, Flame, Heart } from "lucide-react";
 
 export type Framework =
   | "first-principles"
@@ -9,7 +9,8 @@ export type Framework =
   | "dsss"
   | "mandalas"
   | "gps"
-  | "misogi";
+  | "misogi"
+  | "ikigai";
 
 export interface FrameworkDefinition {
   id: Framework;
@@ -203,7 +204,7 @@ export const frameworks: FrameworkDefinition[] = [
       "Undertake one defining challenge this year with a 50% chance of success to reset your spiritual baseline.",
     icon: Flame,
     color: "#E1306C", // Intense Pink/Red
-    author: "Shinto / Marcus Elliott",
+    author: "Jesse Itzler / Dr. Marcus Elliott",
     definition:
       "A voluntary hardship undertaken to purify the mind and body. Rule 1: It must be really hard (50% fail rate). Rule 2: You can't die.",
     pros: [
@@ -219,5 +220,29 @@ export const frameworks: FrameworkDefinition[] = [
     example:
       "Paddleboarding across a 30-mile channel without ever having paddled more than 5 miles.",
     questions: ['misogi.q1', 'misogi.q2', 'misogi.q3'],
+  },
+  {
+    id: "ikigai" as Framework,
+    title: "Ikigai",
+    description:
+      "Find your reason for being at the intersection of what you love, what you're good at, what the world needs, and what you can be paid for.",
+    icon: Heart,
+    color: "#DB2777", // Pink/Rose
+    author: "Mieko Kamiya",
+    definition:
+      "A Japanese concept meaning 'reason for being.' Your ikigai lies where four circles overlap: what you love (passion), what you're good at (profession), what the world needs (mission), and what you can be paid for (vocation). The center is your purpose.",
+    pros: [
+      "Clarity on life direction",
+      "Bridges passion and livelihood",
+      "Reduces existential drift",
+    ],
+    cons: [
+      "Requires deep self-reflection",
+      "The intersection can feel narrow",
+      "Takes time to articulate",
+    ],
+    example:
+      "Love: teaching. Good at: explaining complex ideas. World needs: STEM educators. Paid for: curriculum design. Purpose: creating courses that make science accessible.",
+    questions: ['ikigai.q1', 'ikigai.q2', 'ikigai.q3', 'ikigai.q4'],
   },
 ];

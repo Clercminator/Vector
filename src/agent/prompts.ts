@@ -15,7 +15,8 @@ export const frameworkContexts: Record<string, string> = {
   "gps": gpsPrompt,
   "misogi": "MISOGI: A framework for defining one year-defining challenge. 1. 50% chance of failure (hard). 2. You cannot die (safe). Ask: What is the Misogi? What is the gap? How will you purify yourself?",
   "dsss": "DSSS (Tim Ferriss): Deconstruct the skill into subcomponents, Select the 20% that deliver 80% of results, Sequence the order of learning, set Stakes (accountability). Output: deconstruct (array), selection (array), sequence (array), stakes (string).",
-  "mandalas": "MANDALA CHART: One central goal in the center; 8 categories supporting it, each with 8 actionable steps (64 items). Output: centralGoal (string), categories (array of { name: string, steps: string[] } with 8 categories, 8 steps each)."
+  "mandalas": "MANDALA CHART: One central goal in the center; 8 categories supporting it, each with 8 actionable steps (64 items). Output: centralGoal (string), categories (array of { name: string, steps: string[] } with 8 categories, 8 steps each).",
+  "ikigai": "IKIGAI: Japanese 'reason for being.' Four overlapping circles: (1) What you love (passion), (2) What you're good at (profession), (3) What the world needs (mission), (4) What you can be paid for (vocation). The intersection is purpose. Output: love (string), goodAt (string), worldNeeds (string), paidFor (string), purpose (string)."
 };
 
 export const prompts = {
@@ -110,6 +111,7 @@ export const prompts = {
   - Misogi: challenge, gap, purification
   - DSSS: deconstruct, selection, sequence, stakes, objective (optional)
   - Mandalas: centralGoal, categories
+  - Ikigai: love, goodAt, worldNeeds, paidFor, purpose
 
   IMPORTANT: To help the user answer quickly, ALWAYS end your message with 2-3 short, relevant suggestion chips in this exact format:
   ||| ["Suggestion 1", "Suggestion 2"]
@@ -136,6 +138,7 @@ export const prompts = {
       - 'okr': { "type": "okr", "objective": "The Objective...", "keyResults": ["KR 1..."], "initiative": "Upgrade...", "isTeaser": true }
       - 'dsss': { "type": "dsss", "deconstruct": ["..."], "selection": ["..."], "sequence": ["..."], "stakes": "Upgrade...", "isTeaser": true }
       - 'mandalas': { "type": "mandalas", "centralGoal": "...", "categories": [{ "name": "...", "steps": ["..."] }], "isTeaser": true }
+      - 'ikigai': { "type": "ikigai", "love": "...", "goodAt": "...", "worldNeeds": "...", "paidFor": "...", "purpose": "...", "isTeaser": true }
       
       Return ONLY the JSON.`,
 
@@ -161,6 +164,7 @@ export const prompts = {
       - 'gps': { "type": "gps", "goal": "...", "plan": ["..."], "system": ["..."], "anti_goals": ["..."] }
       - 'dsss': { "type": "dsss", "deconstruct": ["subskill or component"], "selection": ["the 20% to focus on"], "sequence": ["order of learning"], "stakes": "accountability commitment" }
       - 'mandalas': { "type": "mandalas", "centralGoal": "one phrase", "categories": [{ "name": "Category name", "steps": ["step 1", "step 2", ...] }] } — 8 categories, 8 steps each
+      - 'ikigai': { "type": "ikigai", "love": "what you love", "goodAt": "what you're good at", "worldNeeds": "what the world needs", "paidFor": "what you can be paid for", "purpose": "your ikigai (intersection)" }
       
       DSSS-specific: This JSON is the FINAL blueprint. Include concrete, actionable items (e.g. specific meal timing, workout days, recovery days, weekly targets) so the user can follow and optionally export to calendar. Do NOT add any follow-up question like "Ready to generate the full blueprint with exact numbers..." — this output IS the full blueprint.
       
@@ -174,6 +178,7 @@ export const prompts = {
       'first-principles': "Ensure 'Truths' are fundamental facts, not assumptions.",
       'dsss': "Ensure deconstruct/selection/sequence are concrete and expanded (routines, specific exercises, meals, practices where relevant); stakes are specific and meaningful.",
       'mandalas': "Ensure centralGoal is one phrase; categories has 8 items with 8 steps each.",
+      'ikigai': "Ensure love, goodAt, worldNeeds, paidFor, purpose are each a clear string; purpose is the intersection (reason for being).",
       'default': "Ensure the JSON is valid and content is specific."
     },
     

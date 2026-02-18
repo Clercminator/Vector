@@ -301,6 +301,39 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
         doc.text(stakesLines, margin + 5, y);
         y += stakesLines.length * 6 + 12;
     }
+    else if (result.type === 'ikigai') {
+        const ik = result as { purpose?: string; love?: string; goodAt?: string; worldNeeds?: string; paidFor?: string };
+        if (ik.purpose) {
+            doc.setFont("helvetica", "bold");
+            setPrimary();
+            doc.text("Your Ikigai (Purpose):", margin, y);
+            setBody();
+            y += 8;
+            doc.setFont("helvetica", "normal");
+            const lines = doc.splitTextToSize(ik.purpose, contentWidth);
+            doc.text(lines, margin + 5, y);
+            y += lines.length * 6 + 8;
+        }
+        for (const [label, val] of [
+            ["What you love", ik.love],
+            ["What you're good at", ik.goodAt],
+            ["What the world needs", ik.worldNeeds],
+            ["What you can be paid for", ik.paidFor],
+        ]) {
+            if (val) {
+                doc.setFont("helvetica", "bold");
+                setPrimary();
+                doc.text(`${label}:`, margin, y);
+                setBody();
+                y += 6;
+                doc.setFont("helvetica", "normal");
+                const textLines = doc.splitTextToSize(val, contentWidth);
+                doc.text(textLines, margin + 5, y);
+                y += textLines.length * 6 + 6;
+            }
+        }
+        y += 6;
+    }
   }
 
   y += 14;

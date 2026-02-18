@@ -19,6 +19,9 @@ export const FEATURED_AUTHORS: FeaturedAuthor[] = [
   { slug: 'dwight-eisenhower', name: 'Dwight D. Eisenhower', taglineKey: 'authors.eisenhower.tagline', imageFile: 'dwight-d-eisenhower.jpg' },
   { slug: 'vilfredo-pareto', name: 'Vilfredo Pareto', taglineKey: 'authors.pareto.tagline', imageFile: 'Vilfredo_Pareto.jpg' },
   { slug: 'john-doerr', name: 'John Doerr', taglineKey: 'authors.johnDoerr.tagline', imageFile: 'John Doerr.webp' },
+  { slug: 'mieko-kamiya', name: 'Mieko Kamiya', taglineKey: 'authors.miekoKamiya.tagline', imageFile: 'mieko-kamiya.jpg' },
+  { slug: 'jesse-itzler', name: 'Jesse Itzler', taglineKey: 'authors.jesseItzler.tagline', imageFile: 'jesse-itzler.jpg' },
+  { slug: 'marcus-elliott', name: 'Dr. Marcus Elliott', taglineKey: 'authors.marcusElliott.tagline', imageFile: 'marcus-elliott.jpg' },
 ];
 
 /** Get initials for fallback avatar (e.g. "Tony Robbins" → "TR") */

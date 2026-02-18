@@ -54,62 +54,197 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
   
         const renderBody = () => {
           if (draft.type === 'pareto') {
+              const vital = draft.vital ?? [];
+              const trivial = draft.trivial ?? [];
               return (
                   <div className="space-y-4">
                       <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-blue-100 dark:border-blue-900/30">
                           <h5 className="font-bold text-blue-600 text-sm mb-2">{t('pareto.vital')}</h5>
-                          <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
-                              {draft.vital?.map((v: string, i: number) => <li key={i}>{v}</li>)}
-                          </ul>
+                          {vital.length > 0 ? (
+                              <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                                  {vital.map((v: string, i: number) => <li key={i}>{v}</li>)}
+                              </ul>
+                          ) : (
+                              <p className="text-sm text-gray-400 dark:text-gray-500 italic">{t('wizard.planStepsPlaceholder')}</p>
+                          )}
                       </div>
-                       <div className="p-4 bg-gray-100 dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700">
+                      <div className="p-4 bg-gray-100 dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700">
                           <h5 className="font-bold text-gray-500 text-sm mb-2">{t('pareto.trivial')}</h5>
-                          <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400">
-                              {draft.trivial?.map((v: string, i: number) => <li key={i}>{v}</li>)}
-                          </ul>
+                          {trivial.length > 0 ? (
+                              <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400">
+                                  {trivial.map((v: string, i: number) => <li key={i}>{v}</li>)}
+                              </ul>
+                          ) : (
+                              <p className="text-sm text-gray-400 dark:text-gray-500 italic">{t('wizard.planStepsPlaceholder')}</p>
+                          )}
                       </div>
                   </div>
               );
           }
   
           if (draft.type === 'first-principles') {
+              const truths = draft.truths ?? [];
+              const newApproach = draft.newApproach?.trim() || '';
               return (
                   <div className="space-y-4">
                       <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200/80 dark:border-zinc-700/80">
                           <h5 className="font-bold text-slate-600 dark:text-slate-400 text-sm mb-2">{t('fp.truths')}</h5>
-                          <ul className="space-y-2 pl-4 border-l-2 border-slate-200 dark:border-zinc-600">
-                              {(draft.truths || []).map((truth: string, i: number) => <li key={i} className="text-sm text-gray-700 dark:text-gray-300">{truth}</li>)}
-                          </ul>
+                          {truths.length > 0 ? (
+                              <ul className="space-y-2 pl-4 border-l-2 border-slate-200 dark:border-zinc-600">
+                                  {truths.map((truth: string, i: number) => <li key={i} className="text-sm text-gray-700 dark:text-gray-300">{truth}</li>)}
+                              </ul>
+                          ) : (
+                              <p className="text-sm text-gray-400 dark:text-gray-500 italic">{t('wizard.planStepsPlaceholder')}</p>
+                          )}
                       </div>
                       <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-blue-100 dark:border-blue-900/40">
                           <h5 className="font-bold text-blue-600 dark:text-blue-400 text-sm mb-2">{t('fp.newApproach')}</h5>
-                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{draft.newApproach || "..."}</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{newApproach || t('wizard.planStepsPlaceholder')}</p>
                       </div>
                   </div>
               );
           }
 
           if (draft.type === 'okr') {
+              const hasKrs = Array.isArray(draft.keyResults) && draft.keyResults.length > 0;
+              const initiative = draft.initiative?.trim() || '';
               return (
                   <div className="space-y-4">
                        <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-900/40">
                           <h5 className="font-bold text-purple-600 text-sm mb-2">{t('okr.northStar')}</h5>
-                          <p className="text-lg font-bold text-gray-900 dark:text-white leading-tight">{draft.objective || "Defining..."}</p>
+                          <p className="text-lg font-bold text-gray-900 dark:text-white leading-tight">{draft.objective || t('wizard.planStepsPlaceholder')}</p>
                       </div>
                        <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
                           <h5 className="font-bold text-gray-500 text-sm mb-2">{t('okr.keyResult')}</h5>
-                          <ul className="space-y-2">
-                              {draft.keyResults?.map((kr: string, i: number) => (
-                                  <li key={i} className="flex gap-2 text-sm text-gray-700 dark:text-gray-300">
-                                      <span className="font-bold text-purple-400">{i+1}.</span> {kr}
-                                  </li>
-                              ))}
-                          </ul>
+                          {hasKrs ? (
+                              <ul className="space-y-2">
+                                  {draft.keyResults.map((kr: string, i: number) => (
+                                      <li key={i} className="flex gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                          <span className="font-bold text-purple-400 shrink-0">{i+1}.</span>
+                                          <span className="truncate">{kr}</span>
+                                      </li>
+                                  ))}
+                              </ul>
+                          ) : (
+                              <p className="text-sm text-gray-400 dark:text-gray-500 italic">{t('wizard.planStepsPlaceholder')}</p>
+                          )}
                       </div>
+                      {initiative && (
+                          <div className="p-4 bg-purple-100/50 dark:bg-purple-900/30 rounded-xl border border-purple-200/60 dark:border-purple-800/40">
+                              <h5 className="font-bold text-purple-600 dark:text-purple-400 text-sm mb-1.5">{t('okr.initiative')}</h5>
+                              <p className="text-sm text-gray-800 dark:text-gray-200 leading-snug line-clamp-2">{initiative}</p>
+                          </div>
+                      )}
                   </div>
               );
           }
   
+          if (draft.type === 'mandalas') {
+              const goal = draft.centralGoal?.trim() || '';
+              const categories = Array.isArray(draft.categories) ? draft.categories : [];
+              return (
+                  <div className="space-y-4">
+                      <div className="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200/60 dark:border-amber-800/40">
+                          <h5 className="font-bold text-amber-700 dark:text-amber-400 text-sm mb-1.5">{t('wizard.mandalaCentralGoal')}</h5>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{goal || t('wizard.planStepsPlaceholder')}</p>
+                      </div>
+                      <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+                          <h5 className="font-bold text-gray-500 dark:text-gray-400 text-sm mb-2">{t('wizard.mandalaCategories')}</h5>
+                          {categories.length > 0 ? (
+                              <ul className="space-y-1.5">
+                                  {categories.map((cat: { name?: string; steps?: string[] }, i: number) => (
+                                      <li key={i} className="flex items-center justify-between gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                          <span className="truncate">{cat.name || t('wizard.planStepsPlaceholder')}</span>
+                                          <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
+                                              {(cat.steps?.length ?? 0)}/8
+                                          </span>
+                                      </li>
+                                  ))}
+                              </ul>
+                          ) : (
+                              <p className="text-sm text-gray-400 dark:text-gray-500 italic">{t('wizard.planStepsPlaceholder')}</p>
+                          )}
+                      </div>
+                  </div>
+              );
+          }
+
+          if (draft.type === 'eisenhower') {
+              const q1 = draft.q1 ?? [];
+              const q2 = draft.q2 ?? [];
+              const q3 = draft.q3 ?? [];
+              const q4 = draft.q4 ?? [];
+              const quads = [
+                  { key: 'eisenhower.do', label: t('eisenhower.do'), items: q1, bg: 'bg-red-50 dark:bg-red-950/20 border-red-200/60 dark:border-red-900/30' },
+                  { key: 'eisenhower.schedule', label: t('eisenhower.schedule'), items: q2, bg: 'bg-blue-50 dark:bg-blue-950/20 border-blue-200/60 dark:border-blue-900/30' },
+                  { key: 'eisenhower.delegate', label: t('eisenhower.delegate'), items: q3, bg: 'bg-amber-50 dark:bg-amber-950/20 border-amber-200/60 dark:border-amber-900/30' },
+                  { key: 'eisenhower.eliminate', label: t('eisenhower.eliminate'), items: q4, bg: 'bg-gray-100 dark:bg-zinc-800/80 border-gray-200 dark:border-zinc-700' },
+              ];
+              return (
+                  <div className="grid grid-cols-2 gap-3">
+                      {quads.map((q) => (
+                          <div key={q.key} className={`p-3 rounded-xl border ${q.bg}`}>
+                              <h5 className="font-bold text-gray-700 dark:text-gray-300 text-xs mb-1.5 truncate">{q.label}</h5>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{q.items.length} {q.items.length === 1 ? 'item' : 'items'}</p>
+                          </div>
+                      ))}
+                  </div>
+              );
+          }
+
+          if (draft.type === 'misogi') {
+              const challenge = draft.challenge?.trim() || '';
+              const gap = draft.gap?.trim() || '';
+              const purification = draft.purification?.trim() || '';
+              return (
+                  <div className="space-y-4">
+                      <div className="p-4 bg-red-50 dark:bg-red-950/30 rounded-xl border border-red-200/60 dark:border-red-900/40">
+                          <h5 className="font-bold text-red-700 dark:text-red-400 text-sm mb-1.5">The Challenge</h5>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white leading-tight line-clamp-2">{challenge || t('wizard.planStepsPlaceholder')}</p>
+                      </div>
+                      <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+                          <h5 className="font-bold text-gray-500 dark:text-gray-400 text-sm mb-1.5">The Failure Gap</h5>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-snug line-clamp-2">{gap || t('wizard.planStepsPlaceholder')}</p>
+                      </div>
+                      <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+                          <h5 className="font-bold text-gray-500 dark:text-gray-400 text-sm mb-1.5">The Purification</h5>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-snug line-clamp-2">{purification || t('wizard.planStepsPlaceholder')}</p>
+                      </div>
+                  </div>
+              );
+          }
+
+          if (draft.type === 'ikigai') {
+              const purpose = draft.purpose?.trim() || '';
+              const love = draft.love?.trim() || '';
+              const goodAt = draft.goodAt?.trim() || '';
+              const worldNeeds = draft.worldNeeds?.trim() || '';
+              const paidFor = draft.paidFor?.trim() || '';
+              return (
+                  <div className="space-y-4">
+                      {purpose && (
+                          <div className="p-4 bg-rose-50 dark:bg-rose-950/30 rounded-xl border border-rose-200/60 dark:border-rose-900/40">
+                              <h5 className="font-bold text-rose-700 dark:text-rose-400 text-sm mb-1.5">{t('ikigai.purpose')}</h5>
+                              <p className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{purpose}</p>
+                          </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-2">
+                          {[
+                              { key: 'ikigai.love', label: t('ikigai.love'), val: love },
+                              { key: 'ikigai.goodAt', label: t('ikigai.goodAt'), val: goodAt },
+                              { key: 'ikigai.worldNeeds', label: t('ikigai.worldNeeds'), val: worldNeeds },
+                              { key: 'ikigai.paidFor', label: t('ikigai.paidFor'), val: paidFor },
+                          ].map(({ label, val }) => (
+                              <div key={label} className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+                                  <h5 className="font-bold text-gray-500 dark:text-gray-400 text-xs mb-1 truncate">{label}</h5>
+                                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-snug line-clamp-2">{val || t('wizard.planStepsPlaceholder')}</p>
+                              </div>
+                          ))}
+                      </div>
+                  </div>
+              );
+          }
+
           if (draft.type === 'rpm') {
               const hasPlan = draft.plan != null && Array.isArray(draft.plan) && draft.plan.length > 0;
               return (
@@ -140,24 +275,30 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
               );
           }
 
-          // Fallback
+          // Fallback (e.g. general, misogi, or unknown shape)
+          const eisenhowerLabels: Record<string, string> = { q1: 'eisenhower.do', q2: 'eisenhower.schedule', q3: 'eisenhower.delegate', q4: 'eisenhower.eliminate' };
           return (
               <div className="space-y-4">
                   {Object.entries(draft).map(([key, val]) => {
-                      if (key === 'type' || key === 'score' || !val) return null;
-                      const labelKey = draft.type === 'rpm' && (key === 'result' || key === 'purpose' || key === 'plan') ? (key === 'result' ? 'rpm.outcome' : key === 'purpose' ? 'rpm.purpose' : 'rpm.map') : null;
+                      if (key === 'type' || key === 'score') return null;
+                      const labelKey = draft.type === 'rpm' && (key === 'result' || key === 'purpose' || key === 'plan')
+                          ? (key === 'result' ? 'rpm.outcome' : key === 'purpose' ? 'rpm.purpose' : 'rpm.map')
+                          : draft.type === 'eisenhower' ? eisenhowerLabels[key] : null;
+                      const label = labelKey ? t(labelKey) : (key as string).replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase());
+                      const isEmpty = val == null || (Array.isArray(val) && val.length === 0) || (typeof val === 'string' && !val.trim());
+                      if (isEmpty) return null;
                       return (
                           <div key={key} className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
-                              <h5 className="font-bold text-gray-500 text-sm mb-2">{labelKey ? t(labelKey) : (key as string)}</h5>
+                              <h5 className="font-bold text-gray-500 text-sm mb-2">{label}</h5>
                               {Array.isArray(val) ? (
-                                  <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
-                                      {(val as string[]).map((v, i) => <li key={i}>{v}</li>)}
+                                  <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 space-y-0.5">
+                                      {(val as string[]).map((v, i) => (typeof v === 'string' ? <li key={i}>{v}</li> : null))}
                                   </ul>
                               ) : (
-                                  <p className="text-sm text-black dark:text-white">{val as string}</p>
+                                  <p className="text-sm text-black dark:text-white">{String(val)}</p>
                               )}
                           </div>
-                      )
+                      );
                   })}
               </div>
           );
@@ -171,6 +312,7 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
                              <span className="capitalize">{draft.type?.replace('-', ' ') || "Plan"}</span>
                          </h3>
                          <p className="text-xs text-gray-400 mt-1">{t('wizard.buildingPlanUpdates')}</p>
+                         <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 leading-snug">{t('wizard.draftPanelPurpose')}</p>
                      </div>
                      {draft.score !== undefined && <ScoreIndicator score={draft.score} />}
                  </div>

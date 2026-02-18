@@ -9,6 +9,7 @@ FRAMEWORKS & LOGIC:
 - **okr:** Best for organizations/teams, quarterly sprints, and aggressive growth targets.
 - **gps:** Best for execution problems ("I know what to do but don't do it"), habit formation, or simple goals needing structure.
 - **misogi:** Best for users seeking a radical challenge, spiritual "purification", resetting their baseline, or doing something extremely difficult (50% fail rate).
+- **ikigai:** Best for users asking "What should I do with my life?", career/life direction, finding purpose, or aligning passion with livelihood.
 
 INSTRUCTIONS:
 Analyze the input. If the user mentions "overwhelmed" or "busy", think Pareto/Eisenhower. If "stuck" or "new idea", think First Principles. If "lazy" or "procrastinating", think GPS/RPM. If "bored", "too easy", "need a challenge", or "test limits", think Misogi.

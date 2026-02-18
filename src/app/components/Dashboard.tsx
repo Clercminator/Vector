@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/app/components/ui/alert-dialog";
-import { Trash2, ArrowRight, Rocket, Download, Plus, Search, Filter, Star, Zap, Target, Clock, Layers, Flame, Layout, WifiOff } from "lucide-react";
+import { Trash2, ArrowRight, Rocket, Download, Plus, Search, Filter, Star, Zap, Target, Clock, Layers, Flame, Heart, Layout, WifiOff } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { trackEvent } from '@/lib/analytics';
 import { BulkExportModal } from "@/app/components/BulkExportModal";
@@ -31,6 +31,7 @@ const FRAMEWORK_THEMES: Record<string, { bg: string, border: string, iconBg: str
   'eisenhower': { bg: 'from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20', border: 'border-amber-200 dark:border-amber-800', iconBg: 'bg-amber-100 dark:bg-amber-900/40', iconColor: 'text-amber-600 dark:text-amber-400', icon: Clock },
   'rpm': { bg: 'from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20', border: 'border-emerald-200 dark:border-emerald-800', iconBg: 'bg-emerald-100 dark:bg-emerald-900/40', iconColor: 'text-emerald-600 dark:text-emerald-400', icon: Layers },
   'misogi': { bg: 'from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20', border: 'border-red-200 dark:border-red-800', iconBg: 'bg-red-100 dark:bg-red-900/40', iconColor: 'text-red-600 dark:text-red-400', icon: Flame },
+  'ikigai': { bg: 'from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20', border: 'border-rose-200 dark:border-rose-800', iconBg: 'bg-rose-100 dark:bg-rose-900/40', iconColor: 'text-rose-600 dark:text-rose-400', icon: Heart },
   'default': { bg: 'from-gray-50 to-zinc-50 dark:from-zinc-900/20 dark:to-zinc-800/20', border: 'border-gray-200 dark:border-zinc-800', iconBg: 'bg-gray-100 dark:bg-zinc-800', iconColor: 'text-gray-600 dark:text-gray-400', icon: Layout },
 };
 
@@ -187,7 +188,7 @@ export function Dashboard({
                   />
               </div>
               <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                  {['ALL', 'pareto', 'okr', 'eisenhower', 'rpm', 'misogi'].map(fw => (
+                  {['ALL', 'pareto', 'okr', 'eisenhower', 'rpm', 'misogi', 'ikigai'].map(fw => (
                       <button
                         key={fw}
                         onClick={() => setFilterFramework(fw)}

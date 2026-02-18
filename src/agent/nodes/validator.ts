@@ -53,7 +53,8 @@ export const validatorNode = async (state: AgentStateType) => {
                     'rpm': ['result', 'purpose', 'plan'],
                     'misogi': ['challenge', 'gap', 'purification'],
                     'dsss': ['deconstruct', 'selection', 'sequence', 'stakes', 'objective'],
-                    'mandalas': ['centralGoal', 'categories']
+                    'mandalas': ['centralGoal', 'categories'],
+                    'ikigai': ['love', 'goodAt', 'worldNeeds', 'paidFor', 'purpose']
                 };
                 
                 const expected = requiredKeys[framework];

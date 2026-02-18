@@ -106,6 +106,7 @@ export const useGoalWizard = ({
             'okr': { title: t('okr.title'), questions: [t('okr.q1'), t('okr.q2'), t('okr.q3')] },
             'media': { title: t('misogi.title'), questions: [t('misogi.q1'), t('misogi.q2'), t('misogi.q3')] },
             'misogi': { title: t('misogi.title'), questions: [t('misogi.q1'), t('misogi.q2'), t('misogi.q3')] },
+            'ikigai': { title: t('ikigai.title'), questions: [t('ikigai.q1'), t('ikigai.q2'), t('ikigai.q3'), t('ikigai.q4')] },
             'dsss': { title: t('fw.dsss.title'), questions: [t('wizard.dsss.firstQuestion')] },
             'general': { title: t('fp.title'), questions: [t('fp.q1')] }
         };

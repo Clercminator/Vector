@@ -1,12 +1,14 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Target, Lock, Star, Rocket, Zap, Layers } from 'lucide-react';
+import { Target, Lock, Star, Rocket, Zap, Layers, Copy } from 'lucide-react';
 import { EditableText, EditableList } from '../Editable';
 import { useLanguage } from '@/app/components/language-provider';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { MandalaView } from './MandalaView';
 import { EisenhowerView } from './EisenhowerView';
 import { ParetoView } from './ParetoView';
+import { IkigaiView } from './IkigaiView';
 
 interface WizardResultProps {
   result: any;
@@ -76,6 +78,15 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
     }
 
     if (result.type === 'okr') {
+      const copyOkr = () => {
+        const parts = [
+          `# ${t('okr.northStar')}\n${result.objective || ''}`,
+          `\n## ${t('okr.keyResult')}\n${(result.keyResults || []).map((kr: string, i: number) => `${i + 1}. ${kr}`).join('\n')}`,
+          result.initiative ? `\n## ${t('okr.initiative')}\n${result.initiative}` : '',
+        ];
+        navigator.clipboard.writeText(parts.join(''));
+        toast.success('Copied to clipboard');
+      };
       return (
         <Wrapper>
         <motion.div 
@@ -83,6 +94,12 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
           animate={{ opacity: 1, scale: 1 }}
           className="mt-8 w-full max-w-4xl mx-auto bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl border border-purple-200 dark:border-purple-900/40 overflow-hidden relative"
         >
+          <div className="absolute top-0 right-0 z-10 p-4">
+            <button type="button" onClick={copyOkr} className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white/90 dark:bg-zinc-800/90 border border-gray-200 dark:border-zinc-700 px-4 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95" aria-label="Copy strategy">
+              <Copy size={16} />
+              Copy Strategy
+            </button>
+          </div>
           <div className="absolute top-0 w-full h-2 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600" />
           <div className="bg-purple-50/50 dark:bg-purple-900/10 p-10 text-center border-b border-purple-100 dark:border-purple-900/20">
             <span className="inline-block px-4 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 text-xs font-bold uppercase tracking-[0.2em] mb-4">{t('okr.northStar')}</span>
@@ -135,9 +152,23 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
     }
 
     if (result.type === 'first-principles') {
+      const copyFp = () => {
+        const parts = [
+          `# ${t('fp.truths')}\n${(result.truths || []).map((truth: string) => `- ${truth}`).join('\n')}`,
+          `\n# ${t('fp.newApproach')}\n${result.newApproach || ''}`,
+        ];
+        navigator.clipboard.writeText(parts.join('\n'));
+        toast.success('Copied to clipboard');
+      };
        return (
         <Wrapper>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-8 w-full max-w-4xl mx-auto space-y-6">
+          <div className="flex justify-end mb-4">
+            <button type="button" onClick={copyFp} className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95" aria-label="Copy strategy">
+              <Copy size={16} />
+              Copy Strategy
+            </button>
+          </div>
           <div className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-zinc-700/80 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3 mb-6">
                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 flex items-center justify-center font-semibold">
@@ -171,9 +202,24 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
     }
 
     if (result.type === 'rpm') {
+      const copyRpm = () => {
+        const parts = [
+          `# ${t('rpm.outcome')}\n${result.result || ''}`,
+          `\n# ${t('rpm.purpose')}\n${result.purpose || ''}`,
+          `\n# ${t('rpm.map')}\n${(result.plan || []).map((p: string) => `- ${p}`).join('\n')}`,
+        ];
+        navigator.clipboard.writeText(parts.join('\n'));
+        toast.success('Copied to clipboard');
+      };
       return (
         <Wrapper>
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 w-full max-w-5xl mx-auto bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-200 dark:border-zinc-800 flex flex-col md:flex-row">
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 w-full max-w-5xl mx-auto bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-200 dark:border-zinc-800 flex flex-col md:flex-row relative">
+          <div className="absolute top-4 right-4 z-10">
+            <button type="button" onClick={copyRpm} className="flex items-center gap-2 text-sm font-bold text-white/90 hover:text-white transition-all bg-black/20 hover:bg-black/30 border border-white/20 px-4 py-2.5 rounded-full shadow-sm" aria-label="Copy strategy">
+              <Copy size={16} />
+              Copy Strategy
+            </button>
+          </div>
            {/* Left Sidebar: Result & Purpose */}
            <div className="md:w-2/5 bg-gray-900 text-white p-10 flex flex-col justify-between relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -226,9 +272,24 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
     }
 
     if (result.type === 'misogi') {
+      const copyMisogi = () => {
+        const parts = [
+          `# The Challenge\n${result.challenge || ''}`,
+          `\n# The Failure Gap\n${result.gap || ''}`,
+          `\n# The Purification\n${result.purification || ''}`,
+        ];
+        navigator.clipboard.writeText(parts.join('\n'));
+        toast.success('Copied to clipboard');
+      };
       return (
         <Wrapper>
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 w-full max-w-4xl mx-auto space-y-8">
+          <div className="flex justify-end">
+            <button type="button" onClick={copyMisogi} className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95" aria-label="Copy strategy">
+              <Copy size={16} />
+              Copy Strategy
+            </button>
+          </div>
            <div className="bg-gradient-to-br from-red-900 to-rose-900 text-white rounded-[2.5rem] p-12 shadow-2xl relative overflow-hidden border border-red-800">
               <div className="absolute top-0 right-0 w-[30rem] h-[30rem] bg-orange-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
               <div className="relative z-10 text-center">
@@ -273,6 +334,14 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
       return (
         <Wrapper>
           <MandalaView result={result} updateResult={updateResult} />
+        </Wrapper>
+      );
+    }
+
+    if (result.type === 'ikigai') {
+      return (
+        <Wrapper>
+          <IkigaiView result={result} updateResult={updateResult} />
         </Wrapper>
       );
     }

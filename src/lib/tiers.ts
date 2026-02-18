@@ -4,7 +4,7 @@
  * IDs: architect (free, 1 plan), standard/builder (5 plans, $5.99), max (20 plans, $12.99), enterprise (contact).
  */
 
-export type FrameworkId = 'first-principles' | 'pareto' | 'rpm' | 'eisenhower' | 'okr' | 'dsss' | 'mandalas' | 'gps' | 'misogi' | 'general';
+export type FrameworkId = 'first-principles' | 'pareto' | 'rpm' | 'eisenhower' | 'okr' | 'dsss' | 'mandalas' | 'gps' | 'misogi' | 'ikigai' | 'general';
 
 export const ALL_FRAMEWORKS: FrameworkId[] = [
   'first-principles',
@@ -16,6 +16,7 @@ export const ALL_FRAMEWORKS: FrameworkId[] = [
   'mandalas',
   'gps',
   'misogi',
+  'ikigai',
   'general',
 ];
 

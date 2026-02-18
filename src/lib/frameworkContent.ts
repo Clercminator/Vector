@@ -55,8 +55,8 @@ export const frameworkContent: Record<string, { longDescription: string; history
     ]
   },
   "misogi": {
-    longDescription: "The Misogi Challenge is a modern adaptation of an ancient Japanese Shinto purification ritual. In its modern form, popularized by Dr. Marcus Elliott, it involves taking on one defining challenge each year. This challenge must satisfy two rules: 1) You must have a roughly 50% chance of success (meaning failure is a very real possibility), and 2) You cannot die (safety is paramount). The goal is not just the achievement, but the 'purification' that comes from pushing yourself to your absolute limits and realizing you are capable of more than you thought.",
-    history: "Rooted in Shinto tradition where followers stood under icy waterfalls to purify themselves. Reinterpreted by Dr. Marcus Elliott for the modern era to combat the 'comfort crisis' of modern life.",
+    longDescription: "The Misogi Challenge is a modern adaptation of an ancient Japanese Shinto purification ritual. In its modern form, popularized by Jesse Itzler and Dr. Marcus Elliott, it involves taking on one defining challenge each year. This challenge must satisfy two rules: 1) You must have a roughly 50% chance of success (meaning failure is a very real possibility), and 2) You cannot die (safety is paramount). The goal is not just the achievement, but the 'purification' that comes from pushing yourself to your absolute limits and realizing you are capable of more than you thought.",
+    history: "Rooted in Shinto tradition where followers stood under icy waterfalls to purify themselves. Reinterpreted by Jesse Itzler (Living with a Seal) and Dr. Marcus Elliott for the modern era to combat the 'comfort crisis' of modern life.",
     whoItIsFor: "Anyone feeling stagnant, comfortable, or in need of a radical shift in perspective. It is for those who want to see what they are truly made of.",
     steps: [
       "Choose a challenge specifically for you.",
@@ -64,6 +64,18 @@ export const frameworkContent: Record<string, { longDescription: string; history
       "Ensure you can't die (manage the risk).",
       "Prepare, then attempt it.",
       "Reflect on the experience (success or fail)."
+    ]
+  },
+  "ikigai": {
+    longDescription: "Ikigai (生き甲斐) is a Japanese concept meaning 'reason for being' or 'that which makes life worth living.' Your ikigai lies at the intersection of four circles: what you love (passion), what you're good at (profession), what the world needs (mission), and what you can be paid for (vocation). The center—where all four overlap—is your purpose. Mieko Kamiya, a psychiatrist and author, brought ikigai into psychological discourse; the four-circle diagram is a Western adaptation that helps clarify life and career direction.",
+    history: "The term has deep roots in Japanese culture. Mieko Kamiya (1914–1979) wrote 'Ikigai-ni-tsuite' (On the Meaning of Life), linking ikigai to mental health and purpose. The overlapping-circles model is used worldwide for career and life design.",
+    whoItIsFor: "Anyone asking 'What should I do with my life?', experiencing burnout, considering a career change, or wanting to align daily work with deeper meaning.",
+    steps: [
+      "What you love: activities or topics that make you lose track of time.",
+      "What you're good at: skills, strengths, what people ask you for.",
+      "What the world needs: problems you care about, causes that matter.",
+      "What you can be paid for: where your skills meet demand.",
+      "Purpose: one phrase at the intersection—your ikigai."
     ]
   }
 };

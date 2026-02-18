@@ -210,6 +210,15 @@ function validateAndSanitize(framework: FrameworkId, obj: unknown): BlueprintRes
           keyResults: toStringList(o.keyResults),
           initiative: String(o.initiative ?? "").trim() || "—",
         };
+      case "ikigai":
+        return {
+          type: "ikigai",
+          love: String(o.love ?? "").trim() || "—",
+          goodAt: String(o.goodAt ?? "").trim() || "—",
+          worldNeeds: String(o.worldNeeds ?? "").trim() || "—",
+          paidFor: String(o.paidFor ?? "").trim() || "—",
+          purpose: String(o.purpose ?? "").trim() || "—",
+        };
       case "gps":
         return {
           type: "gps",
@@ -304,6 +313,7 @@ export async function suggestFramework(
     - dsss (for skill acquisition)
     - mandalas (for holistic life balance)
     - misogi (for a single define-the-year challenge)
+    - ikigai (for finding purpose / reason for being / career-life direction)
 
     Output Schema (JSON ONLY):
     {
@@ -329,7 +339,7 @@ export async function suggestFramework(
         if (fw === 'first principles') fw = 'first-principles';
         if (fw === '80/20' || fw === 'pareto principle') fw = 'pareto';
         
-        if (fw && ["first-principles", "pareto", "rpm", "eisenhower", "okr", "dsss", "mandalas", "misogi", "gps"].includes(fw)) {
+        if (fw && ["first-principles", "pareto", "rpm", "eisenhower", "okr", "dsss", "mandalas", "misogi", "ikigai", "gps"].includes(fw)) {
             return {
                 id: fw as FrameworkId,
                 explanation: obj.explanation || "Recommended based on your inputs."
