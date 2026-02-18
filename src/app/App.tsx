@@ -110,6 +110,21 @@ function App() {
     }
   }, [location.search, t]);
 
+  // Restore framework from session when landing on /wizard after reload (location.state is lost)
+  useEffect(() => {
+    if (location.pathname !== '/wizard') return;
+    const fromNav = (location.state as { framework?: Framework })?.framework ?? selectedFramework;
+    if (fromNav) return; // Already have framework from navigation or prior selection
+    try {
+      const raw = localStorage.getItem('vector_wizard_session');
+      if (!raw) return;
+      const { framework: savedFw, timestamp } = JSON.parse(raw);
+      if (!savedFw || typeof savedFw !== 'string') return;
+      if (Date.now() - (timestamp || 0) >= 24 * 60 * 60 * 1000) return;
+      setSelectedFramework(savedFw as Framework);
+    } catch (_) {}
+  }, [location.pathname, (location.state as { framework?: Framework })?.framework, selectedFramework]);
+
   useEffect(() => {
     // Check for onboarding
     const onboardingDone = localStorage.getItem('vector.onboarding_done');

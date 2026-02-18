@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Pencil, Check, X, Plus, Trash2 } from 'lucide-react';
 import { useLanguage } from '@/app/components/language-provider';
+import { cn } from './ui/utils';
 
 interface EditableTextProps {
   value: string;
@@ -55,7 +56,11 @@ export const EditableText: React.FC<EditableTextProps> = ({ value, onChange, cla
             onChange={(e) => setLocalValue(e.target.value)}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
-            className={`w-full bg-white dark:bg-black/50 border-2 border-blue-500 rounded-lg p-2 outline-none resize-none min-h-[100px] ${className}`}
+            className={cn(
+              "w-full bg-white dark:bg-black/50 border-2 border-blue-500 rounded-lg p-2 outline-none resize-none min-h-[100px]",
+              className
+            )}
+           
           />
         ) : (
           <input
@@ -64,7 +69,10 @@ export const EditableText: React.FC<EditableTextProps> = ({ value, onChange, cla
             onChange={(e) => setLocalValue(e.target.value)}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
-            className={`w-full bg-white dark:bg-black/50 border-2 border-blue-500 rounded-lg px-2 py-1 outline-none ${className}`}
+            className={cn(
+              "w-full bg-white dark:bg-black/50 border-2 border-blue-500 rounded-lg px-2 py-1 outline-none",
+              className
+            )}
           />
         )}
       </div>
@@ -74,7 +82,11 @@ export const EditableText: React.FC<EditableTextProps> = ({ value, onChange, cla
   return (
     <div 
       onClick={() => setIsEditing(true)}
-      className={`relative group cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 rounded-lg px-2 -mx-2 transition-colors duration-200 ${!value ? 'text-gray-400 italic' : ''} ${className}`}
+      className={cn(
+        "relative group cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 rounded-lg px-2 -mx-2 transition-colors duration-200",
+        !value && "text-gray-400 italic",
+        className
+      )}
     >
       {value || placeholder}
       <span className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white dark:bg-zinc-800 rounded-full p-1 shadow-sm">
@@ -110,7 +122,7 @@ export const EditableList: React.FC<EditableListProps> = ({ items = [], onChange
   };
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={cn("space-y-2", className)}>
       {items.map((item, i) => (
         <div key={i} className="flex items-start gap-2 group relative">
           <div className="flex-grow">
