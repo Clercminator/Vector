@@ -9,6 +9,7 @@ import { TIER_CONFIGS, TierId } from '@/lib/tiers';
 import { useLanguage } from '@/app/components/language-provider';
 import { trackEvent } from '@/lib/analytics';
 
+import { cn } from './ui/utils';
 import { WizardHeader } from './wizard/WizardHeader';
 import { WizardChat } from './wizard/WizardChat';
 import { WizardInput } from './wizard/WizardInput';
