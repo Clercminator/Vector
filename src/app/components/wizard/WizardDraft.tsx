@@ -330,22 +330,25 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
                initial={{ opacity: 0, x: 50 }}
                animate={{ opacity: 1, x: 0 }}
                exit={{ opacity: 0, x: 50 }}
-               className="hidden lg:block absolute right-0 top-0 bottom-0 w-96 bg-gray-50 dark:bg-zinc-900/50 border-l border-gray-200 dark:border-zinc-800 overflow-y-auto p-6 backdrop-blur-sm z-10"
+               className="hidden lg:flex lg:flex-col absolute right-0 top-0 bottom-0 w-96 bg-gray-50 dark:bg-zinc-900/50 border-l border-gray-200 dark:border-zinc-800 backdrop-blur-sm z-10 min-h-0"
              >
-                <div className="flex items-center gap-2 mb-6 text-gray-400 uppercase tracking-widest text-xs font-bold">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    {isTyping || isAgentRunning ? t('wizard.liveDraft') : t('wizard.yourBlueprint')}
+                <div className="flex-none pt-4 px-4 pb-2">
+                    <div className="flex items-center gap-2 text-gray-400 uppercase tracking-widest text-xs font-bold">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        {isTyping || isAgentRunning ? t('wizard.liveDraft') : t('wizard.yourBlueprint')}
+                    </div>
+                    {!draftResult?.isTeaser && draftResult?.type && onFinalize && !isTyping && !isAgentRunning && (
+                        <button
+                            type="button"
+                            onClick={onFinalize}
+                            className="w-full mt-4 py-3 px-4 cursor-pointer bg-black dark:bg-white text-white dark:text-black rounded-xl font-semibold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-lg"
+                        >
+                            <CheckCircle2 size={18} />
+                            {t('wizard.viewFullBlueprint')}
+                        </button>
+                    )}
                 </div>
-                {!draftResult?.isTeaser && draftResult?.type && onFinalize && !isTyping && !isAgentRunning && (
-                    <button
-                        onClick={onFinalize}
-                        className="w-full mb-6 py-3 px-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-semibold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-lg"
-                    >
-                        <CheckCircle2 size={18} />
-                        {t('wizard.viewFullBlueprint')}
-                    </button>
-                )}
-                <div className={`origin-top ${!draftResult?.isTeaser && draftResult?.type ? '' : 'pointer-events-none opacity-80 scale-90'}`}>
+                <div className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 pb-6 custom-scrollbar ${!draftResult?.isTeaser && draftResult?.type ? '' : 'pointer-events-none opacity-80 scale-90'}`}>
                     <ErrorBoundary name="Live Draft">
                       {renderDraftContent(draftResult)}
                     </ErrorBoundary>

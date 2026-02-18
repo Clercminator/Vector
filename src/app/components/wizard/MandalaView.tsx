@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Minimize2, Copy, Grid, Layout, MousePointerClick, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
-import { EditableText } from '../Editable';
+import { Minimize2, Copy, Grid, Layout, MousePointerClick, ChevronLeft, ChevronRight, ArrowLeft, ListTodo, X } from 'lucide-react';
+import { EditableText, EditableList } from '../Editable';
 import { toast } from 'sonner';
 import { cn } from '../ui/utils';
 
@@ -9,6 +9,9 @@ import { cn } from '../ui/utils';
 interface MandalaCategory {
   name: string;
   steps: string[];
+  why?: string;
+  stepWhys?: string[];
+  stepSubTasks?: string[][];
 }
 interface MandalaResult {
   type: 'mandalas';
@@ -44,6 +47,7 @@ const MandalaCell = ({
     canMovePrev,
     canMoveNext,
     isFocused,
+    onOpenDetail,
     className = ""
 }: {
     value: string;
@@ -55,6 +59,7 @@ const MandalaCell = ({
     canMovePrev?: boolean;
     canMoveNext?: boolean;
     isFocused: boolean;
+    onOpenDetail?: () => void;
     className?: string;
 }) => {
     return (
@@ -82,38 +87,56 @@ const MandalaCell = ({
                  />
             </div>
 
-            {/* Controls */}
-            <div className={cn(
-                "absolute -bottom-1 -right-1 flex gap-1 transition-all duration-200 z-30 scale-90",
-                isFocused ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 group-hover/cell:opacity-100 group-hover/cell:translate-y-0"
-            )}>
+            {/* Controls — stopPropagation so reorder/copy never bubble and trigger Back/Overview */}
+            <div
+                className={cn(
+                    "absolute -bottom-1 -right-1 flex gap-1 transition-all duration-200 z-30 scale-90",
+                    isFocused ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 group-hover/cell:opacity-100 group-hover/cell:translate-y-0"
+                )}
+                onClick={(e) => e.stopPropagation()}
+                role="group"
+                aria-label="Cell actions"
+            >
                 {!isTitle && onMovePrev && (
                     <div className="flex bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
-                        <button 
-                            onClick={(e) => { e.stopPropagation(); onMovePrev(); }}
+                        <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMovePrev(); }}
                             disabled={!canMovePrev}
                             className="p-1.5 cursor-pointer text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed border-r border-zinc-200 dark:border-zinc-700"
-                            title="Move Previous"
+                            title="Move step earlier"
                         >
                             <ArrowLeft size={14} />
                         </button>
-                        <button 
-                            onClick={(e) => { e.stopPropagation(); onMoveNext(); }}
+                        <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMoveNext(); }}
                             disabled={!canMoveNext}
                             className="p-1.5 cursor-pointer text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
-                            title="Move Next"
+                            title="Move step later"
                         >
-                            <ChevronRight size={14} /> 
+                            <ChevronRight size={14} />
                         </button>
                     </div>
                 )}
-                <button 
-                    onClick={(e) => { e.stopPropagation(); onCopy(); }}
+                <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCopy(); }}
                     className="p-1.5 cursor-pointer bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 shadow-lg"
                     title="Copy text"
                 >
                     <Copy size={14} />
                 </button>
+                {!isTitle && onOpenDetail && (
+                    <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpenDetail(); }}
+                        className="p-1.5 cursor-pointer bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 shadow-lg"
+                        title="Add sub-tasks / bullet points"
+                    >
+                        <ListTodo size={14} />
+                    </button>
+                )}
             </div>
         </div>
     );
@@ -123,18 +146,24 @@ const ClusterDrillDown = ({
   title, 
   items, 
   isCenter = false,
+  catIndex,
+  category,
   onTitleChange,
   onItemChange,
   onReorder,
-  onCopy
+  onCopy,
+  onOpenStepDetail
 }: { 
-  title: string, 
-  items: string[], 
-  isCenter?: boolean,
-  onTitleChange: (val: string) => void,
-  onItemChange: (idx: number, val: string) => void,
-  onReorder: (fromIdx: number, toIdx: number) => void,
-  onCopy: (text: string) => void
+  title: string; 
+  items: string[]; 
+  isCenter?: boolean;
+  catIndex?: number;
+  category?: MandalaCategory;
+  onTitleChange: (val: string) => void;
+  onItemChange: (idx: number, val: string) => void;
+  onReorder: (fromIdx: number, toIdx: number) => void;
+  onCopy: (text: string) => void;
+  onOpenStepDetail?: (stepIndex: number) => void;
 }) => {
   const getCellData = (cellIndex: number) => {
     if (cellIndex === 4) return { value: title, isTitle: true };
@@ -142,17 +171,23 @@ const ClusterDrillDown = ({
     return { value: items[itemIndex] || "", isTitle: false, itemIndex };
   };
 
+  const showCategoryWhy = !isCenter && category?.why?.trim();
+
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.97 }}
       transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className={cn(
-        "w-full h-full grid grid-cols-3 grid-rows-3 gap-3 md:gap-5 p-4 md:p-8",
-        "bg-transparent"
-      )}
+      className="w-full h-full flex flex-col min-h-0"
     >
+      {showCategoryWhy && (
+        <div className="flex-none mb-3 px-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Why this pillar</p>
+          <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-snug">{category!.why}</p>
+        </div>
+      )}
+      <div className={cn("flex-1 min-h-0 grid grid-cols-3 grid-rows-3 gap-3 md:gap-5 p-4 md:p-8", "bg-transparent")}>
       {Array.from({ length: 9 }).map((_, cellIndex) => {
         const { value, isTitle, itemIndex } = getCellData(cellIndex);
         return (
@@ -173,6 +208,7 @@ const ClusterDrillDown = ({
               canMovePrev={itemIndex !== undefined && itemIndex > 0}
               canMoveNext={itemIndex !== undefined && itemIndex < 7}
               isFocused={true}
+              onOpenDetail={!isTitle && onOpenStepDetail && itemIndex !== undefined ? () => onOpenStepDetail(itemIndex) : undefined}
               className={cn(
                 "h-full min-h-0 shadow-lg",
                 isTitle ? "text-lg md:text-xl lg:text-2xl" : "text-base md:text-lg"
@@ -181,6 +217,7 @@ const ClusterDrillDown = ({
           </motion.div>
         );
       })}
+      </div>
     </motion.div>
   );
 };
@@ -247,6 +284,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
   const [zoomIndex, setZoomIndex] = useState<number | null>(null); // null = overview, 0-8 = focused cluster
   const [viewMode, setViewMode] = useState<'spatial' | 'list'>('spatial'); 
   const [showHint, setShowHint] = useState(true);
+  const [selectedCellDetail, setSelectedCellDetail] = useState<{ catIndex: number; stepIndex: number } | null>(null);
   
   // Dismiss hint
   useEffect(() => {
@@ -256,17 +294,21 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
 
   // Keyboard Navigation
   useEffect(() => {
-    if (viewMode !== 'spatial' || zoomIndex === null) return;
+    if (viewMode !== 'spatial') return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') setZoomIndex(null);
+        if (e.key === 'Escape') {
+          if (selectedCellDetail) setSelectedCellDetail(null);
+          else if (zoomIndex !== null) setZoomIndex(null);
+        }
+        if (zoomIndex === null || selectedCellDetail) return;
         if (e.key === 'ArrowLeft') navigate(-1);
         if (e.key === 'ArrowRight') navigate(1);
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [viewMode, zoomIndex]);
+  }, [viewMode, zoomIndex, selectedCellDetail]);
 
   const navigate = (direction: -1 | 1) => {
       if (zoomIndex === null) return;
@@ -320,6 +362,23 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
           lines.push("");
       });
       handleCopy(lines.join('\n'));
+  };
+
+  const updateStepWhy = (catIndex: number, stepIndex: number, val: string) => {
+    const cat = result.categories?.[catIndex];
+    const current = (cat?.stepWhys ?? []) as string[];
+    const next = [...current];
+    while (next.length <= stepIndex) next.push("");
+    next[stepIndex] = val;
+    updateResult(['categories', catIndex, 'stepWhys'], next);
+  };
+  const updateStepSubTasks = (catIndex: number, stepIndex: number, subTasks: string[]) => {
+    const cat = result.categories?.[catIndex];
+    const current = (cat?.stepSubTasks ?? []) as string[][];
+    const next = current.slice(0, 8).map((arr, i) => (arr ?? []).slice());
+    while (next.length <= stepIndex) next.push([]);
+    next[stepIndex] = subTasks;
+    updateResult(['categories', catIndex, 'stepSubTasks'], next);
   };
 
   if (viewMode === 'list') {
@@ -462,7 +521,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
 
         {/* Drill-down hint: Esc to go back */}
         <AnimatePresence>
-            {zoomIndex !== null && (
+            {zoomIndex !== null && !selectedCellDetail && (
                 <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -472,6 +531,70 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                     Press <kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono text-[10px]">Esc</kbd> to go back
                 </motion.div>
             )}
+        </AnimatePresence>
+
+        {/* Cell detail panel: sub-tasks and "why" for one step */}
+        <AnimatePresence>
+            {selectedCellDetail && (() => {
+              const { catIndex, stepIndex } = selectedCellDetail;
+              const category = result.categories?.[catIndex];
+              if (!category) return null;
+              const stepText = category.steps?.[stepIndex] ?? "";
+              const stepWhy = (category.stepWhys ?? [])[stepIndex] ?? "";
+              const subTasks = (category.stepSubTasks ?? [])[stepIndex] ?? [];
+              return (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/70 backdrop-blur-sm"
+                  onClick={() => setSelectedCellDetail(null)}
+                >
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-2xl p-6 custom-scrollbar"
+                  >
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Step detail</h3>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCellDetail(null)}
+                        className="p-2 cursor-pointer rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                        aria-label="Close"
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+                    <p className="text-base font-medium text-zinc-800 dark:text-zinc-200 mb-4 pr-8">{stepText || "Untitled step"}</p>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Why this step</label>
+                        <EditableText
+                          value={stepWhy}
+                          onChange={(val) => updateStepWhy(catIndex, stepIndex, val)}
+                          multiline
+                          className="text-sm text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 w-full min-h-[80px]"
+                          placeholder="Explain why this step matters (or add later)..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Sub-tasks / bullet points</label>
+                        <EditableList
+                          items={Array.isArray(subTasks) ? subTasks : []}
+                          onChange={(items) => updateStepSubTasks(catIndex, stepIndex, items)}
+                          placeholder="e.g. Practice pronunciation with ChatGPT 30 min 3x/week"
+                          className="space-y-2"
+                          itemClassName="text-sm"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              );
+            })()}
         </AnimatePresence>
 
         {/* Main Content Area */}
@@ -546,10 +669,13 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                                         title={category?.name ?? ""}
                                         items={category?.steps ?? []}
                                         isCenter={false}
+                                        catIndex={catIndex}
+                                        category={category}
                                         onTitleChange={(val) => updateCategoryName(catIndex, val)}
                                         onItemChange={(stepIdx, val) => updateStep(catIndex, stepIdx, val)}
                                         onReorder={(from, to) => reorderSteps(catIndex, from, to)}
                                         onCopy={handleCopy}
+                                        onOpenStepDetail={(stepIndex) => setSelectedCellDetail({ catIndex, stepIndex })}
                                      />
                                  );
                              }
