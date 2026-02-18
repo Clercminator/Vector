@@ -114,103 +114,111 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
           onRestart={handleSafeRestart}
       />
 
-      <div className="flex-grow flex flex-col overflow-hidden relative">
-        {/* Chat Area & Result */}
-        <WizardChat
-            messages={messages}
-            isTyping={isTyping}
-            result={result}
-            draftResult={draftResult}
-            messagesEndRef={messagesEndRef}
-        >
-             <WizardResult 
-                result={result} 
-                updateResult={updateResult} 
-                onBack={props.onBack}
-             />
-        </WizardChat>
-
-        {/* Input Area (Hidden when result is final) */}
-        {!result && (
-             <WizardInput
-                inputValue={inputValue}
-                setInputValue={setInputValue}
-                onSubmit={(e) => { e.preventDefault(); runAgent(inputValue); }}
-                isTyping={isTyping}
-                isAgentRunning={isAgentRunning}
-                isOffline={isOffline}
-                suggestionChips={suggestionChips}
-                onRunAgent={runAgent}
-                isSpeechSupported={isSpeechSupported}
-                toggleListening={toggleListening}
-                isListening={isListening}
-                onStop={handleStop}
-             />
-        )}
-
-        {/* Draft Drawer */}
-        {!result && draftResult && (
-             <WizardDraft 
-                draftResult={draftResult}
-                showMobileDraft={showMobileDraft}
-                setShowMobileDraft={setShowMobileDraft}
-                draftPulse={draftPulse}
-                onFinalize={promoteDraftToResult}
-                isTyping={isTyping}
-                isAgentRunning={isAgentRunning}
-             />
-        )}
-      </div>
-
-      {/* Final Action Buttons (Overlay at bottom) */}
-      {result && (() => {
-        const answers = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
-        const bp: Blueprint = {
-          id: props.initialBlueprint?.id ?? '',
-          framework: props.framework || 'first-principles',
-          title: props.initialBlueprint?.title ?? blueprintTitleFromAnswers(answers),
-          answers,
-          result,
-          createdAt: props.initialBlueprint?.createdAt ?? new Date().toISOString(),
-        };
-        const showCalendarExport = TIER_CONFIGS[props.tier || 'architect'].canExportCalendar && isBlueprintCalendarWorthy(bp);
-        return (
-        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-4 items-center z-30">
-          <button onClick={handleSafeRestart} className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium">
-              <RefreshCcw size={18} />{t('wizard.restart')}
-          </button>
-          
-          {/* Calendar Export — only when blueprint has multiple schedulable items */}
-          {showCalendarExport && (
-          <button 
-             onClick={handleExport} 
-             className="flex items-center gap-2 px-6 py-3 rounded-full shadow-lg transition-all font-medium cursor-pointer bg-blue-600 text-white hover:shadow-xl"
+      <div className={cn("flex-grow flex flex-col min-h-0", result && "flex")}>
+        {/* Chat Area & Result — when result exists, this area shrinks so the footer has room */}
+        <div className={result ? "flex-1 min-h-0 overflow-hidden" : "flex-1 flex flex-col overflow-hidden relative"}>
+          <WizardChat
+              messages={messages}
+              isTyping={isTyping}
+              result={result}
+              draftResult={draftResult}
+              messagesEndRef={messagesEndRef}
           >
-             <Calendar size={18} />
-             {t('wizard.export')}
-          </button>
+               <WizardResult 
+                  result={result} 
+                  updateResult={updateResult} 
+                  onBack={props.onBack}
+               />
+          </WizardChat>
+
+          {/* Input Area (Hidden when result is final) */}
+          {!result && (
+               <WizardInput
+                  inputValue={inputValue}
+                  setInputValue={setInputValue}
+                  onSubmit={(e) => { e.preventDefault(); runAgent(inputValue); }}
+                  isTyping={isTyping}
+                  isAgentRunning={isAgentRunning}
+                  isOffline={isOffline}
+                  suggestionChips={suggestionChips}
+                  onRunAgent={runAgent}
+                  isSpeechSupported={isSpeechSupported}
+                  toggleListening={toggleListening}
+                  isListening={isListening}
+                  onStop={handleStop}
+               />
           )}
 
-          {/* PDF Export */}
-          <button 
-             onClick={handlePdfExport} 
-             disabled={!TIER_CONFIGS[props.tier || 'architect'].canExportPdf}
-             className={`flex items-center gap-2 px-6 py-3 rounded-full shadow-lg transition-all font-medium ${
-                 !TIER_CONFIGS[props.tier || 'architect'].canExportPdf 
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                  : 'bg-red-600 text-white hover:shadow-xl'
-             }`}
-          >
-             {TIER_CONFIGS[props.tier || 'architect'].canExportPdf ? <Download size={18} /> : <Lock size={16} />}
-             PDF
-          </button>
-
-          <button onClick={handleSave} className="flex items-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-full shadow-lg hover:shadow-xl transition-all font-medium cursor-pointer">
-              <CheckCircle2 size={18} />{t('wizard.save')}
-          </button>
+          {/* Draft Drawer */}
+          {!result && draftResult && (
+               <WizardDraft 
+                  draftResult={draftResult}
+                  showMobileDraft={showMobileDraft}
+                  setShowMobileDraft={setShowMobileDraft}
+                  draftPulse={draftPulse}
+                  onFinalize={promoteDraftToResult}
+                  isTyping={isTyping}
+                  isAgentRunning={isAgentRunning}
+               />
+          )}
         </div>
-        );
-      })()}
+
+        {/* Final Action Buttons — fixed footer when result is shown (no overlay, does not block content) */}
+        {result && (() => {
+          const answers = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
+          const bp: Blueprint = {
+            id: props.initialBlueprint?.id ?? '',
+            framework: props.framework || 'first-principles',
+            title: props.initialBlueprint?.title ?? blueprintTitleFromAnswers(answers),
+            answers,
+            result,
+            createdAt: props.initialBlueprint?.createdAt ?? new Date().toISOString(),
+          };
+          const showCalendarExport = TIER_CONFIGS[props.tier || 'architect'].canExportCalendar && isBlueprintCalendarWorthy(bp);
+          return (
+          <div className="flex-none flex gap-4 items-center justify-center py-4 px-4 border-t border-gray-100 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm">
+            <button 
+              onClick={handleSafeRestart} 
+              className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            >
+                <RefreshCcw size={18} />{t('wizard.restart')}
+            </button>
+
+            {/* Calendar Export — only when blueprint has multiple schedulable items */}
+            {showCalendarExport && (
+            <button 
+               onClick={handleExport} 
+               className="flex items-center gap-2 px-6 py-3 rounded-full shadow-lg transition-all font-medium cursor-pointer bg-blue-600 text-white hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-950"
+            >
+               <Calendar size={18} />
+               {t('wizard.export')}
+            </button>
+            )}
+
+            {/* PDF Export */}
+            <button 
+               onClick={handlePdfExport} 
+               disabled={!TIER_CONFIGS[props.tier || 'architect'].canExportPdf}
+               className={`flex items-center gap-2 px-6 py-3 rounded-full shadow-lg transition-all font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-950 ${
+                   !TIER_CONFIGS[props.tier || 'architect'].canExportPdf 
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed focus-visible:ring-gray-400' 
+                    : 'bg-red-600 text-white hover:shadow-xl focus-visible:ring-red-500'
+               }`}
+            >
+               {TIER_CONFIGS[props.tier || 'architect'].canExportPdf ? <Download size={18} /> : <Lock size={16} />}
+               PDF
+            </button>
+
+            <button 
+              onClick={handleSave} 
+              className="flex items-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-full shadow-lg hover:shadow-xl transition-all font-medium cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black dark:focus-visible:ring-offset-white"
+            >
+                <CheckCircle2 size={18} />{t('wizard.save')}
+            </button>
+          </div>
+          );
+        })()}
+      </div>
     </div>
   );
 };

@@ -67,16 +67,16 @@ const MandalaCell = ({
                 className
             )}
         >
-            <div className={cn("w-full h-full overflow-y-auto custom-scrollbar flex flex-col justify-center", isTitle && "items-center text-center font-bold")}>
+            <div className={cn("w-full h-full overflow-y-auto custom-scrollbar flex flex-col justify-center px-2", isTitle && "items-center text-center font-bold")}>
                  <EditableText 
                     value={value} 
                     onChange={onChange}
                     multiline
                     className={cn(
-                        "w-full bg-transparent border-transparent px-0 py-0 focus:ring-0 leading-snug resize-none",
+                        "w-full bg-transparent border-transparent py-0 focus:ring-0 leading-snug resize-none min-w-0",
                         isTitle 
-                            ? "text-sm md:text-base lg:text-lg text-center font-bold placeholder:text-blue-200" 
-                            : "text-xs md:text-sm text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 h-full"
+                            ? "text-sm md:text-base lg:text-lg text-center font-bold placeholder:text-blue-200 px-1" 
+                            : "text-xs md:text-sm text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 h-full px-1"
                     )}
                     placeholder={isTitle ? "Title" : "Step..."}
                  />
@@ -194,22 +194,23 @@ const OverviewCard = ({
         <motion.div
             layoutId={isCenter ? 'center-cluster-card' : undefined}
             onClick={onClick}
+            title={title ? `${title}` : (isCenter ? "Central Goal" : "Category")}
             className={cn(
-                "group cursor-pointer relative flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 h-full",
+                "group cursor-pointer relative flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 h-full min-h-[100px]",
                 isCenter 
                     ? "bg-blue-600 text-white border-blue-500 shadow-lg ring-4 ring-blue-500/10 hover:ring-blue-500/30" 
                     : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-blue-400 dark:hover:border-blue-500/50 hover:shadow-lg"
             )}
         >
-             <div className="w-full text-center pointer-events-none group-hover:pointer-events-auto">
-                 {/* We allow editing even in overview, but clicking mostly triggers navigation unless clicking directly on text input */}
-                 <div onClick={(e) => e.stopPropagation()}> 
+             <div className="w-full text-center pointer-events-none group-hover:pointer-events-auto overflow-visible px-3 min-w-0">
+                 {/* Padding and overflow-visible prevent the first character from being clipped; line-clamp-2 keeps long titles tidy */}
+                 <div onClick={(e) => e.stopPropagation()} className="overflow-visible min-w-0 w-full"> 
                     <EditableText
                         value={title}
                         onChange={onChange}
                         multiline
                         className={cn(
-                            "text-center font-bold bg-transparent border-transparent w-full resize-none",
+                            "text-center font-bold bg-transparent border-transparent w-full resize-none mx-0 px-1 line-clamp-2",
                             isCenter 
                                 ? "text-lg md:text-xl text-white placeholder:text-blue-200 cursor-text" 
                                 : "text-base md:text-lg text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 cursor-text"
@@ -359,14 +360,11 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
   }
 
   return (
-    <div className="relative w-full h-[85vh] bg-slate-50 dark:bg-[#0a0a0a] rounded-[2rem] border border-slate-200 dark:border-white/5 shadow-inner select-none group overflow-hidden flex flex-col">
+    <div className="relative w-full min-h-[60vh] h-[calc(100vh-12rem)] bg-slate-50 dark:bg-[#0a0a0a] rounded-[2rem] border border-slate-200 dark:border-white/5 shadow-inner select-none group overflow-hidden flex flex-col">
         
-        {/* Background Grid Pattern */}
-        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" 
-             style={{ 
-                 backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`, 
-                 backgroundSize: '20px 20px' 
-             }} 
+        {/* Background Grid Pattern — dot grid via Tailwind arbitrary values (no inline style) */}
+        <div 
+          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none bg-[radial-gradient(circle,currentColor_1px,transparent_1px)] [background-size:20px_20px]" 
         />
 
         {/* Top Controls */}
@@ -374,13 +372,13 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
             <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-1 rounded-xl border border-white/20 flex gap-1 shadow-sm">
                  <button 
                     onClick={() => setViewMode('list')}
-                    className="p-2 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                    className="p-2 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                     title="List View"
                  >
                      <Layout size={18} />
                  </button>
             </div>
-             <button onClick={handleCopyFull} className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-2 rounded-xl border border-white/20 text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors shadow-sm" title="Copy Full Strategy">
+             <button onClick={handleCopyFull} className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-2 rounded-xl border border-white/20 text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2" title="Copy Full Strategy">
                 <Copy size={20} />
             </button>
         </div>
@@ -398,9 +396,10 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                     >
                         <button 
                             onClick={() => setZoomIndex(null)}
-                            className="flex items-center gap-2 px-4 py-2 bg-white/90 dark:bg-zinc-900/90 text-zinc-800 dark:text-zinc-200 rounded-full border border-white/20 backdrop-blur-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shadow-md"
+                            title="Back to Overview (Esc)"
+                            className="flex items-center gap-2 px-4 py-2 bg-white/90 dark:bg-zinc-900/90 text-zinc-800 dark:text-zinc-200 rounded-full border border-white/20 backdrop-blur-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                         >
-                            <Minimize2 size={16} /> <span className="text-sm font-medium">Back to Overview</span>
+                            <Minimize2 size={16} /> <span className="text-sm font-medium">Back to Overview (Esc)</span>
                         </button>
                     </motion.div>
 
@@ -410,7 +409,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                         onClick={() => navigate(-1)}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 z-40 p-3 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black/80 rounded-full shadow-lg border border-white/20 backdrop-blur-sm transition-all text-zinc-600 dark:text-zinc-300 hover:scale-110"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 z-40 p-3 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black/80 rounded-full shadow-lg border border-white/20 backdrop-blur-sm transition-all text-zinc-600 dark:text-zinc-300 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                         title="Previous Cluster (Left Arrow)"
                     >
                         <ChevronLeft size={24} />
@@ -421,7 +420,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
                         onClick={() => navigate(1)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 z-40 p-3 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black/80 rounded-full shadow-lg border border-white/20 backdrop-blur-sm transition-all text-zinc-600 dark:text-zinc-300 hover:scale-110"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-40 p-3 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black/80 rounded-full shadow-lg border border-white/20 backdrop-blur-sm transition-all text-zinc-600 dark:text-zinc-300 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                         title="Next Cluster (Right Arrow)"
                     >
                         <ChevronRight size={24} />
@@ -437,10 +436,24 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 bg-black/70 text-white px-6 py-3 rounded-full backdrop-blur-md text-sm pointer-events-none flex items-center gap-2 shadow-xl border border-white/10"
+                    className="absolute bottom-20 left-1/2 -translate-x-1/2 z-40 bg-black/70 text-white px-6 py-3 rounded-full backdrop-blur-md text-sm pointer-events-none flex items-center gap-2 shadow-xl border border-white/10"
                 >
                     <MousePointerClick size={16} className="animate-pulse" />
                     Click any card to edit details
+                </motion.div>
+            )}
+        </AnimatePresence>
+
+        {/* Drill-down hint: Esc to go back */}
+        <AnimatePresence>
+            {zoomIndex !== null && (
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 text-xs text-zinc-500 dark:text-zinc-400 pointer-events-none"
+                >
+                    Press <kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono text-[10px]">Esc</kbd> to go back
                 </motion.div>
             )}
         </AnimatePresence>
