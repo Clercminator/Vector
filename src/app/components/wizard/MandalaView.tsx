@@ -4,6 +4,7 @@ import { Minimize2, Copy, Grid, Layout, MousePointerClick, ChevronLeft, ChevronR
 import { EditableText, EditableList } from '../Editable';
 import { toast } from 'sonner';
 import { cn } from '../ui/utils';
+import { useLanguage } from '@/app/components/language-provider';
 
 // --- Types ---
 interface MandalaCategory {
@@ -48,7 +49,8 @@ const MandalaCell = ({
     canMoveNext,
     isFocused,
     onOpenDetail,
-    className = ""
+    className = "",
+    t
 }: {
     value: string;
     isTitle: boolean;
@@ -61,6 +63,7 @@ const MandalaCell = ({
     isFocused: boolean;
     onOpenDetail?: () => void;
     className?: string;
+    t: (key: string) => string;
 }) => {
     return (
         <div 
@@ -83,7 +86,7 @@ const MandalaCell = ({
                             ? "text-sm md:text-base lg:text-lg text-center font-bold placeholder:text-blue-200 px-1" 
                             : "text-xs md:text-sm text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 h-full px-1"
                     )}
-                    placeholder={isTitle ? "Title" : "Step..."}
+                    placeholder={isTitle ? t('mandala.titlePlaceholder') : t('mandala.stepPlaceholder')}
                  />
             </div>
 
@@ -104,7 +107,7 @@ const MandalaCell = ({
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMovePrev(); }}
                             disabled={!canMovePrev}
                             className="p-1.5 cursor-pointer text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed border-r border-zinc-200 dark:border-zinc-700"
-                            title="Move step earlier"
+                            title={t('mandala.moveStepEarlier')}
                         >
                             <ArrowLeft size={14} />
                         </button>
@@ -113,7 +116,7 @@ const MandalaCell = ({
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMoveNext(); }}
                             disabled={!canMoveNext}
                             className="p-1.5 cursor-pointer text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
-                            title="Move step later"
+                            title={t('mandala.moveStepLater')}
                         >
                             <ChevronRight size={14} />
                         </button>
@@ -123,7 +126,7 @@ const MandalaCell = ({
                     type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCopy(); }}
                     className="p-1.5 cursor-pointer bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 shadow-lg"
-                    title="Copy text"
+                    title={t('mandala.copyText')}
                 >
                     <Copy size={14} />
                 </button>
@@ -132,7 +135,7 @@ const MandalaCell = ({
                         type="button"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpenDetail(); }}
                         className="p-1.5 cursor-pointer bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 shadow-lg"
-                        title="Add sub-tasks / bullet points"
+                        title={t('mandala.addSubTasks')}
                     >
                         <ListTodo size={14} />
                     </button>
@@ -152,7 +155,8 @@ const ClusterDrillDown = ({
   onItemChange,
   onReorder,
   onCopy,
-  onOpenStepDetail
+  onOpenStepDetail,
+  t
 }: { 
   title: string; 
   items: string[]; 
@@ -164,6 +168,7 @@ const ClusterDrillDown = ({
   onReorder: (fromIdx: number, toIdx: number) => void;
   onCopy: (text: string) => void;
   onOpenStepDetail?: (stepIndex: number) => void;
+  t: (key: string) => string;
 }) => {
   const getCellData = (cellIndex: number) => {
     if (cellIndex === 4) return { value: title, isTitle: true };
@@ -183,7 +188,7 @@ const ClusterDrillDown = ({
     >
       {showCategoryWhy && (
         <div className="flex-none mb-3 px-1">
-          <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Why this pillar</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">{t('mandala.whyThisPillar')}</p>
           <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-snug">{category!.why}</p>
         </div>
       )}
@@ -213,6 +218,7 @@ const ClusterDrillDown = ({
                 "h-full min-h-0 shadow-lg",
                 isTitle ? "text-lg md:text-xl lg:text-2xl" : "text-base md:text-lg"
               )}
+              t={t}
             />
           </motion.div>
         );
@@ -227,19 +233,21 @@ const OverviewCard = ({
     isCenter,
     onClick,
     onChange,
-    index
+    index,
+    t
 }: {
     title: string;
     isCenter: boolean;
     onClick: () => void;
     onChange: (val: string) => void;
     index: number;
+    t: (key: string) => string;
 }) => {
     return (
         <motion.div
             layoutId={isCenter ? 'center-cluster-card' : undefined}
             onClick={onClick}
-            title={title ? `${title}` : (isCenter ? "Central Goal" : "Category")}
+            title={title ? `${title}` : (isCenter ? t('mandala.centralGoalPlaceholder') : t('mandala.categoryPlaceholder'))}
             initial={{ opacity: 0, y: 12, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.35, delay: index * 0.03, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -265,14 +273,14 @@ const OverviewCard = ({
                                 ? "text-lg md:text-xl text-white placeholder:text-blue-200/80 cursor-text drop-shadow-sm" 
                                 : "text-base md:text-lg text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 cursor-text"
                         )}
-                        placeholder={isCenter ? "Central Goal" : "Category"}
+                        placeholder={isCenter ? t('mandala.centralGoalPlaceholder') : t('mandala.categoryPlaceholder')}
                     />
                  </div>
              </div>
              
              <div className="absolute inset-x-0 bottom-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex justify-center pointer-events-none">
                 <span className={cn("text-[10px] uppercase tracking-widest font-medium", isCenter ? "text-blue-200/90" : "text-zinc-400 dark:text-zinc-500")}>
-                    Click to Open
+                    {t('mandala.clickToOpen')}
                 </span>
              </div>
         </motion.div>
@@ -280,6 +288,7 @@ const OverviewCard = ({
 };
 
 export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }) => {
+  const { t } = useLanguage();
   // State
   const [zoomIndex, setZoomIndex] = useState<number | null>(null); // null = overview, 0-8 = focused cluster
   const [viewMode, setViewMode] = useState<'spatial' | 'list'>('spatial'); 
@@ -352,12 +361,12 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
   };
   const handleCopy = (text: string) => {
       navigator.clipboard.writeText(text);
-      toast.success("Copied to clipboard");
+      toast.success(t('common.copiedToClipboard'));
   };
   const handleCopyFull = () => {
-      const lines = [`# ${result.centralGoal || "Mandala Chart"}`, ""];
+      const lines = [`# ${result.centralGoal || t('mandala.centralGoalPlaceholder')}`, ""];
       (result.categories || []).forEach((cat, i) => {
-          lines.push(`## ${i + 1}. ${cat.name || "Untitled Category"}`);
+          lines.push(`## ${i + 1}. ${cat.name || t('mandala.categoryPlaceholder')}`);
           (cat.steps || []).forEach((step, j) => step && lines.push(`   - ${step}`));
           lines.push("");
       });
@@ -385,14 +394,14 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
       return (
           <div className="w-full h-[85vh] overflow-y-auto bg-slate-50 dark:bg-[#0a0a0a] rounded-[2rem] border border-slate-200 dark:border-white/5 p-8 custom-scrollbar">
               <div className="flex justify-between items-center mb-8 sticky top-0 bg-slate-50/90 dark:bg-[#0a0a0a]/90 backdrop-blur-md z-20 py-4">
-                  <h2 className="text-2xl font-bold">List View</h2>
+                  <h2 className="text-2xl font-bold">{t('mandala.listView')}</h2>
                   <button onClick={() => setViewMode('spatial')} className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
-                      <Grid size={18} /> Switch to Grid
+                      <Grid size={18} /> {t('mandala.switchToGrid')}
                   </button>
               </div>
               <div className="max-w-3xl mx-auto space-y-12 pb-20">
                   <div className="text-center mb-12">
-                      <span className="text-xs font-bold uppercase tracking-widest text-zinc-500">Central Goal</span>
+                      <span className="text-xs font-bold uppercase tracking-widest text-zinc-500">{t('mandala.centralGoalPlaceholder')}</span>
                       <EditableText 
                         value={result.centralGoal} 
                         onChange={(val) => updateResult(['centralGoal'], val)} 
@@ -407,7 +416,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                                 value={cat.name} 
                                 onChange={(val) => updateCategoryName(i, val)} 
                                 className="text-xl font-bold flex-grow bg-transparent border-transparent"
-                                placeholder="Category Name"
+                                placeholder={t('mandala.categoryPlaceholder')}
                               />
                           </div>
                           <div className="grid md:grid-cols-2 gap-4 pl-12">
@@ -418,7 +427,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                                             value={cat.steps[j] || ""} 
                                             onChange={(val) => updateStep(i, j, val)}
                                             className="flex-grow text-sm border-b border-zinc-100 dark:border-zinc-800 focus:border-blue-500"
-                                            placeholder="Add step..."
+                                            placeholder={t('mandala.stepPlaceholder')}
                                         />
                                    </div>
                                ))}
@@ -444,12 +453,12 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                  <button 
                     onClick={() => setViewMode('list')}
                     className="p-2 cursor-pointer rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                    title="List View"
+                    title={t('mandala.listView')}
                  >
                      <Layout size={18} />
                  </button>
             </div>
-             <button onClick={handleCopyFull} className="cursor-pointer bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-2 rounded-xl border border-white/20 text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2" title="Copy Full Strategy">
+             <button onClick={handleCopyFull} className="cursor-pointer bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-2 rounded-xl border border-white/20 text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2" title={t('mandala.copyFullStrategy')}>
                 <Copy size={20} />
             </button>
         </div>
@@ -468,10 +477,10 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                     >
                         <button 
                             onClick={() => setZoomIndex(null)}
-                            title="Back to Overview (Esc)"
+                            title={t('mandala.backToOverviewTitle')}
                             className="flex items-center gap-2 cursor-pointer px-4 py-2.5 bg-white/95 dark:bg-zinc-900/95 text-zinc-800 dark:text-zinc-200 rounded-full border border-zinc-200/80 dark:border-zinc-700/80 backdrop-blur-md hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:shadow-md active:scale-[0.98] transition-all duration-200 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                         >
-                            <Minimize2 size={16} /> <span className="text-sm font-medium">Back to Overview (Esc)</span>
+                            <Minimize2 size={16} /> <span className="text-sm font-medium">{t('mandala.backToOverview')}</span>
                         </button>
                     </motion.div>
 
@@ -483,7 +492,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                         transition={{ duration: 0.25, delay: 0.05 }}
                         onClick={() => navigate(-1)}
                         className="absolute left-4 top-1/2 -translate-y-1/2 z-40 p-3 cursor-pointer bg-white/90 dark:bg-zinc-900/90 hover:bg-white dark:hover:bg-zinc-800 rounded-full shadow-lg border border-zinc-200/80 dark:border-zinc-700/80 backdrop-blur-sm transition-all duration-200 text-zinc-600 dark:text-zinc-300 hover:scale-110 hover:shadow-xl active:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                        title="Previous Cluster (Left Arrow)"
+                        title={t('mandala.previousCluster')}
                     >
                         <ChevronLeft size={24} />
                     </motion.button>
@@ -495,7 +504,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                         transition={{ duration: 0.25, delay: 0.05 }}
                         onClick={() => navigate(1)}
                         className="absolute right-4 top-1/2 -translate-y-1/2 z-40 p-3 cursor-pointer bg-white/90 dark:bg-zinc-900/90 hover:bg-white dark:hover:bg-zinc-800 rounded-full shadow-lg border border-zinc-200/80 dark:border-zinc-700/80 backdrop-blur-sm transition-all duration-200 text-zinc-600 dark:text-zinc-300 hover:scale-110 hover:shadow-xl active:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                        title="Next Cluster (Right Arrow)"
+                        title={t('mandala.nextCluster')}
                     >
                         <ChevronRight size={24} />
                     </motion.button>
@@ -514,7 +523,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                     className="absolute bottom-20 left-1/2 -translate-x-1/2 z-40 bg-zinc-900/90 dark:bg-white/10 text-white dark:text-zinc-100 px-5 py-2.5 rounded-full backdrop-blur-md text-sm pointer-events-none flex items-center gap-2 shadow-lg border border-white/10"
                 >
                     <MousePointerClick size={14} className="animate-pulse text-blue-300" />
-                    <span>Click any card to edit details</span>
+                    <span>{t('mandala.clickAnyCardToEdit')}</span>
                 </motion.div>
             )}
         </AnimatePresence>
@@ -528,7 +537,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                     exit={{ opacity: 0 }}
                     className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 text-xs text-zinc-500 dark:text-zinc-400 pointer-events-none"
                 >
-                    Press <kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono text-[10px]">Esc</kbd> to go back
+                    {t('mandala.pressEscToGoBack')}
                 </motion.div>
             )}
         </AnimatePresence>
@@ -558,34 +567,38 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                     className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-2xl p-6 custom-scrollbar"
                   >
                     <div className="flex items-center justify-between gap-4 mb-4">
-                      <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Step detail</h3>
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                        {t('mandala.stepDetail')} — {t('mandala.stepOf').replace('{0}', String(stepIndex + 1)).replace('{1}', '8')}
+                      </h3>
                       <button
                         type="button"
                         onClick={() => setSelectedCellDetail(null)}
                         className="p-2 cursor-pointer rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                        aria-label="Close"
+                        aria-label={t('common.close')}
                       >
                         <X size={20} />
                       </button>
                     </div>
-                    <p className="text-base font-medium text-zinc-800 dark:text-zinc-200 mb-4 pr-8">{stepText || "Untitled step"}</p>
+                    <p className="text-base font-medium text-zinc-800 dark:text-zinc-200 mb-4 pr-8">{stepText || t('mandala.untitledStep')}</p>
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Why this step</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">{t('mandala.whyThisStep')}</label>
+                        <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mb-1">{t('mandala.whyThisStepHelp')}</p>
                         <EditableText
                           value={stepWhy}
                           onChange={(val) => updateStepWhy(catIndex, stepIndex, val)}
                           multiline
                           className="text-sm text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 w-full min-h-[80px]"
-                          placeholder="Explain why this step matters (or add later)..."
+                          placeholder={t('mandala.whyThisStepPlaceholder')}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Sub-tasks / bullet points</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">{t('mandala.subTasks')}</label>
+                        <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mb-1">{t('mandala.subTasksHelp')}</p>
                         <EditableList
                           items={Array.isArray(subTasks) ? subTasks : []}
                           onChange={(items) => updateStepSubTasks(catIndex, stepIndex, items)}
-                          placeholder="e.g. Practice pronunciation with ChatGPT 30 min 3x/week"
+                          placeholder={t('mandala.subTasksPlaceholder')}
                           className="space-y-2"
                           itemClassName="text-sm"
                         />
@@ -621,6 +634,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                                         isCenter={true}
                                         onClick={() => setZoomIndex(gridIndex)}
                                         onChange={(val) => updateResult(['centralGoal'], val)}
+                                        t={t}
                                     />
                                 );
                             } else {
@@ -634,6 +648,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                                         isCenter={false}
                                         onClick={() => setZoomIndex(gridIndex)}
                                         onChange={(val) => updateCategoryName(catIndex, val)}
+                                        t={t}
                                     />
                                 );
                             }
@@ -657,6 +672,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                                         onItemChange={(idx, val) => updateCategoryName(idx, val)}
                                         onReorder={(from, to) => reorderCategories(from, to)}
                                         onCopy={handleCopy}
+                                        t={t}
                                       />
                                   );
                              } else {
@@ -676,6 +692,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                                         onReorder={(from, to) => reorderSteps(catIndex, from, to)}
                                         onCopy={handleCopy}
                                         onOpenStepDetail={(stepIndex) => setSelectedCellDetail({ catIndex, stepIndex })}
+                                        t={t}
                                      />
                                  );
                              }
