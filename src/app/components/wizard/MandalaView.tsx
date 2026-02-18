@@ -60,7 +60,7 @@ const MandalaCell = ({
     return (
         <div 
             className={cn(
-                "relative group/cell flex flex-col p-2 rounded-lg md:rounded-xl border transition-all duration-300",
+                "relative group/cell flex flex-col p-2 rounded-lg md:rounded-xl border transition-all duration-300 h-full min-h-0", // h-full min-h-0 for internal scrolling
                 isTitle 
                     ? "bg-blue-600 text-white border-blue-500 shadow-md ring-2 ring-blue-400/20" 
                     : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-blue-400 dark:hover:border-blue-500/50 hover:shadow-lg hover:z-20",
@@ -153,7 +153,8 @@ const ClusterValues = ({
   return (
     <motion.div 
       className={cn(
-        "grid grid-cols-3 gap-2 md:gap-3 p-2 md:p-3 rounded-2xl border transition-all duration-300",
+        // FIX: Grid Rows 3 ensures it splits height evenly. h-full fills the parent.
+        "grid grid-cols-3 grid-rows-3 gap-2 md:gap-3 p-2 md:p-3 rounded-2xl border transition-all duration-300 h-full min-h-0", 
         isCenter 
           ? "bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700/50" 
           : "bg-white/50 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-800",
@@ -191,10 +192,10 @@ const ClusterValues = ({
             canMoveNext={itemIndex !== undefined && itemIndex < 7}
             isFocused={!!isFocused}
             className={cn(
-                // Remove fixed aspect ratio constraints to allow stretching
-                "h-full min-h-[80px]", 
+                // h-full ensures it fills the row
+                "h-full min-h-0", 
                 isTitle && "md:col-span-1",
-                isZoomedIn && "shadow-lg text-lg min-h-[120px]" // Larger cells when zoomed
+                isZoomedIn && "shadow-lg text-lg min-h-[120px]" 
             )}
           />
         );
@@ -239,6 +240,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
 
       if (zoomIndex === null) {
           // Reset to Overview
+          // We removed scale(0.68) because the layout is now fully responsive (h-full w-full)
           controls.start({
               scale: 1,
               x: 0,
@@ -248,16 +250,8 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
       } else {
           // Zoom into specific cluster
           const pos = GRID_POSITIONS[zoomIndex];
-          // Calculate offset to center the target cluster
-          // Grid is 3x3. Center is (1,1).
-          // If target is (0,0), we need to move it to (1,1).
-          // Shift = (1 - targetX) * 100%, (1 - targetY) * 100% ?
-          // Actually, we use percentages relative to the container size.
-          // Container is 300% width of a cluster (roughly).
-          // We want the cluster to scale up. 
-          
-          const zoomLevel = 3.2; // Zoom factor
-          const xOffset = -(pos.x - 1) * 33.33 * zoomLevel; // Scale offset
+          const zoomLevel = 3.2; 
+          const xOffset = -(pos.x - 1) * 33.33 * zoomLevel; 
           const yOffset = -(pos.y - 1) * 33.33 * zoomLevel;
 
           controls.start({
@@ -271,19 +265,14 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
 
   const navigate = (direction: -1 | 1) => {
       if (zoomIndex === null) return;
-      
-      // If we are at Center (4), go to first satellite (0)
       if (zoomIndex === CENTER_INDEX) {
           setZoomIndex(0);
           return;
       }
-
-      // Find current index in navigation order
       const currentNavIdx = NAVIGATION_ORDER.indexOf(zoomIndex);
-      if (currentNavIdx === -1) return; // Should not happen
+      if (currentNavIdx === -1) return; 
 
       let nextNavIdx = currentNavIdx + direction;
-      // Loop around
       if (nextNavIdx < 0) nextNavIdx = NAVIGATION_ORDER.length - 1;
       if (nextNavIdx >= NAVIGATION_ORDER.length) nextNavIdx = 0;
 
@@ -328,7 +317,6 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
   };
 
   if (viewMode === 'list') {
-      // Clean linear list view for accessibility/alternative.
       return (
           <div className="w-full h-[85vh] overflow-y-auto bg-slate-50 dark:bg-[#0a0a0a] rounded-[2rem] border border-slate-200 dark:border-white/5 p-8 custom-scrollbar">
               <div className="flex justify-between items-center mb-8 sticky top-0 bg-slate-50/90 dark:bg-[#0a0a0a]/90 backdrop-blur-md z-20 py-4">
@@ -473,8 +461,9 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                 dragConstraints={{ left: -100, right: 100, top: -100, bottom: 100 }}
                 dragElastic={0.1}
                 onDragStart={() => setShowHint(false)}
-                // UPDATED: WIDER ASPECT RATIO FOR DESKTOP AND MAX WIDTH (aspect-video)
-                className="w-[95%] aspect-square md:aspect-video max-w-[1400px] grid grid-cols-3 gap-4 md:gap-8 lg:gap-12 p-4 md:p-8 origin-center"
+                // THE FIX: w-full h-full matches container, grid-rows-3 ensures vertical fit
+                // Removed fixed aspect ratios and max-width that cause vertical overflow
+                className="w-full h-full max-w-[1600px] grid grid-cols-3 grid-rows-3 gap-2 md:gap-4 lg:gap-6 p-4 md:p-6 origin-center"
             >
                 {GRID_POSITIONS.map((pos, gridIndex) => {
                     const isCenter = gridIndex === CENTER_INDEX;
