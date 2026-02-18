@@ -1,13 +1,16 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Zap, Layers, Clock, Share2, Rocket, Target, Lock, Star } from 'lucide-react';
+import { Target, Lock, Star, Rocket, Zap, Layers } from 'lucide-react';
 import { EditableText, EditableList } from '../Editable';
 import { useLanguage } from '@/app/components/language-provider';
 import { useNavigate } from 'react-router-dom';
+import { MandalaView } from './MandalaView';
+import { EisenhowerView } from './EisenhowerView';
+import { ParetoView } from './ParetoView';
 
 interface WizardResultProps {
   result: any;
-  updateResult: (path: string[], value: any) => void;
+  updateResult: (path: (string | number)[], value: any) => void;
   onBack: () => void;
 }
 
@@ -59,45 +62,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
     if (result.type === 'pareto') {
       return (
         <Wrapper>
-        <div className="mt-8 grid md:grid-cols-2 gap-6 w-full max-w-4xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-blue-500/30 rounded-3xl p-8 shadow-xl relative overflow-hidden group"
-          >
-            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-400 to-blue-600" />
-            <div className="flex items-center gap-3 mb-6 text-blue-600 dark:text-blue-400">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <Zap size={24} />
-              </div>
-              <h4 className="font-bold text-xl uppercase tracking-wider">{t('pareto.vital')}</h4>
-            </div>
-            
-            <EditableList 
-              items={result.vital || []} 
-              onChange={(val) => updateResult(['vital'], val)}
-              itemClassName="text-gray-800 dark:text-gray-100 font-medium text-lg leading-snug"
-            />
-          </motion.div>
-          
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-gray-50/50 dark:bg-zinc-800/30 backdrop-blur-lg border border-gray-200 dark:border-zinc-700 rounded-3xl p-8 shadow-lg"
-          >
-             <div className="flex items-center gap-3 mb-6 text-gray-500 dark:text-gray-400 opacity-80">
-              <div className="p-2 bg-gray-200 dark:bg-zinc-700/50 rounded-lg">
-                <Layers size={24} />
-              </div>
-              <h4 className="font-bold text-xl uppercase tracking-wider">{t('pareto.trivial')}</h4>
-            </div>
-             <EditableList 
-              items={result.trivial || []} 
-              onChange={(val) => updateResult(['trivial'], val)}
-              itemClassName="text-base text-gray-600 dark:text-gray-400"
-            />
-          </motion.div>
-        </div>
+            <ParetoView result={result} updateResult={updateResult} />
         </Wrapper>
       );
     }
@@ -105,61 +70,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
     if (result.type === 'eisenhower') {
       return (
         <Wrapper>
-        <div className="mt-8 w-full max-w-5xl mx-auto">
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl rounded-[2.5rem] border border-white/20 shadow-2xl">
-            <div className="bg-red-50/80 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 p-8 rounded-3xl relative overflow-hidden">
-               <div className="absolute top-4 right-4 text-red-200 dark:text-red-900/40 opacity-50 font-black text-6xl pointer-events-none">1</div>
-              <h4 className="text-red-600 dark:text-red-400 font-bold mb-6 flex items-center gap-3 uppercase tracking-wider text-sm">
-                <span className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center"><Zap size={16} /></span> 
-                {t('eisenhower.do')}
-              </h4>
-              <EditableList 
-                  items={result.q1 || []} 
-                  onChange={(val) => updateResult(['q1'], val)}
-                  itemClassName="p-2 bg-white dark:bg-zinc-950 rounded-xl shadow-sm text-base font-semibold dark:text-gray-100 border-l-4 border-red-500"
-              />
-            </div>
-            
-            <div className="bg-blue-50/80 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 p-8 rounded-3xl relative overflow-hidden">
-                <div className="absolute top-4 right-4 text-blue-200 dark:text-blue-900/40 opacity-50 font-black text-6xl pointer-events-none">2</div>
-              <h4 className="text-blue-600 dark:text-blue-400 font-bold mb-6 flex items-center gap-3 uppercase tracking-wider text-sm">
-                <span className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center"><Clock size={16} /></span> 
-                {t('eisenhower.schedule')}
-              </h4>
-               <EditableList 
-                  items={result.q2 || []} 
-                  onChange={(val) => updateResult(['q2'], val)}
-                  itemClassName="p-2 bg-white dark:bg-zinc-950 rounded-xl shadow-sm text-base font-medium dark:text-gray-200 border-l-4 border-blue-500"
-              />
-            </div>
-            
-            <div className="bg-amber-50/80 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 p-8 rounded-3xl relative overflow-hidden">
-                <div className="absolute top-4 right-4 text-amber-200 dark:text-amber-900/40 opacity-50 font-black text-6xl pointer-events-none">3</div>
-              <h4 className="text-amber-600 dark:text-amber-400 font-bold mb-6 flex items-center gap-3 uppercase tracking-wider text-sm">
-                 <span className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center"><Share2 size={16} /></span>
-                 {t('eisenhower.delegate')}
-              </h4>
-              <EditableList 
-                  items={result.q3 || []} 
-                  onChange={(val) => updateResult(['q3'], val)}
-                  itemClassName="p-2 bg-white dark:bg-zinc-950 rounded-xl shadow-sm text-sm font-medium dark:text-gray-300 opacity-90"
-              />
-            </div>
-            
-            <div className="bg-gray-100/80 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 p-8 rounded-3xl relative overflow-hidden">
-                <div className="absolute top-4 right-4 text-gray-200 dark:text-zinc-700 opacity-50 font-black text-6xl pointer-events-none">4</div>
-              <h4 className="text-gray-500 dark:text-gray-400 font-bold mb-6 flex items-center gap-3 uppercase tracking-wider text-sm">
-                 <span className="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-700 flex items-center justify-center"><Layers size={16} /></span>
-                 {t('eisenhower.eliminate')}
-              </h4>
-               <EditableList 
-                  items={result.q4 || []} 
-                  onChange={(val) => updateResult(['q4'], val)}
-                  itemClassName="p-2 bg-white dark:bg-zinc-950 rounded-xl shadow-sm text-sm font-medium opacity-50 line-through dark:text-gray-500"
-              />
-            </div>
-          </div>
-        </div>
+            <EisenhowerView result={result} updateResult={updateResult} />
         </Wrapper>
       );
     }
@@ -354,6 +265,14 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
               </div>
            </div>
         </motion.div>
+        </Wrapper>
+      );
+    }
+    
+    if (result.type === 'mandalas') {
+      return (
+        <Wrapper>
+          <MandalaView result={result} updateResult={updateResult} />
         </Wrapper>
       );
     }

@@ -4,6 +4,7 @@ import { User, Mail, Award, Zap, Save, Loader2, ArrowLeft, Star, CheckCircle2, C
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
+import { Textarea } from '@/app/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Label } from '@/app/components/ui/label';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +22,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/app/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/app/components/ui/popover";
 
 interface ProfileProps {
   userId: string;
@@ -325,7 +331,7 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="max-w-5xl mx-auto px-6 py-12"
+      className="max-w-5xl xl:max-w-7xl mx-auto px-6 py-12"
     >
       <div className="mb-8 flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={onBack} className="dark:text-white dark:hover:bg-zinc-800 cursor-pointer">
@@ -334,7 +340,7 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
         <h1 className="text-3xl font-bold tracking-tight text-black dark:text-white">{t('profile.title')}</h1>
       </div>
 
-      <div className="grid md:grid-cols-[300px_1fr] gap-12">
+      <div className="grid md:grid-cols-[300px_1fr] xl:grid-cols-[320px_1fr] gap-12">
         {/* Left Column: Stats & Avatar */}
         <div className="flex flex-col gap-6">
           <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-gray-100 dark:border-zinc-800 shadow-sm flex flex-col items-center text-center">
@@ -353,13 +359,15 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
                     {uploading ? <Loader2 className="animate-spin" size={14} /> : <Camera size={14} />}
                     {t('profile.upload') || "Upload Avatar"}
                  </Button>
-                 <input 
-                   type="file" 
-                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" 
-                   accept="image/*"
-                   onChange={handleAvatarUpload}
-                   disabled={uploading}
-                 />
+                <input 
+                  type="file" 
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" 
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  disabled={uploading}
+                  aria-label={t('profile.upload') || "Upload Avatar"}
+                  title={t('profile.upload') || "Upload Avatar"}
+                />
                </div>
              </div>
 
@@ -443,18 +451,18 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
              </div>
 
              <div className="space-y-2">
-                 <p className="text-xs text-zinc-500 font-medium px-1">Included in your plan:</p>
+                 <p className="text-xs text-zinc-500 font-medium px-1">{t('profile.includedInPlan') || 'Included in your plan:'}</p>
                  <ul className="grid grid-cols-1 gap-2">
                     {currentTierConfig.allowedFrameworks.slice(0, 3).map((fw: string) => (
                         <li key={fw} className="flex items-center gap-2 text-xs text-zinc-300">
-                           <CheckCircle2 size={12} className="text-green-500" />
-                           {fw}
+                           <CheckCircle2 size={12} className="text-green-500 shrink-0" />
+                           {t(`fw.${fw}.title`) || fw.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                         </li>
                     ))}
                     {currentTierConfig.canExportPdf && (
                         <li className="flex items-center gap-2 text-xs text-zinc-300">
-                           <CheckCircle2 size={12} className="text-green-500" />
-                           PDF Export
+                           <CheckCircle2 size={12} className="text-green-500 shrink-0" />
+                           {t('profile.pdfExport') || 'PDF Export'}
                         </li>
                     )}
                  </ul>
@@ -472,136 +480,157 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
             {t('profile.personalInfoHint')}
           </p>
           <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-black dark:text-white">{t('auth.emailAddress')}</Label>
-              <Input 
-                id="email" 
-                value={email} 
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="bg-transparent dark:text-white dark:border-zinc-700"
-              />
+            {/* Email + Display name in one row on desktop */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-black dark:text-white">{t('auth.emailAddress')}</Label>
+                <Input 
+                  id="email" 
+                  value={email} 
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="bg-transparent dark:text-white dark:border-zinc-700"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="displayName" className="text-black dark:text-white">{t('profile.displayName')}</Label>
+                <Input 
+                  id="displayName" 
+                  value={data.display_name} 
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, display_name: e.target.value })}
+                  placeholder="e.g. Elon Musk"
+                  className="bg-transparent dark:text-white dark:border-zinc-700"
+                />
+              </div>
             </div>
 
+            {/* Bio / Mission with character limit */}
             <div className="space-y-2">
-              <Label htmlFor="displayName" className="text-black dark:text-white">{t('profile.displayName')}</Label>
-              <Input 
-                id="displayName" 
-                value={data.display_name} 
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, display_name: e.target.value })}
-                placeholder="e.g. Elon Musk"
-                className="bg-transparent dark:text-white dark:border-zinc-700"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bio" className="text-black dark:text-white">{t('profile.bio')}</Label>
-              <Input 
+              <div className="flex justify-between items-baseline">
+                <Label htmlFor="bio" className="text-black dark:text-white">{t('profile.bio')}</Label>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{(data.bio || '').length}/500</span>
+              </div>
+              <Textarea 
                 id="bio" 
                 value={data.bio} 
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, bio: e.target.value })}
-                placeholder="What are you building?"
-                className="bg-transparent dark:text-white dark:border-zinc-700"
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                  const v = e.target.value;
+                  if (v.length <= 500) setData({ ...data, bio: v });
+                }}
+                placeholder={t('profile.bioPlaceholder') || "e.g. What you're building (up to 500 characters)"}
+                maxLength={500}
+                rows={3}
+                className="bg-transparent dark:text-white dark:border-zinc-700 resize-none"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="age" className="text-black dark:text-white">{t('profile.age')}</Label>
-                    <Input 
-                      id="age" 
-                      type="number"
-                      min={10}
-                      max={90}
-                      value={data.metadata?.age || ''} 
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          const val = parseInt(e.target.value);
-                          if (!e.target.value || (val >= 10 && val <= 90)) {
-                              setData({ ...data, metadata: { ...data.metadata, age: e.target.value } });
-                          }
-                      }}
-                      placeholder="28"
-                      className="bg-transparent dark:text-white dark:border-zinc-700"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="gender" className="text-black dark:text-white">{t('profile.gender')}</Label>
-                    <Select 
-                        value={data.metadata?.gender} 
-                        onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, gender: val } })}
-                    >
-                        <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
-                            <SelectValue placeholder={t('profile.genderPlaceholder') || "Select gender"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {GENDERS.map((o: string) => (
-                                <SelectItem key={o} value={o}>{t(`gender.${o}`)}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                  </div>
+            {/* Demographics: one row on desktop with even column widths */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="space-y-2 min-w-0">
+                <Label htmlFor="age" className="text-black dark:text-white">{t('profile.age')}</Label>
+                <Input 
+                  id="age" 
+                  type="number"
+                  min={10}
+                  max={90}
+                  value={data.metadata?.age || ''} 
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const val = parseInt(e.target.value);
+                      if (!e.target.value || (val >= 10 && val <= 90)) {
+                          setData({ ...data, metadata: { ...data.metadata, age: e.target.value } });
+                      }
+                  }}
+                  placeholder="28"
+                  className="bg-transparent dark:text-white dark:border-zinc-700"
+                />
+              </div>
+              <div className="space-y-2 min-w-0">
+                <Label htmlFor="gender" className="text-black dark:text-white">{t('profile.gender')}</Label>
+                <Select 
+                    value={data.metadata?.gender} 
+                    onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, gender: val } })}
+                >
+                    <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                        <SelectValue placeholder={t('profile.genderPlaceholder') || "Select gender"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {GENDERS.map((o: string) => (
+                            <SelectItem key={o} value={o}>{t(`gender.${o}`)}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2 min-w-0">
+                <Label htmlFor="country" className="text-black dark:text-white">{t('profile.country')}</Label>
+                <Select 
+                    value={data.metadata?.country} 
+                    onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, country: val } })}
+                >
+                    <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                        <SelectValue placeholder={t('profile.countryPlaceholder') || "Select country"} />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                        {COUNTRIES.map((o: string) => (
+                            <SelectItem key={o} value={o}>{t(`country.${o}`)}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2 min-w-0">
+                <Label htmlFor="zodiac" className="text-black dark:text-white">{t('profile.zodiac')}</Label>
+                <Select 
+                    value={data.metadata?.zodiac_sign} 
+                    onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, zodiac_sign: val } })}
+                >
+                    <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                        <SelectValue placeholder={t('profile.zodiacPlaceholder') || "Select sign"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {ZODIACS.map((o: string) => (
+                            <SelectItem key={o} value={o}>{t(`zodiac.${o}`)}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="zodiac_importance" className="text-black dark:text-white">{t('profile.zodiacImportanceShort') || 'Zodiac relevance'}</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button type="button" className="inline-flex text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer p-0.5 rounded focus:outline-none focus:ring-2 focus:ring-offset-0" aria-label={t('profile.zodiacImportanceInfo')} title={t('profile.zodiacImportanceInfo')}>
+                        <Info size={14} />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 text-sm text-left" align="start">
+                      <p className="text-gray-700 dark:text-gray-300">{t('profile.zodiacImportanceInfo')}</p>
+                    </PopoverContent>
+                  </Popover>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="country" className="text-black dark:text-white">{t('profile.country')}</Label>
-                    <Select 
-                        value={data.metadata?.country} 
-                        onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, country: val } })}
-                    >
-                        <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
-                            <SelectValue placeholder={t('profile.countryPlaceholder') || "Select country"} />
-                        </SelectTrigger>
-                         <SelectContent className="max-h-60">
-                            {COUNTRIES.map((o: string) => (
-                                <SelectItem key={o} value={o}>{t(`country.${o}`)}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="zodiac" className="text-black dark:text-white">{t('profile.zodiac')}</Label>
-                     <Select 
-                        value={data.metadata?.zodiac_sign} 
-                        onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, zodiac_sign: val } })}
-                    >
-                        <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
-                            <SelectValue placeholder={t('profile.zodiacPlaceholder') || "Select sign"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {ZODIACS.map((o: string) => (
-                                <SelectItem key={o} value={o}>{t(`zodiac.${o}`)}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="zodiac_importance" className="text-black dark:text-white">{t('profile.zodiacImportance')}</Label>
-                    <Select 
-                        value={data.metadata?.zodiac_importance || ''} 
-                        onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, zodiac_importance: val } })}
-                    >
-                        <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
-                            <SelectValue placeholder={t('profile.zodiacImportancePlaceholder') || "Select"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {ZODIAC_IMPORTANCE.map((o: string) => (
-                                <SelectItem key={o} value={o}>{t(`profile.zodiacImportance.${o}`)}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="interests" className="text-black dark:text-white">{t('profile.interests') || "Interests"}</Label>
-                  <Input 
-                    id="interests" 
-                    value={data.metadata?.interests || ''} 
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, metadata: { ...data.metadata, interests: e.target.value } })}
-                    placeholder="e.g. AI, startups, reading"
-                    className="bg-transparent dark:text-white dark:border-zinc-700"
-                  />
-                </div>
+                <Select 
+                    value={data.metadata?.zodiac_importance || ''} 
+                    onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, zodiac_importance: val } })}
+                >
+                    <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                        <SelectValue placeholder={t('profile.zodiacImportancePlaceholder') || "Select"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {ZODIAC_IMPORTANCE.map((o: string) => (
+                            <SelectItem key={o} value={o}>{t(`profile.zodiacImportance.${o}`)}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="interests" className="text-black dark:text-white">{t('profile.interests') || "Interests"}</Label>
+              <Input 
+                id="interests" 
+                value={data.metadata?.interests || ''} 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, metadata: { ...data.metadata, interests: e.target.value } })}
+                placeholder="e.g. AI, startups, reading"
+                className="bg-transparent dark:text-white dark:border-zinc-700"
+              />
             </div>
 
             <div className="space-y-2">

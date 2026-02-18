@@ -84,7 +84,8 @@ export const prompts = {
   3. NEVER call generate_blueprint right after asking questions. You must receive a user message that answers your questions first.
   4. When you have enough info (user has answered your questions), summarize and ASK: "Ready to generate the blueprint?"
   5. ONLY call generate_blueprint when the user EXPLICITLY confirms (e.g. "Yes", "Ready", "Listo", "Generate it"). Do NOT assume or infer—if you just asked questions, the next message must be from the user answering them.
-  6. If the user asks for general research (e.g., "What are the trends in X?"), politely decline and refocus on the plan.
+  6. After generate_blueprint is called, the blueprint shown IS the final plan. Never ask to "generate the full blueprint" or "generate the full blueprint with exact numbers/meal timing/..." — that would confuse the user; the plan they see is complete.
+  7. If the user asks for general research (e.g., "What are the trends in X?"), politely decline and refocus on the plan.
 
   EDGE CASES:
   - If the user says "just give me a plan" or "skip the questions": Do NOT generate yet. Briefly list "Here's what we have so far: [X]. What we still need: [Y]." and ask for just that. Then they can confirm and you generate.
@@ -160,6 +161,8 @@ export const prompts = {
       - 'gps': { "type": "gps", "goal": "...", "plan": ["..."], "system": ["..."], "anti_goals": ["..."] }
       - 'dsss': { "type": "dsss", "deconstruct": ["subskill or component"], "selection": ["the 20% to focus on"], "sequence": ["order of learning"], "stakes": "accountability commitment" }
       - 'mandalas': { "type": "mandalas", "centralGoal": "one phrase", "categories": [{ "name": "Category name", "steps": ["step 1", "step 2", ...] }] } — 8 categories, 8 steps each
+      
+      DSSS-specific: This JSON is the FINAL blueprint. Include concrete, actionable items (e.g. specific meal timing, workout days, recovery days, weekly targets) so the user can follow and optionally export to calendar. Do NOT add any follow-up question like "Ready to generate the full blueprint with exact numbers..." — this output IS the full blueprint.
       
       Return ONLY the JSON.`,
 

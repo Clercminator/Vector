@@ -3,7 +3,7 @@ import { RefreshCcw, Calendar, CheckCircle2, Download, Lock } from 'lucide-react
 import { toast } from 'sonner';
 
 import { Blueprint, blueprintTitleFromAnswers } from '@/lib/blueprints';
-import { blueprintToEvents, downloadIcs, exportEventsToGoogleCalendar, getGoogleAccessToken } from '@/lib/calendarExport';
+import { blueprintToEvents, downloadIcs, exportEventsToGoogleCalendar, getGoogleAccessToken, isBlueprintCalendarWorthy } from '@/lib/calendarExport';
 import { exportToPdf } from '@/lib/pdfExport';
 import { TIER_CONFIGS, TierId } from '@/lib/tiers';
 import { useLanguage } from '@/app/components/language-provider';
@@ -156,25 +156,33 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
       </div>
 
       {/* Final Action Buttons (Overlay at bottom) */}
-      {result && (
+      {result && (() => {
+        const answers = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
+        const bp: Blueprint = {
+          id: props.initialBlueprint?.id ?? '',
+          framework: props.framework || 'first-principles',
+          title: props.initialBlueprint?.title ?? blueprintTitleFromAnswers(answers),
+          answers,
+          result,
+          createdAt: props.initialBlueprint?.createdAt ?? new Date().toISOString(),
+        };
+        const showCalendarExport = TIER_CONFIGS[props.tier || 'architect'].canExportCalendar && isBlueprintCalendarWorthy(bp);
+        return (
         <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-4 items-center z-30">
           <button onClick={handleSafeRestart} className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium">
               <RefreshCcw size={18} />{t('wizard.restart')}
           </button>
           
-          {/* Calendar Export */}
+          {/* Calendar Export — only when blueprint has multiple schedulable items */}
+          {showCalendarExport && (
           <button 
              onClick={handleExport} 
-             disabled={!TIER_CONFIGS[props.tier || 'architect'].canExportCalendar}
-             className={`flex items-center gap-2 px-6 py-3 rounded-full shadow-lg transition-all font-medium cursor-pointer ${
-                 !TIER_CONFIGS[props.tier || 'architect'].canExportCalendar 
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                  : 'bg-blue-600 text-white hover:shadow-xl'
-             }`}
+             className="flex items-center gap-2 px-6 py-3 rounded-full shadow-lg transition-all font-medium cursor-pointer bg-blue-600 text-white hover:shadow-xl"
           >
-             {TIER_CONFIGS[props.tier || 'architect'].canExportCalendar ? <Calendar size={18} /> : <Lock size={16} />}
+             <Calendar size={18} />
              {t('wizard.export')}
           </button>
+          )}
 
           {/* PDF Export */}
           <button 
@@ -194,7 +202,8 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
               <CheckCircle2 size={18} />{t('wizard.save')}
           </button>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 };

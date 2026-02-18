@@ -37,6 +37,11 @@ export function blueprintToEvents(bp: Blueprint, opts?: { startAt?: Date; minute
   if (result?.type === "eisenhower") tasks.push(...(result.q2 ?? [])); // Schedule bucket
   if (result?.type === "okr") tasks.push(result.initiative, ...(result.keyResults ?? []).map((kr) => `KR: ${kr}`));
   if (result?.type === "first-principles") tasks.push(`Build: ${result.newApproach}`);
+  if (result?.type === "dsss") {
+    const d = result as { sequence?: string[]; selection?: string[] };
+    // Sequence = ordered phases; selection = 20% focus areas — both are calendar-worthy
+    tasks.push(...(d.sequence ?? []), ...(d.selection ?? []));
+  }
 
   const clean = tasks.map((t) => (t ?? "").trim()).filter(Boolean);
   const list = clean.length ? clean : [`Vector blueprint: ${bp.title}`];
@@ -51,6 +56,14 @@ export function blueprintToEvents(bp: Blueprint, opts?: { startAt?: Date; minute
       end,
     };
   });
+}
+
+/**
+ * True when the blueprint has enough structure to be a meaningful calendar export
+ * (multiple schedulable items). When false, we should not show the Export to Google / ICS button.
+ */
+export function isBlueprintCalendarWorthy(bp: Blueprint): boolean {
+  return blueprintToEvents(bp).length >= 2;
 }
 
 export function defaultStartAt() {

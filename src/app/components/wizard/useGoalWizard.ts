@@ -673,6 +673,8 @@ export const useGoalWizard = ({
                          }
                          const { cleanText, suggestions, draft } = extractContent(rawContent);
                          let textToShow = (cleanText.trim() || rawContent.trim().slice(0, 2000)).trim();
+                         // Strip confusing trailing question that implies the plan is not final (e.g. "Ready to generate the full blueprint with exact numbers...?")
+                         textToShow = textToShow.replace(/\n\s*(\*\*)?Ready to generate the full blueprint[^*]*(\*\*)?\s*$/i, "").trim();
                          if (/^Your .+ blueprint is ready below\. Review your personalized plan and refine as needed\.$/.test(textToShow) || textToShow === 'Your blueprint is ready below. Review your personalized plan and refine as needed.') {
                              const label = (framework && String(framework).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())) || '';
                              const translated = (t('wizard.blueprintReadyBelow') || '').replace('{0}', label).trim();
