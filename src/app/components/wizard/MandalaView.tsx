@@ -60,10 +60,10 @@ const MandalaCell = ({
     return (
         <div 
             className={cn(
-                "relative group/cell flex flex-col p-2 rounded-lg md:rounded-xl border transition-all duration-300 h-full min-h-0", // h-full min-h-0 for internal scrolling
+                "relative group/cell flex flex-col p-3 rounded-xl md:rounded-2xl border transition-all duration-300 h-full min-h-0",
                 isTitle 
-                    ? "bg-blue-600 text-white border-blue-500 shadow-md ring-2 ring-blue-400/20" 
-                    : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-blue-400 dark:hover:border-blue-500/50 hover:shadow-lg hover:z-20",
+                    ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white border-blue-500/80 shadow-lg shadow-blue-500/10 ring-2 ring-blue-400/25" 
+                    : "bg-white dark:bg-zinc-900/95 border-zinc-200 dark:border-zinc-700/80 hover:border-blue-400/50 dark:hover:border-blue-500/40 hover:shadow-md hover:z-20 active:scale-[0.99]",
                 className
             )}
         >
@@ -92,7 +92,7 @@ const MandalaCell = ({
                         <button 
                             onClick={(e) => { e.stopPropagation(); onMovePrev(); }}
                             disabled={!canMovePrev}
-                            className="p-1.5 text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed border-r border-zinc-200 dark:border-zinc-700"
+                            className="p-1.5 cursor-pointer text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed border-r border-zinc-200 dark:border-zinc-700"
                             title="Move Previous"
                         >
                             <ArrowLeft size={14} />
@@ -100,7 +100,7 @@ const MandalaCell = ({
                         <button 
                             onClick={(e) => { e.stopPropagation(); onMoveNext(); }}
                             disabled={!canMoveNext}
-                            className="p-1.5 text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                            className="p-1.5 cursor-pointer text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
                             title="Move Next"
                         >
                             <ChevronRight size={14} /> 
@@ -109,7 +109,7 @@ const MandalaCell = ({
                 )}
                 <button 
                     onClick={(e) => { e.stopPropagation(); onCopy(); }}
-                    className="p-1.5 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 shadow-lg"
+                    className="p-1.5 cursor-pointer bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-blue-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 shadow-lg"
                     title="Copy text"
                 >
                     <Copy size={14} />
@@ -144,35 +144,41 @@ const ClusterDrillDown = ({
 
   return (
     <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.2 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={cn(
-        "w-full h-full grid grid-cols-3 grid-rows-3 gap-4 md:gap-6 p-4 md:p-10",
-        // No border/bg for the container itself in drill-down, let cells float
+        "w-full h-full grid grid-cols-3 grid-rows-3 gap-3 md:gap-5 p-4 md:p-8",
         "bg-transparent"
       )}
     >
       {Array.from({ length: 9 }).map((_, cellIndex) => {
         const { value, isTitle, itemIndex } = getCellData(cellIndex);
         return (
-          <MandalaCell 
+          <motion.div
             key={cellIndex}
-            value={value}
-            isTitle={isTitle}
-            onChange={(val) => isTitle ? onTitleChange(val) : onItemChange(itemIndex!, val)}
-            onCopy={() => onCopy(value)}
-            onMovePrev={() => !isTitle && itemIndex !== undefined ? onReorder(itemIndex, itemIndex - 1) : undefined}
-            onMoveNext={() => !isTitle && itemIndex !== undefined ? onReorder(itemIndex, itemIndex + 1) : undefined}
-            canMovePrev={itemIndex !== undefined && itemIndex > 0}
-            canMoveNext={itemIndex !== undefined && itemIndex < 7}
-            isFocused={true} // Always show controls in drill-down
-            className={cn(
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.25, delay: cellIndex * 0.02, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="h-full min-h-0"
+          >
+            <MandalaCell 
+              value={value}
+              isTitle={isTitle}
+              onChange={(val) => isTitle ? onTitleChange(val) : onItemChange(itemIndex!, val)}
+              onCopy={() => onCopy(value)}
+              onMovePrev={() => !isTitle && itemIndex !== undefined ? onReorder(itemIndex, itemIndex - 1) : undefined}
+              onMoveNext={() => !isTitle && itemIndex !== undefined ? onReorder(itemIndex, itemIndex + 1) : undefined}
+              canMovePrev={itemIndex !== undefined && itemIndex > 0}
+              canMoveNext={itemIndex !== undefined && itemIndex < 7}
+              isFocused={true}
+              className={cn(
                 "h-full min-h-0 shadow-lg",
                 isTitle ? "text-lg md:text-xl lg:text-2xl" : "text-base md:text-lg"
-            )}
-          />
+              )}
+            />
+          </motion.div>
         );
       })}
     </motion.div>
@@ -183,27 +189,34 @@ const OverviewCard = ({
     title,
     isCenter,
     onClick,
-    onChange
+    onChange,
+    index
 }: {
     title: string;
     isCenter: boolean;
     onClick: () => void;
     onChange: (val: string) => void;
+    index: number;
 }) => {
     return (
         <motion.div
             layoutId={isCenter ? 'center-cluster-card' : undefined}
             onClick={onClick}
             title={title ? `${title}` : (isCenter ? "Central Goal" : "Category")}
+            initial={{ opacity: 0, y: 12, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.35, delay: index * 0.03, ease: [0.25, 0.46, 0.45, 0.94] }}
+            whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+            whileTap={{ scale: 0.98 }}
             className={cn(
-                "group cursor-pointer relative flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-200 h-full min-h-[100px]",
+                "group cursor-pointer relative flex flex-col items-center justify-center p-5 rounded-2xl border transition-colors duration-200 h-full min-h-[100px]",
+                "shadow-md hover:shadow-xl",
                 isCenter 
-                    ? "bg-blue-600 text-white border-blue-500 shadow-lg ring-4 ring-blue-500/10 hover:ring-blue-500/30" 
-                    : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-blue-400 dark:hover:border-blue-500/50 hover:shadow-lg"
+                    ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white border-blue-500/80 shadow-blue-500/20 ring-2 ring-blue-400/30 hover:ring-blue-400/50" 
+                    : "bg-white dark:bg-zinc-900/95 border-zinc-200 dark:border-zinc-700/80 hover:border-blue-400/60 dark:hover:border-blue-500/40 hover:bg-blue-50/50 dark:hover:bg-blue-950/20"
             )}
         >
              <div className="w-full text-center pointer-events-none group-hover:pointer-events-auto overflow-visible px-3 min-w-0">
-                 {/* Padding and overflow-visible prevent the first character from being clipped; line-clamp-2 keeps long titles tidy */}
                  <div onClick={(e) => e.stopPropagation()} className="overflow-visible min-w-0 w-full"> 
                     <EditableText
                         value={title}
@@ -212,7 +225,7 @@ const OverviewCard = ({
                         className={cn(
                             "text-center font-bold bg-transparent border-transparent w-full resize-none mx-0 px-1 line-clamp-2",
                             isCenter 
-                                ? "text-lg md:text-xl text-white placeholder:text-blue-200 cursor-text" 
+                                ? "text-lg md:text-xl text-white placeholder:text-blue-200/80 cursor-text drop-shadow-sm" 
                                 : "text-base md:text-lg text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 cursor-text"
                         )}
                         placeholder={isCenter ? "Central Goal" : "Category"}
@@ -220,9 +233,8 @@ const OverviewCard = ({
                  </div>
              </div>
              
-             {/* Hover Hint */}
-             <div className="absolute inset-x-0 bottom-2 opacity-0 group-hover:opacity-100 transition-opacity flex justify-center pointer-events-none">
-                <span className={cn("text-xs uppercase tracking-wider font-medium", isCenter ? "text-blue-100" : "text-zinc-400")}>
+             <div className="absolute inset-x-0 bottom-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex justify-center pointer-events-none">
+                <span className={cn("text-[10px] uppercase tracking-widest font-medium", isCenter ? "text-blue-200/90" : "text-zinc-400 dark:text-zinc-500")}>
                     Click to Open
                 </span>
              </div>
@@ -315,7 +327,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
           <div className="w-full h-[85vh] overflow-y-auto bg-slate-50 dark:bg-[#0a0a0a] rounded-[2rem] border border-slate-200 dark:border-white/5 p-8 custom-scrollbar">
               <div className="flex justify-between items-center mb-8 sticky top-0 bg-slate-50/90 dark:bg-[#0a0a0a]/90 backdrop-blur-md z-20 py-4">
                   <h2 className="text-2xl font-bold">List View</h2>
-                  <button onClick={() => setViewMode('spatial')} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
+                  <button onClick={() => setViewMode('spatial')} className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
                       <Grid size={18} /> Switch to Grid
                   </button>
               </div>
@@ -360,11 +372,11 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
   }
 
   return (
-    <div className="relative w-full min-h-[60vh] h-[calc(100vh-12rem)] bg-slate-50 dark:bg-[#0a0a0a] rounded-[2rem] border border-slate-200 dark:border-white/5 shadow-inner select-none group overflow-hidden flex flex-col">
+    <div className="relative w-full min-h-[60vh] h-[calc(100vh-12rem)] bg-gradient-to-b from-slate-50 to-slate-100/80 dark:from-[#0a0a0a] dark:to-zinc-950/80 rounded-[2rem] border border-slate-200/80 dark:border-white/5 shadow-xl shadow-slate-200/20 dark:shadow-black/20 select-none group overflow-hidden flex flex-col">
         
-        {/* Background Grid Pattern — dot grid via Tailwind arbitrary values (no inline style) */}
+        {/* Background Grid Pattern */}
         <div 
-          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none bg-[radial-gradient(circle,currentColor_1px,transparent_1px)] [background-size:20px_20px]" 
+          className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06] pointer-events-none bg-[radial-gradient(circle,currentColor_1px,transparent_1px)] [background-size:20px_20px]" 
         />
 
         {/* Top Controls */}
@@ -372,13 +384,13 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
             <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-1 rounded-xl border border-white/20 flex gap-1 shadow-sm">
                  <button 
                     onClick={() => setViewMode('list')}
-                    className="p-2 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    className="p-2 cursor-pointer rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                     title="List View"
                  >
                      <Layout size={18} />
                  </button>
             </div>
-             <button onClick={handleCopyFull} className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-2 rounded-xl border border-white/20 text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2" title="Copy Full Strategy">
+             <button onClick={handleCopyFull} className="cursor-pointer bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-2 rounded-xl border border-white/20 text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2" title="Copy Full Strategy">
                 <Copy size={20} />
             </button>
         </div>
@@ -389,15 +401,16 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                 <>
                     {/* Back Button */}
                     <motion.div 
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -12 }}
+                        transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
                         className="absolute top-6 left-6 z-50"
                     >
                         <button 
                             onClick={() => setZoomIndex(null)}
                             title="Back to Overview (Esc)"
-                            className="flex items-center gap-2 px-4 py-2 bg-white/90 dark:bg-zinc-900/90 text-zinc-800 dark:text-zinc-200 rounded-full border border-white/20 backdrop-blur-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                            className="flex items-center gap-2 cursor-pointer px-4 py-2.5 bg-white/95 dark:bg-zinc-900/95 text-zinc-800 dark:text-zinc-200 rounded-full border border-zinc-200/80 dark:border-zinc-700/80 backdrop-blur-md hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:shadow-md active:scale-[0.98] transition-all duration-200 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                         >
                             <Minimize2 size={16} /> <span className="text-sm font-medium">Back to Overview (Esc)</span>
                         </button>
@@ -405,22 +418,24 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
 
                     {/* Side Arrows */}
                     <motion.button
-                        initial={{ opacity: 0, x: -20 }}
+                        initial={{ opacity: 0, x: -16 }}
                         animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
+                        exit={{ opacity: 0, x: -16 }}
+                        transition={{ duration: 0.25, delay: 0.05 }}
                         onClick={() => navigate(-1)}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 z-40 p-3 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black/80 rounded-full shadow-lg border border-white/20 backdrop-blur-sm transition-all text-zinc-600 dark:text-zinc-300 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 z-40 p-3 cursor-pointer bg-white/90 dark:bg-zinc-900/90 hover:bg-white dark:hover:bg-zinc-800 rounded-full shadow-lg border border-zinc-200/80 dark:border-zinc-700/80 backdrop-blur-sm transition-all duration-200 text-zinc-600 dark:text-zinc-300 hover:scale-110 hover:shadow-xl active:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                         title="Previous Cluster (Left Arrow)"
                     >
                         <ChevronLeft size={24} />
                     </motion.button>
 
                     <motion.button
-                        initial={{ opacity: 0, x: 20 }}
+                        initial={{ opacity: 0, x: 16 }}
                         animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
+                        exit={{ opacity: 0, x: 16 }}
+                        transition={{ duration: 0.25, delay: 0.05 }}
                         onClick={() => navigate(1)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 z-40 p-3 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black/80 rounded-full shadow-lg border border-white/20 backdrop-blur-sm transition-all text-zinc-600 dark:text-zinc-300 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-40 p-3 cursor-pointer bg-white/90 dark:bg-zinc-900/90 hover:bg-white dark:hover:bg-zinc-800 rounded-full shadow-lg border border-zinc-200/80 dark:border-zinc-700/80 backdrop-blur-sm transition-all duration-200 text-zinc-600 dark:text-zinc-300 hover:scale-110 hover:shadow-xl active:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                         title="Next Cluster (Right Arrow)"
                     >
                         <ChevronRight size={24} />
@@ -433,13 +448,14 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
         <AnimatePresence>
             {showHint && zoomIndex === null && (
                 <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute bottom-20 left-1/2 -translate-x-1/2 z-40 bg-black/70 text-white px-6 py-3 rounded-full backdrop-blur-md text-sm pointer-events-none flex items-center gap-2 shadow-xl border border-white/10"
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    className="absolute bottom-20 left-1/2 -translate-x-1/2 z-40 bg-zinc-900/90 dark:bg-white/10 text-white dark:text-zinc-100 px-5 py-2.5 rounded-full backdrop-blur-md text-sm pointer-events-none flex items-center gap-2 shadow-lg border border-white/10"
                 >
-                    <MousePointerClick size={16} className="animate-pulse" />
-                    Click any card to edit details
+                    <MousePointerClick size={14} className="animate-pulse text-blue-300" />
+                    <span>Click any card to edit details</span>
                 </motion.div>
             )}
         </AnimatePresence>
@@ -465,10 +481,10 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                     // OVERVIEW MODE
                     <motion.div 
                         key="overview"
-                        initial={{ opacity: 0, scale: 0.9 }}
+                        initial={{ opacity: 0, scale: 0.94 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.3 }}
+                        exit={{ opacity: 0, scale: 0.96 }}
+                        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
                         className="w-full h-full max-w-[1200px] grid grid-cols-3 grid-rows-3 gap-3 md:gap-4 lg:gap-6"
                     >
                         {GRID_POSITIONS.map((_, gridIndex) => {
@@ -477,6 +493,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                                 return (
                                     <OverviewCard
                                         key={gridIndex}
+                                        index={gridIndex}
                                         title={result.centralGoal}
                                         isCenter={true}
                                         onClick={() => setZoomIndex(gridIndex)}
@@ -489,6 +506,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                                 return (
                                     <OverviewCard
                                         key={gridIndex}
+                                        index={gridIndex}
                                         title={category?.name ?? ""}
                                         isCenter={false}
                                         onClick={() => setZoomIndex(gridIndex)}

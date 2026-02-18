@@ -116,8 +116,8 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
       />
 
       <div className={cn("flex-grow flex flex-col min-h-0", result && "flex")}>
-        {/* Chat Area & Result — when result exists, this area shrinks so the footer has room */}
-        <div className={result ? "flex-1 min-h-0 overflow-hidden" : "flex-1 flex flex-col overflow-hidden relative"}>
+        {/* Chat Area & Result — when result exists, this area scrolls so you can see full grid and chat */}
+        <div className={result ? "flex-1 min-h-0 overflow-y-auto overflow-x-hidden min-w-0 custom-scrollbar" : "flex-1 flex flex-col overflow-hidden relative"}>
           <WizardChat
               messages={messages}
               isTyping={isTyping}
@@ -180,7 +180,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
           <div className="flex-none flex gap-4 items-center justify-center py-4 px-4 border-t border-gray-100 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm">
             <button 
               onClick={handleSafeRestart} 
-              className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              className="flex items-center gap-2 cursor-pointer px-6 py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
                 <RefreshCcw size={18} />{t('wizard.restart')}
             </button>
@@ -203,7 +203,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                className={`flex items-center gap-2 px-6 py-3 rounded-full shadow-lg transition-all font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-950 ${
                    !TIER_CONFIGS[props.tier || 'architect'].canExportPdf 
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed focus-visible:ring-gray-400' 
-                    : 'bg-red-600 text-white hover:shadow-xl focus-visible:ring-red-500'
+                    : 'cursor-pointer bg-red-600 text-white hover:shadow-xl focus-visible:ring-red-500'
                }`}
             >
                {TIER_CONFIGS[props.tier || 'architect'].canExportPdf ? <Download size={18} /> : <Lock size={16} />}
