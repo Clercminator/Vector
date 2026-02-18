@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, FileText, CheckCircle2 } from 'lucide-react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { useLanguage } from '@/app/components/language-provider';
+import { ScrollArea } from '@/app/components/ui/scroll-area';
 
 // Score Indicator Component (Local to Draft/Result usually)
 const ScoreIndicator = ({ score }: { score: number }) => {
@@ -325,15 +326,14 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
 
     return (
         <>
-            {/* Desktop Drawer — single scroll region (like Chat UI) + rounded left border */}
+            {/* Desktop Drawer — same ScrollArea as Chat UI so scroll + rounded corners match */}
              <motion.div 
                initial={{ opacity: 0, x: 50 }}
                animate={{ opacity: 1, x: 0 }}
                exit={{ opacity: 0, x: 50 }}
                className="hidden lg:flex lg:flex-col absolute right-0 top-0 bottom-0 w-96 bg-gray-50 dark:bg-zinc-900/50 border-l border-gray-200 dark:border-zinc-800 backdrop-blur-sm z-10 min-h-0 rounded-l-2xl overflow-hidden"
              >
-                {/* One scrollable area for entire panel content so it behaves like the Chat UI */}
-                <div className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar ${!draftResult?.isTeaser && draftResult?.type ? '' : 'pointer-events-none opacity-80'}`}>
+                <ScrollArea className={`flex-1 min-h-0 w-full rounded-l-2xl overflow-hidden ${!draftResult?.isTeaser && draftResult?.type ? '' : 'pointer-events-none opacity-80'}`}>
                     <div className="px-4 pb-6">
                         <div className="pt-4 pb-2">
                             <div className="flex items-center gap-2 text-gray-400 uppercase tracking-widest text-xs font-bold">
@@ -355,7 +355,7 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
                             {renderDraftContent(draftResult)}
                         </ErrorBoundary>
                     </div>
-                </div>
+                </ScrollArea>
              </motion.div>
 
              {/* Mobile Drawer Trigger (if folded) */}
