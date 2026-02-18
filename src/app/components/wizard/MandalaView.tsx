@@ -191,9 +191,10 @@ const ClusterValues = ({
             canMoveNext={itemIndex !== undefined && itemIndex < 7}
             isFocused={!!isFocused}
             className={cn(
-                "aspect-[4/3] md:aspect-square", 
+                // Remove fixed aspect ratio constraints to allow stretching
+                "h-full min-h-[80px]", 
                 isTitle && "md:col-span-1",
-                isZoomedIn && "aspect-video md:aspect-[4/3] shadow-lg text-lg" // Larger cells when zoomed
+                isZoomedIn && "shadow-lg text-lg min-h-[120px]" // Larger cells when zoomed
             )}
           />
         );
@@ -468,12 +469,12 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
             <motion.div
                 animate={controls}
                 initial={{ scale: 1, x: 0, y: 0 }}
-                // Enable drag only when NOT zoomed in
                 drag={zoomIndex === null}
                 dragConstraints={{ left: -100, right: 100, top: -100, bottom: 100 }}
                 dragElastic={0.1}
                 onDragStart={() => setShowHint(false)}
-                className="w-[90%] aspect-square max-w-[1000px] grid grid-cols-3 gap-3 md:gap-5 lg:gap-8 p-4 md:p-8 origin-center"
+                // UPDATED: WIDER ASPECT RATIO FOR DESKTOP AND MAX WIDTH (aspect-video)
+                className="w-[95%] aspect-square md:aspect-video max-w-[1400px] grid grid-cols-3 gap-4 md:gap-8 lg:gap-12 p-4 md:p-8 origin-center"
             >
                 {GRID_POSITIONS.map((pos, gridIndex) => {
                     const isCenter = gridIndex === CENTER_INDEX;
@@ -490,7 +491,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                                 onItemChange={(idx, val) => updateCategoryName(idx, val)}
                                 onFocus={() => setZoomIndex(gridIndex)}
                                 onDoubleClick={() => setZoomIndex(gridIndex)}
-                                isFocused={zoomIndex === null} // In overvew, all are somewhat equal, or we highlight hover
+                                isFocused={zoomIndex === null} 
                                 isZoomedIn={isZoomedIn}
                                 onReorder={(from, to) => reorderCategories(from, to)}
                                 onCopy={handleCopy}
