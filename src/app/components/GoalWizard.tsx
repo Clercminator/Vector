@@ -116,53 +116,70 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
       />
 
       <div className={cn("flex-grow flex flex-col min-h-0", result && "flex")}>
-        {/* Chat Area & Result — when result exists, this area scrolls so you can see full grid and chat */}
-        <div className={result ? "flex-1 min-h-0 overflow-y-auto overflow-x-hidden min-w-0 custom-scrollbar" : "flex-1 flex flex-col overflow-hidden relative"}>
-          <WizardChat
+        {/* Result mode: this area scrolls so you can see full grid and chat */}
+        {result ? (
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden min-w-0 custom-scrollbar">
+            <WizardChat
               messages={messages}
               isTyping={isTyping}
               result={result}
               draftResult={draftResult}
               messagesEndRef={messagesEndRef}
-          >
-               <WizardResult 
+            >
+              <WizardResult 
+                result={result} 
+                updateResult={updateResult} 
+                onBack={props.onBack}
+              />
+            </WizardChat>
+          </div>
+        ) : (
+          /* Draft mode: two-column layout so the right panel can use full height (no absolute/clipping) */
+          <div className="flex-1 min-h-0 flex overflow-hidden min-w-0">
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative min-w-0">
+              <WizardChat
+                messages={messages}
+                isTyping={isTyping}
+                result={result}
+                draftResult={draftResult}
+                messagesEndRef={messagesEndRef}
+              >
+                <WizardResult 
                   result={result} 
                   updateResult={updateResult} 
                   onBack={props.onBack}
-               />
-          </WizardChat>
+                />
+              </WizardChat>
 
-          {/* Input Area (Hidden when result is final) */}
-          {!result && (
-               <WizardInput
-                  inputValue={inputValue}
-                  setInputValue={setInputValue}
-                  onSubmit={(e) => { e.preventDefault(); runAgent(inputValue); }}
-                  isTyping={isTyping}
-                  isAgentRunning={isAgentRunning}
-                  isOffline={isOffline}
-                  suggestionChips={suggestionChips}
-                  onRunAgent={runAgent}
-                  isSpeechSupported={isSpeechSupported}
-                  toggleListening={toggleListening}
-                  isListening={isListening}
-                  onStop={handleStop}
-               />
-          )}
+              <WizardInput
+                inputValue={inputValue}
+                setInputValue={setInputValue}
+                onSubmit={(e) => { e.preventDefault(); runAgent(inputValue); }}
+                isTyping={isTyping}
+                isAgentRunning={isAgentRunning}
+                isOffline={isOffline}
+                suggestionChips={suggestionChips}
+                onRunAgent={runAgent}
+                isSpeechSupported={isSpeechSupported}
+                toggleListening={toggleListening}
+                isListening={isListening}
+                onStop={handleStop}
+              />
+            </div>
 
-          {/* Draft Drawer */}
-          {!result && draftResult && (
-               <WizardDraft 
-                  draftResult={draftResult}
-                  showMobileDraft={showMobileDraft}
-                  setShowMobileDraft={setShowMobileDraft}
-                  draftPulse={draftPulse}
-                  onFinalize={promoteDraftToResult}
-                  isTyping={isTyping}
-                  isAgentRunning={isAgentRunning}
-               />
-          )}
-        </div>
+            {draftResult && (
+              <WizardDraft 
+                draftResult={draftResult}
+                showMobileDraft={showMobileDraft}
+                setShowMobileDraft={setShowMobileDraft}
+                draftPulse={draftPulse}
+                onFinalize={promoteDraftToResult}
+                isTyping={isTyping}
+                isAgentRunning={isAgentRunning}
+              />
+            )}
+          </div>
+        )}
 
         {/* Final Action Buttons — fixed footer when result is shown (no overlay, does not block content) */}
         {result && (() => {

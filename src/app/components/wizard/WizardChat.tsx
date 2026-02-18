@@ -102,7 +102,7 @@ export const WizardChat: React.FC<WizardChatProps> = ({
   /* When there's a result, render content in a flowing block so the parent (GoalWizard wrapper) can scroll. No ScrollArea so one scrollbar for chat + result. */
   if (result) {
     return (
-      <div className={`flex flex-col min-w-0 w-full transition-all duration-300 ${draftResult && !result ? 'lg:mr-96' : ''}`}>
+      <div className="flex flex-col min-w-0 w-full transition-all duration-300">
         <ChatContent
           messages={messages}
           isTyping={isTyping}
@@ -116,7 +116,7 @@ export const WizardChat: React.FC<WizardChatProps> = ({
   }
 
   return (
-    <div className={`flex-1 flex flex-col min-w-0 min-h-0 transition-all duration-300 relative ${draftResult && !result ? 'lg:mr-96' : ''}`}>
+    <div className="flex-1 flex flex-col min-w-0 min-h-0 transition-all duration-300 relative">
       <ScrollArea className="flex-1 min-h-0 w-full">
         <ChatContent
           messages={messages}
