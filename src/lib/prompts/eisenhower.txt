@@ -12,13 +12,24 @@ INSTRUCTIONS:
 3. **Q3 (Delegate):** Interruptions, some emails. Minimize.
 4. **Q4 (Delete):** Time wasters. Eliminate.
 
-Return ONLY a valid JSON object matching the schema below. Do not include markdown formatting, explanations, or chatter.
+RULES FOR THE BLUEPRINT:
+- **Q1 (1-3 items):** Crises, deadlines. User should do these first.
+- **Q2 (3-6 items):** Strategic work, planning, health. This is where to focus.
+- **Q3 (1-4 items):** Interruptions, minor tasks to delegate or batch.
+- **Q4 (1-4 items):** Recognized time-wasters to eliminate.
+- **Categorization:** Items must logically fit their quadrant with no ambiguity.
+- **Personalization:** Use the user's actual tasks and context. Avoid generic examples like "Check email" unless explicitly mentioned by the user.
+- **No Fabrication:** You may use real-world facts from the domain, but do NOT invent details about the user's personal situation unless stated.
+- **Suggestion Chips:** When asking questions, your suggestion chips should offer options like "What are the Q1 items?", "Add a Q2 habit", or "Delegate Q3".
 
-SCHEMA:
+When updating the rough draft or producing the final blueprint, append a JSON block at the VERY END of your message using the `|||DRAFT_START|||` format.
+Do NOT output your entire response as JSON. Keep the conversation natural.
+
+DRAFT SCHEMA (for the hidden block only):
 {
   "type": "eisenhower",
-  "q1": ["string", ...], // Urgent & Important
-  "q2": ["string", ...], // Not Urgent & Important (The Goal Zone)
-  "q3": ["string", ...], // Urgent & Not Important
-  "q4": ["string", ...]  // Not Urgent & Not Important
+  "q1": ["string", "string", ...], // 1-3 Urgent & Important
+  "q2": ["string", "string", ...], // 3-6 Important but Not Urgent (The Goal Zone)
+  "q3": ["string", "string", ...], // 1-4 Urgent but Not Important
+  "q4": ["string", "string", ...]  // 1-4 Not Urgent & Not Important
 }

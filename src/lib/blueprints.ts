@@ -8,6 +8,9 @@ export type BlueprintResult =
   | { type: "okr"; objective: string; keyResults: string[]; initiative: string }
   | { type: "mandalas"; centralGoal: string; categories: Array<{ name: string; steps: string[] }> }
   | { type: "ikigai"; love: string; goodAt: string; worldNeeds: string; paidFor: string; purpose: string }
+  | { type: "dsss"; deconstruct: string[]; selection: string[]; sequence: string[]; stakes: string }
+  | { type: "gps"; goal: string; plan: string[]; system: string[]; anti_goals?: string[] }
+  | { type: "misogi"; challenge: string | string[]; gap: string | string[]; purification: string | string[] }
   | Record<string, unknown>;
 
 export interface Blueprint {
@@ -17,6 +20,123 @@ export interface Blueprint {
   answers: string[];
   result: BlueprintResult;
   createdAt: string; // ISO string
+}
+
+export interface BlueprintTracker {
+  blueprint_id: string;
+  user_id: string;
+  plan_kind: 'finite' | 'infinite';
+  status: 'active' | 'completed' | 'paused' | 'abandoned';
+  progress_pct: number;
+  completed_step_ids: string[];
+  last_activity_at: string;
+  created_at: string;
+  updated_at: string;
+  tracking_question?: string | null;
+  color?: string | null;
+  reminder_time?: string | null;
+  reminder_days?: string[];
+  reminder_enabled?: boolean;
+  frequency?: 'daily' | 'weekly' | 'custom';
+  savings_baseline?: number | null;
+  savings_unit?: string | null;
+  savings_enabled?: boolean;
+  tags?: string[];
+}
+
+export interface GoalLog {
+  id: string;
+  blueprint_id: string;
+  user_id: string;
+  kind: 'journal' | 'check_in' | 'step_done' | 'setback';
+  content?: string | null;
+  payload?: Record<string, any>;
+  created_at: string;
+}
+
+export interface BlueprintSubGoal {
+  id: string;
+  blueprint_id: string;
+  user_id: string;
+  title: string;
+  target_date: string; // YYYY-MM-DD
+  status: 'active' | 'completed' | 'missed';
+  created_at: string;
+}
+
+export interface BlueprintTask {
+  id: string;
+  blueprint_id: string;
+  user_id: string;
+  title: string;
+  target_count: number;
+  created_at: string;
+}
+
+export interface BlueprintTaskCompletion {
+  id: string;
+  task_id: string;
+  user_id: string;
+  completed_at: string;
+}
+
+export interface MotivationalContent {
+  id: string;
+  content_type: 'quote' | 'affirmation';
+  text: string;
+  author?: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
+// Batch 3 Features
+export interface BlueprintReminder {
+  id: string;
+  blueprint_id: string;
+  user_id: string;
+  time: string; // HH:mm format
+  days: string[]; // Array of strings like 'monday', 'tuesday', etc.
+  created_at: string;
+}
+
+export interface SupportResource {
+  id: string;
+  title: string;
+  description?: string;
+  url?: string;
+  phone?: string;
+  type: 'emergency' | 'general' | 'internal';
+  enabled: boolean;
+  sort_order: number;
+}
+
+export interface GoalTemplate {
+  id: string;
+  title: string;
+  description?: string;
+  framework: FrameworkId | 'general';
+  is_active: boolean;
+  sort_order?: number;
+}
+
+export interface GoalTemplateItem {
+  id: string;
+  template_id: string;
+  item_type: 'sub_goal' | 'task';
+  title: string;
+  description?: string;
+  target_count?: number; // for tasks
+  relative_days: number; // offset for target_date calculation
+}
+
+export interface BlueprintShare {
+  id: string;
+  blueprint_id: string;
+  user_id: string;
+  share_token: string;
+  permission: 'view' | 'edit';
+  expires_at?: string | null;
+  created_at: string;
 }
 
 const STORAGE_KEY = "vector.blueprints.v1";

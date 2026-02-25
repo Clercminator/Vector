@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Mail, Award, Zap, Save, Loader2, ArrowLeft, Star, CheckCircle2, Camera, Info, Eye, EyeOff, TriangleAlert } from 'lucide-react';
+import { User, Mail, Award, Zap, Save, Loader2, ArrowLeft, Star, CheckCircle2, Camera, Info, Eye, EyeOff, TriangleAlert, Download, LayoutDashboard, Bell } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Textarea } from '@/app/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Label } from '@/app/components/ui/label';
+import { Switch } from '@/app/components/ui/switch';
 import { useNavigate } from 'react-router-dom';
 import { createCheckout } from '@/lib/mercadoPago';
 import { supabase } from '@/lib/supabase';
@@ -63,6 +64,15 @@ interface ProfileData {
     other_observations?: string;
     preferred_plan_style?: string; // action_focused | reflective | balanced
     stay_on_track?: string; // what helps the user stay on track
+    tracker_preferences?: {
+      show_streaks?: boolean;
+      show_score?: boolean;
+      show_heatmap?: boolean;
+      default_view?: 'grid' | 'list' | 'reports';
+    };
+    digest_frequency?: 'weekly' | 'monthly' | 'off';
+    digest_day_of_week?: string;
+    digest_day_of_month?: string;
   };
 }
 
@@ -89,6 +99,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
   const [deleteInput, setDeleteInput] = useState('');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [data, setData] = useState<ProfileData>({
     display_name: '',
     bio: '',
@@ -208,6 +219,40 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
     } catch (e) {
       console.error(e);
       toast.error(t('common.error') || "Failed to initiate checkout.");
+    }
+  };
+
+  const handleExportData = async () => {
+    if (!supabase) return;
+    setExporting(true);
+    try {
+      const exportData: any = { version: 1, exported_at: new Date().toISOString(), data: {} };
+      const collections = [
+        'blueprints',
+        'blueprint_tracker',
+        'goal_logs',
+        'blueprint_sub_goals',
+        'blueprint_tasks',
+        'blueprint_task_completions',
+      ];
+
+      for (const table of collections) {
+         const { data, error } = await supabase.from(table).select('*').eq('user_id', userId);
+         if (!error && data) {
+           exportData.data[table] = data;
+         }
+      }
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const { saveAs } = await import('file-saver');
+      saveAs(blob, `vector-data-${new Date().toISOString().split('T')[0]}.json`);
+      
+      toast.success(t('profile.exportSuccess') || 'Data exported successfully!');
+    } catch (e: any) {
+      console.error('Export error:', e);
+      toast.error(t('profile.exportError') || 'Failed to export data.');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -712,7 +757,131 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
             </div>
           </div>
 
-          {/* Branding Section Removed as per request */}
+          {/* Preferences Section */}
+          <div className="mt-8 border-t border-gray-100 dark:border-zinc-800 pt-8">
+            <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-black dark:text-white">
+              <LayoutDashboard size={20} className="text-gray-400" />
+              {t('profile.dashboardPrefs') || 'Dashboard & Tracker Preferences'}
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Dashboard layout */}
+              <div className="space-y-4">
+                <div className="space-y-4">
+                   <div className="flex items-center justify-between">
+                     <Label className="text-black dark:text-white">{t('profile.showStreaks') || 'Show Streaks'}</Label>
+                     <Switch 
+                       checked={data.metadata?.tracker_preferences?.show_streaks ?? true} 
+                       onCheckedChange={(c: boolean) => setData({ ...data, metadata: { ...data.metadata, tracker_preferences: { ...data.metadata?.tracker_preferences, show_streaks: c } }})} 
+                     />
+                   </div>
+                   <div className="flex items-center justify-between">
+                     <Label className="text-black dark:text-white">{t('profile.showScore') || 'Show Score'}</Label>
+                     <Switch 
+                       checked={data.metadata?.tracker_preferences?.show_score ?? true} 
+                       onCheckedChange={(c: boolean) => setData({ ...data, metadata: { ...data.metadata, tracker_preferences: { ...data.metadata?.tracker_preferences, show_score: c } }})} 
+                     />
+                   </div>
+                   <div className="flex items-center justify-between">
+                     <Label className="text-black dark:text-white">{t('profile.showHeatmap') || 'Show Heatmaps'}</Label>
+                     <Switch 
+                       checked={data.metadata?.tracker_preferences?.show_heatmap ?? true} 
+                       onCheckedChange={(c: boolean) => setData({ ...data, metadata: { ...data.metadata, tracker_preferences: { ...data.metadata?.tracker_preferences, show_heatmap: c } }})} 
+                     />
+                   </div>
+                   <div className="space-y-2 pt-2">
+                     <Label className="text-black dark:text-white">{t('profile.defaultView') || 'Default View'}</Label>
+                     <Select 
+                       value={data.metadata?.tracker_preferences?.default_view || 'grid'} 
+                       onValueChange={(val: any) => setData({ ...data, metadata: { ...data.metadata, tracker_preferences: { ...data.metadata?.tracker_preferences, default_view: val } } })}
+                     >
+                       <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                         <SelectValue />
+                       </SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="grid">Grid (Tracker Cards)</SelectItem>
+                         <SelectItem value="list">List</SelectItem>
+                         <SelectItem value="reports">Reports / Minimal</SelectItem>
+                       </SelectContent>
+                     </Select>
+                   </div>
+                </div>
+              </div>
+
+              {/* Digests */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-black dark:text-white flex items-center gap-2">
+                  <Bell size={16} />
+                  {t('profile.digestPrefs') || 'Email Digests'}
+                </h4>
+                <div className="space-y-4">
+                   <div className="space-y-2">
+                     <Label className="text-black dark:text-white">{t('profile.digestFrequency') || 'Frequency'}</Label>
+                     <Select 
+                       value={data.metadata?.digest_frequency || 'off'} 
+                       onValueChange={(val: any) => setData({ ...data, metadata: { ...data.metadata, digest_frequency: val } })}
+                     >
+                       <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                         <SelectValue />
+                       </SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="off">{t('profile.digest.off') || 'Off'}</SelectItem>
+                         <SelectItem value="weekly">{t('profile.digest.weekly') || 'Weekly'}</SelectItem>
+                         <SelectItem value="monthly">{t('profile.digest.monthly') || 'Monthly'}</SelectItem>
+                       </SelectContent>
+                     </Select>
+                   </div>
+                   
+                   {data.metadata?.digest_frequency === 'weekly' && (
+                     <div className="space-y-2">
+                       <Label className="text-black dark:text-white">{t('profile.digestDay') || 'Day of Week'}</Label>
+                       <Select 
+                         value={data.metadata?.digest_day_of_week || '1'} 
+                         onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, digest_day_of_week: val } })}
+                       >
+                         <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                           <SelectValue />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="1">Monday</SelectItem>
+                           <SelectItem value="5">Friday</SelectItem>
+                           <SelectItem value="6">Saturday</SelectItem>
+                           <SelectItem value="7">Sunday</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   )}
+                   {data.metadata?.digest_frequency === 'monthly' && (
+                     <div className="space-y-2">
+                       <Label className="text-black dark:text-white">{t('profile.digestDay') || 'Day of Month'}</Label>
+                       <Select 
+                         value={data.metadata?.digest_day_of_month || '1'} 
+                         onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, digest_day_of_month: val } })}
+                       >
+                         <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                           <SelectValue />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="1">1st of the month</SelectItem>
+                           <SelectItem value="15">15th of the month</SelectItem>
+                           <SelectItem value="28">End of the month</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   )}
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-8">
+               <h4 className="font-semibold text-black dark:text-white mb-2">{t('profile.exportData') || 'Data Export'}</h4>
+               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Export all your blueprints, trackers, logs, and sub-goals as a JSON file.</p>
+               <Button onClick={handleExportData} disabled={exporting} variant="outline" className="dark:text-white dark:border-zinc-700">
+                  {exporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                  {exporting ? t('profile.exporting') || 'Preparing export...' : t('profile.exportData') || 'Export my Data'}
+               </Button>
+            </div>
+          </div>
           
           {/* Security Section */}
           <div className="mt-8 border-t border-gray-100 dark:border-zinc-800 pt-8">

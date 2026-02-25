@@ -9,6 +9,7 @@ import { MandalaView } from './MandalaView';
 import { EisenhowerView } from './EisenhowerView';
 import { ParetoView } from './ParetoView';
 import { IkigaiView } from './IkigaiView';
+import { DifficultyBadge } from './DifficultyBadge';
 
 interface WizardResultProps {
   result: any;
@@ -51,9 +52,21 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
     );
 
     const isTeaser = (result as any).isTeaser;
+    const difficulty = (result as any).difficulty;
+    const difficultyReason = (result as any).difficultyReason;
+    const showDifficultyBadge = difficulty != null || (typeof difficultyReason === 'string' && difficultyReason.trim());
 
     const Wrapper = ({ children }: { children: React.ReactNode }) => (
        <div className="relative w-full">
+           {/* Difficulty badge – non-intrusive, informative */}
+           {showDifficultyBadge && (
+             <div className="absolute top-0 right-0 z-20 p-3 md:p-4 pointer-events-auto">
+               <DifficultyBadge
+                 difficulty={difficulty || 'intermediate'}
+                 reason={typeof difficultyReason === 'string' ? difficultyReason.trim() || undefined : undefined}
+               />
+             </div>
+           )}
            <div className={isTeaser ? "blur-sm select-none pointer-events-none opacity-50 transition-all duration-700" : ""}>
                {children}
            </div>

@@ -753,8 +753,23 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
             }
         } catch (e: any) {
             console.error("Agent Run Error:", e);
-            toast.error(t('common.error'), { description: "The agent encountered an error. Please try again." });
-            setMessages(prev => [...prev, { role: 'ai', content: "⚠️ **Error**: " + (e.message || "Unknown error") }]);
+            const msg = (e.message || "").toLowerCase();
+            let errorToastMsg = t('errors.agentGeneric') || "We couldn't complete your plan. Please try again or simplify your goal.";
+            let showErrorAction = true;
+
+            if (msg.includes("timeout") || msg.includes("fetch")) {
+                errorToastMsg = t('errors.agentTimeout') || "The request took too long. Please try again.";
+            } else if (msg.includes("401") || msg.includes("api key")) {
+                errorToastMsg = t('errors.agentConfig') || "AI service configuration issue. Please try again later.";
+                showErrorAction = false;
+            } else if (msg.includes("rate") || msg.includes("429")) {
+                errorToastMsg = t('errors.agentRateLimit') || "Too many requests. Please wait a moment and try again.";
+            }
+
+            toast.error(errorToastMsg, {
+                action: showErrorAction ? { label: t('common.retry') || "Retry", onClick: () => runAgent(userText) } : undefined
+            });
+            setMessages(prev => [...prev, { role: 'ai', content: `⚠️ **Error**: ${errorToastMsg}` }]);
         }
         finally {
             isRunningRef.current = false;

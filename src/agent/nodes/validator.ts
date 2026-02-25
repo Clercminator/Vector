@@ -54,7 +54,8 @@ export const validatorNode = async (state: AgentStateType) => {
                     'misogi': ['challenge', 'gap', 'purification'],
                     'dsss': ['deconstruct', 'selection', 'sequence', 'stakes', 'objective'],
                     'mandalas': ['centralGoal', 'categories'],
-                    'ikigai': ['love', 'goodAt', 'worldNeeds', 'paidFor', 'purpose']
+                    'ikigai': ['love', 'goodAt', 'worldNeeds', 'paidFor', 'purpose'],
+                    'general': ['steps']
                 };
                 
                 const expected = requiredKeys[framework];

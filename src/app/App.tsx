@@ -40,6 +40,9 @@ const FrameworkPage = React.lazy(() => import('@/pages/FrameworkPage').then(modu
 const AnalyticsPage = React.lazy(() => import('@/pages/AnalyticsPage').then(module => ({ default: module.AnalyticsPage })));
 const LegalPage = React.lazy(() => import('@/pages/LegalPage').then(module => ({ default: module.LegalPage })));
 const AboutPage = React.lazy(() => import('@/pages/AboutPage').then(module => ({ default: module.AboutPage })));
+const TrackerPage = React.lazy(() => import('@/app/components/TrackerPage').then(module => ({ default: module.TrackerPage })));
+const SharedPlanView = React.lazy(() => import('@/app/components/tracker/SharedPlanView').then(module => ({ default: module.SharedPlanView })));
+const TodayPage = React.lazy(() => import('@/pages/TodayPage').then(module => ({ default: module.TodayPage })));
 
 import { frameworks, Framework } from '@/lib/frameworks';
 
@@ -93,7 +96,7 @@ function App() {
   const [authReady, setAuthReady] = useState(false);
   const [authReason, setAuthReason] = useState<'signup_to_try' | null>(null);
 
-  const PROTECTED_PATHS = ['/wizard', '/dashboard', '/community', '/profile', '/analytics'];
+  const PROTECTED_PATHS = ['/wizard', '/dashboard', '/community', '/profile', '/analytics', '/track', '/today'];
 
   useEffect(() => {
     // Check if user has returned from payment
@@ -443,7 +446,7 @@ function App() {
           });
       } catch (e) {
           console.error("Sync failed", e);
-          toast.error(t('app.sync.failed'));
+          toast.error(t('errors.syncFailed') || "Couldn't save. Check your connection and try again.");
           // Revert local optimistic update if needed? 
           // For now we keep local state as "unsynced" effectively.
       }
@@ -475,7 +478,10 @@ function App() {
                  setBlueprints(prev => prev.filter(b => b.id !== id));
                  return; // Avoid success toast below if we want distinctive msg
             }
-            throw e;
+            toast.error(t('errors.syncFailed') || "Couldn't save. Check your connection and try again.");
+            // Revert optimistic update
+            setBlueprints(loadLocalBlueprints());
+            return;
         }
       }
     toast.success(t('app.blueprint.deleted'));
@@ -727,7 +733,12 @@ function App() {
                     </motion.div>
                 } />
 
-                 <Route path="/dashboard" element={
+                 <Route path="/today" element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <TodayPage />
+                </Suspense>
+              } />
+              <Route path="/dashboard" element={
                     <motion.div
                       key="dashboard"
                       initial={{ opacity: 0, y: 20 }}
@@ -837,6 +848,25 @@ function App() {
                     )
                  } />
 
+                 <Route path="/track/:blueprintId" element={
+                     userId ? (
+                          <motion.div key="tracker" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                            <TrackerPage />
+                          </motion.div>
+                     ) : (
+                         <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+                            <p className="text-gray-500 dark:text-gray-400">{t('app.profile.signInRequired')}</p>
+                            <Button onClick={() => setAuthOpen(true)}>{t('nav.signin')}</Button>
+                         </div>
+                    )
+                 } />
+
+                 <Route path="/share/:token" element={
+                     <motion.div key="shared-plan" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                         <SharedPlanView />
+                     </motion.div>
+                 } />
+
                  <Route path="/admin" element={
                     isAdmin ? (
                          <motion.div key="admin" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
@@ -852,6 +882,8 @@ function App() {
         </Suspense>
         </ErrorBoundary>
       </main>
+
+      <SupportButton />
 
       {/* Footer */}
       {location.pathname !== '/wizard' && (
