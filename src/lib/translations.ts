@@ -866,9 +866,16 @@ export const translations = {
     'tracker.reminders.days': 'Days',
 
     'support.button': 'Get Support',
+    'support.buttonLabel': 'Support',
     'support.title': 'Support & Crisis Resources',
+    'support.description': 'If you or someone you know is going through a tough time, please reach out. There is help available anonymously and confidentially.',
+    'support.noResources': 'No active support resources found at the moment. In an emergency, please call your local emergency services.',
+    'support.visitWebsite': 'Visit Website',
     'support.emergency': 'Emergency / Crisis',
     'support.general': 'General Support',
+    'tracker.todayTitle': 'Due today',
+    'tracker.todayEmpty': 'Nothing due today',
+    'tracker.today': 'Today',
 
     'profile.dashboardPrefs': 'Dashboard Preferences',
     'profile.showStreaks': 'Show Streaks',
@@ -1718,6 +1725,13 @@ export const translations = {
 
     'tracker.noStepsToTrack': 'No se encontraron pasos rastreables para este plan.',
     'tracker.useRelatedTasks': 'Puedes usar tareas relacionadas, subobjetivos o entradas del diario en su lugar.',
+    'support.buttonLabel': 'Soporte',
+    'support.description': 'Si tú o alguien que conoces está pasando por un momento difícil, por favor busca ayuda. Hay ayuda disponible de forma anónima y confidencial.',
+    'support.noResources': 'No se encontraron recursos de soporte activos en este momento. En caso de emergencia, llama a tus servicios de emergencia locales.',
+    'support.visitWebsite': 'Visitar Sitio Web',
+    'tracker.todayTitle': 'Para hoy',
+    'tracker.todayEmpty': 'Nada para hoy',
+    'tracker.today': 'Hoy',
   },
   pt: {
     // Navigation
