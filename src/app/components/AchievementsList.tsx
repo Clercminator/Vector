@@ -49,7 +49,7 @@ export function AchievementsList({ userId }: AchievementsListProps) {
         if (earnedError) throw earnedError;
         
         if (earned) {
-          setUserAchievements(new Set(earned.map(ua => ua.achievement_id)));
+          setUserAchievements(new Set(earned.map((ua: any) => ua.achievement_id)));
         }
 
       } catch (error) {
@@ -100,10 +100,10 @@ export function AchievementsList({ userId }: AchievementsListProps) {
                  
                  <div>
                    <h4 className={`font-bold text-sm ${isUnlocked ? 'text-black dark:text-white' : 'text-gray-500'}`}>
-                     {achievement.title}
+                     {t(`achievements.${achievement.id}.title`) || achievement.title}
                    </h4>
                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 leading-snug">
-                     {achievement.description}
+                     {t(`achievements.${achievement.id}.desc`) || achievement.description}
                    </p>
                  </div>
 

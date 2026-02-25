@@ -792,7 +792,7 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
              const answers = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
              const bp: Blueprint = {
                 id: initialBlueprint?.id ?? crypto.randomUUID(),
-                framework: framework || "general",
+                framework: framework || (result?.type as FrameworkId) || "general",
                 title: initialBlueprint?.title ?? blueprintTitleFromAnswers(answers),
                 answers,
                 result: result || { type: framework } as any,
@@ -843,7 +843,7 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
         const answers = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
         const bp: Blueprint = {
           id: initialBlueprint?.id ?? crypto.randomUUID(),
-          framework: framework || "general",
+          framework: framework || (result?.type as FrameworkId) || "general",
           title: initialBlueprint?.title ?? blueprintTitleFromAnswers(answers),
           answers,
           result,
