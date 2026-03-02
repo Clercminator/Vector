@@ -873,8 +873,15 @@ function App() {
       >
         <ErrorBoundary
           fallback={
-            <div className="p-8 text-center text-red-500">
-              Failed to load content. Please refresh.
+            <div className="flex justify-center pt-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50/90 dark:bg-amber-900/40 border border-amber-200/80 text-amber-800 dark:text-amber-100 text-sm shadow-sm">
+                <span className="font-medium">
+                  {t('errors.pageLoadTitle') || 'Oh sorry, something happened.'}
+                </span>
+                <span className="opacity-80">
+                  {t('errors.pageLoadBody') || 'Could you please refresh the page?'}
+                </span>
+              </div>
             </div>
           }
         >

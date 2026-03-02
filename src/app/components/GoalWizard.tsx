@@ -49,6 +49,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
       messagesEndRef,
       draftPulse,
       runAgent,
+      editUserMessageOnce,
       toggleListening,
       handleStop,
       handleSafeRestart,
@@ -122,9 +123,11 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
             <WizardChat
               messages={messages}
               isTyping={isTyping}
+              isAgentRunning={isAgentRunning}
               result={result}
               draftResult={draftResult}
               messagesEndRef={messagesEndRef}
+              onEditMessage={editUserMessageOnce}
             >
               <WizardResult 
                 result={result} 
@@ -140,9 +143,11 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
               <WizardChat
                 messages={messages}
                 isTyping={isTyping}
+                isAgentRunning={isAgentRunning}
                 result={result}
                 draftResult={draftResult}
                 messagesEndRef={messagesEndRef}
+                onEditMessage={editUserMessageOnce}
               >
                 <WizardResult 
                   result={result} 

@@ -7,8 +7,9 @@ import { supabase } from '@/lib/supabase';
 import { Blueprint, BlueprintResult, blueprintTitleFromAnswers, fetchBlueprintMessages, syncBlueprintMessages } from '@/lib/blueprints';
 import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, canUseFramework, FrameworkId } from '@/lib/tiers';
 import { useLanguage } from '@/app/components/language-provider';
+import { trackEvent } from '@/lib/analytics';
 import { graph } from '@/agent/goalAgent';
-import { HumanMessage } from '@langchain/core/messages';
+import { AIMessage, HumanMessage } from '@langchain/core/messages';
 
 export interface GoalWizardHookProps {
     framework?: FrameworkId;
@@ -21,8 +22,11 @@ export interface GoalWizardHookProps {
 }
 
 export interface Message {
+    id: string;
     role: 'ai' | 'user' | 'system';
     content: string;
+    /** Allow a one-time post-send edit for user messages. */
+    editedOnce?: boolean;
 }
 
 export const useGoalWizard = ({ 
@@ -37,6 +41,19 @@ export const useGoalWizard = ({
     const { t, language: appLanguage } = useLanguage();
     const navigate = useNavigate();
     const location = useLocation();
+
+    const ensureMessageIds = (raw: any[]): Message[] => {
+        if (!Array.isArray(raw)) return [];
+        return raw
+            .filter(Boolean)
+            .map((m: any) => ({
+                id: m?.id ?? uuidv4(),
+                role: m?.role,
+                content: typeof m?.content === 'string' ? m.content : String(m?.content ?? ''),
+                editedOnce: !!m?.editedOnce,
+            }))
+            .filter((m) => m.role === 'ai' || m.role === 'user' || m.role === 'system');
+    };
 
     // State
     const [messages, setMessages] = useState<Message[]>([]);
@@ -144,7 +161,7 @@ export const useGoalWizard = ({
                 const { threadId: savedThreadId, messages: savedMsgs, step: savedStep, draftResult: savedDraft, framework: savedFw, timestamp } = JSON.parse(savedSession);
                 if (Date.now() - timestamp < 24 * 60 * 60 * 1000 && savedFw === framework) {
                      if (savedThreadId) setThreadId(savedThreadId);
-                     if (savedMsgs.length > 0) setMessages(savedMsgs);
+                     if (savedMsgs.length > 0) setMessages(ensureMessageIds(savedMsgs));
                      if (savedStep) setStep(savedStep);
                      if (savedDraft) setDraftResult(savedDraft);
                 }
@@ -180,10 +197,10 @@ export const useGoalWizard = ({
         if (initialBlueprint) {
           const openingMsg = currentConfig.questions?.[0] ? currentConfig.questions[0] : t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart');
           const baseMessages: Message[] = [
-            { role: 'system', content: t('wizard.reopening').replace('{0}', currentConfig.title) },
-            { role: 'ai', content: openingMsg },
-            { role: 'user', content: initialBlueprint.title },
-            { role: 'system', content: t('wizard.loaded') },
+            { id: uuidv4(), role: 'system', content: t('wizard.reopening').replace('{0}', currentConfig.title) },
+            { id: uuidv4(), role: 'ai', content: openingMsg },
+            { id: uuidv4(), role: 'user', content: initialBlueprint.title, editedOnce: false },
+            { id: uuidv4(), role: 'system', content: t('wizard.loaded') },
           ];
           setMessages(baseMessages);
           setResult(initialBlueprint.result);
@@ -194,7 +211,7 @@ export const useGoalWizard = ({
           if (supabase && initialBlueprint.id) {
               fetchBlueprintMessages(supabase, initialBlueprint.id)
                 .then((history: any[]) => {
-                    if (history && history.length > 0) setMessages([...baseMessages, ...history as Message[]]);
+                    if (history && history.length > 0) setMessages([...baseMessages, ...ensureMessageIds(history)]);
                 })
                 .catch((err: any) => console.error("Failed to load chat history", err));
           }
@@ -231,13 +248,13 @@ export const useGoalWizard = ({
         if (framework) {
             setIsTyping(true);
             const tTimer = setTimeout(() => {
-                setMessages([{ role: 'ai', content: initialMsg }]); 
+                setMessages([{ id: uuidv4(), role: 'ai', content: initialMsg }]); 
                 setIsTyping(false);
             }, 1000);
             return () => clearTimeout(tTimer);
         } else {
             // Immediate start for general flow, no typing simulation needed for static welcome
-            setMessages([{ role: 'ai', content: t('fp.q1') }]);
+            setMessages([{ id: uuidv4(), role: 'ai', content: t('fp.q1') }]);
             setIsTyping(false);
         }
     }, [framework, initialBlueprint, t]);
@@ -264,12 +281,16 @@ export const useGoalWizard = ({
                 return;
             }
             supabase.from('profiles')
-                .select('credits,tier,display_name,bio,metadata')
+                .select('credits,extra_credits,credits_expires_at,tier,display_name,bio,metadata')
                 .eq('user_id', user.id)
                 .single()
                 .then(({ data }: { data: any }) => {
                     if (data) {
-                        setCredits(data.credits ?? 1);
+                        const regular = data.credits ?? 0;
+                        const extra = data.extra_credits ?? 0;
+                        const expiresAt = data.credits_expires_at ? new Date(data.credits_expires_at) : null;
+                        const validRegular = expiresAt && expiresAt.getTime() < Date.now() ? 0 : regular;
+                        setCredits(validRegular + extra);
                         if (data.tier) setTier(data.tier as TierId);
                         if (data.display_name) setUserName(data.display_name);
                         // Build profile summary for the agent (personality-aware plans)
@@ -341,7 +362,7 @@ export const useGoalWizard = ({
         setThreadId(uuidv4());
         const currentConfig = getFrameworkConfig(framework || '');
         const initialMsg = currentConfig.questions?.[0] || t('wizard.welcome').replace('{0}', currentConfig.title) + " " + t('wizard.agentStart');
-        setMessages([{ role: 'ai', content: initialMsg }]);
+        setMessages([{ id: uuidv4(), role: 'ai', content: initialMsg }]);
         setIsTyping(false);
     };
 
@@ -459,7 +480,16 @@ export const useGoalWizard = ({
         console.log(`[Wizard:Agent] ${label}`, data !== undefined ? data : '');
     };
 
-    const runAgent = async (userText: string) => {
+    type RunAgentOptions = {
+        appendUserMessage?: boolean;
+        seedMessages?: Array<HumanMessage | AIMessage>;
+        threadIdOverride?: string;
+    };
+
+    const runAgentInternal = async (userText: string, options: RunAgentOptions = {}) => {
+        const appendUserMessage = options.appendUserMessage ?? true;
+        const effectiveThreadId = options.threadIdOverride ?? threadId;
+
         if (!userText.trim()) return;
         if (credits !== null && credits <= 0) {
             toast.error(t('wizard.outOfCredits') || "Low credits.", { action: { label: "Pricing", onClick: () => navigate('/pricing') } });
@@ -469,7 +499,9 @@ export const useGoalWizard = ({
         if (isRunningRef.current || isTyping || isAgentRunning) return;
         isRunningRef.current = true;
         
-        setMessages(prev => [...prev, { role: 'user', content: userText }]);
+        if (appendUserMessage) {
+            setMessages(prev => [...prev, { id: uuidv4(), role: 'user', content: userText, editedOnce: false }]);
+        }
         setInputValue('');
         setSuggestionChips([]);
         setIsTyping(true);
@@ -479,11 +511,12 @@ export const useGoalWizard = ({
         setDraftResult(null);
 
         try {
-            const config = { configurable: { thread_id: threadId }, streamMode: ["updates", "values"] as const };
+            const config = { configurable: { thread_id: effectiveThreadId }, streamMode: ["updates", "values"] as const };
             const allowedFrameworks = TIER_CONFIGS[tier]?.allowedFrameworks || [];
             const currentLang = appLanguage || 'en';
+            const seeded = options.seedMessages && options.seedMessages.length > 0 ? options.seedMessages : null;
             const inputs = {
-                messages: [new HumanMessage(userText)],
+                messages: seeded ? [...seeded, new HumanMessage(userText)] : [new HumanMessage(userText)],
                 goal: userText, 
                 framework: framework,
                 tier: tier,
@@ -494,7 +527,7 @@ export const useGoalWizard = ({
                 formContext: agentFormContext
             };
 
-            LOG('runAgent START', { threadId, framework, currentLang, goalLength: userText.length });
+            LOG('runAgent START', { threadId: effectiveThreadId, framework, currentLang, goalLength: userText.length, seededCount: seeded?.length ?? 0 });
     
             const generator = await graph.stream(inputs, config);
             LOG('graph.stream() returned generator, starting for-await loop');
@@ -712,7 +745,7 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
                                  }
                                  lastAppendedContentRef.current = textToShow;
                                  LOG(`event #${eventIndex} setMessages: APPENDING ai message`, { length: textToShow.length });
-                                 return [...prev, { role: 'ai', content: textToShow }];
+                                 return [...prev, { id: uuidv4(), role: 'ai', content: textToShow }];
                              });
                          }
     
@@ -745,7 +778,7 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
     
             if (isMounted.current && !didReceiveAgentMessage && isRunningRef.current) {
                 console.warn("[Wizard:Agent] Agent finished but no AI messages received.");
-                setMessages(prev => [...prev, { role: 'ai', content: "⚠️ **Connection Error**: I couldn't complete that thought. Please try asking again." }]);
+                setMessages(prev => [...prev, { id: uuidv4(), role: 'ai', content: "⚠️ **Connection Error**: I couldn't complete that thought. Please try asking again." }]);
             }
             // Ensure blueprint is applied even if React batched updates; avoids "blueprint is ready below" with no panel
             if (isMounted.current && blueprintReceivedThisRunRef.current) {
@@ -769,7 +802,7 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
             toast.error(errorToastMsg, {
                 action: showErrorAction ? { label: t('common.retry') || "Retry", onClick: () => runAgent(userText) } : undefined
             });
-            setMessages(prev => [...prev, { role: 'ai', content: `⚠️ **Error**: ${errorToastMsg}` }]);
+            setMessages(prev => [...prev, { id: uuidv4(), role: 'ai', content: `⚠️ **Error**: ${errorToastMsg}` }]);
         }
         finally {
             isRunningRef.current = false;
@@ -778,6 +811,51 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
                 setIsTyping(false);
             }
         }
+    };
+
+    const runAgent = async (userText: string) => runAgentInternal(userText);
+
+    const editUserMessageOnce = async (messageId: string, newContent: string) => {
+        const trimmed = (newContent ?? '').trim();
+        if (!trimmed) {
+            toast.error(t('wizard.emptyMessageError') || "Message can't be empty.");
+            return;
+        }
+        if (isRunningRef.current || isTyping || isAgentRunning) {
+            toast.info(t('wizard.waitUntilDone') || "Wait for the agent to finish, then edit.");
+            return;
+        }
+
+        const latestUserMessageId = [...messages].reverse().find((m) => m.role === 'user')?.id ?? null;
+        if (!latestUserMessageId || latestUserMessageId !== messageId) {
+            toast.info(t('wizard.editLatestOnly') || "You can only edit your latest message.");
+            return;
+        }
+
+        const idx = messages.findIndex((m) => m.id === messageId);
+        if (idx < 0) return;
+        const target = messages[idx];
+        if (target.role !== 'user') return;
+        if (target.editedOnce) return;
+
+        const seedHistory = messages
+            .slice(0, idx)
+            .filter((m) => m.role === 'user' || m.role === 'ai')
+            .map((m) => (m.role === 'user' ? new HumanMessage(m.content) : new AIMessage(m.content)));
+
+        const newThreadId = uuidv4();
+        setThreadId(newThreadId);
+
+        // Rewind chat to edited prompt (everything after becomes invalid).
+        const updated: Message = { ...target, content: trimmed, editedOnce: true };
+        setMessages([...messages.slice(0, idx), updated]);
+
+        // Re-run agent from this point with a fresh thread.
+        await runAgentInternal(trimmed, {
+            appendUserMessage: false,
+            seedMessages: seedHistory,
+            threadIdOverride: newThreadId,
+        });
     };
 
     const handleStop = () => {
@@ -801,7 +879,12 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
   
              try {
                  await onSaveBlueprint?.(bp);
-                 if (supabase) await syncBlueprintMessages(supabase, bp.id, messages);
+                 if (supabase) {
+                    const persistable = messages
+                        .filter((m) => m.role === 'user' || m.role === 'ai')
+                        .map((m) => ({ role: m.role as 'user' | 'ai', content: m.content }));
+                    await syncBlueprintMessages(supabase, bp.id, persistable);
+                 }
                  toast.success(t('wizard.draftSavedToBlueprints'));
              } catch (e) {
                  if (!confirm("Auto-save failed. Restart anyway?")) return;
@@ -852,7 +935,12 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
     
         try {
           await onSaveBlueprint?.(bp);
-          if (supabase) syncBlueprintMessages(supabase, bp.id, messages).catch((err: any) => console.error("Failed to sync chat history", err));
+          if (supabase) {
+            const persistable = messages
+                .filter((m) => m.role === 'user' || m.role === 'ai')
+                .map((m) => ({ role: m.role as 'user' | 'ai', content: m.content }));
+            syncBlueprintMessages(supabase, bp.id, persistable).catch((err: any) => console.error("Failed to sync chat history", err));
+          }
           toast.success(t('wizard.saveSuccess'));
           confetti({ particleCount: 80, spread: 60, origin: { y: 0.75 } });
           onBack();
@@ -887,6 +975,7 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
         messagesEndRef,
         draftPulse,
         runAgent,
+        editUserMessageOnce,
         toggleListening,
         handleStop,
         handleSafeRestart,

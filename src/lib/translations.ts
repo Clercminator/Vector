@@ -362,6 +362,8 @@ export const translations = {
     'wizard.liveDraft': 'Live Draft',
     'wizard.buildingPlanUpdates': 'Building your plan – updates as we talk',
     'wizard.draftPanelPurpose': 'Your plan at a glance: see what’s defined and what’s next as we build it.',
+    'errors.pageLoadTitle': 'Oh sorry, something happened.',
+    'errors.pageLoadBody': 'Could you please refresh the page?',
     'wizard.mandalaCentralGoal': 'Central goal',
     'wizard.mandalaCategories': 'Categories',
     // Mandala view – overview & drill-down
