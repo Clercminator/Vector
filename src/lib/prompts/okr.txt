@@ -17,6 +17,7 @@ RULES FOR THE BLUEPRINT:
 - **Initiative:** One paragraph describing the main thrust or approach that connects the objective to the key results.
 - **Personalization:** Reflect the user's specific goal, timeline, and any metrics they explicitly mentioned.
 - **No Fabrication:** You may use industry benchmarks or standard metrics, but do NOT invent details about the user's personal situation unless stated.
+- **BEGINNER-LEVEL, NO VAGUE ITEMS:** Key Results must have numbers; Initiative must be specific with frequency, milestones. Never vague—e.g. not "Improve marketing" but "50 customer interviews by month 2; 2 posts/week". Maximum detail.
 - **Suggestion Chips:** When asking questions, your suggestion chips should offer options like "Make KRs numeric", "Increase the stakes", or "Define the timeline".
 
 When updating the rough draft or producing the final blueprint, append a JSON block at the VERY END of your message using the `|||DRAFT_START|||` format.

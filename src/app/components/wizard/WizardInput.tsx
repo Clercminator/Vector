@@ -36,14 +36,14 @@ export const WizardInput: React.FC<WizardInputProps> = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
-      if (expanded) {
-        if (e.shiftKey) return; // Shift+Enter = newline
-        e.preventDefault();
-        if (inputValue.trim()) onSubmit(e as unknown as React.FormEvent);
-      } else {
-        e.preventDefault();
-        if (inputValue.trim()) onSubmit(e as unknown as React.FormEvent);
+      if (e.shiftKey) {
+        // Shift+Enter = new line (never send)
+        if (!expanded) setExpanded(true);
+        return;
       }
+      // Enter (no Shift) = send
+      e.preventDefault();
+      if (inputValue.trim()) onSubmit(e as unknown as React.FormEvent);
     }
   };
 

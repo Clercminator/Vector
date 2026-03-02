@@ -15,10 +15,10 @@ export const frameworkContexts: Record<string, string> = {
   "okr": okrPrompt,
   "gps": gpsPrompt,
   "misogi": misogiPrompt,
-  "dsss": "DSSS (Tim Ferriss): Deconstruct the skill into subcomponents (4-8 items), Select the 20% that deliver 80% of results (2-4 items referencing deconstruct), Sequence the order of learning (3-6 items), set Stakes (accountability commitment). Must be very concrete, reflecting user's skill, timeline, constraints. You may use real-world facts about the skill, but do not invent user constraints. Suggestion Chips: Offer options like 'Set a deadline', 'What happens if you fail?', or 'Break down further'. Output: deconstruct (array), selection (array), sequence (array), stakes (string).",
-  "mandalas": "MANDALA CHART: One central goal in the center; exactly 8 categories supporting it, each with exactly 8 actionable steps (64 items). Categories must cover different life areas or aspects of the goal. Steps must be specific, completable actions reflecting the user's goal and context. You may use real-world knowledge to fill out steps, but do not invent user constraints. Suggestion Chips: Offer options to explore specific categories. Output: centralGoal (string), categories (array of { name: string, steps: string[] } with 8 categories, 8 steps each).",
-  "ikigai": "IKIGAI: Japanese 'reason for being.' Four overlapping circles: (1) What you love (passion/interest), (2) What you're good at (profession/skills), (3) What the world needs (mission), (4) What you can be paid for (vocation). The intersection is purpose (one sentence synthesizing the four). Each pillar must be distinctly different. Use user's words and context. You may suggest ideas, but do not invent user history. Suggestion Chips: Offer options like 'What are your hobbies?', 'What do people pay for?', 'Refine the purpose'. Output: love (string), goodAt (string), worldNeeds (string), paidFor (string), purpose (string).",
-  "general": "GENERAL PLAN: A standard, actionable To-Do list or strategic plan. Must be clear, specific, and broken down into actionable steps. You may use real-world facts, but do not invent user constraints. Suggestion Chips: Offer options like 'Break it down further', 'Set deadlines', or 'Add a new step'. Output: steps (array of strings)."
+  "dsss": "DSSS (Tim Ferriss): Deconstruct the skill into subcomponents (4-8 items), Select the 20% that deliver 80% of results (2-4 items referencing deconstruct), Sequence the order of learning (3-6 items), set Stakes (accountability commitment). Must be very concrete, reflecting user's skill, timeline, constraints. You may use real-world facts about the skill, but do not invent user constraints. BEGINNER-LEVEL, NO VAGUE ITEMS: Every sequence/stakes item must include frequency, duration, milestones. Never 'Practice regularly'—use '30 min daily, target X by week 4'. Suggestion Chips: Offer options like 'Set a deadline', 'What happens if you fail?', or 'Break down further'. Output: deconstruct (array), selection (array), sequence (array), stakes (string).",
+  "mandalas": "MANDALA CHART: One central goal in the center; exactly 8 categories supporting it, each with exactly 8 actionable steps (64 items). Categories must cover different life areas or aspects of the goal. Steps must be specific, completable actions reflecting the user's goal and context. You may use real-world knowledge to fill out steps, but do not invent user constraints. BEGINNER-LEVEL, NO VAGUE ITEMS: Every step must include frequency, duration, or deadline. Never 'Improve X'—use 'X 3x/week, 20 min; target Y by month 2'. Suggestion Chips: Offer options to explore specific categories. Output: centralGoal (string), categories (array of { name: string, steps: string[] } with 8 categories, 8 steps each).",
+  "ikigai": "IKIGAI: Japanese 'reason for being.' Four overlapping circles: (1) What you love (passion/interest), (2) What you're good at (profession/skills), (3) What the world needs (mission), (4) What you can be paid for (vocation). The intersection is purpose (one sentence synthesizing the four). Each pillar must be distinctly different. Use user's words and context. You may suggest ideas, but do not invent user history. BEGINNER-LEVEL, NO VAGUE ITEMS: Each pillar must be specific, not generic. Never 'Helping people'—use 'Teaching X to beginners; 2 sessions/week'. Suggestion Chips: Offer options like 'What are your hobbies?', 'What do people pay for?', 'Refine the purpose'. Output: love (string), goodAt (string), worldNeeds (string), paidFor (string), purpose (string).",
+  "general": "GENERAL PLAN: A standard, actionable To-Do list or strategic plan. Must be clear, specific, and broken down into actionable steps. You may use real-world facts, but do not invent user constraints. BEGINNER-LEVEL, NO VAGUE ITEMS: Every step must include frequency, duration, or deadline. Never 'Get started' or 'Improve'—use 'X 3x/week; complete Y by date Z'. Suggestion Chips: Offer options like 'Break it down further', 'Set deadlines', or 'Add a new step'. Output: steps (array of strings)."
 };
 
 export const prompts = {
@@ -76,6 +76,8 @@ export const prompts = {
   Your goal is to help the user refine their goal: "{{goal}}".
   
   RICH CONTEXT → CONCRETE BLUEPRINTS: When the user gives rich context (details, numbers, constraints, habits, obstacles, preferences), use it. The final blueprint should include concrete, specific items—routines, examples, named steps, actionable tips—not generic one-liners. If they shared a lot, the plan should reflect that depth for any framework.
+
+  BEGINNER-LEVEL, MAXIMUM DETAIL: Treat every user as a complete beginner. Plans must go way beyond vague advice (e.g. NOT "Work out more" or "Eat healthier"). Instead, include: (1) specific tasks with frequency (3x/week, daily, etc.), (2) intensity/duration (20 min HIIT, 45 min strength, etc.), (3) deadlines or mini goals (e.g. "Lose 1 kg by week 4", "Run 5K by month 2"), (4) enough detail that someone with zero experience could execute. During the conversation, ask for preferences on frequency/intensity if the user hasn't specified. The output feeds into a Tracker—each item should be discrete and trackable.
   
   NO FABRICATION: Only use facts the user explicitly stated. Do not invent timelines, numbers, constraints, or details that were not provided.
   
@@ -84,6 +86,12 @@ export const prompts = {
   Tone Instruction: {{toneInstructions}}
   
   FACILITATION (draw ideas out): Reflect back what the user said in one sentence. Offer 2-3 concrete options when asking (e.g. "Are you thinking more about time, energy, or both?" or "Which matters more right now: [X] or [Y]?"). Name what's still missing for the blueprint so they know what to answer. Make it easy to articulate—don't just ask open questions; scaffold with choices.
+
+  FORMATTING: Use clear, scannable formatting so users can read quickly:
+  - For lists, summaries, or multi-item explanations: use bullet points (• or -) and line breaks.
+  - For Eisenhower/prioritization (Q1, Q2, Q3, Q4): put each quadrant on its own line with a bullet, e.g. "• **Q1 (Do):** item1, item2\\n• **Q2 (Schedule):** item3, item4"
+  - For numbered questions: use 1. 2. 3. with line breaks between them.
+  - Avoid long unbroken paragraphs; break them into short blocks.
 
   INTAKE FORM OPENER: When formContext contains intake data (objective, stakes, horizon, obstacles, success), the user has just come from "Find Your Framework". Your first reply MUST: (1) Paraphrase their goal and situation—acknowledge their obstacles, stakes, timeline, and what success looks like for them; (2) Then ask 1-2 follow-up questions to refine the plan and move forward. Do NOT ask "What is your main goal?" or "What's your objective?"—they already provided that. Address what they shared and build on it.
 
@@ -164,6 +172,8 @@ export const prompts = {
 
       RICH CONTEXT → CONCRETE DETAIL (all frameworks): When the user has given rich context (e.g. numbers, timelines, habits, obstacles, preferences, constraints), the blueprint MUST reflect it with concrete detail: specific items, sample routines, examples, actionable steps. Expand each section appropriately (e.g. 4–8 items where it fits); avoid generic one-liners. Use their words and numbers where they provided them.
 
+      BEGINNER-LEVEL, TRACKER-READY (ALL FRAMEWORKS, MANDATORY): Treat every user as a complete beginner. NO short or vague items allowed. Every blueprint item must be actionable and trackable. Include: frequency (how often), intensity/duration (how long, how hard), deadlines or mini goals where applicable. BAD: "Exercise", "Eat better", "Learn more", "Focus on sales". GOOD: "Strength training 3x/week (Mon/Wed/Fri), 45 min, compound lifts; mini goal: 4 consecutive weeks" or "20 min daily Anki; target 1,200 words by month 2". This applies to Pareto (vital/trivial), RPM (plan steps), Eisenhower (all quadrants), OKR (initiative + KRs), GPS (plan/system), DSSS (sequence/stakes), Mandalas (every step), Misogi (purification), Ikigai, General. Maximum detail—spell out what, when, how often, how long.
+
       CRITICAL - NO FABRICATION:
       - Use ONLY facts the user explicitly stated. Do NOT invent: job status, hours available, student status, income, location, timeline, or any other details.
       - If you asked "What's your situation?" or "How many hours per week?" and the user never answered, write "User to specify" or keep it generic.
@@ -173,7 +183,7 @@ export const prompts = {
       - 'pareto': { "type": "pareto", "vital": ["..."], "trivial": ["..."] }
       - 'first-principles': { "type": "first-principles", "truths": ["..."], "newApproach": "..." }
       - 'rpm': { "type": "rpm", "result": "...", "purpose": "...", "plan": ["step 1", "step 2", ...] } — plan MUST be a non-empty array of 3–8 concrete action steps (Massive Action Plan) from the conversation. Never return an empty plan.
-      - 'eisenhower': { "type": "eisenhower", "q1": [...], "q2": [...], "q3": [...], "q4": [...] }
+      - 'eisenhower': { "type": "eisenhower", "q1": ["..."], "q2": ["...","...","..."], "q3": ["..."], "q4": ["..."] } — ALL quadrants MUST have at least 1 item each. Each item: frequency + intensity + mini goal when applicable (e.g. "Strength 3x/week, 45 min; mini goal: 4 weeks straight" not "Work out more").
       - 'okr': { "type": "okr", "objective": "...", "keyResults": ["..."], "initiative": "..." }
       - 'gps': { "type": "gps", "goal": "...", "plan": ["..."], "system": ["..."], "anti_goals": ["..."] }
       - 'misogi': { "type": "misogi", "challenge": "...", "gap": "...", "purification": "..." }
@@ -189,18 +199,18 @@ export const prompts = {
       Return ONLY the JSON.`,
 
   critiqueRubrics: {
-      'okr': "Check if Key Results are MEASURABLE (contain numbers/%). Objective must be ambitious and qualitative.",
-      'pareto': "Ensure 'Vital' tasks (2-5) are specific, high-impact and 'Trivial' (2-5) are clear effort sinks.",
-      'rpm': "Ensure Result is specific, Purpose is emotional, and Plan has 3-8 specific and completable MAP steps.",
-      'eisenhower': "Ensure Q1 is urgent/important (1-3 items), Q2 is long-term strategic (3-6 items), categorized correctly without ambiguity.",
-      'first-principles': "Ensure 'Truths' are 3-6 fundamental verified facts from user's domain, and 'New Approach' is one clear actionable paragraph.",
-      'dsss': "Ensure deconstruct (4-8 items), selection (2-4 items), sequence (3-6 items), and stakes are concrete and actionable. No placeholders.",
-      'mandalas': "Ensure centralGoal is one phrase; exactly 8 distinct categories, each with 8 specific, actionable steps (64 total).",
-      'ikigai': "Ensure love, goodAt, worldNeeds, paidFor are distinct pillars; purpose is the intersection. Uses user's words.",
-      'gps': "Ensure goal is specific, 3-6 strategic plan actions, 3-6 system supports, and 1-3 anti-goals. Focus on execution.",
-      'misogi': "Ensure challenge is specific, highly difficult (~50% fail rate), and safe. Gap and purification must be defined and concrete.",
-      'general': "Ensure steps are action-oriented, clear, and personalized. No placeholders.",
-      'default': "Ensure the JSON is valid and content is specific and personalized without fabrication."
+      'okr': "Key Results MEASURABLE (numbers/%); Objective ambitious. Initiative must be specific with frequency/deadlines—no vague phrasing. Reject short one-liners.",
+      'pareto': "Vital (2-5) and Trivial (2-5) must be specific with frequency/intensity/mini goals where applicable. Reject vague items like 'Focus on marketing' or 'Cut distractions'.",
+      'rpm': "Result specific; Purpose emotional; Plan (3-8 steps) each with frequency, duration, or deadline. No vague steps like 'Exercise more' or 'Study'.",
+      'eisenhower': "Q1-Q4 each with 1+ items. Every item specific: frequency, intensity, mini goals. No vague items like 'Work out more' or 'Be productive'.",
+      'first-principles': "Truths: 3-6 verified facts. New Approach: actionable paragraph with concrete next steps, frequency, deadlines—no generic advice.",
+      'dsss': "Deconstruct, selection, sequence, stakes: all concrete with frequency/duration. No placeholders or vague phrases like 'Practice regularly'.",
+      'mandalas': "8 categories × 8 steps; each step actionable with frequency/deadline. No vague steps like 'Improve' or 'Work on it'.",
+      'ikigai': "Love, goodAt, worldNeeds, paidFor distinct; purpose = intersection. Each pillar specific, not generic.",
+      'gps': "Plan and system items specific with frequency/environment details. No vague items like 'Stay disciplined' or 'Be consistent'.",
+      'misogi': "Challenge specific (~50% fail rate); gap and purification concrete with training frequency, milestones—no vague preparation.",
+      'general': "Every step specific with frequency, duration, or deadline. Reject vague steps like 'Get started' or 'Improve habits'.",
+      'default': "JSON valid; content specific and personalized. Reject any short or vague items—require frequency, intensity, deadlines where applicable."
     },
     
   critique: `Critique this {{framework}} JSON: {{blueprint}}.

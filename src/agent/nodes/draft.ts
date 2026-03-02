@@ -79,6 +79,21 @@ export const draftNode = async (state: AgentStateType) => {
       }
     }
 
+    if (blueprint.type === "eisenhower") {
+      const toStrArray = (v: unknown): string[] => {
+        if (Array.isArray(v)) return v.filter(Boolean).map((s: unknown) => (typeof s === "string" ? s : String(s)));
+        if (typeof v === "string" && v.trim()) return v.split(/[,;]|\s+and\s+/i).map((s) => s.trim()).filter(Boolean);
+        return [];
+      };
+      blueprint = {
+        ...blueprint,
+        q1: toStrArray(blueprint.q1),
+        q2: toStrArray(blueprint.q2),
+        q3: toStrArray(blueprint.q3),
+        q4: toStrArray(blueprint.q4),
+      };
+    }
+
     const frameworkLabel = framework ? String(framework).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '';
     const closingMessage = frameworkLabel
       ? `Your ${frameworkLabel} blueprint is ready below. Review your personalized plan and refine as needed.`

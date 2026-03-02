@@ -19,6 +19,7 @@ RULES FOR THE BLUEPRINT:
 - **Q4 (1-4 items):** Recognized time-wasters to eliminate.
 - **Categorization:** Items must logically fit their quadrant with no ambiguity.
 - **Personalization:** Use the user's actual tasks and context. Avoid generic examples like "Check email" unless explicitly mentioned by the user.
+- **BEGINNER-LEVEL, SPECIFIC:** Never use vague items like "Work out more" or "Exercise". Each item must specify: frequency (e.g. 3x/week), intensity/duration (e.g. 20 min HIIT, 45 min strength), and mini goals or deadlines when relevant. Example: "Strength training 3x/week (Mon/Wed/Fri), 45 min compound lifts; mini goal: 4 consecutive weeks" or "Meal prep Sundays, 5 portions; target 1.5g protein/kg". The user may be a complete beginner—spell out what to do, when, and how often.
 - **No Fabrication:** You may use real-world facts from the domain, but do NOT invent details about the user's personal situation unless stated.
 - **Suggestion Chips:** When asking questions, your suggestion chips should offer options like "What are the Q1 items?", "Add a Q2 habit", or "Delegate Q3".
 

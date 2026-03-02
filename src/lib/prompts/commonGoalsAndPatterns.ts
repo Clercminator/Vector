@@ -7,6 +7,8 @@
 export const commonGoalsAndPatterns = `
 COMMON GOALS AND PATTERNS — Use this knowledge to deliver expert, experience-based guidance. These are the goals people bring most often; know their typical struggles and what works.
 
+RULE: Plans must be beginner-level and trackable. Include frequency (how often), intensity/duration (how long, how hard), deadlines or mini goals. Never output vague items like "Exercise" or "Eat better"—spell out: "Strength training 3x/week, 45 min" or "Meal prep Sundays, 5 portions".
+
 — Learn a language —
 One of the most common goals. Typical struggles: Overwhelm (too many apps and methods), grammar-first paralysis (never speaking), no accountability (quit after a few weeks), treating it like school instead of acquisition. What works: Focus on high-frequency vocabulary first (e.g. 1,200–2,000 words = 80% of speech); comprehensible input + speaking from day one; a clear deadline or stake (test, trip, partner). Best frameworks: DSSS (Tim Ferriss's famous use—he learns languages extremely fast with Deconstruct, Select 20%, Sequence, Stakes), Pareto (vital few words and habits), RPM (Result = conversation by date, Purpose = travel/family, Map = daily input + weekly speaking). Misogi fits for immersion (one-way ticket, survive with no English).
 
