@@ -195,8 +195,8 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
                                 {suggestedFramework?.icon && <suggestedFramework.icon size={32} />}
                              </div>
                              <div>
-                                 <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{suggestedFramework?.title}</h3>
-                                 <p className="text-xl text-gray-500 dark:text-gray-400 font-medium leading-relaxed">{suggestedFramework?.description}</p>
+                                 <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{suggestedFramework ? (t(`fw.${suggestedFramework.id}.title`) || suggestedFramework.title) : ''}</h3>
+                                 <p className="text-xl text-gray-500 dark:text-gray-400 font-medium leading-relaxed">{suggestedFramework ? (t(`fw.${suggestedFramework.id}.desc`) || suggestedFramework.description) : ''}</p>
                              </div>
                          </div>
                     </div>

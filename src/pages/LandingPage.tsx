@@ -178,7 +178,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         </div>
                         <motion.button
                             onClick={onShowHelpChoose}
-                            className="group flex items-center gap-3 px-8 py-5 rounded-2xl text-lg font-semibold border-2 border-purple-500/50 dark:border-purple-400/50 bg-purple-500/10 dark:bg-purple-400/10 text-gray-900 dark:text-white hover:bg-purple-500/20 dark:hover:bg-purple-400/20 hover:border-purple-500 dark:hover:border-purple-400 transition-colors shadow-lg hover:shadow-purple-500/20"
+                            className="group flex items-center gap-3 px-8 py-5 rounded-2xl text-lg font-semibold border-2 border-purple-500/50 dark:border-purple-400/50 bg-purple-500/10 dark:bg-purple-400/10 text-gray-900 dark:text-white hover:bg-purple-500/20 dark:hover:bg-purple-400/20 hover:border-purple-500 dark:hover:border-purple-400 transition-colors shadow-lg hover:shadow-purple-500/20 cursor-pointer"
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.98 }}
                         >

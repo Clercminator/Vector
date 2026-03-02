@@ -110,6 +110,7 @@ export const useGoalWizard = ({
     const hasDeductedCreditThisRunRef = useRef(false);
     const seenDraftUpdateThisRunRef = useRef(false);
     const blueprintReceivedThisRunRef = useRef<BlueprintResult | null>(null);
+    const hasAutoRunFromIntakeRef = useRef(false);
 
     // Framework Config Helper (Simplified for hook)
     const getFrameworkConfig = (fw: string) => {
@@ -231,14 +232,20 @@ export const useGoalWizard = ({
         setResult(null);
         setFinalAnswers([]);
         setStep(0);
-        
-        let initialMsg = "";
-        
+
         const initialContext = (window.history.state?.usr?.context) || (location.state as any)?.context;
-        
+
+        // When coming from "Help me find" with intake data: skip static message; agent will paraphrase and ask follow-ups
+        if (initialContext?.objective && framework) {
+            setMessages([]);
+            return; // Auto-run effect will invoke agent with intake data
+        }
+
+        let initialMsg = "";
         if (initialContext && initialContext.explanation) {
-             initialMsg = `${initialContext.explanation}\n\n${t(currentConfig.questions?.[0] || 'wizard.agentStart')}`;
-             // Do not append "Your goal: ..." here — the goal is already in form context for the agent; appending it made the first message look like the agent was answering its own question.
+             initialMsg = initialContext.objective
+                ? `${initialContext.explanation}\n\n${t('wizard.readyToBuild')}`
+                : `${initialContext.explanation}\n\n${t(currentConfig.questions?.[0] || 'wizard.agentStart')}`;
         } else if (currentConfig.questions?.[0]) {
            initialMsg = currentConfig.questions[0];
         } else {
@@ -248,16 +255,48 @@ export const useGoalWizard = ({
         if (framework) {
             setIsTyping(true);
             const tTimer = setTimeout(() => {
-                setMessages([{ id: uuidv4(), role: 'ai', content: initialMsg }]); 
+                setMessages([{ id: uuidv4(), role: 'ai', content: initialMsg }]);
                 setIsTyping(false);
             }, 1000);
             return () => clearTimeout(tTimer);
         } else {
-            // Immediate start for general flow, no typing simulation needed for static welcome
             setMessages([{ id: uuidv4(), role: 'ai', content: t('fp.q1') }]);
             setIsTyping(false);
         }
     }, [framework, initialBlueprint, t]);
+
+    // Auto-invoke agent with intake data when coming from "Help me find the right framework"
+    useEffect(() => {
+        const ctx = (window.history.state?.usr?.context) || (location.state as any)?.context;
+        if (!ctx?.objective || !framework || initialBlueprint) return;
+        if (hasAutoRunFromIntakeRef.current) return;
+        const saved = localStorage.getItem('vector_wizard_session');
+        if (saved) {
+            try {
+                const { framework: savedFw, timestamp } = JSON.parse(saved);
+                if (Date.now() - (timestamp || 0) < 24 * 60 * 60 * 1000 && savedFw === framework) return;
+            } catch (_) {}
+        }
+        hasAutoRunFromIntakeRef.current = true;
+
+        const parts: string[] = [ctx.objective];
+        if (ctx.stakes) parts.push(`Stakes: ${ctx.stakes}`);
+        if (ctx.horizon) parts.push(`Time horizon: ${ctx.horizon}`);
+        if (ctx.obstacle) parts.push(`Obstacles: ${ctx.obstacle}`);
+        if (ctx.successLookLike) parts.push(`Success looks like: ${ctx.successLookLike}`);
+        const formattedMessage = parts.join('. ');
+
+        const formCtxParts: string[] = [];
+        if (ctx.objective) formCtxParts.push(`Objective: ${ctx.objective}`);
+        if (ctx.stakes) formCtxParts.push(`Stakes: ${ctx.stakes}`);
+        if (ctx.horizon) formCtxParts.push(`Time horizon: ${ctx.horizon}`);
+        if (ctx.obstacle) formCtxParts.push(`Obstacle/situation: ${ctx.obstacle}`);
+        if (ctx.successLookLike) formCtxParts.push(`Success looks like: ${ctx.successLookLike}`);
+        if (ctx.explanation) formCtxParts.push(`Why this framework fits: ${ctx.explanation}`);
+        const formContextOverride = formCtxParts.join('. ');
+
+        runAgentInternal(formattedMessage, { formContextOverride });
+    }, [location.state, framework, initialBlueprint]);
 
     // Offline & Voice
     useEffect(() => {
@@ -484,6 +523,7 @@ export const useGoalWizard = ({
         appendUserMessage?: boolean;
         seedMessages?: Array<HumanMessage | AIMessage>;
         threadIdOverride?: string;
+        formContextOverride?: string;
     };
 
     const runAgentInternal = async (userText: string, options: RunAgentOptions = {}) => {
@@ -524,7 +564,7 @@ export const useGoalWizard = ({
                 hardMode: isHardMode,
                 language: currentLang,
                 userProfile: agentUserProfile,
-                formContext: agentFormContext
+                formContext: options.formContextOverride ?? agentFormContext
             };
 
             LOG('runAgent START', { threadId: effectiveThreadId, framework, currentLang, goalLength: userText.length, seededCount: seeded?.length ?? 0 });

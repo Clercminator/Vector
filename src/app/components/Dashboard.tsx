@@ -139,7 +139,8 @@ export function Dashboard({
 
   const filteredBlueprints = blueprints.filter(bp => {
     const matchesSearch = bp.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filterFramework === 'ALL' || bp.framework === filterFramework;
+    const effectiveFramework = (bp.result?.type as string) ?? bp.framework;
+    const matchesFilter = filterFramework === 'ALL' || bp.framework === filterFramework || effectiveFramework === filterFramework;
     const matchesTag = !filterTag || trackers[bp.id]?.tags?.includes(filterTag);
     return matchesSearch && matchesFilter && matchesTag;
   }).sort((a, b) => {
@@ -260,7 +261,7 @@ export function Dashboard({
                   />
               </div>
               <div className="flex gap-2 py-2 overflow-x-auto scrollbar-hide shrink-0 items-center">
-                  {['ALL', 'pareto', 'okr', 'eisenhower', 'rpm', 'misogi', 'ikigai', 'dsss', 'first-principles', 'gps'].map(fw => (
+                  {['ALL', 'pareto', 'okr', 'eisenhower', 'rpm', 'misogi', 'ikigai', 'dsss', 'mandalas', 'first-principles', 'gps'].map(fw => (
                       <button
                         key={fw}
                         onClick={() => setFilterFramework(fw)}
@@ -336,7 +337,8 @@ export function Dashboard({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AnimatePresence>
             {filteredBlueprints.map((bp) => {
-              const theme = FRAMEWORK_THEMES[bp.framework] || FRAMEWORK_THEMES['default'];
+              const frameworkKey = (bp.result?.type as string) ?? bp.framework;
+              const theme = FRAMEWORK_THEMES[frameworkKey] || FRAMEWORK_THEMES[bp.framework] || FRAMEWORK_THEMES['default'];
               const Icon = theme.icon;
               const isPinned = pinnedIds.includes(bp.id);
 
@@ -370,7 +372,7 @@ export function Dashboard({
                         
                         <div className="mb-2">
                              <span className={`text-[10px] font-bold uppercase tracking-wider ${theme.iconColor} bg-white/50 dark:bg-black/20 px-2 py-1 rounded-md`}>
-                                {bp.framework}
+                                {frameworkKey}
                              </span>
                         </div>
                         
@@ -464,7 +466,8 @@ export function Dashboard({
         <div className="flex flex-col gap-3">
           <AnimatePresence>
             {filteredBlueprints.map((bp) => {
-              const theme = FRAMEWORK_THEMES[bp.framework] || FRAMEWORK_THEMES['default'];
+              const frameworkKey = (bp.result?.type as string) ?? bp.framework;
+              const theme = FRAMEWORK_THEMES[frameworkKey] || FRAMEWORK_THEMES[bp.framework] || FRAMEWORK_THEMES['default'];
               const Icon = theme.icon;
               const isPinned = pinnedIds.includes(bp.id);
 
@@ -487,7 +490,7 @@ export function Dashboard({
                             {bp.title}
                             {isPinned && <Star size={14} fill="currentColor" className="text-yellow-400" />}
                         </h3>
-                        <span className="text-xs text-gray-500 uppercase">{bp.framework}</span>
+                        <span className="text-xs text-gray-500 uppercase">{frameworkKey}</span>
                     </div>
                 </div>
                 <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto overflow-hidden">
@@ -513,7 +516,8 @@ export function Dashboard({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           <AnimatePresence>
             {filteredBlueprints.map((bp) => {
-              const theme = FRAMEWORK_THEMES[bp.framework] || FRAMEWORK_THEMES['default'];
+              const frameworkKey = (bp.result?.type as string) ?? bp.framework;
+              const theme = FRAMEWORK_THEMES[frameworkKey] || FRAMEWORK_THEMES[bp.framework] || FRAMEWORK_THEMES['default'];
               const Icon = theme.icon;
 
               return (
@@ -536,7 +540,7 @@ export function Dashboard({
                           </button>
                       </div>
                       <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2 line-clamp-2">{bp.title}</h3>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-100 dark:border-zinc-800 pb-4">{bp.framework} Report</p>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-100 dark:border-zinc-800 pb-4">{frameworkKey} Report</p>
                   </div>
                   
                   <div className="flex-1 flex flex-col justify-end">
