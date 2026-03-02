@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Mail, Award, Zap, Save, Loader2, ArrowLeft, Star, CheckCircle2, Camera, Info, Eye, EyeOff, TriangleAlert, Download, LayoutDashboard, Bell } from 'lucide-react';
+import { User, Mail, Award, Zap, Save, Loader2, ArrowLeft, Star, CheckCircle2, Camera, Info, Eye, EyeOff, TriangleAlert, Download, LayoutDashboard, Bell, ChevronDown, ChevronRight } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
@@ -28,6 +28,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/app/components/ui/popover";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/app/components/ui/collapsible";
 
 interface ProfileProps {
   userId: string;
@@ -100,6 +101,13 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [sectionOpen, setSectionOpen] = useState<Record<string, boolean>>({
+    personalInfo: true,
+    dashboard: false,
+    security: false,
+    dangerZone: false,
+    achievements: false,
+  });
   const [data, setData] = useState<ProfileData>({
     display_name: '',
     bio: '',
@@ -516,11 +524,19 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
         </div>
 
         {/* Right Column: Edit Form */}
-        <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-gray-100 dark:border-zinc-800 shadow-sm h-fit">
-          <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-black dark:text-white">
-            <User size={20} className="text-gray-400" />
-            {t('profile.personalInfo')}
-          </h3>
+        <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-gray-100 dark:border-zinc-800 shadow-sm h-fit space-y-0">
+          <Collapsible
+            open={sectionOpen.personalInfo}
+            onOpenChange={(o) => setSectionOpen((s) => ({ ...s, personalInfo: o }))}
+          >
+            <CollapsibleTrigger className="flex w-full items-center justify-between py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer group">
+              <h3 className="text-xl font-bold flex items-center gap-2 text-black dark:text-white">
+                <User size={20} className="text-gray-400" />
+                {t('profile.personalInfo')}
+              </h3>
+              {sectionOpen.personalInfo ? <ChevronDown size={20} className="text-gray-400 shrink-0" /> : <ChevronRight size={20} className="text-gray-400 shrink-0" />}
+            </CollapsibleTrigger>
+            <CollapsibleContent>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-4">
             {t('profile.personalInfoHint')}
           </p>
@@ -756,14 +772,23 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
               </Button>
             </div>
           </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Preferences Section */}
-          <div className="mt-8 border-t border-gray-100 dark:border-zinc-800 pt-8">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-black dark:text-white">
-              <LayoutDashboard size={20} className="text-gray-400" />
-              {t('profile.dashboardPrefs') || 'Dashboard & Tracker Preferences'}
-            </h3>
-            
+          <Collapsible
+            open={sectionOpen.dashboard}
+            onOpenChange={(o) => setSectionOpen((s) => ({ ...s, dashboard: o }))}
+          >
+            <div className="mt-8 border-t border-gray-100 dark:border-zinc-800 pt-8">
+            <CollapsibleTrigger className="flex w-full items-center justify-between py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer group">
+              <h3 className="text-xl font-bold flex items-center gap-2 text-black dark:text-white">
+                <LayoutDashboard size={20} className="text-gray-400" />
+                {t('profile.dashboardPrefs') || 'Dashboard & Tracker Preferences'}
+              </h3>
+              {sectionOpen.dashboard ? <ChevronDown size={20} className="text-gray-400 shrink-0" /> : <ChevronRight size={20} className="text-gray-400 shrink-0" />}
+            </CollapsibleTrigger>
+            <CollapsibleContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Dashboard layout */}
               <div className="space-y-4">
@@ -881,15 +906,24 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
                   {exporting ? t('profile.exporting') || 'Preparing export...' : t('profile.exportData') || 'Export my Data'}
                </Button>
             </div>
+            </CollapsibleContent>
           </div>
+          </Collapsible>
           
           {/* Security Section */}
+          <Collapsible
+            open={sectionOpen.security}
+            onOpenChange={(o) => setSectionOpen((s) => ({ ...s, security: o }))}
+          >
           <div className="mt-8 border-t border-gray-100 dark:border-zinc-800 pt-8">
-             <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-black dark:text-white">
+            <CollapsibleTrigger className="flex w-full items-center justify-between py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer group">
+             <h3 className="text-xl font-bold flex items-center gap-2 text-black dark:text-white">
                 <Lock size={20} className="text-gray-400" />
                 {t('profile.security')}
              </h3>
-
+             {sectionOpen.security ? <ChevronDown size={20} className="text-gray-400 shrink-0" /> : <ChevronRight size={20} className="text-gray-400 shrink-0" />}
+            </CollapsibleTrigger>
+            <CollapsibleContent>
              <div className="space-y-8">
                 {/* Change Password */}
                 <div className="space-y-4">
@@ -990,15 +1024,24 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
                     </div>
                 </div>
              </div>
+            </CollapsibleContent>
              </div>
-
+          </Collapsible>
 
           {/* Danger Zone */}
+          <Collapsible
+            open={sectionOpen.dangerZone}
+            onOpenChange={(o) => setSectionOpen((s) => ({ ...s, dangerZone: o }))}
+          >
           <div className="mt-8 border-t border-red-100 dark:border-red-900/30 pt-8">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-red-600 dark:text-red-500">
+            <CollapsibleTrigger className="flex w-full items-center justify-between py-2 rounded-lg hover:bg-red-50/50 dark:hover:bg-red-900/10 transition-colors cursor-pointer group">
+                <h3 className="text-xl font-bold flex items-center gap-2 text-red-600 dark:text-red-500">
                     <TriangleAlert size={20} />
                     {t('profile.dangerZone') || 'Danger Zone'}
                 </h3>
+                {sectionOpen.dangerZone ? <ChevronDown size={20} className="text-red-500 shrink-0" /> : <ChevronRight size={20} className="text-red-500 shrink-0" />}
+            </CollapsibleTrigger>
+            <CollapsibleContent>
                 <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl p-6">
                     <h4 className="font-bold text-red-900 dark:text-red-200 mb-2">{t('profile.deleteAccount') || 'Delete Account'}</h4>
                     <p className="text-sm text-red-700 dark:text-red-300 mb-4">
@@ -1045,11 +1088,27 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
                         </DialogContent>
                     </Dialog>
                 </div>
+            </CollapsibleContent>
             </div>
+          </Collapsible>
           
+          <Collapsible
+            open={sectionOpen.achievements}
+            onOpenChange={(o) => setSectionOpen((s) => ({ ...s, achievements: o }))}
+          >
           <div className="mt-8 border-t border-gray-100 dark:border-zinc-800 pt-8">
+            <CollapsibleTrigger className="flex w-full items-center justify-between py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer group">
+              <h3 className="text-xl font-bold flex items-center gap-2 text-black dark:text-white">
+                <Award size={20} className="text-gray-400" />
+                {t('profile.achievements') || 'Achievements'}
+              </h3>
+              {sectionOpen.achievements ? <ChevronDown size={20} className="text-gray-400 shrink-0" /> : <ChevronRight size={20} className="text-gray-400 shrink-0" />}
+            </CollapsibleTrigger>
+            <CollapsibleContent>
             <AchievementsList userId={userId} />
+            </CollapsibleContent>
           </div>
+          </Collapsible>
         </div>
       </div>
     </motion.div>
