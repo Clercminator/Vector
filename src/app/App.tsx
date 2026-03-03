@@ -11,8 +11,10 @@ import { toast } from "sonner";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import {
   Blueprint,
+  blueprintTitleFromAnswers,
   loadLocalBlueprints,
   saveLocalBlueprints,
+  syncBlueprintMessages,
   upsertBlueprint,
   removeBlueprint,
   syncLocalBlueprintsToRemote,
@@ -493,7 +495,7 @@ function App() {
     toast.success(t("app.auth.signedOut"));
   };
 
-  const handleStartWizard = (fwId?: Framework, context?: any) => {
+  const handleStartWizard = async (fwId?: Framework, context?: any) => {
     if (!userId) {
       setAuthReason("signup_to_try");
       toast.info(
@@ -503,6 +505,63 @@ function App() {
       setAuthOpen(true);
       return;
     }
+
+    // When starting with new goal from intake form: save current session first, then clear so we start fresh
+    if (context?.objective) {
+      try {
+        const savedSession = localStorage.getItem("vector_wizard_session");
+        if (savedSession) {
+          const parsed = JSON.parse(savedSession);
+          const hasContent =
+            (parsed.messages?.length ?? 0) > 0 || parsed.draftResult;
+          if (hasContent && parsed.framework) {
+            const answers = (parsed.messages ?? [])
+              .filter((m: any) => m.role === "user")
+              .map((m: any) => m.content);
+            const fw = parsed.framework as string;
+            const result =
+              parsed.draftResult && typeof parsed.draftResult === "object"
+                ? parsed.draftResult
+                : { type: fw };
+            const bp: Blueprint = {
+              id: crypto.randomUUID(),
+              framework: fw as Blueprint["framework"],
+              title: blueprintTitleFromAnswers(answers),
+              answers,
+              result,
+              createdAt: new Date().toISOString(),
+            };
+            const existingIndex = blueprints.findIndex((b) => b.id === bp.id);
+            let updated = [...blueprints];
+            if (existingIndex >= 0) {
+              updated[existingIndex] = bp;
+            } else {
+              updated = [bp, ...updated];
+            }
+            setBlueprints(updated);
+            saveLocalBlueprints(updated);
+            if (userId && supabase && !isOffline) {
+              await retryOperation(async () => {
+                await upsertBlueprint(supabase!, bp, userId);
+              });
+              const persistable = (parsed.messages ?? [])
+                .filter((m: any) => m.role === "user" || m.role === "ai")
+                .map((m: any) => ({
+                  role: m.role as "user" | "ai",
+                  content: m.content,
+                }));
+              await syncBlueprintMessages(supabase!, bp.id, persistable);
+            }
+            toast.success(t("wizard.draftSavedToBlueprints"));
+            localStorage.removeItem("vector_wizard_session");
+          }
+        }
+      } catch (e) {
+        console.error("Failed to save previous session", e);
+        localStorage.removeItem("vector_wizard_session");
+      }
+    }
+
     setSelectedFramework(fwId);
     setActiveBlueprint(undefined);
     navigate("/wizard", { state: { framework: fwId, context } });
