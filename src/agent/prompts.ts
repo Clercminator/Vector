@@ -149,8 +149,10 @@ export const prompts = {
       
       DIFFICULTY (add to every blueprint): Include "difficulty" and "difficultyReason" in the JSON. Base difficulty on: (1) how common it is for people to achieve this goal, (2) user's resources (time/horizon, skills from profile, willingness from stakes/purpose). Four levels: "easy", "intermediate", "hard", "god-level". difficultyReason: 1–2 sentences explaining why.
       
+      shortTitle: A catchy 3-8 word title in the user's language (e.g. "3-Month Fat Loss & Muscle Plan").
+      
       Output Schema (JSON ONLY):
-      - 'pareto': { "type": "pareto", "vital": ["One Vital Task"], "trivial": ["Upgrade to see..."], "difficulty": "intermediate", "difficultyReason": "...", "isTeaser": true }
+      - 'pareto': { "type": "pareto", "vital": ["One Vital Task"], "trivial": ["Upgrade to see..."], "difficulty": "intermediate", "difficultyReason": "...", "shortTitle": "...", "isTeaser": true }
       - 'first-principles': { "type": "first-principles", "truths": ["One Truth..."], "newApproach": "Upgrade to reveal...", "difficulty": "...", "difficultyReason": "...", "isTeaser": true }
       - 'rpm': { "type": "rpm", "result": "The Result...", "purpose": "Upgrade...", "plan": ["One concrete step...", "Upgrade to unlock more"], "difficulty": "...", "difficultyReason": "...", "isTeaser": true }
       - 'eisenhower': { "type": "eisenhower", "q1": ["Do This..."], "q2": ["Upgrade..."], "q3": [], "q4": [], "difficulty": "...", "difficultyReason": "...", "isTeaser": true }
@@ -195,6 +197,17 @@ export const prompts = {
       DSSS-specific: This JSON is the FINAL blueprint. Include concrete, actionable items (e.g. specific meal timing, workout days, recovery days, weekly targets) so the user can follow and optionally export to calendar. Do NOT add any follow-up question like "Ready to generate the full blueprint with exact numbers..." — this output IS the full blueprint.
       
       DIFFICULTY (add to every blueprint): Include "difficulty" and "difficultyReason" in the JSON. Base difficulty on: (1) how common it is for people to achieve this goal (e.g. "learn a language" = common; "become world champion" = rare), (2) user's resources from formContext and userProfile: time/horizon, skills, willingness (stakes, purpose). Four levels only: "easy", "intermediate", "hard", "god-level". difficultyReason: 1–2 sentences in the user's language explaining why this goal falls in that category (e.g. "Most people achieve this with 3–6 months; your timeline and skills align well." or "Few achieve this; you have limited time but high stakes.").
+      
+      shortTitle (add to every blueprint): A catchy 3-8 word title for the plan in the user's language (e.g. "3-Month Fat Loss & Muscle Plan" or "Plan de Fitness: -5kg y Masa Muscular"). Used for PDF header and display.
+      
+      PDF ENHANCEMENT FIELDS (add to every blueprint for richer PDF export):
+      - executiveSummary: 2-3 sentence "at a glance" summary: goal + top 3 priorities + timeline.
+      - commitment: Estimated time commitment (e.g. "~5 hrs/week", "15-20 min daily") if inferable from context; else "User to specify".
+      - firstWeekActions: Array of 2-4 concrete actions to do in the first week.
+      - milestones: Array of 3-6 checkpoint strings (e.g. "Week 4: Complete 4 straight weeks of workouts", "Month 2: Run 5K").
+      - successCriteria: "You'll know you've succeeded when..." based on user's success definition.
+      - whatToAvoid: Array of 2-4 things to avoid/cut (time wasters, trivial tasks). For Pareto use trivial; for Eisenhower use Q3+Q4; for GPS use anti_goals; for others infer.
+      - yourWhy: The emotional "why" (from RPM purpose, or synthesize from user's stakes/purpose).
       
       Return ONLY the JSON.`,
 

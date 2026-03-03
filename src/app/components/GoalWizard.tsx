@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RefreshCcw, Calendar, CheckCircle2, Download, Lock } from 'lucide-react';
+import { RefreshCcw, Calendar, CheckCircle2, Download, Lock, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Blueprint, blueprintTitleFromAnswers } from '@/lib/blueprints';
@@ -10,6 +10,16 @@ import { useLanguage } from '@/app/components/language-provider';
 import { trackEvent } from '@/lib/analytics';
 
 import { cn } from './ui/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog';
 import { WizardHeader } from './wizard/WizardHeader';
 import { WizardChat } from './wizard/WizardChat';
 import { WizardInput } from './wizard/WizardInput';
@@ -53,6 +63,9 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
       toggleListening,
       handleStop,
       handleSafeRestart,
+      handleConfirmRestart,
+      showRestartConfirm,
+      setShowRestartConfirm,
       handleSave,
       updateResult,
       promoteDraftToResult,
@@ -108,7 +121,29 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
 
   return (
     <div className="relative h-[calc(100vh-5rem)] z-10 flex flex-col overflow-hidden">
-      
+      <AlertDialog open={showRestartConfirm} onOpenChange={setShowRestartConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle size={20} className="text-amber-500" />
+              {t('wizard.restartWarning.title')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('wizard.restartWarning.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmRestart}
+              className="bg-amber-600 hover:bg-amber-700 focus:ring-amber-500"
+            >
+              {t('wizard.restartWarning.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <WizardHeader 
           onBack={props.onBack}
           isHardMode={isHardMode}
@@ -198,8 +233,16 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
             createdAt: props.initialBlueprint?.createdAt ?? new Date().toISOString(),
           };
           const showCalendarExport = TIER_CONFIGS[props.tier || 'architect'].canExportCalendar && isBlueprintCalendarWorthy(bp);
+          const isTeaser = (result as any)?.isTeaser;
+          const showCreditConsumed = !isTeaser;
           return (
-          <div className="flex-none flex gap-4 items-center justify-center py-4 px-4 border-t border-gray-100 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm">
+          <div className="flex-none flex flex-col gap-3 py-4 px-4 border-t border-gray-100 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm">
+            {showCreditConsumed && (
+              <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+                {t('wizard.creditConsumedInPlan')}
+              </p>
+            )}
+            <div className="flex gap-4 items-center justify-center">
             <button 
               onClick={handleSafeRestart} 
               className="flex items-center gap-2 cursor-pointer px-6 py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
@@ -238,6 +281,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
             >
                 <CheckCircle2 size={18} />{t('wizard.save')}
             </button>
+            </div>
           </div>
           );
         })()}

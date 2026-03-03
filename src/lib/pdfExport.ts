@@ -75,36 +75,167 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
       y = margin;
   };
 
-  // Initial page background
+  const result = blueprint.result as any;
+  const displayTitle = result?.shortTitle ? String(result.shortTitle) : blueprint.title;
+  const frameworkLabel = String(blueprint.framework || "").replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+  // --- COVER PAGE ---
   fillBackground();
-
-  // Branding: Logo
-  if (branding?.logoUrl) {
-      try {
-          const imgData = await loadImage(branding.logoUrl);
-          doc.addImage(imgData, 'PNG', margin, y, 18, 18);
-          y += 22;
-      } catch (e) {
-          console.warn("Failed to load logo", e);
-      }
-  }
-
-  // Title — Vector primary
-  doc.setFontSize(24);
+  const centerX = pageWidth / 2;
+  let coverY = pageHeight * 0.3;
+  doc.setFontSize(28);
   doc.setFont("helvetica", "bold");
   setPrimary();
-  doc.text(blueprint.title, margin, y);
-  y += 12;
-
-  // Meta — Vector muted
-  doc.setFontSize(10);
+  const coverTitleLines = doc.splitTextToSize(displayTitle, contentWidth);
+  coverTitleLines.forEach((line: string) => {
+    const lineWidth = doc.getTextWidth(line);
+    doc.text(line, centerX - lineWidth / 2, coverY);
+    coverY += 12;
+  });
+  coverY += 16;
+  doc.setFontSize(12);
   doc.setFont("helvetica", "normal");
   setMuted();
-  doc.text(`Framework: ${blueprint.framework}`, margin, y);
-  doc.text(`Created: ${new Date(blueprint.createdAt).toLocaleDateString()}`, pageWidth - margin - 55, y);
-  y += 14;
+  doc.text(frameworkLabel, centerX - doc.getTextWidth(frameworkLabel) / 2, coverY);
+  coverY += 10;
+  doc.text(new Date(blueprint.createdAt).toLocaleDateString(), centerX - doc.getTextWidth(new Date(blueprint.createdAt).toLocaleDateString()) / 2, coverY);
+  coverY += 24;
+  doc.setFontSize(10);
+  setMuted();
+  doc.text("Your personalized plan", centerX - doc.getTextWidth("Your personalized plan") / 2, coverY);
 
-  // Divider — Vector border
+  addNewPage();
+  setBody();
+
+  // Helper: ensure space for at least minLines, add new page if needed
+  const ensureSpace = (minLines = 5) => {
+    if (y > pageHeight - margin - minLines * 7) addNewPage();
+  };
+
+  // Helper: render a section (heading + content)
+  const renderSection = (heading: string, content: string | string[], options?: { indent?: boolean }) => {
+    ensureSpace(8);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    setPrimary();
+    doc.text(heading, margin, y);
+    setBody();
+    y += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    const indent = options?.indent !== false ? 5 : 0;
+    const items = Array.isArray(content) ? content : [content];
+    items.forEach(item => {
+      if (!item?.trim()) return;
+      const lines = doc.splitTextToSize(item, contentWidth - indent);
+      lines.forEach((line: string) => {
+        ensureSpace(1);
+        doc.text(line, margin + indent, y);
+        y += 5;
+      });
+      y += 2;
+    });
+    y += 6;
+  };
+
+  // --- EXECUTIVE SUMMARY ---
+  if (result?.executiveSummary) {
+    renderSection("Executive Summary", result.executiveSummary);
+  }
+
+  // --- DIFFICULTY & COMMITMENT ---
+  if (result?.difficulty || result?.difficultyReason || result?.commitment) {
+    ensureSpace(6);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    setPrimary();
+    doc.text("Difficulty & Commitment", margin, y);
+    setBody();
+    y += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    const parts: string[] = [];
+    if (result.difficulty) parts.push(`Level: ${String(result.difficulty).replace(/\b\w/g, c => c.toUpperCase())}`);
+    if (result.commitment) parts.push(`Estimated: ${result.commitment}`);
+    if (parts.length > 0) {
+      doc.text(parts.join(" · "), margin, y);
+      y += 6;
+    }
+    if (result.difficultyReason) {
+      const drLines = doc.splitTextToSize(result.difficultyReason, contentWidth);
+      drLines.forEach((line: string) => { doc.text(line, margin, y); y += 5; });
+      y += 4;
+    }
+    y += 8;
+  }
+
+  // --- YOUR SITUATION (parsed from answers) ---
+  const firstAnswer = blueprint.answers[0] || "";
+  const situationParts: string[] = [];
+  const goalMatch = firstAnswer.match(/(?:Goal|Objective|Objetivo)\s*:?\s*([^.]+)/i);
+  if (goalMatch?.[1]?.trim()) {
+    situationParts.push(`Goal: ${goalMatch[1].trim()}`);
+  } else if (/Stakes?|Time horizon|Horizonte|Obstacles?/i.test(firstAnswer)) {
+    const before = firstAnswer.split(/\s*Stakes?|Time horizon|Horizonte\s*:?\s*/i)[0]?.trim();
+    if (before?.length > 5) situationParts.push(`Goal: ${before}`);
+  }
+  const stakesMatch = firstAnswer.match(/(?:Stakes?|Apuesta)\s*:?\s*([^.]+)/i);
+  const horizonMatch = firstAnswer.match(/(?:Time horizon|Horizon|Horizonte temporal)\s*:?\s*([^.]+)/i);
+  const obstaclesMatch = firstAnswer.match(/(?:Obstacles?|Obstáculos?|Constraints?)\s*:?\s*([^.]+)/i);
+  if (goalMatch?.[1]?.trim()) situationParts.push(`Goal: ${goalMatch[1].trim()}`);
+  if (stakesMatch?.[1]?.trim()) situationParts.push(`Stakes: ${stakesMatch[1].trim()}`);
+  if (horizonMatch?.[1]?.trim()) situationParts.push(`Timeline: ${horizonMatch[1].trim()}`);
+  if (obstaclesMatch?.[1]?.trim()) situationParts.push(`Constraints: ${obstaclesMatch[1].trim()}`);
+  if (situationParts.length === 0 && firstAnswer.trim()) {
+    situationParts.push(firstAnswer.slice(0, 300) + (firstAnswer.length > 300 ? "…" : ""));
+  }
+  if (situationParts.length > 0) {
+    renderSection("Your Situation", situationParts);
+  }
+
+  // --- YOUR WHY ---
+  const yourWhy = result?.yourWhy || (result?.type === "rpm" && result?.purpose ? result.purpose : null);
+  if (yourWhy) {
+    renderSection("Your Why", yourWhy);
+  }
+
+  // --- FIRST WEEK ACTIONS ---
+  const firstWeek = result?.firstWeekActions;
+  if (Array.isArray(firstWeek) && firstWeek.length > 0) {
+    renderSection("First Week Actions", firstWeek.map((a: string, i: number) => `${i + 1}. ${a}`));
+  }
+
+  // --- MILESTONES / CHECKPOINTS ---
+  const milestones = result?.milestones;
+  if (Array.isArray(milestones) && milestones.length > 0) {
+    renderSection("Milestones", milestones.map((m: string) => `• ${m}`));
+  }
+
+  // --- SUCCESS CRITERIA ---
+  const successCriteria = result?.successCriteria;
+  const successMatch = !successCriteria && firstAnswer ? firstAnswer.match(/(?:Success looks like|Éxito)\s*:?\s*([^.]+)/i) : null;
+  const successText = successCriteria || (successMatch?.[1]?.trim() ? `You'll know you've succeeded when: ${successMatch[1].trim()}` : null);
+  if (successText) {
+    renderSection("Success Criteria", successText);
+  }
+
+  // --- WHAT TO AVOID ---
+  const whatToAvoid = result?.whatToAvoid;
+  let avoidItems: string[] = [];
+  if (Array.isArray(whatToAvoid) && whatToAvoid.length > 0) {
+    avoidItems = whatToAvoid;
+  } else if (result?.type === "pareto" && result.trivial?.length) {
+    avoidItems = result.trivial;
+  } else if (result?.type === "eisenhower") {
+    avoidItems = [...(result.q3 || []), ...(result.q4 || [])];
+  } else if (result?.type === "gps" && result.anti_goals?.length) {
+    avoidItems = result.anti_goals;
+  }
+  if (avoidItems.length > 0) {
+    renderSection("What to Avoid", avoidItems.map(a => `• ${a}`));
+  }
+
+  // Divider before Blueprint Result
   setDrawBorder();
   doc.setLineWidth(0.8);
   doc.line(margin, y, pageWidth - margin, y);
@@ -114,6 +245,7 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
 
   // Result Section
   if (blueprint.result) {
+    ensureSpace(10);
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     setPrimary();
@@ -123,8 +255,6 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
 
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
-
-    const result = blueprint.result as any;
 
     if (result.type === 'first-principles') {
        doc.setFont("helvetica", "bold");
@@ -157,8 +287,8 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
         y += 8;
         doc.setFont("helvetica", "normal");
         (result.vital || []).forEach((item: string) => {
-             doc.text(`• ${item}`, margin + 5, y);
-             y += 6;
+             const lines = doc.splitTextToSize(`• ${item}`, contentWidth - 10);
+             lines.forEach((line: string) => { doc.text(line, margin + 5, y); y += 6; });
         });
         y += 6;
         doc.setFont("helvetica", "bold");
@@ -168,14 +298,15 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
         y += 8;
         doc.setFont("helvetica", "normal");
         (result.trivial || []).forEach((item: string) => {
-             doc.text(`• ${item}`, margin + 5, y);
-             y += 6;
+             const lines = doc.splitTextToSize(`• ${item}`, contentWidth - 10);
+             lines.forEach((line: string) => { doc.text(line, margin + 5, y); y += 6; });
         });
     }
     else if (result.type === 'rpm') {
         doc.setFont("helvetica", "bold");
         setPrimary();
-        doc.text(`Result: ${result.result}`, margin, y);
+        const resultLines = doc.splitTextToSize(`Result: ${result.result || ""}`, contentWidth);
+        resultLines.forEach((line: string) => { doc.text(line, margin, y); y += 6; });
         setBody();
         y += 10;
         doc.setFont("helvetica", "bold");
@@ -195,12 +326,13 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
         y += 8;
         doc.setFont("helvetica", "normal");
         (result.plan || []).forEach((item: string, i: number) => {
-            doc.text(`${i+1}. ${item}`, margin + 5, y);
-            y += 6;
+            const lines = doc.splitTextToSize(`${i+1}. ${item}`, contentWidth - 10);
+            lines.forEach((line: string) => { doc.text(line, margin + 5, y); y += 6; });
         });
     }
     else if (result.type === 'eisenhower') {
         const renderQuadrant = (title: string, items: string[]) => {
+            ensureSpace(6);
             doc.setFont("helvetica", "bold");
             setPrimary();
             doc.text(title, margin, y);
@@ -208,15 +340,20 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
             y += 7;
             doc.setFont("helvetica", "normal");
             if (items.length === 0) {
+                setMuted();
                 doc.text("(None)", margin + 5, y);
+                setBody();
                 y += 6;
             } else {
                 items.forEach(it => {
-                    doc.text(`• ${it}`, margin + 5, y);
-                    y += 6;
+                    const itemLines = doc.splitTextToSize(`• ${it}`, contentWidth - 10);
+                    itemLines.forEach((line: string) => {
+                        doc.text(line, margin + 5, y);
+                        y += 6;
+                    });
                 });
             }
-            y += 4;
+            y += 6;
         };
         renderQuadrant("Urgent & Important (Do)", result.q1 || []);
         renderQuadrant("Important Not Urgent (Schedule)", result.q2 || []);
@@ -226,9 +363,10 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
     else if (result.type === 'okr') {
         doc.setFont("helvetica", "bold");
         setPrimary();
-        doc.text(`Objective: ${result.objective}`, margin, y);
+        const objLines = doc.splitTextToSize(`Objective: ${result.objective || ""}`, contentWidth);
+        objLines.forEach((line: string) => { doc.text(line, margin, y); y += 6; });
         setBody();
-        y += 10;
+        y += 6;
         doc.setFont("helvetica", "bold");
         setPrimary();
         doc.text("Key Results:", margin, y);
@@ -236,8 +374,8 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
         y += 8;
         doc.setFont("helvetica", "normal");
         (result.keyResults || []).forEach((kr: string, i: number) => {
-            doc.text(`${i+1}. ${kr}`, margin + 5, y);
-            y += 6;
+            const lines = doc.splitTextToSize(`${i+1}. ${kr}`, contentWidth - 10);
+            lines.forEach((line: string) => { doc.text(line, margin + 5, y); y += 6; });
         });
         y += 5;
         doc.setFont("helvetica", "bold");
@@ -338,6 +476,11 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
 
   y += 14;
 
+  // Page break before Q&A if result section was long
+  if (y > pageHeight - 80) {
+    addNewPage();
+  }
+
   // Divider before Q&A
   setDrawBorder();
   doc.setLineWidth(0.5);
@@ -355,23 +498,48 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
 
+  // Helper to format structured answers (e.g. "Goal: X. Stakes: Y." or multi-line → bullet-style)
+  const formatAnswer = (text: string): string[] => {
+    const trimmed = (text || "").trim();
+    if (!trimmed) return [];
+    // Split by newlines first
+    const byLines = trimmed.split(/\n+/).map(s => s.replace(/^[\s•\-]+\s*/, "").trim()).filter(Boolean);
+    if (byLines.length > 1) return byLines;
+    // Split by ". " to get sentences (e.g. "Goal: X. Stakes: Y. Obstacles: Z" → 3 bullets)
+    const bySentence = trimmed.split(/\.\s+/).map(s => s.trim()).filter(s => s.length > 2);
+    if (bySentence.length > 1) return bySentence.map(s => (s.endsWith(".") ? s : s + "."));
+    return [trimmed];
+  };
+
   blueprint.answers.forEach((ans, i) => {
       doc.setFont("helvetica", "bold");
-      setMuted();
+      setPrimary();
       doc.text(`Answer ${i + 1}:`, margin, y);
       setBody();
-      y += 6;
+      y += 7;
       doc.setFont("helvetica", "normal");
-      const lines = doc.splitTextToSize(ans, contentWidth);
-      doc.text(lines, margin, y);
-      y += lines.length * 5 + 8;
+      const segments = formatAnswer(ans);
+      if (segments.length > 1) {
+        segments.forEach(seg => {
+          const lines = doc.splitTextToSize(`• ${seg}`, contentWidth - 10);
+          lines.forEach((line: string) => {
+            doc.text(line, margin + 5, y);
+            y += 5;
+          });
+        });
+      } else {
+        const lines = doc.splitTextToSize(ans, contentWidth);
+        doc.text(lines, margin, y);
+        y += lines.length * 5;
+      }
+      y += 10;
 
-      if (y > pageHeight - 30) {
+      if (y > pageHeight - 40) {
           addNewPage();
       }
   });
 
-  // Footer: Vector wordmark (muted) at bottom of last page
+  // Footer: Vector wordmark + page numbers on every page
   const pageCount = doc.getNumberOfPages();
   for (let p = 1; p <= pageCount; p++) {
       doc.setPage(p);
@@ -379,6 +547,7 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
       doc.setFont("helvetica", "normal");
       setMuted();
       doc.text("Vector", margin, pageHeight - 12);
+      doc.text(`Page ${p} of ${pageCount}`, pageWidth - margin - doc.getTextWidth(`Page ${p} of ${pageCount}`), pageHeight - 12);
   }
 
   return doc;

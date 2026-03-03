@@ -67,6 +67,7 @@ export const useGoalWizard = ({
     const [tier, setTier] = useState<TierId>(propTier || DEFAULT_TIER_ID);
     const [userName, setUserName] = useState<string | undefined>(undefined);
     const [suggestionChips, setSuggestionChips] = useState<string[]>([]);
+    const [showRestartConfirm, setShowRestartConfirm] = useState(false);
     /** Summary of user profile for the agent (personalization). */
     const [agentUserProfile, setAgentUserProfile] = useState<string>('');
     /** Intake form context for the agent (what the user wrote in Find Your Framework). */
@@ -906,6 +907,12 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
     };
 
     const handleSafeRestart = async () => {
+        // When a final plan exists, show confirmation (credit already consumed)
+        const isTeaser = (result as any)?.isTeaser;
+        if (result && !isTeaser) {
+            setShowRestartConfirm(true);
+            return;
+        }
         if (!result && messages.length > 0) {
              const answers = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
              const bp: Blueprint = {
@@ -930,6 +937,11 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
                  if (!confirm("Auto-save failed. Restart anyway?")) return;
              }
         }
+        clearSession();
+    };
+
+    const handleConfirmRestart = () => {
+        setShowRestartConfirm(false);
         clearSession();
     };
 
@@ -1019,6 +1031,9 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
         toggleListening,
         handleStop,
         handleSafeRestart,
+        handleConfirmRestart,
+        showRestartConfirm,
+        setShowRestartConfirm,
         handleSave,
         updateResult,
         promoteDraftToResult,
