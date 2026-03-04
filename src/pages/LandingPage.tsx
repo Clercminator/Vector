@@ -160,6 +160,182 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                             );
                         })}
                     </div>
+                    
+                    <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 w-full">
+                        {/* VS General LLMs Card */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: '-50px' }}
+                            transition={{ duration: 0.5, delay: 0.1 }}
+                            className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-8 md:p-10 shadow-xl"
+                        >
+                            <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                {t('landing.howItWorks.vsLLM.title')}
+                            </h3>
+                            <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+                                {t('landing.howItWorks.vsLLM.desc')}
+                            </p>
+                        </motion.div>
+
+                        {/* Examples Card */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: '-50px' }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 border border-indigo-100 dark:border-indigo-900/30 rounded-3xl p-8 md:p-10 shadow-xl"
+                        >
+                            <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                                {t('landing.howItWorks.examples.title')}
+                            </h3>
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                                        <span>{t('landing.howItWorks.examples.vague1')}</span>
+                                    </div>
+                                    <div className="flex gap-3 items-start">
+                                        <ArrowRight className="text-indigo-500 shrink-0 mt-1" size={18} />
+                                        <span className="text-gray-800 dark:text-gray-200 leading-relaxed">{t('landing.howItWorks.examples.actionable1')}</span>
+                                    </div>
+                                </div>
+                                <div className="space-y-2 pt-4 border-t border-indigo-200/50 dark:border-indigo-800/30">
+                                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                                        <span>{t('landing.howItWorks.examples.vague2')}</span>
+                                    </div>
+                                    <div className="flex gap-3 items-start">
+                                        <ArrowRight className="text-indigo-500 shrink-0 mt-1" size={18} />
+                                        <span className="text-gray-800 dark:text-gray-200 leading-relaxed">{t('landing.howItWorks.examples.actionable2')}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                </div>
+            </section>
+
+            {/* The Vector Advantage (Bento Box Section) */}
+            <section className="px-6 py-20 md:py-32 bg-white dark:bg-black border-t border-gray-100 dark:border-zinc-900">
+                <div className="max-w-6xl mx-auto">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: '-50px' }}
+                        transition={{ duration: 0.5 }}
+                        className="text-center mb-16"
+                    >
+                        <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">
+                            {t('landing.advantage.title')}
+                        </h2>
+                        <p className="text-lg md:text-xl text-gray-500 dark:text-gray-400 font-light max-w-2xl mx-auto">
+                            {t('landing.advantage.subtitle')}
+                        </p>
+                    </motion.div>
+
+                    {/* Bento Box Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-6 auto-rows-[minmax(200px,auto)]">
+                        
+                        {/* Box 1: A Living Blueprint (Spans 2 columns) */}
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: '-50px' }}
+                            transition={{ duration: 0.5, delay: 0.1 }}
+                            className="md:col-span-2 group relative overflow-hidden bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20 rounded-[2rem] p-8 md:p-10 border border-indigo-100 dark:border-indigo-900/30 hover:shadow-2xl transition-all duration-500"
+                        >
+                            <div className="relative z-10 flex flex-col h-full justify-between">
+                                <div className="w-14 h-14 rounded-2xl bg-white dark:bg-zinc-900 flex items-center justify-center shadow-lg mb-6 ring-1 ring-black/5 dark:ring-white/10 group-hover:scale-110 transition-transform duration-500">
+                                    <Target className="text-indigo-600 dark:text-indigo-400" size={28} />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{t('landing.advantage.livingPlan.title')}</h3>
+                                    <p className="text-indigo-900/70 dark:text-indigo-200/70 text-lg leading-relaxed max-w-lg">{t('landing.advantage.livingPlan.desc')}</p>
+                                </div>
+                            </div>
+                            <div className="absolute right-0 bottom-0 opacity-10 group-hover:opacity-20 transition-opacity duration-500 transform translate-x-1/4 translate-y-1/4">
+                                <Target size={250} />
+                            </div>
+                        </motion.div>
+
+                        {/* Box 2: Quality over Advice (1 col) */}
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: '-50px' }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="group relative overflow-hidden bg-black dark:bg-white rounded-[2rem] p-8 md:p-10 hover:shadow-2xl transition-all duration-500"
+                        >
+                            <div className="relative z-10 flex flex-col h-full justify-between text-white dark:text-black">
+                                <div className="w-14 h-14 rounded-2xl bg-white/10 dark:bg-black/5 flex items-center justify-center backdrop-blur-sm mb-6 group-hover:rotate-12 transition-transform duration-500">
+                                    <Sparkles className="text-amber-400 dark:text-amber-500" size={28} />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-bold mb-3">{t('landing.advantage.quality.title')}</h3>
+                                    <p className="text-white/70 dark:text-black/70 leading-relaxed text-base">{t('landing.advantage.quality.desc')}</p>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Box 3: Built for Execution (1 col) */}
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: '-50px' }}
+                            transition={{ duration: 0.5, delay: 0.3 }}
+                            className="group relative overflow-hidden bg-white dark:bg-zinc-900 rounded-[2rem] p-8 md:p-10 border border-gray-200 dark:border-zinc-800 shadow-sm hover:shadow-2xl hover:border-emerald-500/30 dark:hover:border-emerald-500/30 transition-all duration-500"
+                        >
+                            <div className="relative z-10 flex flex-col h-full justify-between">
+                                <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center mb-6 ring-1 ring-emerald-100 dark:ring-emerald-500/20 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500">
+                                    <Download className="text-emerald-600 dark:text-emerald-400" size={28} />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{t('landing.advantage.execution.title')}</h3>
+                                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">{t('landing.advantage.execution.desc')}</p>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Box 4: Zero Prompt Engineering (1 col) */}
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: '-50px' }}
+                            transition={{ duration: 0.5, delay: 0.4 }}
+                            className="group relative overflow-hidden bg-white dark:bg-zinc-900 rounded-[2rem] p-8 md:p-10 border border-gray-200 dark:border-zinc-800 shadow-sm hover:shadow-2xl hover:border-violet-500/30 dark:hover:border-violet-500/30 transition-all duration-500"
+                        >
+                            <div className="relative z-10 flex flex-col h-full justify-between">
+                                <div className="w-14 h-14 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center mb-6 ring-1 ring-violet-100 dark:ring-violet-500/20 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                                    <MessageSquare className="text-violet-600 dark:text-violet-400" size={28} />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{t('landing.advantage.noPrompting.title')}</h3>
+                                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">{t('landing.advantage.noPrompting.desc')}</p>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Box 5: Community Validated (1 col) */}
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: '-50px' }}
+                            transition={{ duration: 0.5, delay: 0.5 }}
+                            className="group relative overflow-hidden bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-[2rem] p-8 md:p-10 border border-amber-100 dark:border-orange-900/30 hover:shadow-2xl transition-all duration-500"
+                        >
+                            <div className="relative z-10 flex flex-col h-full justify-between">
+                                <div className="w-14 h-14 rounded-2xl bg-white dark:bg-zinc-900 flex items-center justify-center shadow-lg mb-6 ring-1 ring-black/5 dark:ring-white/10 group-hover:scale-110 transition-transform duration-500">
+                                    <ArrowRight className="text-amber-600 dark:text-amber-500" size={28} />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{t('landing.advantage.community.title')}</h3>
+                                    <p className="text-amber-900/70 dark:text-amber-200/70 leading-relaxed text-base">{t('landing.advantage.community.desc')}</p>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                    </div>
                 </div>
             </section>
 

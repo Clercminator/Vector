@@ -8,20 +8,22 @@ export interface FeaturedAuthor {
   name: string;
   /** Translation key for short attribution, e.g. "RPM Method" */
   taglineKey: string;
+  /** Translation key for the achievement paragraph shown in the modal */
+  achievementKey: string;
   /** Optional exact filename in public/images/authors/ (e.g. "Tony Robbins.png"); if set, used instead of slug + extension */
   imageFile?: string;
 }
 
 export const FEATURED_AUTHORS: FeaturedAuthor[] = [
-  { slug: 'tony-robbins', name: 'Tony Robbins', taglineKey: 'authors.tonyRobbins.tagline', imageFile: 'tony robbins.avif' },
-  { slug: 'tim-ferriss', name: 'Tim Ferriss', taglineKey: 'authors.timFerriss.tagline', imageFile: 'Tim-Ferriss.png' },
-  { slug: 'elon-musk', name: 'Elon Musk', taglineKey: 'authors.elonMusk.tagline', imageFile: 'elon musk 1.jpg' },
-  { slug: 'dwight-eisenhower', name: 'Dwight D. Eisenhower', taglineKey: 'authors.eisenhower.tagline', imageFile: 'dwight-d-eisenhower.jpg' },
-  { slug: 'vilfredo-pareto', name: 'Vilfredo Pareto', taglineKey: 'authors.pareto.tagline', imageFile: 'Vilfredo_Pareto.jpg' },
-  { slug: 'john-doerr', name: 'John Doerr', taglineKey: 'authors.johnDoerr.tagline', imageFile: 'John Doerr.webp' },
-  { slug: 'mieko-kamiya', name: 'Mieko Kamiya', taglineKey: 'authors.miekoKamiya.tagline', imageFile: 'Mieko-Kamiya.jpg' },
-  { slug: 'jesse-itzler', name: 'Jesse Itzler', taglineKey: 'authors.jesseItzler.tagline', imageFile: 'Jesse Itzler.jpg' },
-  { slug: 'marcus-elliott', name: 'Dr. Marcus Elliott', taglineKey: 'authors.marcusElliott.tagline', imageFile: 'dr Marcus Elliott.jpeg' },
+  { slug: 'tony-robbins', name: 'Tony Robbins', taglineKey: 'authors.tonyRobbins.tagline', achievementKey: 'authors.tonyRobbins.achievement', imageFile: 'tony robbins.avif' },
+  { slug: 'tim-ferriss', name: 'Tim Ferriss', taglineKey: 'authors.timFerriss.tagline', achievementKey: 'authors.timFerriss.achievement', imageFile: 'Tim-Ferriss.png' },
+  { slug: 'elon-musk', name: 'Elon Musk', taglineKey: 'authors.elonMusk.tagline', achievementKey: 'authors.elonMusk.achievement', imageFile: 'elon musk 1.jpg' },
+  { slug: 'dwight-eisenhower', name: 'Dwight D. Eisenhower', taglineKey: 'authors.eisenhower.tagline', achievementKey: 'authors.eisenhower.achievement', imageFile: 'dwight-d-eisenhower.jpg' },
+  { slug: 'vilfredo-pareto', name: 'Vilfredo Pareto', taglineKey: 'authors.pareto.tagline', achievementKey: 'authors.pareto.achievement', imageFile: 'Vilfredo_Pareto.jpg' },
+  { slug: 'john-doerr', name: 'John Doerr', taglineKey: 'authors.johnDoerr.tagline', achievementKey: 'authors.johnDoerr.achievement', imageFile: 'John Doerr.webp' },
+  { slug: 'mieko-kamiya', name: 'Mieko Kamiya', taglineKey: 'authors.miekoKamiya.tagline', achievementKey: 'authors.miekoKamiya.achievement', imageFile: 'Mieko-Kamiya.jpg' },
+  { slug: 'jesse-itzler', name: 'Jesse Itzler', taglineKey: 'authors.jesseItzler.tagline', achievementKey: 'authors.jesseItzler.achievement', imageFile: 'Jesse Itzler.jpg' },
+  { slug: 'marcus-elliott', name: 'Dr. Marcus Elliott', taglineKey: 'authors.marcusElliott.tagline', achievementKey: 'authors.marcusElliott.achievement', imageFile: 'dr Marcus Elliott.jpeg' },
 ];
 
 /** Get initials for fallback avatar (e.g. "Tony Robbins" → "TR") */
