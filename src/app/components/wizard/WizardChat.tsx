@@ -32,6 +32,8 @@ interface WizardChatProps {
   messages: Message[];
   isTyping: boolean;
   isAgentRunning?: boolean;
+  /** Phase-specific status when agent is running (e.g. "Drafting...", "Reviewing..."). */
+  agentStatus?: string;
   result: any;
   draftResult: any;
   messagesEndRef: React.RefObject<HTMLDivElement>;
@@ -43,11 +45,12 @@ const ChatContent: React.FC<{
   messages: WizardChatProps['messages'];
   isTyping: WizardChatProps['isTyping'];
   isAgentRunning?: boolean;
+  agentStatus?: string;
   messagesEndRef: React.RefObject<HTMLDivElement>;
   children?: React.ReactNode;
   contentClassName: string;
   onEditMessage?: WizardChatProps['onEditMessage'];
-}> = ({ messages, isTyping, isAgentRunning = false, messagesEndRef, children, contentClassName, onEditMessage }) => {
+}> = ({ messages, isTyping, isAgentRunning = false, agentStatus, messagesEndRef, children, contentClassName, onEditMessage }) => {
   const showThinking = isTyping || isAgentRunning;
   const latestUserMessageId = React.useMemo(() => {
     for (let j = (messages?.length ?? 0) - 1; j >= 0; j--) {
@@ -178,7 +181,7 @@ const ChatContent: React.FC<{
       {showThinking && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
           <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-4 rounded-2xl rounded-tl-none shadow-sm">
-            <ThinkingIndicator />
+            <ThinkingIndicator status={agentStatus} />
           </div>
         </motion.div>
       )}
@@ -193,6 +196,7 @@ export const WizardChat: React.FC<WizardChatProps> = ({
   messages, 
   isTyping, 
   isAgentRunning = false, 
+  agentStatus,
   result, 
   draftResult, 
   messagesEndRef,
@@ -209,6 +213,7 @@ export const WizardChat: React.FC<WizardChatProps> = ({
           messages={messages}
           isTyping={isTyping}
           isAgentRunning={isAgentRunning}
+          agentStatus={agentStatus}
           messagesEndRef={messagesEndRef}
           contentClassName={contentClassName}
           onEditMessage={onEditMessage}
@@ -226,6 +231,7 @@ export const WizardChat: React.FC<WizardChatProps> = ({
           messages={messages}
           isTyping={isTyping}
           isAgentRunning={isAgentRunning}
+          agentStatus={agentStatus}
           messagesEndRef={messagesEndRef}
           contentClassName={contentClassName}
           onEditMessage={onEditMessage}

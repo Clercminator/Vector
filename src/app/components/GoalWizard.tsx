@@ -47,6 +47,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
       setInputValue,
       isTyping,
       isAgentRunning,
+      agentStatus,
       result,
       draftResult,
       finalAnswers,
@@ -159,6 +160,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
               messages={messages}
               isTyping={isTyping}
               isAgentRunning={isAgentRunning}
+              agentStatus={agentStatus}
               result={result}
               draftResult={draftResult}
               messagesEndRef={messagesEndRef}
@@ -179,6 +181,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                 messages={messages}
                 isTyping={isTyping}
                 isAgentRunning={isAgentRunning}
+                agentStatus={agentStatus}
                 result={result}
                 draftResult={draftResult}
                 messagesEndRef={messagesEndRef}

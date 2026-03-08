@@ -3,6 +3,7 @@ import { AgentStateType } from "../state";
 import { prompts } from "../prompts";
 import { invokeWithFallback } from "../utils";
 import { DRAFT_HISTORY_MAX_CHARS } from "../constants";
+import { agentLogger, promptCharsFromString } from "../logger";
 
 export const draftNode = async (state: AgentStateType) => {
   const { goal, framework, messages, tier, validFrameworks, userProfile = "", formContext = "", userReviewFeedback = "" } = state;
@@ -35,6 +36,7 @@ export const draftNode = async (state: AgentStateType) => {
           .replace("{{formContext}}", formContext || "(none)");
   }
 
+  const start = performance.now();
   const extractAndParse = (rawContent: string): object | null => {
     const jsonBlock = rawContent.match(/```(?:json)?\s*([\s\S]*?)```/);
     const rawJson = jsonBlock ? jsonBlock[1].trim() : rawContent;
@@ -48,21 +50,23 @@ export const draftNode = async (state: AgentStateType) => {
     }
   };
 
-  let response = await invokeWithFallback([new SystemMessage(prompt)], { temperature: 0.2, bindTools: false });
-  let content = response.content.toString().trim();
-  let blueprint = extractAndParse(content);
-  if (!blueprint) {
-    const JSON_ONLY_NUDGE = "\n\nCRITICAL: Output ONLY valid JSON. No markdown, no code fence, no preamble or explanation.";
-    response = await invokeWithFallback([new SystemMessage(prompt + JSON_ONLY_NUDGE)], { temperature: 0.1, bindTools: false });
-    content = response.content.toString().trim();
-    blueprint = extractAndParse(content);
-  }
-
-  if (!blueprint) {
-    return { messages: [new AIMessage("Error generating blueprint. Please try again.")] };
-  }
-
   try {
+    let response = await invokeWithFallback([new SystemMessage(prompt)], { temperature: 0.2, bindTools: false });
+    let content = response.content.toString().trim();
+    let blueprint = extractAndParse(content);
+    if (!blueprint) {
+      const JSON_ONLY_NUDGE = "\n\nCRITICAL: Output ONLY valid JSON. No markdown, no code fence, no preamble or explanation.";
+      response = await invokeWithFallback([new SystemMessage(prompt + JSON_ONLY_NUDGE)], { temperature: 0.1, bindTools: false });
+      content = response.content.toString().trim();
+      blueprint = extractAndParse(content);
+    }
+
+    if (!blueprint) {
+      agentLogger.logNode({ node: "draft", promptChars: promptCharsFromString(prompt), latencyMs: Math.round(performance.now() - start), success: false, error: "Failed to parse blueprint" });
+      return { messages: [new AIMessage("Error generating blueprint. Please try again.")] };
+    }
+    agentLogger.logNode({ node: "draft", promptChars: promptCharsFromString(prompt), latencyMs: Math.round(performance.now() - start), success: true });
+
     const fw = framework || (blueprint.type as string) || "";
     if (fw) blueprint.type = fw;
 
@@ -102,7 +106,8 @@ export const draftNode = async (state: AgentStateType) => {
       ? `Your ${frameworkLabel} blueprint is ready below. Review your personalized plan and refine as needed.`
       : "Your blueprint is ready below. Review your personalized plan and refine as needed.";
     return { blueprint, messages: [new AIMessage(closingMessage)] };
-  } catch {
+  } catch (e) {
+    agentLogger.logNode({ node: "draft", promptChars: promptCharsFromString(prompt), latencyMs: Math.round(performance.now() - start), success: false, error: e instanceof Error ? e.message : String(e) });
     return { messages: [new AIMessage("Error generating blueprint. Please try again.")] };
   }
 };

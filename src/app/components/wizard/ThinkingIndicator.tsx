@@ -1,7 +1,12 @@
 import React from 'react';
 import { motion } from 'motion/react';
 
-export const ThinkingIndicator = () => (
+interface ThinkingIndicatorProps {
+  /** Optional phase-specific status (e.g. "Drafting...", "Reviewing..."). */
+  status?: string;
+}
+
+export const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ status }) => (
     <div className="flex items-center gap-1 h-6">
         {[0, 1, 2].map((i) => (
             <motion.div
@@ -19,6 +24,8 @@ export const ThinkingIndicator = () => (
                 }}
             />
         ))}
-        <span className="text-xs font-semibold text-blue-500 uppercase tracking-wider ml-2 animate-pulse">Designing Strategy...</span>
+        <span className="text-xs font-semibold text-blue-500 uppercase tracking-wider ml-2 animate-pulse">
+            {status ?? "Designing Strategy..."}
+        </span>
     </div>
 );

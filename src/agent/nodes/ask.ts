@@ -5,6 +5,7 @@ import { frameworkGuides } from "@/lib/prompts/frameworkGuides";
 import { commonGoalsAndPatterns } from "@/lib/prompts/commonGoalsAndPatterns";
 import { invokeWithFallback } from "../utils";
 import { MESSAGE_WINDOW_SIZE, getEmptyMessageReply, MAX_USER_MESSAGE_CHARS, getLongMessageReply } from "../constants";
+import { agentLogger, promptChars } from "../logger";
 
 export const askNode = async (state: AgentStateType) => {
   const { goal, framework, messages, steps, language, userProfile = "", formContext = "" } = state;
@@ -48,6 +49,14 @@ export const askNode = async (state: AgentStateType) => {
   // Filter messages to avoid duplicate system prompts or confusion with consultant phase
   // We keep history but ensure the latest system prompt is dominant.
   const windowedMessages = messages.slice(-MESSAGE_WINDOW_SIZE);
-  const response = await invokeWithFallback([sysMsg, ...windowedMessages], { bindTools: true });
-  return { messages: [response], steps: 1 };
+  const inputMessages = [sysMsg, ...windowedMessages];
+  const start = performance.now();
+  try {
+    const response = await invokeWithFallback(inputMessages, { bindTools: true });
+    agentLogger.logNode({ node: "ask", promptChars: promptChars(inputMessages), latencyMs: Math.round(performance.now() - start), success: true });
+    return { messages: [response], steps: 1 };
+  } catch (e) {
+    agentLogger.logNode({ node: "ask", promptChars: promptChars(inputMessages), latencyMs: Math.round(performance.now() - start), success: false, error: e instanceof Error ? e.message : String(e) });
+    throw e;
+  }
 };

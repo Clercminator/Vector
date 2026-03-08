@@ -5,6 +5,7 @@ import { frameworkGuideForConsultant } from "@/lib/prompts/frameworkGuides";
 import { commonGoalsAndPatterns } from "@/lib/prompts/commonGoalsAndPatterns";
 import { invokeWithFallback } from "../utils";
 import { MESSAGE_WINDOW_SIZE, getEmptyMessageReply, MAX_USER_MESSAGE_CHARS, getLongMessageReply } from "../constants";
+import { agentLogger, promptChars } from "../logger";
 
 export const consultantNode = async (state: AgentStateType) => {
     const { goal, tier, validFrameworks, messages, language, userProfile = "", formContext = "" } = state;
@@ -35,11 +36,18 @@ export const consultantNode = async (state: AgentStateType) => {
         
     const combinedPrompt = `${promptText}\n\n${systemPrompt}`;
     const sysMsg = new SystemMessage(combinedPrompt);
-    
+
     // Filter out previous system messages to keep context clean
     const recentMessages = messages.filter(m => !(m instanceof SystemMessage));
     const windowedMessages = recentMessages.slice(-MESSAGE_WINDOW_SIZE);
-    
-    const response = await invokeWithFallback([sysMsg, ...windowedMessages], { bindTools: true });
-    return { messages: [response] };
+    const inputMessages = [sysMsg, ...windowedMessages];
+    const start = performance.now();
+    try {
+        const response = await invokeWithFallback(inputMessages, { bindTools: true });
+        agentLogger.logNode({ node: "consultant", promptChars: promptChars(inputMessages), latencyMs: Math.round(performance.now() - start), success: true });
+        return { messages: [response] };
+    } catch (e) {
+        agentLogger.logNode({ node: "consultant", promptChars: promptChars(inputMessages), latencyMs: Math.round(performance.now() - start), success: false, error: e instanceof Error ? e.message : String(e) });
+        throw e;
+    }
 };

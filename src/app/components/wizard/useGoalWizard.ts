@@ -91,6 +91,8 @@ export const useGoalWizard = ({
     
     // UI Feedback State
     const [draftPulse, setDraftPulse] = useState(false);
+    /** Phase-specific status during Draft→Critique→UserReview burst (for UX). */
+    const [agentPhase, setAgentPhase] = useState<'thinking' | 'drafting' | 'reviewing' | 'finalizing'>('thinking');
     const prevDraftRef = useRef<any>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -550,6 +552,10 @@ export const useGoalWizard = ({
         setSuggestionChips([]);
         setIsTyping(true);
         setIsAgentRunning(true);
+        setAgentPhase('thinking');
+        // Heuristic: if user message looks like confirmation, we're likely going to draft→critique→user_review
+        const looksLikeConfirmation = /^(yes|sí|si|ok|okay|looks good|perfect|proceed|generate|go ahead|listo|vale|adelante|dale|genera|genéralo|génère)/i.test(userText.trim());
+        if (looksLikeConfirmation) setAgentPhase('drafting');
         // Clear previous result/draft so we don't show a stale blueprint from checkpoint restore
         setResult(null);
         setDraftResult(null);
@@ -600,6 +606,13 @@ export const useGoalWizard = ({
                 // Track when draft node ran this turn (for fallback promotion from values)
                 if (streamMode === 'updates' && updateData && typeof updateData === 'object' && 'draft' in updateData) {
                     seenDraftUpdateThisRunRef.current = true;
+                    if (isMounted.current) setAgentPhase('reviewing');
+                }
+                if (streamMode === 'updates' && updateKeys.includes('critique') && isMounted.current) {
+                    setAgentPhase('finalizing');
+                }
+                if (streamMode === 'updates' && updateKeys.includes('user_review') && isMounted.current) {
+                    setAgentPhase('thinking'); // Will finish or loop to draft
                 }
 
                 // Handle blueprint from stream. Prefer "updates" (draft node). Fallback: "values" only when
@@ -853,6 +866,7 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
             if (isMounted.current) {
                 setIsAgentRunning(false);
                 setIsTyping(false);
+                setAgentPhase('thinking');
             }
         }
     };
@@ -1017,6 +1031,7 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
         setInputValue,
         isTyping,
         isAgentRunning,
+        agentStatus: t(`wizard.phase.${agentPhase}`),
         result,
         draftResult,
         finalAnswers,
