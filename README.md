@@ -40,6 +40,7 @@ This document explains **what the app does**, **how it’s built**, **how the pi
   - [Project Structure: Where Everything Lives](#project-structure-where-everything-lives)
   - [How Everything Is Connected](#how-everything-is-connected)
   - [How to Change or Add Things](#how-to-change-or-add-things)
+    - [Add the Desktop Recommendation Banner to another view](#add-the-desktop-recommendation-banner-to-another-framework-view)
     - [Add or edit a framework](#add-or-edit-a-framework)
     - [Add a new language](#add-a-new-language)
     - [Change or add copy (buttons, labels, messages)](#change-or-add-copy-buttons-labels-messages)
@@ -799,6 +800,32 @@ Vector/
 ## How to Change or Add Things
 
 These steps are written so a non-developer can follow the map; a developer can do the actual edits.
+
+### Add the Desktop Recommendation Banner to another framework view
+
+Some framework result views (Mandala, Eisenhower, Ikigai, Pareto) show a banner on mobile: *"This visualization works best on desktop. Your plan is saved—open it on a laptop or desktop to explore the full view."* To add this to another view:
+
+1. **Import the shared components:**
+   ```tsx
+   import { useIsMobile } from '../ui/use-mobile';
+   import { DesktopRecommendedBanner } from './DesktopRecommendedBanner';
+   ```
+
+2. **Call the hook** inside your view component:
+   ```tsx
+   const isMobile = useIsMobile();
+   ```
+
+3. **Render the banner** at the top of the view when `isMobile` is true:
+   ```tsx
+   {isMobile && <DesktopRecommendedBanner className="mb-6" />}
+   ```
+
+4. **Optional custom message:** The banner uses the generic translation `wizard.visualizationDesktopRecommended`. To use a framework-specific message (e.g. Mandala), pass `message={t('mandala.desktopRecommended')}` and add the key in `translations.ts`.
+
+**Files:** `src/app/components/wizard/DesktopRecommendedBanner.tsx`, `src/lib/translations.ts` (key: `wizard.visualizationDesktopRecommended`).
+
+---
 
 ### Add or edit a framework
 

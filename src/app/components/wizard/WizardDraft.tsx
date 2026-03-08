@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, FileText, CheckCircle2 } from 'lucide-react';
+import { X, CheckCircle2 } from 'lucide-react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { useLanguage } from '@/app/components/language-provider';
 import { ScrollArea } from '@/app/components/ui/scroll-area';
@@ -358,15 +358,7 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
                 </ScrollArea>
              </motion.div>
 
-             {/* Mobile Drawer Trigger (if folded) */}
-             <button 
-               onClick={() => setShowMobileDraft(!showMobileDraft)}
-               className="lg:hidden absolute top-[-3rem] left-1/2 -translate-x-1/2 px-4 py-1.5 bg-black/80 dark:bg-white/90 text-white dark:text-black rounded-full text-xs font-bold shadow-lg backdrop-blur-md flex items-center gap-2 animate-in slide-in-from-bottom-2 fade-in z-20"
-               style={{ bottom: "5rem", top: 'auto'}} 
-             >
-                {showMobileDraft ? <X size={12} /> : <FileText size={12} />}
-                {showMobileDraft ? t('wizard.closeDraft') : t('wizard.viewDraft')}
-             </button>
+             {/* Mobile Drawer Trigger moved to WizardInput topAction to avoid overlap */}
 
              {/* Mobile Drawer */}
              <AnimatePresence>

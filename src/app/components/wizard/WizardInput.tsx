@@ -15,6 +15,8 @@ interface WizardInputProps {
   toggleListening: () => void;
   isListening: boolean;
   onStop: () => void;
+  /** Renders above suggestion chips (e.g. "Ver borrador" on mobile to avoid overlap) */
+  topAction?: React.ReactNode;
 }
 
 export const WizardInput: React.FC<WizardInputProps> = ({
@@ -29,7 +31,8 @@ export const WizardInput: React.FC<WizardInputProps> = ({
   isSpeechSupported,
   toggleListening,
   isListening,
-  onStop
+  onStop,
+  topAction
 }) => {
   const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
@@ -64,6 +67,9 @@ export const WizardInput: React.FC<WizardInputProps> = ({
   return (
     <div className="flex-none p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-gray-100 dark:border-zinc-800 z-20 pb-safe">
       <div className="max-w-4xl mx-auto w-full relative">
+      
+      {/* Top action (e.g. Ver borrador on mobile) */}
+      {topAction && <div className="mb-3">{topAction}</div>}
       
       {/* Suggestion Chips */}
       {!isTyping && !isAgentRunning && (suggestionChips || []).length > 0 && (
@@ -116,15 +122,15 @@ export const WizardInput: React.FC<WizardInputProps> = ({
             </button>
         )}
 
-        {/* Expand / Collapse */}
+        {/* Expand / Collapse — prominent styling for visibility on mobile and desktop */}
         <button
           type="button"
           onClick={() => setExpanded((e) => !e)}
           aria-label={expanded ? t('wizard.inputCollapse') : t('wizard.inputExpand')}
           title={expanded ? t('wizard.inputCollapse') : t('wizard.inputExpand')}
-          className={`absolute right-14 w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-200 dark:hover:bg-zinc-700 ${expanded ? 'top-6' : 'top-1/2 -translate-y-1/2'}`}
+          className={`absolute right-14 w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer bg-gray-200/90 dark:bg-zinc-700/90 text-gray-700 dark:text-gray-200 border border-gray-300/80 dark:border-zinc-600/80 hover:bg-gray-300 dark:hover:bg-zinc-600 hover:text-black dark:hover:text-white shadow-sm ${expanded ? 'top-6' : 'top-1/2 -translate-y-1/2'}`}
         >
-          {expanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+          {expanded ? <Minimize2 size={18} strokeWidth={2.5} /> : <Maximize2 size={18} strokeWidth={2.5} />}
         </button>
 
         <button

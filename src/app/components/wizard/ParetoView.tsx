@@ -3,6 +3,8 @@ import { motion } from 'motion/react';
 import { Zap, Layers, Copy, ArrowUp, ArrowDown, X, Plus, TrendingUp, Archive } from 'lucide-react';
 import { EditableText } from '../Editable';
 import { useLanguage } from '@/app/components/language-provider';
+import { useIsMobile } from '../ui/use-mobile';
+import { DesktopRecommendedBanner } from './DesktopRecommendedBanner';
 import { toast } from 'sonner';
 
 interface ParetoResult {
@@ -184,6 +186,7 @@ const ParetoList = ({
 
 export const ParetoView: React.FC<ParetoViewProps> = ({ result, updateResult }) => {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
 
   const handleCopy = (items: string[], title: string) => {
       const text = [`# ${title}`, ...items.map(i => `- ${i}`)].join('\n');
@@ -203,6 +206,7 @@ export const ParetoView: React.FC<ParetoViewProps> = ({ result, updateResult }) 
 
   return (
     <div className="mt-8 w-full max-w-[90rem] mx-auto px-4">
+        {isMobile && <DesktopRecommendedBanner className="mb-8 max-w-6xl mx-auto" />}
         <div className="flex justify-end mb-8 max-w-6xl mx-auto">
            <button 
                 onClick={handleCopyFull}

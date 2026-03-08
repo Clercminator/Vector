@@ -3,6 +3,8 @@ import { motion } from 'motion/react';
 import { Zap, Clock, Share2, Layers, Copy, ArrowUp, ArrowDown, X, Plus } from 'lucide-react';
 import { EditableText } from '../Editable';
 import { useLanguage } from '@/app/components/language-provider';
+import { useIsMobile } from '../ui/use-mobile';
+import { DesktopRecommendedBanner } from './DesktopRecommendedBanner';
 import { toast } from 'sonner';
 
 interface EisenhowerResult {
@@ -153,6 +155,7 @@ const Quadrant = ({
 
 export const EisenhowerView: React.FC<EisenhowerViewProps> = ({ result, updateResult }) => {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
 
   const handleCopy = (items: string[], title: string) => {
       const text = [`# ${title}`, ...items.map(i => `- ${i}`)].join('\n');
@@ -174,6 +177,7 @@ export const EisenhowerView: React.FC<EisenhowerViewProps> = ({ result, updateRe
 
   return (
     <div className="mt-8 w-full max-w-[90rem] mx-auto px-4 md:px-8">
+       {isMobile && <DesktopRecommendedBanner className="mb-6" />}
        <div className="flex justify-end mb-6">
            <button 
                 onClick={handleCopyFull}

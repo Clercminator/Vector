@@ -435,6 +435,8 @@ export const translations = {
     "mandala.subTasksHelp":
       "Concrete actions you can do. Add as many as you need.",
     "mandala.whyThisPillar": "Why this pillar",
+    "mandala.desktopRecommended": "This visualization works best on desktop. Your plan is saved—open it on a laptop or desktop to explore the full Mandala chart.",
+    "wizard.visualizationDesktopRecommended": "This visualization works best on desktop. Your plan is saved—open it on a laptop or desktop to explore the full view.",
     "wizard.inputExpand": "Expand",
     "wizard.inputCollapse": "Collapse",
     "wizard.viewDraft": "View Draft",
@@ -556,10 +558,13 @@ export const translations = {
     "landing.hero.architectYour": "Architect Your",
     "landing.hero.ambition": "Ambition.",
     "landing.hero.subtitle":
-      "Vector uses first-principles thinking to turn abstract goals into precise architectural blueprints.",
+      "Vector uses first-principles thinking and frameworks to turn abstract goals into precise architectural plans. Stop getting average results with generic advice from standard chat models. It's the best tool to articulate your ideas into an executable step-by-step plan. Start building your future today.",
+    "landing.hero.clarifier": "A goal planner for everyone—not a chat app. Get a structured plan you can save and follow.",
+    "landing.hero.giftBadge": "1 free plan for new users who register",
     "landing.hero.startBuilding": "Start Building Now",
     "landing.hero.viewPricing": "View Pricing",
     "landing.hero.helpMePlan": "Help me plan my future",
+    "landing.hero.reassurance": "Not sure which framework to pick? We'll find the best one for your goal—with minimal effort from you.",
     "landing.hero.newHere": "New here? See how it works",
     "landing.liftoff.vector": "Vector",
     "landing.howItWorks.title": "How Vector works",
@@ -577,6 +582,8 @@ export const translations = {
     "landing.howItWorks.step4.title": "Export or save",
     "landing.howItWorks.step4.desc":
       "Download PDF, add to calendar, or save to your account.",
+    "landing.whatIsVector.title": "What is Vector?",
+    "landing.whatIsVector.desc": "Vector is a goal planner. You answer simple questions, and it creates a step-by-step plan you can save and follow. It's not ChatGPT—no endless chat. Just a clear roadmap for your goals.",
     "landing.howItWorks.vsLLM.title":
       "Why not just use ChatGPT, Gemini or Claude?",
     "landing.howItWorks.vsLLM.desc": "Standard AI models are generalists that give you endless text on a flat 'piece of paper'. Vector is a dedicated goal architect. It guides you through a proven mental model step-by-step and synthesizes your answers into a highly visual blueprint, making it easy to see the whole picture. Plus, it gives you the built-in tracking tools to actively manage your progress over time, giving it a massive competitive advantage over standard chat bots.",
@@ -1574,6 +1581,8 @@ export const translations = {
     "mandala.subTasksHelp":
       "Acciones concretas que puedes hacer. Añade las que necesites.",
     "mandala.whyThisPillar": "Por qué este pilar",
+    "mandala.desktopRecommended": "Esta visualización se ve mejor en escritorio. Tu plan está guardado—ábrelo en un portátil o PC para explorar el gráfico Mandala completo.",
+    "wizard.visualizationDesktopRecommended": "Esta visualización se ve mejor en escritorio. Tu plan está guardado—ábrelo en un portátil o PC para explorar la vista completa.",
     "wizard.inputExpand": "Expandir",
     "wizard.inputCollapse": "Contraer",
     "wizard.viewDraft": "Ver borrador",
@@ -1703,10 +1712,13 @@ export const translations = {
     "landing.hero.architectYour": "Planifica Tu",
     "landing.hero.ambition": "Ambición.",
     "landing.hero.subtitle":
-      "Vector utiliza el razonamiento profundo para convertir metas abstractas en planes de acción precisos.",
+      "Vector usa el pensamiento de primeros principios y marcos probados para convertir metas abstractas en planes precisos. Deja de obtener resultados mediocres con consejos genéricos de chats estándar. Es la mejor herramienta para articular tus ideas en un plan paso a paso ejecutable. Empieza a construir tu futuro hoy.",
+    "landing.hero.clarifier": "Planificador de metas para todos—no es un chat. Obtén un plan claro que puedes guardar y seguir.",
+    "landing.hero.giftBadge": "1 plan gratis para nuevos usuarios que se registren",
     "landing.hero.startBuilding": "Empieza gratis",
     "landing.hero.viewPricing": "Ver precios",
     "landing.hero.helpMePlan": "Ayúdame a planear mi futuro",
+    "landing.hero.reassurance": "¿No sabes qué método elegir? Encontraremos el mejor para tu meta—con el mínimo esfuerzo de tu parte.",
     "landing.hero.newHere": "¿Primera vez? Mira cómo funciona",
     "landing.liftoff.vector": "Vector",
     "landing.howItWorks.title": "Cómo funciona Vector",
@@ -1724,6 +1736,8 @@ export const translations = {
     "landing.howItWorks.step4.title": "Exporta o guarda",
     "landing.howItWorks.step4.desc":
       "Descarga PDF, añade al calendario o guarda en tu cuenta.",
+    "landing.whatIsVector.title": "¿Qué es Vector?",
+    "landing.whatIsVector.desc": "Vector es un planificador de metas. Respondes preguntas sencillas y crea un plan paso a paso que puedes guardar y seguir. No es ChatGPT—sin chat interminable. Solo una hoja de ruta clara para tus metas.",
     "landing.howItWorks.vsLLM.title":
       "¿Por qué no usar simplemente ChatGPT o Gemini?",
     "landing.howItWorks.vsLLM.desc": "Los modelos de IA estándar son generalistas que te dan texto interminable en un simple 'trozo de papel'. Vector es un arquitecto de metas dedicado. Te guía a través de un modelo mental comprobado paso a paso y sintetiza tus respuestas en un plano altamente visual, facilitando ver la imagen completa. Además, te proporciona herramientas de seguimiento integradas para gestionar activamente tu progreso a lo largo del tiempo, dándole una enorme ventaja competitiva sobre los chatbots estándar.",
@@ -2151,6 +2165,10 @@ export const translations = {
       "O Vector usa o pensamento de princípios fundamentais para transformar objetivos abstratos em projetos arquitetônicos precisos.",
     "hero.start": "Comece a Construir",
     "hero.pricing": "Ver Preços",
+    "landing.hero.subtitle":
+      "O Vector usa pensamento de primeiros princípios e frameworks para transformar metas abstratas em planos precisos. Pare de obter resultados medianos com conselhos genéricos de chats padrão. É a melhor ferramenta para articular suas ideias em um plano passo a passo executável. Comece a construir seu futuro hoje.",
+    "landing.hero.giftBadge": "1 plano grátis para novos usuários que se registrarem",
+    "landing.hero.reassurance": "Não sabe qual framework escolher? Encontraremos o melhor para sua meta—com o mínimo esforço da sua parte.",
 
     // Frameworks Section
     "frameworks.title": "Escolha Seu Modelo",
@@ -2400,6 +2418,8 @@ export const translations = {
     "mandala.subTasksHelp":
       "Ações concretas que você pode fazer. Adicione quantas precisar.",
     "mandala.whyThisPillar": "Por que este pilar",
+    "mandala.desktopRecommended": "Esta visualização funciona melhor no desktop. Seu plano foi salvo—abra em um laptop ou computador para explorar o gráfico Mandala completo.",
+    "wizard.visualizationDesktopRecommended": "Esta visualização funciona melhor no desktop. Seu plano foi salvo—abra em um laptop ou computador para explorar a visão completa.",
     "wizard.inputExpand": "Expandir",
     "wizard.inputCollapse": "Recolher",
     "wizard.viewDraft": "Ver rascunho",
@@ -2650,6 +2670,10 @@ export const translations = {
       "Vector utilise la pensée des premiers principes pour transformer des objectifs abstraits en plans architecturaux précis.",
     "hero.start": "Commencer à Bâtir",
     "hero.pricing": "Voir les Tarifs",
+    "landing.hero.subtitle":
+      "Vector utilise la pensée des premiers principes et des cadres éprouvés pour transformer vos objectifs abstraits en plans précis. Arrêtez les résultats médiocres et les conseils génériques des chatbots. C'est le meilleur outil pour articuler vos idées en un plan exécutable étape par étape. Construisez votre avenir dès aujourd'hui.",
+    "landing.hero.giftBadge": "1 plan offert aux nouveaux utilisateurs qui s'inscrivent",
+    "landing.hero.reassurance": "Vous ne savez pas quel cadre choisir ? Nous trouvons le meilleur pour votre objectif—avec un minimum d'effort de votre part.",
 
     // Frameworks Section
     "frameworks.title": "Choisissez Votre Modèle",
@@ -3151,6 +3175,10 @@ export const translations = {
       "Vector nutzt First-Principles-Thinking, um abstrakte Ziele in präzise architektonische Baupläne zu verwandeln.",
     "hero.start": "Jetzt Bauen",
     "hero.pricing": "Preise ansehen",
+    "landing.hero.subtitle":
+      "Vector nutzt First-Principles-Denken und bewährte Frameworks, um abstrakte Ziele in präzise Pläne zu verwandeln. Schluss mit mittelmäßigen Ergebnissen und generischem Chat-Rat. Das beste Tool, um Ihre Ideen in einen umsetzbaren Schritt-für-Schritt-Plan zu verwandeln. Bauen Sie Ihre Zukunft ab heute.",
+    "landing.hero.giftBadge": "1 Gratis-Plan für neue Nutzer bei Registrierung",
+    "landing.hero.reassurance": "Unklar, welches Framework zu wählen? Wir finden das beste für Ihr Ziel—mit minimalem Aufwand von Ihrer Seite.",
 
     // Frameworks Section
     "frameworks.title": "Wählen Sie Ihren Rahmen",

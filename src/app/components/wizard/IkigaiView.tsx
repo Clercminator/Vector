@@ -3,6 +3,8 @@ import { motion } from 'motion/react';
 import { Heart, Star, Globe, DollarSign, Copy, Target } from 'lucide-react';
 import { EditableText } from '../Editable';
 import { useLanguage } from '@/app/components/language-provider';
+import { useIsMobile } from '../ui/use-mobile';
+import { DesktopRecommendedBanner } from './DesktopRecommendedBanner';
 import { toast } from 'sonner';
 
 interface IkigaiResult {
@@ -73,6 +75,7 @@ const IkigaiSection: React.FC<IkigaiSectionProps> = ({
 
 export const IkigaiView: React.FC<IkigaiViewProps> = ({ result, updateResult }) => {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
 
   const handleCopySection = (text: string, title: string) => {
     navigator.clipboard.writeText(`# ${title}\n${text}`);
@@ -93,6 +96,7 @@ export const IkigaiView: React.FC<IkigaiViewProps> = ({ result, updateResult }) 
 
   return (
     <div className="mt-8 w-full max-w-6xl mx-auto px-4 pb-12">
+      {isMobile && <DesktopRecommendedBanner className="mb-8" />}
       {/* Top Bar with Copy Strategy */}
       <div className="flex justify-end mb-8">
         <button 

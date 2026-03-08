@@ -3,7 +3,7 @@ import { motion } from 'motion/react'; // Keeping consistent with App.tsx
 import { useNavigate } from 'react-router-dom';
 import { FrameworkCard } from '@/app/components/FrameworkCard';
 import { InspirationalQuote } from '@/app/components/InspirationalQuote';
-import { ArrowRight, Sparkles, Target, MessageSquare, Download } from 'lucide-react';
+import { ArrowRight, Sparkles, Target, MessageSquare, Download, Gift } from 'lucide-react';
 import { InspiredBySection } from '@/app/components/InspiredBySection';
 import { useLanguage } from '@/app/components/language-provider';
 import { frameworks, Framework } from '@/lib/frameworks';
@@ -54,6 +54,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             exit={{ opacity: 0 }}
             className="relative z-10"
         >
+            {/* Gift badge — corner of screen */}
+            <div className="fixed top-24 right-4 md:top-20 md:right-6 z-30">
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/90 dark:bg-emerald-500/80 text-white shadow-lg border border-emerald-400/30 backdrop-blur-sm">
+                    <Gift size={18} className="shrink-0" />
+                    <span className="text-sm font-medium whitespace-nowrap">{t('landing.hero.giftBadge')}</span>
+                </div>
+            </div>
+
             {/* Hero Section */}
             <section className="px-6 pt-24 pb-32 md:pt-20 md:pb-48 text-center max-w-5xl mx-auto">
                 <motion.div
@@ -68,8 +76,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     
                     <InspirationalQuote />
 
-                    <p className="text-xl md:text-2xl text-gray-500 font-light max-w-2xl mx-auto mb-12 leading-relaxed">
+                    <p className="text-xl md:text-2xl text-gray-500 font-light max-w-2xl mx-auto mb-4 leading-relaxed">
                         {t('landing.hero.subtitle')}
+                    </p>
+                    <p className="text-base md:text-lg text-gray-400 dark:text-gray-500 max-w-xl mx-auto mb-12">
+                        {t('landing.hero.clarifier')}
                     </p>
                     <div className="flex justify-center">
                         <motion.button
@@ -93,10 +104,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                             </motion.span>
                         </motion.button>
                     </div>
+                    <p className="mt-6 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
+                        {t('landing.hero.reassurance')}
+                    </p>
                     <button
                         type="button"
                         onClick={() => howItWorksRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                        className="mt-8 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline underline-offset-2"
+                        className="mt-6 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline underline-offset-2"
                     >
                         {t('landing.hero.newHere')}
                     </button>
@@ -119,9 +133,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-3">
                             {t('landing.howItWorks.title')}
                         </h2>
-                        <p className="text-base md:text-lg text-gray-500 dark:text-gray-400 font-light max-w-2xl mx-auto">
+                        <p className="text-base md:text-lg text-gray-500 dark:text-gray-400 font-light max-w-2xl mx-auto mb-8">
                             {t('landing.howItWorks.subtitle')}
                         </p>
+                        <div className="inline-block px-5 py-3 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-100/80 dark:border-indigo-900/40 max-w-2xl mx-auto">
+                            <h3 className="font-semibold text-indigo-900 dark:text-indigo-200 mb-1">{t('landing.whatIsVector.title')}</h3>
+                            <p className="text-sm text-indigo-700/90 dark:text-indigo-300/90 leading-relaxed">{t('landing.whatIsVector.desc')}</p>
+                        </div>
                     </motion.div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                         {[

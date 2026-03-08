@@ -5,6 +5,8 @@ import { EditableText, EditableList } from '../Editable';
 import { toast } from 'sonner';
 import { cn } from '../ui/utils';
 import { useLanguage } from '@/app/components/language-provider';
+import { useIsMobile } from '../ui/use-mobile';
+import { DesktopRecommendedBanner } from './DesktopRecommendedBanner';
 
 // --- Types ---
 interface MandalaCategory {
@@ -289,11 +291,19 @@ const OverviewCard = ({
 
 export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }) => {
   const { t } = useLanguage();
-  // State
+  const isMobile = useIsMobile();
+  // State — default to list on mobile to avoid cramped spatial grid
   const [zoomIndex, setZoomIndex] = useState<number | null>(null); // null = overview, 0-8 = focused cluster
-  const [viewMode, setViewMode] = useState<'spatial' | 'list'>('spatial'); 
+  const [viewMode, setViewMode] = useState<'spatial' | 'list'>(() =>
+    typeof window !== 'undefined' && window.innerWidth < 768 ? 'list' : 'spatial'
+  );
   const [showHint, setShowHint] = useState(true);
   const [selectedCellDetail, setSelectedCellDetail] = useState<{ catIndex: number; stepIndex: number } | null>(null);
+
+  // Sync to list when resizing to mobile (e.g. devtools or rotate)
+  useEffect(() => {
+    if (isMobile) setViewMode('list');
+  }, [isMobile]);
   
   // Dismiss hint
   useEffect(() => {
@@ -393,9 +403,13 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
   if (viewMode === 'list') {
       return (
           <div className="w-full h-[85vh] overflow-y-auto bg-slate-50 dark:bg-[#0a0a0a] rounded-[2rem] border border-slate-200 dark:border-white/5 p-8 custom-scrollbar">
+              {/* Desktop recommendation banner — mobile only */}
+              {isMobile && (
+                <DesktopRecommendedBanner message={t('mandala.desktopRecommended')} className="mb-6" />
+              )}
               <div className="flex justify-between items-center mb-8 sticky top-0 bg-slate-50/90 dark:bg-[#0a0a0a]/90 backdrop-blur-md z-20 py-4">
                   <h2 className="text-2xl font-bold">{t('mandala.listView')}</h2>
-                  <button onClick={() => setViewMode('spatial')} className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
+                  <button onClick={() => setViewMode('spatial')} className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors">
                       <Grid size={18} /> {t('mandala.switchToGrid')}
                   </button>
               </div>
@@ -441,6 +455,11 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
 
   return (
     <div className="relative w-full min-h-[60vh] h-[calc(100vh-12rem)] bg-gradient-to-b from-slate-50 to-slate-100/80 dark:from-[#0a0a0a] dark:to-zinc-950/80 rounded-[2rem] border border-slate-200/80 dark:border-white/5 shadow-xl shadow-slate-200/20 dark:shadow-black/20 select-none group overflow-hidden flex flex-col">
+        
+        {/* Desktop recommendation banner — mobile only (when user switches to grid) */}
+        {isMobile && (
+          <DesktopRecommendedBanner message={t('mandala.desktopRecommended')} className="flex-none mx-4 mt-4 z-50 [&_p]:text-xs" />
+        )}
         
         {/* Background Grid Pattern */}
         <div 

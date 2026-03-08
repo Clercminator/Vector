@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { SupportResource } from '@/lib/blueprints';
 import { motion, AnimatePresence } from 'motion/react';
 import { HeartHandshake, X, ExternalLink, Phone } from 'lucide-react';
 import { useLanguage } from '@/app/components/language-provider';
+import { cn } from '@/app/components/ui/utils';
 
 export function SupportButton() {
   const { t } = useLanguage();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const isWizard = location.pathname.startsWith('/wizard');
   const [resources, setResources] = useState<SupportResource[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +34,10 @@ export function SupportButton() {
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 left-6 md:bottom-8 md:left-8 z-40 bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 hover:text-rose-500 dark:hover:text-rose-400 p-4 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 dark:border-zinc-800 transition-colors group cursor-pointer flex items-center gap-2"
+        className={cn(
+          "fixed bottom-6 left-6 md:bottom-8 md:left-8 z-40 bg-white dark:bg-zinc-900 text-gray-500 dark:text-gray-400 hover:text-rose-500 dark:hover:text-rose-400 p-4 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 dark:border-zinc-800 transition-colors group cursor-pointer flex items-center gap-2",
+          isWizard && "hidden md:flex"
+        )}
         title={t('support.title') || "Get Support"}
       >
         <HeartHandshake size={24} className="group-hover:scale-110 transition-transform" />
@@ -62,7 +69,7 @@ export function SupportButton() {
                    </div>
                    <h2 className="text-2xl font-black">{t('support.title') || "Support Resources"}</h2>
                 </div>
-                <button onClick={() => setIsOpen(false)} className="p-2 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-full transition-colors text-gray-500 cursor-pointer">
+                <button onClick={() => setIsOpen(false)} aria-label={t('common.close') || "Close"} className="p-2 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-full transition-colors text-gray-500 cursor-pointer">
                   <X size={24} />
                 </button>
               </div>
