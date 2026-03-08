@@ -23,10 +23,10 @@ export function InspirationalQuote() {
   }, [quotes.length]);
 
   return (
-    <div className="flex justify-center my-12">
-      <div className="relative max-w-2xl px-8 py-4 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm rounded-full border border-gray-100 dark:border-zinc-800 shadow-sm flex items-center gap-4">
-        <Quote className="text-gray-300 dark:text-zinc-700 shrink-0" size={20} />
-        <div className="h-12 flex items-center overflow-hidden relative w-full">
+    <div className="flex justify-center my-0 md:my-8">
+      <div className="relative w-full max-w-2xl px-4 py-3 md:px-8 md:py-4 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm rounded-2xl md:rounded-full border border-gray-100 dark:border-zinc-800 shadow-sm flex items-start md:items-center gap-3 md:gap-4">
+        <Quote className="text-gray-300 dark:text-zinc-700 shrink-0 mt-0.5 md:mt-0" size={18} />
+        <div className="min-h-[3rem] md:h-12 flex items-center overflow-hidden relative flex-1 py-1">
            <AnimatePresence mode="wait">
              <motion.div
                key={index}
@@ -34,10 +34,10 @@ export function InspirationalQuote() {
                animate={{ opacity: 1, y: 0 }}
                exit={{ opacity: 0, y: -20 }}
                transition={{ duration: 0.5 }}
-               className="text-center w-full"
+               className="text-left md:text-center w-full"
              >
-               <p className="text-sm font-medium text-gray-600 dark:text-gray-300 line-clamp-2 md:line-clamp-none">
-                 "{quotes[index].text}" <span className="text-gray-400 dark:text-zinc-600 whitespace-nowrap">— {quotes[index].author}</span>
+               <p className="text-sm font-medium text-gray-600 dark:text-gray-300 leading-relaxed">
+                 &quot;{quotes[index].text}&quot; <span className="text-gray-400 dark:text-zinc-600">— {quotes[index].author}</span>
                </p>
              </motion.div>
            </AnimatePresence>

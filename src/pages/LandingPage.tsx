@@ -3,6 +3,7 @@ import { motion } from 'motion/react'; // Keeping consistent with App.tsx
 import { useNavigate } from 'react-router-dom';
 import { FrameworkCard } from '@/app/components/FrameworkCard';
 import { InspirationalQuote } from '@/app/components/InspirationalQuote';
+import { HeroSubtitleChunks } from '@/app/components/HeroSubtitleChunks';
 import { ArrowRight, Sparkles, Target, MessageSquare, Download, Gift } from 'lucide-react';
 import { InspiredBySection } from '@/app/components/InspiredBySection';
 import { useLanguage } from '@/app/components/language-provider';
@@ -67,7 +68,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             )}
 
             {/* Hero Section */}
-            <section className="px-6 pt-24 pb-32 md:pt-20 md:pb-48 text-center max-w-5xl mx-auto">
+            <section className="px-6 pt-12 pb-16 md:pt-14 md:pb-20 text-center max-w-5xl md:max-w-6xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -78,12 +79,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-red-500 to-yellow-500">{t('landing.hero.ambition')}</span>
                     </h1>
 
-                    <p className="text-xl md:text-2xl text-gray-500 font-light max-w-4xl mx-auto mb-4 leading-relaxed">
-                        {t('landing.hero.subtitle')}
-                    </p>
-                    <p className="text-base md:text-lg text-gray-400 dark:text-gray-500 max-w-xl mx-auto mb-12">
-                        {t('landing.hero.clarifier')}
-                    </p>
+                    <HeroSubtitleChunks />
                     <div className="flex justify-center">
                         <motion.button
                             onClick={onHeroGetStarted ?? onShowHelpChoose}
@@ -106,17 +102,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                             </motion.span>
                         </motion.button>
                     </div>
-                    <p className="mt-6 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
-                        {t('landing.hero.reassurance')}
-                    </p>
                     <button
                         type="button"
                         onClick={() => howItWorksRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                        className="mt-6 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline underline-offset-2"
+                        className="mt-8 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline underline-offset-2"
                     >
                         {t('landing.hero.newHere')}
                     </button>
-                    <div className="mt-8">
+                    <div className="mt-6">
                         <InspirationalQuote />
                     </div>
                 </motion.div>

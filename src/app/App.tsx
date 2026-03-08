@@ -893,6 +893,7 @@ function App() {
               setShowHelpChoose(false);
               handleStartWizard(fw, context);
             }}
+            onLearnMore={(fw) => setViewingFramework(fw)}
           />
         )}
       </AnimatePresence>

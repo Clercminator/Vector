@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sparkles, ArrowRight, Loader2, X, Target, AlertTriangle, Clock, Mountain, Trophy } from 'lucide-react';
+import { Sparkles, ArrowRight, Loader2, X, X as XIcon, Target, AlertTriangle, Clock, Mountain, Trophy, Check, Quote, ExternalLink } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { suggestFramework } from '@/lib/openrouter';
 import { FrameworkId } from '@/lib/blueprints';
-import { frameworks } from '@/lib/frameworks';
+import { frameworks, type FrameworkDefinition } from '@/lib/frameworks';
 import { toast } from 'sonner';
 import { useLanguage } from './language-provider';
 
@@ -20,9 +20,11 @@ export interface IntakeFormContext {
 interface HelpMeChooseModalProps {
   onClose: () => void;
   onSelect: (id: FrameworkId, context?: IntakeFormContext) => void;
+  /** Opens the full framework detail view (definition, pros, cons, example) */
+  onLearnMore?: (framework: FrameworkDefinition) => void;
 }
 
-export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps) {
+export function HelpMeChooseModal({ onClose, onSelect, onLearnMore }: HelpMeChooseModalProps) {
   const { t, language } = useLanguage();
   const [objective, setObjective] = useState('');
   const [stakes, setStakes] = useState('');
@@ -210,9 +212,62 @@ export function HelpMeChooseModal({ onClose, onSelect }: HelpMeChooseModalProps)
                             {t('intake.fitting')}
                         </h4>
                         <p className="text-gray-600 dark:text-gray-300 leading-relaxed italic relative z-10">
-                            "{explanation}"
+                            &quot;{explanation}&quot;
                         </p>
                     </div>
+
+                    {suggestedFramework && (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="bg-green-50/60 dark:bg-green-900/15 p-4 rounded-xl border border-green-100 dark:border-green-900/30">
+                            <h4 className="text-xs font-bold text-green-800 dark:text-green-400 mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                              <Check size={14} /> {t('common.pros')}
+                            </h4>
+                            <ul className="space-y-1.5">
+                              {(suggestedFramework.pros || []).map((pro, i) => (
+                                <li key={i} className="text-green-900 dark:text-green-200 text-sm flex items-start gap-2">
+                                  <span className="mt-1.5 w-1 h-1 bg-green-500 rounded-full shrink-0" />
+                                  {t(`fw.${suggestedFramework.id}.pros.${i}`) || pro}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className="bg-red-50/60 dark:bg-red-900/15 p-4 rounded-xl border border-red-100 dark:border-red-900/30">
+                            <h4 className="text-xs font-bold text-red-800 dark:text-red-400 mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                              <XIcon size={14} /> {t('common.cons')}
+                            </h4>
+                            <ul className="space-y-1.5">
+                              {(suggestedFramework.cons || []).map((con, i) => (
+                                <li key={i} className="text-red-900 dark:text-red-200 text-sm flex items-start gap-2">
+                                  <span className="mt-1.5 w-1 h-1 bg-red-500 rounded-full shrink-0" />
+                                  {t(`fw.${suggestedFramework.id}.cons.${i}`) || con}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+
+                        <div className="bg-gray-100/80 dark:bg-zinc-800/60 p-4 rounded-xl border border-gray-200/80 dark:border-zinc-700">
+                          <h4 className="text-xs font-bold text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                            <Quote size={14} /> {t('intake.exampleLabel')}
+                          </h4>
+                          <p className="text-gray-700 dark:text-gray-300 text-sm italic leading-relaxed">
+                            &quot;{t(`fw.${suggestedFramework.id}.example`) || suggestedFramework.example}&quot;
+                          </p>
+                        </div>
+
+                        {onLearnMore && (
+                          <button
+                            type="button"
+                            onClick={() => onLearnMore(suggestedFramework)}
+                            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors text-sm font-medium"
+                          >
+                            <ExternalLink size={16} />
+                            {t('intake.learnMore')}
+                          </button>
+                        )}
+                      </>
+                    )}
                 
                     <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
                          <Button variant="ghost" onClick={() => setSuggestion(null)} className="h-14 rounded-xl text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-900">
