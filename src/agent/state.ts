@@ -49,6 +49,21 @@ export const AgentState = Annotation.Root({
   formContext: Annotation<string>({
     reducer: (x, y) => y ?? x,
     default: () => ""
+  }),
+  /** Number of user-perspective refinement passes done (max 1 to avoid loops). */
+  userRefinementAttempts: Annotation<number>({
+    reducer: (x, y) => x + y,
+    default: () => 0
+  }),
+  /** Feedback from user-perspective review to improve the blueprint (empty = satisfied, no refinement). */
+  userReviewFeedback: Annotation<string>({
+    reducer: (x, y) => y ?? x,
+    default: () => ""
+  }),
+  /** True when userReview just requested refinement; router uses this to go to draft, then we clear it. */
+  userReviewRequestsRefinement: Annotation<boolean>({
+    reducer: (x, y) => y ?? x,
+    default: () => false
   })
 });
 

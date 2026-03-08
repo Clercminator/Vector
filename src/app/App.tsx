@@ -888,6 +888,7 @@ function App() {
         )}
         {showHelpChoose && (
           <HelpMeChooseModal
+            userId={userId}
             onClose={() => setShowHelpChoose(false)}
             onSelect={(fw, context) => {
               setShowHelpChoose(false);

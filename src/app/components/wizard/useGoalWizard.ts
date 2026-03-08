@@ -350,6 +350,9 @@ export const useGoalWizard = ({
                         if (meta.vision) parts.push(`Vision: ${meta.vision}`);
                         if (meta.preferred_plan_style) parts.push(`Preferred plan style: ${meta.preferred_plan_style}`);
                         if (meta.stay_on_track) parts.push(`What helps them stay on track: ${meta.stay_on_track}`);
+                        if (meta.question_flow) parts.push(`Prefers questions: ${meta.question_flow === 'list' ? 'all at once' : 'one at a time with suggestions'}`);
+                        if (meta.preferred_tone) parts.push(`Preferred tone: ${meta.preferred_tone}`);
+                        if (meta.treatment_level) parts.push(`Treat as: ${meta.treatment_level} (expert=assume knowledge, beginner=explain, mixed=adapt)`);
                         if (meta.other_observations) parts.push(`Other observations: ${meta.other_observations}`);
                         setAgentUserProfile(parts.length ? parts.join('. ') : '');
                     }

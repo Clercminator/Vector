@@ -59,3 +59,12 @@ export const ZODIAC_IMPORTANCE = ['super', 'somewhat', 'nothing'] as const;
 
 /** Preferred plan style for agent personalization. */
 export const PLAN_STYLES = ['action_focused', 'reflective', 'balanced'] as const;
+
+/** How the user prefers Vector to ask questions: list (all at once) or one_at_a_time (with suggestions). */
+export const QUESTION_FLOW = ['list', 'one_at_a_time'] as const;
+
+/** Tone the user prefers from Vector. */
+export const PREFERRED_TONES = ['friendly', 'professional', 'direct', 'encouraging'] as const;
+
+/** How the user wants to be treated by Vector (expertise level). */
+export const TREATMENT_LEVELS = ['expert', 'beginner', 'mixed'] as const;

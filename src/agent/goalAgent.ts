@@ -14,6 +14,7 @@ import { frameworkSetterNode } from "./nodes/frameworkSetter";
 import { askNode } from "./nodes/ask";
 import { draftNode } from "./nodes/draft";
 import { critiqueNode } from "./nodes/critique";
+import { userReviewNode } from "./nodes/userReview";
 import { validatorNode } from "./nodes/validator";
 
 // 1. Tool Node
@@ -57,6 +58,11 @@ const routeStep = (state: AgentStateType) => {
 
 const routeCritique = (state: AgentStateType) => {
     if (state.critiqueAttempts === MAX_CRITIQUE_RETRIES) return "draft";
+    return "user_review";
+};
+
+const routeUserReview = (state: AgentStateType) => {
+    if (state.userReviewRequestsRefinement) return "draft";
     return END;
 };
 
@@ -90,6 +96,7 @@ const workflow = new StateGraph(AgentState)
   .addNode("tools", toolNode)
   .addNode("draft", draftNode)
   .addNode("critique", critiqueNode)
+  .addNode("user_review", userReviewNode)
   
   .addConditionalEdges(START, routeStart, {
       consultant: "consultant",
@@ -122,6 +129,10 @@ const workflow = new StateGraph(AgentState)
   // Draft/Critique Flow
   .addEdge("draft", "critique")
   .addConditionalEdges("critique", routeCritique, {
+      draft: "draft",
+      user_review: "user_review"
+  })
+  .addConditionalEdges("user_review", routeUserReview, {
       draft: "draft",
       [END]: END
   });

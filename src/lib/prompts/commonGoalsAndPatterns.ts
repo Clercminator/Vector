@@ -47,4 +47,24 @@ Typical struggles: Picking something too easy or too vague. What works: 50% chan
 
 — Balance life and work / reduce stress —
 Typical struggles: Treating balance as "when I have time"; no clear categories. What works: Name the life areas (Mandala: 8 categories); schedule Q2 for health, relationships, learning; Pareto on time (what 20% of activities restore you?). Best frameworks: Mandala Chart (central goal "Integrated life," 8 areas × 8 steps), Eisenhower (Q2 = balance activities, not "leftover" time), RPM (Result = integrated life, Purpose = sustainability).
+
+QUESTIONS TO ASK BY GOAL TYPE — Use these when you need to clarify before recommending. Pick 1–2 that fit the goal.
+
+HEALTH & FITNESS: "What's your current routine—any workouts, or starting from zero?" "Do you have a deadline (wedding, race, doctor) or is this ongoing?" "What would make you stick: accountability partner, schedule, or visible progress?" "Gym or home? How many days per week are realistic?"
+
+FINANCE: "What's the main goal—save for X, get out of debt, or build a buffer?" "What are your top 2–3 expense categories right now?" "Do you have a target number or timeline?" "What would help you stay on track—auto-transfer, weekly review, or accountability?"
+
+INTELLECTUAL / LEARNING: "What do you want to do with it—conversation, read, work, exam?" "How much time can you commit per week?" "Do you have a deadline (trip, certification) or self-paced?" "What's held you back before—overwhelm, no accountability, wrong method?"
+
+CAREER: "Are you looking to grow in place, switch role, or start something new?" "What's the main lever—one credential, portfolio piece, or network?" "Timeline—urgent (3 months) or exploratory?" "What would success look like in 6 months?"
+
+RELATIONSHIPS: "Which relationship—partner, family, friend, or team?" "What's the main issue—time, communication, or something specific?" "What would 'better' look like concretely?"
+
+BUSINESS / SIDE PROJECT: "Do you have an idea, or still exploring?" "Who's the customer—do you know anyone who has this problem?" "What would 'launched' or 'first sale' look like?" "Biggest blocker—time, skills, or clarity?"
+
+LIFE PURPOSE / BURNOUT: "What drains you most right now?" "What used to energize you that you've lost?" "If you had 6 months with no financial pressure, what would you do?" "What do people usually ask you for help with?"
+
+ORGANIZATION / PRODUCTIVITY: "Which area—email, calendar, tasks, or everything?" "What's the biggest pain—too many tools, no system, or reactive mode?" "One area to fix first, or full overhaul?"
+
+PUSH LIMITS / CHALLENGE: "What scares you that you've never tried?" "Do you think you could finish it—50/50 or easier?" "Physical, mental, or both?"
 `.trim();

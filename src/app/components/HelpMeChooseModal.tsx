@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Sparkles, ArrowRight, Loader2, X, X as XIcon, Target, AlertTriangle, Clock, Mountain, Trophy, Check, Quote, ExternalLink } from 'lucide-react';
+import { Sparkles, ArrowRight, Loader2, X, X as XIcon, Target, AlertTriangle, Clock, Mountain, Trophy, Check, Quote, ExternalLink, TriangleAlert } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { suggestFramework } from '@/lib/openrouter';
 import { FrameworkId } from '@/lib/blueprints';
 import { frameworks, type FrameworkDefinition } from '@/lib/frameworks';
+import { supabase } from '@/lib/supabase';
+import { computePersonalInfoCompletion } from '@/lib/profileCompletion';
 import { toast } from 'sonner';
 import { useLanguage } from './language-provider';
 
@@ -18,14 +20,16 @@ export interface IntakeFormContext {
 }
 
 interface HelpMeChooseModalProps {
+  userId?: string | null;
   onClose: () => void;
   onSelect: (id: FrameworkId, context?: IntakeFormContext) => void;
   /** Opens the full framework detail view (definition, pros, cons, example) */
   onLearnMore?: (framework: FrameworkDefinition) => void;
 }
 
-export function HelpMeChooseModal({ onClose, onSelect, onLearnMore }: HelpMeChooseModalProps) {
+export function HelpMeChooseModal({ userId, onClose, onSelect, onLearnMore }: HelpMeChooseModalProps) {
   const { t, language } = useLanguage();
+  const [profileCompletion, setProfileCompletion] = useState<{ percent: number; isLow: boolean }>({ percent: 0, isLow: false });
   const [objective, setObjective] = useState('');
   const [stakes, setStakes] = useState('');
   const [horizon, setHorizon] = useState('');
@@ -69,6 +73,23 @@ export function HelpMeChooseModal({ onClose, onSelect, onLearnMore }: HelpMeChoo
 
   const suggestedFramework = frameworks.find(f => f.id === suggestion);
 
+  useEffect(() => {
+    if (!supabase || !userId) {
+      setProfileCompletion({ percent: 0, isLow: false });
+      return;
+    }
+    supabase
+      .from('profiles')
+      .select('bio, metadata')
+      .eq('user_id', userId)
+      .single()
+      .then(({ data }) => {
+        const { percent, isLow } = computePersonalInfoCompletion(data as any);
+        setProfileCompletion({ percent, isLow });
+      })
+      .catch(() => setProfileCompletion({ percent: 0, isLow: false }));
+  }, [userId]);
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <motion.div 
@@ -93,6 +114,14 @@ export function HelpMeChooseModal({ onClose, onSelect, onLearnMore }: HelpMeChoo
         </div>
 
         <div className="p-6 overflow-y-auto">
+            {profileCompletion.isLow && !suggestion && (
+              <div className="mb-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 flex items-start gap-3">
+                <TriangleAlert size={20} className="text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-900 dark:text-amber-200">
+                  {t('profile.personalInfoReminder')}
+                </p>
+              </div>
+            )}
             {!suggestion ? (
                 <div className="space-y-6">
                     <div className="space-y-4">

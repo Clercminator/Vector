@@ -5,11 +5,14 @@ import { invokeWithFallback } from "../utils";
 import { DRAFT_HISTORY_MAX_CHARS } from "../constants";
 
 export const draftNode = async (state: AgentStateType) => {
-  const { goal, framework, messages, tier, validFrameworks, userProfile = "", formContext = "" } = state;
+  const { goal, framework, messages, tier, validFrameworks, userProfile = "", formContext = "", userReviewFeedback = "" } = state;
 
   const isLocked = !validFrameworks.includes(framework || "");
 
   let history = messages.map(m => m.content).join("\n");
+  if (userReviewFeedback) {
+    history += `\n\nCRITICAL – User-perspective refinement requested. Incorporate these changes into the blueprint:\n${userReviewFeedback}`;
+  }
   if (history.length > DRAFT_HISTORY_MAX_CHARS) {
     history = history.slice(-DRAFT_HISTORY_MAX_CHARS);
   }

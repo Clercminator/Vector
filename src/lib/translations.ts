@@ -80,6 +80,8 @@ export const translations = {
     "profile.personalInfo": "Personal Information",
     "profile.personalInfoHint":
       "This information is used to generate a personalized plan for you. The more you share, the more tailored your plan will be.",
+    "profile.personalInfoReminder":
+      "Users who complete their profile get more tailored plans. Plans without enough personal context often feel generic—fill in these fields so Vector can truly personalize your experience.",
     "profile.displayName": "Display Name",
     "profile.bio": "Bio / Mission",
     "profile.bioPlaceholder":
@@ -121,6 +123,22 @@ export const translations = {
     "profile.otherObservations": "Other observations",
     "profile.otherObservationsPlaceholder":
       "Anything else you want the agent to know when generating your plans...",
+    "profile.vectorPrefs": "How you prefer to talk to Vector",
+    "profile.questionFlow": "Question flow",
+    "profile.questionFlowPlaceholder": "How should Vector ask you?",
+    "profile.questionFlow.list": "List all questions at once — I'll answer them in my own time",
+    "profile.questionFlow.one_at_a_time": "One question at a time — with suggestions to help me along",
+    "profile.preferredTone": "Preferred tone",
+    "profile.preferredTonePlaceholder": "How should Vector sound?",
+    "profile.preferredTone.friendly": "Friendly and warm",
+    "profile.preferredTone.professional": "Professional and concise",
+    "profile.preferredTone.direct": "Direct and to the point",
+    "profile.preferredTone.encouraging": "Encouraging and supportive",
+    "profile.treatmentLevel": "How should Vector treat you?",
+    "profile.treatmentLevelPlaceholder": "Select your level",
+    "profile.treatmentLevel.expert": "As an expert — assume I know the basics",
+    "profile.treatmentLevel.beginner": "As a beginner — explain concepts and guide me step by step",
+    "profile.treatmentLevel.mixed": "Mixed — adapt based on the topic",
     "profile.values": "Core Values",
     "profile.vision": "Long-term Vision",
     // Dropdown Options
@@ -1237,6 +1255,8 @@ export const translations = {
     "profile.personalInfo": "Información Personal",
     "profile.personalInfoHint":
       "Esta información se usa para generar un plan personalizado para ti. Cuanto más compartas, más adaptado será tu plan.",
+    "profile.personalInfoReminder":
+      "Los usuarios que completan su perfil reciben planes más personalizados. Los planes sin suficiente contexto suelen parecer genéricos—completa estos campos para que Vector adapte tu experiencia.",
     "profile.displayName": "Nombre Visible",
     "profile.bio": "Bio / Misión",
     "profile.bioPlaceholder":
@@ -1276,6 +1296,22 @@ export const translations = {
     "profile.stayOnTrack": "¿Qué te ayuda a mantener el rumbo?",
     "profile.stayOnTrackPlaceholder":
       "ej. Fechas límite, compañero de rendición de cuentas, recordatorios diarios",
+    "profile.vectorPrefs": "Cómo prefieres hablar con Vector",
+    "profile.questionFlow": "Flujo de preguntas",
+    "profile.questionFlowPlaceholder": "¿Cómo debe preguntarte Vector?",
+    "profile.questionFlow.list": "Todas las preguntas a la vez — responderé a mi ritmo",
+    "profile.questionFlow.one_at_a_time": "Una pregunta a la vez — con sugerencias que me ayuden",
+    "profile.preferredTone": "Tono preferido",
+    "profile.preferredTonePlaceholder": "¿Cómo debe sonar Vector?",
+    "profile.preferredTone.friendly": "Amigable y cercano",
+    "profile.preferredTone.professional": "Profesional y conciso",
+    "profile.preferredTone.direct": "Directo y al grano",
+    "profile.preferredTone.encouraging": "Alentador y de apoyo",
+    "profile.treatmentLevel": "¿Cómo debe tratarte Vector?",
+    "profile.treatmentLevelPlaceholder": "Selecciona tu nivel",
+    "profile.treatmentLevel.expert": "Como experto — asume que conozco lo básico",
+    "profile.treatmentLevel.beginner": "Como principiante — explícame conceptos y guíame paso a paso",
+    "profile.treatmentLevel.mixed": "Mixto — adaptarse según el tema",
     "profile.otherObservations": "Otras observaciones",
     "profile.otherObservationsPlaceholder":
       "Cualquier otra cosa que quieras que el agente tenga en cuenta al generar tus planes...",
@@ -2247,6 +2283,8 @@ export const translations = {
     "profile.personalInfo": "Informações Pessoais",
     "profile.personalInfoHint":
       "Estas informações são usadas para gerar um plano personalizado para você. Quanto mais você compartilhar, mais adaptado será seu plano.",
+    "profile.personalInfoReminder":
+      "Usuários que completam o perfil recebem planos mais personalizados. Planos sem contexto suficiente podem parecer genéricos—preencha estes campos para que o Vector personalize sua experiência.",
     "profile.displayName": "Nome de Exibição",
     "profile.bio": "Bio / Missão",
     "profile.avatarUrl": "URL do Avatar",
@@ -2756,6 +2794,8 @@ export const translations = {
     "profile.personalInfo": "Informations Personnelles",
     "profile.personalInfoHint":
       "Ces informations servent à générer un plan personnalisé pour vous. Plus vous en partagez, plus votre plan sera adapté.",
+    "profile.personalInfoReminder":
+      "Les utilisateurs qui complètent leur profil reçoivent des plans plus personnalisés. Sans contexte suffisant, les plans semblent génériques—remplissez ces champs pour que Vector adapte votre expérience.",
     "profile.displayName": "Nom d'affichage",
     "profile.bio": "Bio / Mission",
     "profile.avatarUrl": "URL de l'Avatar",
@@ -3263,6 +3303,8 @@ export const translations = {
     "profile.personalInfo": "Persönliche Informationen",
     "profile.personalInfoHint":
       "Diese Angaben werden genutzt, um einen personalisierten Plan für Sie zu erstellen. Je mehr Sie angeben, desto besser wird der Plan auf Sie zugeschnitten.",
+    "profile.personalInfoReminder":
+      "Nutzer mit vollständigem Profil erhalten personalisiertere Pläne. Pläne ohne genug Kontext wirken oft generisch—füllen Sie diese Felder aus, damit Vector Ihre Erfahrung personalisieren kann.",
     "profile.displayName": "Anzeigename",
     "profile.bio": "Bio / Mission",
     "profile.avatarUrl": "Avatar-URL",

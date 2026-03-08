@@ -65,6 +65,9 @@ interface ProfileData {
     other_observations?: string;
     preferred_plan_style?: string; // action_focused | reflective | balanced
     stay_on_track?: string; // what helps the user stay on track
+    question_flow?: string; // list | one_at_a_time
+    preferred_tone?: string; // friendly | professional | direct | encouraging
+    treatment_level?: string; // expert | beginner | mixed
     tracker_preferences?: {
       show_streaks?: boolean;
       show_score?: boolean;
@@ -78,7 +81,8 @@ interface ProfileData {
 }
 
 import { TIER_CONFIGS, TierId } from '@/lib/tiers';
-import { COUNTRIES, GENDERS, ZODIACS, ZODIAC_IMPORTANCE, PLAN_STYLES } from '@/lib/constants';
+import { COUNTRIES, GENDERS, ZODIACS, ZODIAC_IMPORTANCE, PLAN_STYLES, QUESTION_FLOW, PREFERRED_TONES, TREATMENT_LEVELS } from '@/lib/constants';
+import { computePersonalInfoCompletion } from '@/lib/profileCompletion';
 import { Lock } from 'lucide-react';
 
 import { useLanguage } from '@/app/components/language-provider';
@@ -135,7 +139,10 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
       vision: '',
       other_observations: '',
       preferred_plan_style: '',
-      stay_on_track: ''
+      stay_on_track: '',
+      question_flow: '',
+      preferred_tone: '',
+      treatment_level: ''
     }
   });
 
@@ -166,7 +173,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
               branding_logo_url: profile.branding_logo_url || '',
               branding_color: profile.branding_color || '#000000',
               tier: profile.tier || 'free',
-              metadata: profile.metadata || { demographics: '', age: '', gender: '', country: '', zodiac_sign: '', zodiac_importance: '', hobbies: '', skills: '', interests: '', values: '', vision: '', other_observations: '', preferred_plan_style: '', stay_on_track: '' },
+              metadata: profile.metadata || { demographics: '', age: '', gender: '', country: '', zodiac_sign: '', zodiac_importance: '', hobbies: '', skills: '', interests: '', values: '', vision: '', other_observations: '', preferred_plan_style: '', stay_on_track: '', question_flow: '', preferred_tone: '', treatment_level: '' },
             });
           }
         }
@@ -379,6 +386,8 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
 
   const currentTierConfig = TIER_CONFIGS[data.tier as TierId] || TIER_CONFIGS['architect'];
 
+  const { filled: personalInfoFilled, total: personalInfoTotal, percent: personalInfoPercent, isLow: personalInfoLow } = computePersonalInfoCompletion(data);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -530,13 +539,34 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
             onOpenChange={(o) => setSectionOpen((s) => ({ ...s, personalInfo: o }))}
           >
             <CollapsibleTrigger className="flex w-full items-center justify-between py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer group">
-              <h3 className="text-xl font-bold flex items-center gap-2 text-black dark:text-white">
-                <User size={20} className="text-gray-400" />
-                {t('profile.personalInfo')}
-              </h3>
+              <div className="flex flex-col gap-1">
+                <h3 className="text-xl font-bold flex items-center gap-2 text-black dark:text-white">
+                  <User size={20} className="text-gray-400" />
+                  {t('profile.personalInfo')}
+                </h3>
+                <div className="flex items-center gap-3">
+                  <div className="h-1.5 w-24 bg-gray-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${personalInfoPercent >= 70 ? 'bg-green-500' : personalInfoPercent >= 40 ? 'bg-amber-500' : 'bg-amber-500/80'}`}
+                      style={{ width: `${personalInfoPercent}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400 tabular-nums">
+                    {personalInfoFilled}/{personalInfoTotal}
+                  </span>
+                </div>
+              </div>
               {sectionOpen.personalInfo ? <ChevronDown size={20} className="text-gray-400 shrink-0" /> : <ChevronRight size={20} className="text-gray-400 shrink-0" />}
             </CollapsibleTrigger>
             <CollapsibleContent>
+          {personalInfoLow && (
+            <div className="mb-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 flex items-start gap-3">
+              <TriangleAlert size={20} className="text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-900 dark:text-amber-200">
+                {t('profile.personalInfoReminder')}
+              </p>
+            </div>
+          )}
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-4">
             {t('profile.personalInfoHint')}
           </p>
@@ -742,6 +772,60 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
                 placeholder={t('profile.stayOnTrackPlaceholder') || "e.g. Deadlines, accountability partner, daily reminders"}
                 className="bg-transparent dark:text-white dark:border-zinc-700"
               />
+            </div>
+
+            <div className="pt-2 border-t border-gray-100 dark:border-zinc-800">
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">{t('profile.vectorPrefs')}</p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="question_flow" className="text-black dark:text-white">{t('profile.questionFlow')}</Label>
+                  <Select
+                    value={data.metadata?.question_flow || ''}
+                    onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, question_flow: val } })}
+                  >
+                    <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                      <SelectValue placeholder={t('profile.questionFlowPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {QUESTION_FLOW.map((o) => (
+                        <SelectItem key={o} value={o}>{t(`profile.questionFlow.${o}`)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="preferred_tone" className="text-black dark:text-white">{t('profile.preferredTone')}</Label>
+                  <Select
+                    value={data.metadata?.preferred_tone || ''}
+                    onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, preferred_tone: val } })}
+                  >
+                    <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                      <SelectValue placeholder={t('profile.preferredTonePlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PREFERRED_TONES.map((o) => (
+                        <SelectItem key={o} value={o}>{t(`profile.preferredTone.${o}`)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="treatment_level" className="text-black dark:text-white">{t('profile.treatmentLevel')}</Label>
+                  <Select
+                    value={data.metadata?.treatment_level || ''}
+                    onValueChange={(val: string) => setData({ ...data, metadata: { ...data.metadata, treatment_level: val } })}
+                  >
+                    <SelectTrigger className="bg-transparent dark:text-white dark:border-zinc-700">
+                      <SelectValue placeholder={t('profile.treatmentLevelPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TREATMENT_LEVELS.map((o) => (
+                        <SelectItem key={o} value={o}>{t(`profile.treatmentLevel.${o}`)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2">

@@ -169,7 +169,31 @@ EXAMPLES — How to apply Ikigai to common goal types:
 export const frameworkGuideForConsultant = `
 COMPREHENSIVE FRAMEWORK GUIDE — Use this to recommend the best framework. Do not search the web; use only this reference.
 
-When to choose which: Overwhelm or "too much to do" → Pareto or Eisenhower. Lack of motivation or "I know what to do but don't do it" → RPM (emotional why) or GPS (systems). Need measurable milestones or team alignment → OKR. Stuck, conventional approach failing, or radical innovation → First Principles. One defining yearly challenge that scares and excites → Misogi. Learning a new skill fast (language, instrument, career skill) → DSSS. One big holistic goal with many dimensions (e.g. best player, life balance) → Mandala Chart.
+WHEN TO CHOOSE WHICH (goal signal → framework):
+- "Overwhelm," "too much to do," "efficiency" → Pareto or Eisenhower
+- "Motivation," "don't follow through," "need a why" → RPM or GPS
+- "Learn language/instrument/skill" → DSSS (or Pareto for words/habits)
+- "Measurable," "stretch goal," "track progress" → OKR
+- "Stuck," "conventional doesn't work," "innovate" → First Principles
+- "Holistic," "many areas," "life balance," "best at X" → Mandala Chart
+- "Know what to do but don't do it" → GPS
+- "Push limits," "one defining challenge," "conquer fear" → Misogi
+- "What should I do with my life," "career direction," "burnout" → Ikigai
+- "Get organized," "time management" → Eisenhower, Pareto, or GPS
+- "Save money," "get out of debt" → Pareto, RPM, or Eisenhower
+- "Health," "fitness," "lose weight" → Pareto, RPM, OKR, or GPS
+- "Start business" → Pareto, RPM, OKR, or First Principles
+
+CONCRETE EXAMPLES (goal → best framework):
+- "I want to learn Spanish" → DSSS (or Pareto for vocab)
+- "I'm overwhelmed with work" → Pareto or Eisenhower
+- "I want to get fit but keep quitting" → RPM (Purpose) or GPS (System)
+- "I need to save €10k" → Pareto (top expenses) or RPM (Purpose)
+- "What should I do with my career?" → Ikigai
+- "I want one big challenge this year" → Misogi
+- "I want to be the best at my sport" → Mandala Chart
+- "I know what to do but don't do it" → GPS
+- "I want to start a business" → Pareto, OKR, or First Principles
 
 - **Pareto (80/20):** Vilfredo Pareto (1896), Juran (1940s), Richard Koch (The 80/20 Principle, 1997). Non-linear inputs/outputs; identify vital few, eliminate trivial many; workflow: audit → identify asymmetry → eliminate → reallocate. Fractal: within top 20% the ratio repeats. Best for: overwhelm, efficiency, scaling. Pitfall: don't ignore hygiene tasks—automate or delegate. Example: "Get fit" → vital few: compound movements, HIIT, sleep; cut isolation work and junk miles. "Save money" → vital few: top 2–3 expense categories.
 

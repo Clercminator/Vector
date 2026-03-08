@@ -22,8 +22,15 @@ This document explains **what the app does**, **how it’s built**, **how the pi
     - [5. OKR (Objectives and Key Results)](#5-okr-objectives-and-key-results)
   - [How the AI Works](#how-the-ai-works)
     - [Planner Generator Coach agent (Goal Wizard chat)](#planner-generator-coach-agent-goal-wizard-chat--step-by-step)
-  - [LangSmith Tracing (Debugging the AI)](#langsmith-tracing-debugging-the-ai)
-    - [Fix: Agent Not Responding and "No API key found"](#fix-agent-not-responding-and-no-api-key-found-simple-explanation)
+  - [Agent Architecture (Technical Deep Dive)](#agent-architecture-technical-deep-dive)
+    - [Graph flow diagram](#agent-architecture-graph-flow-diagram)
+    - [Execution model: checkpoint vs interrupt](#execution-model-checkpoint-vs-interrupt)
+    - [Why we don't use interrupt](#why-we-dont-use-interrupt)
+    - [State schema](#agent-state-schema)
+    - [Nodes in detail](#agent-nodes-in-detail)
+    - [Tools](#agent-tools)
+    - [Constants and limits](#agent-constants-and-limits)
+    - [Design decisions and tradeoffs](#agent-design-decisions-and-tradeoffs)
   - [How Levels and Credits Work](#how-levels-and-credits-work)
   - [Architecture](#architecture)
     - [Frontend / Backend Split](#frontend--backend-split)
@@ -34,9 +41,6 @@ This document explains **what the app does**, **how it’s built**, **how the pi
     - [Advantages](#advantages)
     - [Disadvantages](#disadvantages)
   - [What Can Be Improved](#what-can-be-improved)
-    - [Already implemented](#already-implemented)
-    - [Suggested improvements](#suggested-improvements)
-    - [Previously identified gaps — now addressed](#previously-identified-gaps--now-addressed)
   - [Project Structure: Where Everything Lives](#project-structure-where-everything-lives)
   - [How Everything Is Connected](#how-everything-is-connected)
   - [How to Change or Add Things](#how-to-change-or-add-things)
@@ -58,7 +62,7 @@ This document explains **what the app does**, **how it’s built**, **how the pi
 ## What Vector Does (In Plain Language)
 
 - **Landing page**  
-  You see a big headline (“Architect Your Ambition”), a rotating inspirational quote, and cards for five goal frameworks. Each card has a short description. You can click a card to start building a plan with that framework, or click “Learn more” (info icon) to see details: author, definition, pros, cons, and an example.
+  You see a big headline (“Architect Your Ambition”), a rotating inspirational quote, and cards for ten goal frameworks. Each card has a short description. You can click a card to start building a plan with that framework, or click “Learn more” (info icon) to see details: author, definition, pros, cons, and an example.
 
 - **Goal Wizard**  
   You pick a framework (e.g. Pareto 80/20). The app asks you a few questions in a chat-style flow. When you’re done, it uses **AI** (when configured) to turn your answers into a structured blueprint—for example “Vital Few” vs “Trivial Many” for Pareto, or four quadrants for Eisenhower. You can then **save** the blueprint, **export** it to Google Calendar (or download an .ics file), or **restart** with a new goal.
@@ -94,7 +98,7 @@ This document explains **what the app does**, **how it’s built**, **how the pi
 
 | What we built | Why |
 |----------------|-----|
-| **Five frameworks** (First Principles, Pareto, RPM, Eisenhower, OKR) | Each gives a different lens (break down from basics, focus on 20%, align result/purpose/actions, prioritize by urgency/importance, set objectives and key results). |
+| **Ten frameworks** (First Principles, Pareto, RPM, Eisenhower, OKR, DSSS, Mandala, GPS, Misogi, Ikigai) | Each gives a different mental model: break down from basics, focus on 20%, align result/purpose/actions, prioritize by urgency/importance, set objectives and key results, deconstruct skills, map 64 actions, bridge knowledge-execution gaps, undertake radical challenges, find your purpose. |
 | **AI-backed blueprints** | After you answer, an AI (Open Router) structures your answers into the right format. If the AI isn’t configured or fails, the app falls back to simple rule-based parsing so the wizard still works. |
 | **Supabase (auth + database)** | So you can sign in with a magic link (no password), and your blueprints and profile can sync across devices. |
 | **Profile (level + credits)** | To gamify usage (level) and to limit AI usage per user (credits) for cost control. |
@@ -275,7 +279,7 @@ If you follow these steps, the deploy checklist for the Open Router key is compl
 <a id="frameworks-list-and-explanation"></a>
 ## Frameworks: List and Explanation
 
-Vector uses five goal-setting frameworks. Each gives a different mental model for breaking down ambitions into actionable plans.
+Vector uses ten goal-setting frameworks. Each gives a different mental model for breaking down ambitions into actionable plans.
 
 | Framework | Author | One-line idea |
 |-----------|--------|----------------|
@@ -284,6 +288,11 @@ Vector uses five goal-setting frameworks. Each gives a different mental model fo
 | **RPM** | Tony Robbins | Result (what), Purpose (why), Massive Action Plan (how). |
 | **Eisenhower Matrix** | Dwight D. Eisenhower | Sort tasks by urgency and importance into four quadrants. |
 | **OKR** | John Doerr / Andy Grove | Set one Objective and a few measurable Key Results. |
+| **DSSS** | Tim Ferriss | Deconstruct, Select the 20%, Sequence, Stakes—meta-learning for any skill. |
+| **Mandala Chart** | Shohei Ohtani (popularized) | 9×9 grid: central goal + 8 categories, each with 8 actionable steps. |
+| **GPS** | Productivity Framework | Goal, Plan, System—bridge the knowledge and execution gaps. |
+| **Misogi** | Jesse Itzler / Dr. Marcus Elliott | One defining challenge per year with ~50% fail rate; spiritual reset. |
+| **Ikigai** | Mieko Kamiya | Find your reason for being at the overlap of love, skill, need, and vocation. |
 
 ### 1. First Principles (Elon Musk)
 
@@ -325,6 +334,46 @@ Vector uses five goal-setting frameworks. Each gives a different mental model fo
 - **Example:** Objective: “Increase brand awareness.” Key Result: “Reach 10,000 active monthly users.”
 - **When to use:** When you want measurable, time-bound goals (personal or team) with clear success criteria.
 
+### 6. DSSS (Tim Ferriss)
+
+- **Definition:** Deconstruct the skill, Select the 20% that delivers 80%, Sequence the order, and set Stakes (accountability).
+- **Pros:** Rapid learning, focuses on high-impact areas, accountability built-in.
+- **Cons:** Requires discipline; stakes can be stressful; needs good analysis.
+- **Example:** Learning Spanish: Deconstruct grammar/vocab, Select top 1200 words, Sequence sentence structures, Stake $100 on passing a test.
+- **When to use:** When you want to master a skill quickly and systematically.
+
+### 7. Mandala Chart
+
+- **Definition:** A visual chart with a central goal surrounded by 8 categories, each with 8 actionable steps (64 items total).
+- **Pros:** Comprehensive, visualizes connections, balances huge goals.
+- **Cons:** Can become complex; requires 64 specific items; hard to track all at once.
+- **Example:** Central goal: "Best Player." Categories: Fitness, Mental, Control, Speed, Luck, Human Quality, etc.
+- **When to use:** When you have a large, multifaceted goal you want to map visually.
+
+### 8. GPS (Goal, Plan, System)
+
+- **Definition:** Success isn't just willpower; it's about solving the Knowledge Gap and the Execution Gap with clear Goal, Plan, and System.
+- **Pros:** Action-oriented, bridges execution gap, scalable.
+- **Cons:** Requires initial setup, needs tracking discipline.
+- **Example:** Goal: Run 10k. Plan: Training app. System: Strava + accountability.
+- **When to use:** When you struggle to turn knowledge into action.
+
+### 9. Misogi Challenge
+
+- **Definition:** One voluntary hardship per year with ~50% chance of success; rules: really hard, you can't die.
+- **Pros:** Radical confidence boost, re-baselines difficulty, spiritual purification.
+- **Cons:** High chance of failure, physical/mental strain, not a daily productivity tool.
+- **Example:** Paddleboarding across a 30-mile channel without ever having paddled more than 5 miles.
+- **When to use:** When you want one defining challenge to reset your baseline and build resilience.
+
+### 10. Ikigai
+
+- **Definition:** Japanese "reason for being." Your ikigai is where four circles overlap: what you love, what you're good at, what the world needs, what you can be paid for.
+- **Pros:** Clarity on life direction, bridges passion and livelihood, reduces existential drift.
+- **Cons:** Requires deep self-reflection; the intersection can feel narrow; takes time to articulate.
+- **Example:** Love: teaching. Good at: explaining. World needs: STEM educators. Paid for: curriculum design. Purpose: courses that make science accessible.
+- **When to use:** When you want clarity on purpose and direction.
+
 In the app, each framework has a **detail modal** (Learn more) with author, definition, pros, cons, and example. The **Goal Wizard** asks framework-specific questions and produces a structured blueprint (e.g. Vital/Trivial for Pareto, four quadrants for Eisenhower).
 
 ---
@@ -336,7 +385,13 @@ Vector uses **Open Router** to turn your questionnaire answers into a structured
 
 ### Planner Generator Coach agent (Goal Wizard chat) — step-by-step
 
-When you chat with the “Planner Generator Coach” in the Goal Wizard, a **LangGraph agent** (`src/agent/goalAgent.ts`) runs in the browser. Here is how it works: flow, nodes, routes, tools, and timeouts.
+When you chat with the “Planner Generator Coach” in the Goal Wizard, a **LangGraph agent** (`src/agent/goalAgent.ts`) runs in the browser. Here is how it works.
+
+**How the agent thinks, plans, and waits**
+
+- **Thinks:** Each node (consultant, ask, draft, critique, user_review) sends the conversation history, user profile, and form context to the LLM. The model reasons over this context to decide what to ask next, whether to suggest a framework, whether it has enough info to generate a blueprint, and how to improve the plan.
+- **Plans:** Before generating the final blueprint, the agent (1) gathers info via consultant/ask, (2) updates a rough-draft JSON block as it learns, (3) requires explicit user confirmation before generating, (4) runs the draft through a **critique** (framework-specific rubric), and (5) runs a **user-perspective review** (acts as the user to spot gaps). If critique or review finds issues, the agent loops back to refine the blueprint up to once each.
+- **Waits:** The agent does **not** pause mid-run. It runs from START to END in one go. When it needs the user's reply, it reaches END and checkpoints. The next message starts a new run with the restored state. See [Why we don't use interrupt](#why-we-dont-use-interrupt) below.
 
 **1. Single run, one message**
 
@@ -353,6 +408,7 @@ Each time you send a message, the app calls `graph.stream(inputs, config)` once.
 | **validator** | Checks the draft JSON block in the last message; if invalid, injects a correction and sends the flow back to consultant/ask. | No |
 | **draft** | Generates the final blueprint JSON from the conversation. | Yes (no tools) |
 | **critique** | Reviews the blueprint; if it fails, sends the flow back to draft. | Yes (no tools) |
+| **user_review** | Role-plays as user; reviews blueprint; returns SATISFIED or IMPROVE. | Yes (no tools) |
 
 **3. Tools (what the LLM can “call”)**
 
@@ -368,9 +424,9 @@ Each time you send a message, the app calls `graph.stream(inputs, config)` once.
   - Else: **END** (wait for user), or **framework_setter** (LLM called set_framework), or **tools** (LLM called a tool), or **draft** (LLM called generate_blueprint).
 - **framework_setter** → **ask**.
 - **tools** → **ask**.
-- **draft** → **critique** → **draft** again (if critique failed) or **END**.
+- **draft** → **critique** → **draft** again (if critique failed), or **user_review** (if passed) → **draft** (if improvements suggested) or **END**.
 
-So the “possible routes” are: consultant ↔ validator, ask ↔ validator, sometimes framework_setter → ask, tools → ask, and when the user is ready: validator → draft → critique → (draft again or END).
+So the “possible routes” are: consultant ↔ validator, ask ↔ validator, sometimes framework_setter → ask, tools → ask, and when the user is ready: validator → draft → critique → (draft retry or user_review) → (draft refinement or END). See [Agent Architecture (Technical Deep Dive)](#agent-architecture-technical-deep-dive) for full details.
 
 **5. Model fallback and timeouts**
 
@@ -395,64 +451,273 @@ Relevant code: `src/lib/openrouter.ts` (API client, system prompts, JSON parsing
 
 ---
 
-<a id="langsmith-tracing"></a>
-## LangSmith Tracing (Debugging the AI)
+<a id="agent-architecture-technical-deep-dive"></a>
+## Agent Architecture (Technical Deep Dive)
 
-LangSmith is a tool that lets you see what the AI agent is doing—each question it asks, each reply it gets, and each step in between. It’s useful for debugging and improving the agent.
+This section documents the **Planner Generator Coach** agent in full technical detail so a developer can understand every design choice, flow, and component. Use it for architecture review, onboarding, or evaluating whether we are using the best design and tools.
 
-### Why Our Traces Don’t Show Up (Simple Explanation)
+### Overview
 
-The agent runs in your browser. For LangSmith to record traces, the browser has to send data to LangSmith’s servers. That fails for two main reasons:
+The agent is a **LangGraph JS** state machine that runs **in the browser**. It guides users through goal refinement, asks questions, and produces a structured JSON blueprint. Key design decisions:
 
-1. **Security and privacy**: LangSmith’s official guidance says you should *not* put your LangSmith API key in the browser. Anyone can see it in the page source. We’ve tried it anyway, but it’s unsafe.
-2. **Network blocking**: When the browser tries to send trace data to LangSmith’s site, the request is often blocked by the browser’s security rules (CORS). LangSmith’s servers aren’t set up to accept these requests directly from web pages.
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| **Runtime** | Browser (client-side) | No backend service to run the agent; lower latency; user data stays on device until sent to AI proxy |
+| **Framework** | LangGraph JS (`@langchain/langgraph`) | Stateful graphs, conditional routing, tool calling, checkpointing |
+| **LLM** | Open Router (DeepSeek primary, fallbacks) | Cost, model flexibility, single API |
+| **State persistence** | Checkpointer (Supabase or in-memory) | Conversation survives across turns; no “run from zero” each message |
+| **Interrupt** | None | We use checkpoint-at-END, not `interruptBefore`; each turn runs to completion |
 
-So even when we configure tracing, the data never reaches LangSmith.
+### Agent Architecture: Graph Flow Diagram
 
-### Why Our Traces Don’t Show Up (Technical Explanation)
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                           LANGGRAPH AGENT FLOW                                                │
+└─────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
-- **CORS**: The LangSmith API (`https://api.smith.langchain.com`) does not expose `Access-Control-Allow-Origin` for arbitrary origins. The tracer uses `fetch()` from the browser; cross-origin requests are blocked before they complete.
-- **API key exposure**: Any variable starting with `VITE_` in `.env` is embedded in the client bundle. Putting `VITE_LANGCHAIN_API_KEY` or `VITE_LANGSMITH_API_KEY` in the frontend exposes the key to anyone who inspects the app. LangSmith’s docs explicitly advise against this.
-- **`process.env`**: LangChain’s tracer expects `process.env`, which doesn’t exist in the browser. We use a polyfill (`window.process.env`), but some internals may read env vars at import time, before the polyfill runs.
-- **Best practice**: LangSmith recommends a *token exchange service* or *proxy* on the backend. The frontend should never talk to LangSmith directly; instead, it talks to our server, which adds the API key and forwards the request.
+                                         ┌─────────┐
+                                         │  START  │
+                                         └────┬────┘
+                                              │
+                                    ┌─────────▼─────────┐
+                                    │    routeStart     │
+                                    │ framework set?    │
+                                    └────┬────────┬─────┘
+                                         │        │
+                              No ────────┘        └──────── Yes
+                               │                            │
+                               ▼                            ▼
+                    ┌──────────────────┐         ┌──────────────────┐
+                    │   consultant     │         │      ask         │
+                    │ (suggest fw,     │         │ (framework Q&A,   │
+                    │  ask about goal) │         │  draft JSON,     │
+                    └────────┬─────────┘         │  tools)          │
+                             │                   └────────┬─────────┘
+                             │                            │
+                             └────────────┬───────────────┘
+                                          │
+                                          ▼
+                               ┌──────────────────────┐
+                               │     validator        │
+                               │ (check rough-draft   │
+                               │  JSON; inject fix    │
+                               │  or pass)            │
+                               └──────────┬───────────┘
+                                          │
+                        ┌─────────────────┼─────────────────┬─────────────────┐
+                        │                 │                 │                 │
+                        ▼                 ▼                 ▼                 ▼
+               ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+               │    ask       │  │  consultant  │  │ framework_   │  │    tools     │
+               │ (fix draft)  │  │ (fix draft)  │  │   setter     │  │ (run LLM     │
+               └──────┬───────┘  └──────┬───────┘  │ or set_fw)   │  │  tool calls) │
+                      │                 │          └──────┬───────┘  └──────┬───────┘
+                      │                 │                 │                 │
+                      └─────────────────┴─────────────────┴─────────────────┘
+                                          │
+                        (generate_blueprint called OR steps > 10)
+                                          │
+                                          ▼
+                               ┌──────────────────────┐
+                               │       draft          │
+                               │ (generate final      │
+                               │  blueprint JSON)     │
+                               └──────────┬───────────┘
+                                          │
+                                          ▼
+                               ┌──────────────────────┐
+                               │     critique         │
+                               │ (rubric check;       │
+                               │  pass or retry)      │
+                               └──────────┬───────────┘
+                                          │
+                        ┌─────────────────┴─────────────────┐
+                        │                                   │
+            critiqueAttempts === 1                  critiqueAttempts === 0
+            (failed)                                (passed)
+                        │                                   │
+                        ▼                                   ▼
+               ┌──────────────┐                  ┌──────────────────────┐
+               │    draft     │                  │    user_review       │
+               │ (retry once) │                  │ (act as user, review │
+               └──────────────┘                  │  blueprint; SATISFIED│
+                                                 │  or IMPROVE)         │
+                                                 └──────────┬───────────┘
+                                                            │
+                                          ┌─────────────────┴─────────────────┐
+                                          │                                   │
+                              userReviewRequestsRefinement           SATISFIED or
+                              (improvements suggested)                skip (max refined)
+                                          │                                   │
+                                          ▼                                   ▼
+                                 ┌──────────────┐                      ┌──────────────┐
+                                 │    draft     │                      │     END      │
+                                 │ (refine from │                      │ (deliver     │
+                                 │  feedback)   │                      │  blueprint)  │
+                                 └──────┬───────┘                      └──────────────┘
+                                        │
+                                        └──────────────────▶ critique → user_review → END
+                                                             (max 1 refinement)
+```
 
-### How to Set Up LangSmith Correctly (Simple Explanation)
+Mermaid diagram (for tools that support it):
 
-To use LangSmith when the agent runs in the browser, we need a small backend service (similar to the OpenRouter proxy) that:
+```mermaid
+flowchart TD
+    START([START]) --> routeStart{framework set?}
+    routeStart -->|No| consultant[consultant]
+    routeStart -->|Yes| ask[ask]
+    consultant --> validator[validator]
+    ask --> validator
+    validator -->|invalid draft, retry| ask
+    validator -->|invalid draft, retry| consultant
+    validator -->|set_framework| framework_setter[framework_setter]
+    validator -->|tool calls| tools[tools]
+    validator -->|generate_blueprint or steps>10| draft[draft]
+    validator -->|wait user| END1([END])
+    framework_setter --> ask
+    tools --> ask
+    draft --> critique[critique]
+    critique -->|failed| draft
+    critique -->|passed| user_review[user_review]
+    user_review -->|IMPROVE, attempts<1| draft
+    user_review -->|SATISFIED or skip| END2([END])
+```
 
-1. Receives trace data from the browser.
-2. Adds the LangSmith API key securely (kept only on the server).
-3. Sends the data to LangSmith on behalf of the app.
+### Execution model: checkpoint vs interrupt
 
-That way the key stays private and the browser’s security rules no longer block the request.
+- **No LangGraph interrupt**  
+  We do **not** use `interruptBefore` or `interruptAfter`. The graph runs until it hits END. There is no “pause mid-node” to wait for user input.
 
-### How to Set Up LangSmith Correctly (Technical Explanation)
+- **Checkpoint-based persistence**  
+  Each run goes: **START → … → END**. When it reaches END, LangGraph checkpoints the state. The next user message triggers a **new run** that:
+  1. Loads the checkpointed state for the same `thread_id`
+  2. Merges the new input (e.g. `messages: [new HumanMessage(userText)]`) via reducers
+  3. Executes from START again with the updated state
 
-1. **Create a LangSmith proxy Edge Function** (e.g. `langsmith-proxy`), analogous to `openrouter-proxy`. It accepts POST requests with trace payloads, adds the `LANGSMITH_API_KEY` from Supabase Secrets, and forwards to `https://api.smith.langchain.com`.
-2. **Configure the tracer** to use the proxy URL instead of LangSmith’s direct URL (via `LANGCHAIN_ENDPOINT` or equivalent, if supported by the LangSmith JS client).
-3. **Keep secrets server-side**: Store `LANGSMITH_API_KEY` (or `LANGCHAIN_API_KEY`) only in Supabase Edge Function Secrets or `.env.backend`. Do *not* put it in `.env` with a `VITE_` prefix.
-4. **Alternative**: Use LangSmith’s **Collector-Proxy** (beta), which is built for this use case. See [LangSmith Collector-Proxy docs](https://docs.smith.langchain.com/observability/how_to_guides/collector_proxy).
-5. **Environment files**: `.env` holds frontend-safe variables (e.g. `VITE_SUPABASE_URL`). `.env.backend` is gitignored and holds secrets (API keys, etc.). Ensure `.env` is in `.gitignore` if it contains secrets, or use a `.env.example` template without real keys.
+- **Effect**  
+  Conversation history, `blueprint`, `framework`, etc. are preserved across turns. The client sends only the **new** user message; full history comes from the checkpoint.
 
-### What We’ve Tried (and Why It Failed)
+- **Checkpointer**  
+  - **Supabase** (`SupabaseCheckpointer`): when configured, persists to `checkpoints` and `checkpoint_writes` tables  
+  - **MemorySaver**: fallback when Supabase is not configured; in-memory only, lost on refresh  
 
-- Polyfilling `process.env` in the browser → tracer may read env before polyfill; CORS still blocks the request.
-- Passing `LangChainTracer` with callbacks to `graph.stream()` → tracer runs, but the outbound request to LangSmith fails (CORS).
-- Setting `VITE_LANGCHAIN_TRACING_V2`, `VITE_LANGCHAIN_API_KEY`, etc. in `.env` → keys are exposed in the bundle and requests are still blocked.
+- **Thread ID**  
+  The frontend uses a stable `thread_id` (e.g. from localStorage, valid for 24h). Same thread ⇒ same checkpoint chain.
 
-**Bottom line**: Browser-based tracing only works with a backend proxy or token exchange. The proxy pattern (like `openrouter-proxy`) is the right approach.
+### Why we don't use interrupt
 
-### Fix: Agent Not Responding and "No API key found" (Simple Explanation)
+We do **not** use LangGraph's `interruptBefore` or `interruptAfter`. The graph always runs to END; there is no "pause mid-node" to wait for user input.
 
-If the agent gets stuck on "Designing strategy..." and the console shows "No API key found in request," the LLM requests to the openrouter-proxy were being rejected. The proxy is a Supabase Edge Function; Supabase requires every request to include your project's public key (the `apikey` header). The LLM client was not sending it. We now add that key automatically when calling the proxy, so the agent can get AI responses again.
+**Reasons:**
 
-Separately, the LangSmith tracer was sending requests from the browser that returned 403 errors. We turned the tracer off in the browser so it no longer spams the console or interferes with the agent.
+1. **Simplicity:** Our flow is linear: gather info → validate → optionally draft/critique/review → END. When we need user input, we naturally hit END. A new run with the next message restores state. Adding interrupt would complicate the graph without clear benefit.
+2. **Turn-based UX:** The Goal Wizard is turn-based: user sends a message, agent replies. Each "wait" is at END. Checkpoint-at-END matches this model.
+3. **Frontend simplicity:** With run-to-END, the frontend just sends the next message and the same `thread_id`; the checkpointer loads the latest state automatically. Resuming from an interrupt would require extra handling.
+4. **No human-in-the-loop mid-node:** Interrupt is useful when you want a human to approve something *between* nodes. We automate that with the **user_review** node, which simulates the user's perspective. We don't need a real human to approve each internal step.
 
-### Fix: Agent Not Responding and "No API key found" (Technical Explanation)
+**When interrupt would make sense:** If we added explicit "approve this draft before continuing" steps where the user must click a button, we'd use `interruptAfter` on the draft node. Our current design uses an automated user-perspective review instead.
 
-- **Cause**: `ChatOpenAI` calls `VITE_OPENROUTER_PROXY_URL` (a Supabase Edge Function) via direct `fetch()`. The Supabase Functions gateway expects the `apikey` header (anon/publishable key). Without it, the gateway returns `{"message":"No API key found in request","hint":"No \`apikey\` request header or url param was found."}` and the LLM never receives a response.
-- **Fix**: In `src/agent/goalAgent.ts`, we build an `llmConfig` that adds `defaultHeaders: { apikey: supabaseKey }` when `VITE_OPENROUTER_PROXY_URL` is set. The Supabase key comes from `VITE_SUPABASE_PUBLISHABLE_KEY` or `VITE_SUPABASE_ANON_KEY`. All three LLM instances (main model, draft, critique) use this config.
-- **LangSmith**: The `LangChainTracer` was disabled in `GoalWizard.tsx` because direct POSTs to `api.smith.langchain.com` from the browser return 403. Re-enable only when a LangSmith proxy is in place.
+### Agent state schema
+
+Defined in `src/agent/state.ts` using LangGraph `Annotation`:
+
+| Field | Type | Reducer | Purpose |
+|-------|------|---------|---------|
+| `messages` | `BaseMessage[]` | append | Full conversation (human + AI) |
+| `goal` | string | first non-empty | User’s stated goal |
+| `framework` | string \| null | last wins | Selected framework ID |
+| `tier` | string | last wins | User tier (architect/standard/max) |
+| `validFrameworks` | string[] | last wins | Allowed frameworks for tier |
+| `blueprint` | any | last wins | Final JSON blueprint |
+| `steps` | number | sum | Message-step counter |
+| `critiqueAttempts` | number | sum | Draft→critique retry count |
+| `validationAttempts` | number | replace | Rough-draft validation retries |
+| `hardMode` | boolean | last wins | Devil’s advocate mode |
+| `language` | string | last wins | UI language |
+| `userProfile` | string | last wins | Profile summary for personalization |
+| `formContext` | string | last wins | Intake form context |
+| `userRefinementAttempts` | number | sum | User-review refinement passes |
+| `userReviewFeedback` | string | last wins | Feedback from user-perspective review |
+| `userReviewRequestsRefinement` | boolean | last wins | Router flag: go back to draft? |
+
+### Agent nodes in detail
+
+| Node | File | LLM? | Role |
+|------|------|------|------|
+| **consultant** | `nodes/consultant.ts` | Yes | First contact: suggests frameworks, asks about goal; uses tools |
+| **ask** | `nodes/ask.ts` | Yes | Framework-specific Q&A; maintains rough-draft JSON; calls `set_framework` / `generate_blueprint` |
+| **validator** | `nodes/validator.ts` | No | Validates `\|\|\|DRAFT_START\|\|\|...\|\|\|DRAFT_END\|\|\|` JSON; injects correction message or strips on max retries |
+| **framework_setter** | `nodes/frameworkSetter.ts` | No | Applies `set_framework` tool result; updates `state.framework` |
+| **tools** | LangGraph prebuilt | No | Executes LLM tool calls (`set_framework`, `generate_blueprint`) |
+| **draft** | `nodes/draft.ts` | Yes | Generates final blueprint JSON from conversation; applies critique and user-review feedback |
+| **critique** | `nodes/critique.ts` | Yes | Runs framework-specific rubric; returns PASS or fix instruction |
+| **user_review** | `nodes/userReview.ts` | Yes | Role-plays as user; reviews blueprint; returns SATISFIED or IMPROVE: ... |
+
+**Flow summary:**  
+`consultant` / `ask` → `validator` → (loop back / `framework_setter` / `tools` / `draft` / END).  
+When `draft` runs: `draft` → `critique` → (`draft` retry or `user_review`) → (`draft` refinement or END).
+
+### Agent tools
+
+| Tool | Schema | Behavior |
+|------|--------|----------|
+| **set_framework** | `framework: enum` | Switches framework; graph routes to `framework_setter` |
+| **generate_blueprint** | `reason: string` | Marks user as ready; graph routes to `draft` |
+
+Both are invoked by the LLM when it decides the user confirmed. The `reason` field in `generate_blueprint` forces the model to cite user confirmation.
+
+### Agent constants and limits
+
+| Constant | Value | File | Role |
+|----------|-------|------|------|
+| `MAX_STEPS_BEFORE_DRAFT` | 10 | `constants.ts` | Force draft if steps exceed 10 |
+| `MESSAGE_WINDOW_SIZE` | 20 | `constants.ts` | Max messages in LLM context |
+| `MAX_VALIDATION_ATTEMPTS` | 2 | `constants.ts` | Max rough-draft validation retries |
+| `MAX_CRITIQUE_RETRIES` | 1 | `constants.ts` | Max draft→critique→draft retries |
+| `MAX_USER_REFINEMENTS` | 1 | `constants.ts` | Max user-review→draft refinement passes |
+| `DRAFT_HISTORY_MAX_CHARS` | 12,000 | `constants.ts` | Truncate history for draft prompt |
+| `MAX_USER_MESSAGE_CHARS` | 8,000 | `constants.ts` | Reject or shorten overly long user messages |
+| `PER_MODEL_TIMEOUT_MS` | 65,000 | `utils.ts` | Timeout per model before fallback |
+
+### Frontend invocation
+
+In `useGoalWizard.ts`:
+
+1. **Inputs**  
+   `graph.stream(inputs, config)` where:
+   - `inputs`: `{ messages: [new HumanMessage(userText)], goal, framework, tier, validFrameworks, hardMode, language, userProfile, formContext }`
+   - `config`: `{ configurable: { thread_id } }`
+
+2. **Stream mode**  
+   `streamMode: ["updates", "values"]` to receive per-node updates and full state.
+
+3. **Thread ID**  
+   Stored in localStorage (`vector_wizard_session`), reused for 24 hours.
+
+4. **Checkpoint usage**  
+   With the same `thread_id`, each invocation loads the last checkpoint and merges the new `messages` before running.
+
+### Agent design decisions and tradeoffs
+
+| Topic | Decision | Tradeoff |
+|-------|----------|----------|
+| **Client-side agent** | Run in browser | Pro: No agent backend, low latency. Con: Prompts in bundle, depends on client compute. |
+| **Supabase checkpointer** | Persist to DB when configured | Pro: Conversation survives refresh, multi-tab. Con: Extra table, RLS policies. |
+| **No interrupt** | Run to END, then checkpoint | Pro: Simple flow. Con: Cannot pause mid-node for human-in-the-loop. |
+| **Single draft retry** | `MAX_CRITIQUE_RETRIES = 1` | Pro: Bounded cost. Con: Only one automatic fix if rubric fails. |
+| **Single user-review refinement** | `MAX_USER_REFINEMENTS = 1` | Pro: Avoid loops, control cost. Con: At most one improvement pass. |
+| **Model fallback chain** | Primary + 4 fallbacks, 65s each | Pro: Robustness if primary is slow or down. Con: Possible long wait. |
+| **Proxy for Open Router** | Use Supabase Edge Function | Pro: API key stays server-side. Con: Extra hop, Supabase dependency. |
+
+### Database tables for checkpoints
+
+When using Supabase persistence:
+
+- **`checkpoints`**: `thread_id`, `checkpoint_id`, `parent_checkpoint_id`, `type`, `checkpoint` (jsonb)
+- **`checkpoint_writes`**: `thread_id`, `checkpoint_id`, `task_id`, `idx`, `channel`, `type`, `value`
+
+Migration: `supabase/migrations/20260201_create_checkpoints.sql` (and RLS in `supabase_checkpoints_rls.sql`).
 
 ---
 
@@ -604,49 +869,14 @@ In short: the agent’s logic lives in the browser; the server provides secure a
 <a id="what-can-be-improved"></a>
 ## What Can Be Improved
 
-### Already implemented
-
-- **TOC deep links:** Use explicit anchor IDs (as in this README) so “Table of Contents” links work in every viewer.
-- **Levels and credits:** Level and points are updated when saving blueprints; Goal Wizard checks credits and calls `decrement_credits` when AI is used (RPC must exist in Supabase).
-- **Routing:** React Router is in place; routes include `/`, `/dashboard`, `/community`, `/pricing`, `/profile`, `/wizard`, `/frameworks/:id`, `/analytics`, `/admin`.
-- **Offline / retry:** Offline banner and retry helper with exponential backoff for Supabase auth and blueprint sync.
-- **Framework detail modal:** “Learn more“ on framework cards opens FrameworkDetail with author, pros, cons, example.
-- **Publish template:** “Publish as template” from Dashboard inserts into community_templates.
-- **Performance:** GoalWizard, Pricing, Dashboard, Community, Profile, AdminDashboard are lazy-loaded with React.lazy and Suspense.
-- **Nav active state, footer alignment, Community fetch:** Current-route highlighting, footer/Share alignment, Community loading from Supabase.
-- **Pricing structure:** Four tiers (Architect / Standard / Max / Enterprise) with shared config in `src/lib/tiers.ts`. Standard (15 credits, all frameworks) and Max (40 credits, calendar/PDF, priority AI) use **one-time** pricing; MercadoPago checkout is wired for both when configured.
-- **Tier enforcement:** Framework cards show locked state for frameworks not in user's tier; GoalWizard checks `canUseFramework(tier, framework)` and disables Calendar/PDF export buttons based on `canExportCalendar` / `canExportPdf` for the user's tier. User tier is fetched from `profiles.tier` on auth.
-- **Credits & tier RPC:** GoalWizard calls `decrement_credits` when AI is used; webhook uses `increment_credits`. Ensure these RPCs and `profiles.tier` exist in your Supabase project (e.g. via migrations or SQL).
-- **MercadoPago webhook:** `supabase/functions/mercado-pago-webhook/index.ts` handles payment notifications, updates `profiles.credits` and `profiles.tier` using `increment_credits` RPC and tier amounts from `TIER_CONFIGS`.
-- **PDF export:** `src/lib/pdfExport.ts` exports blueprints to PDF (Max tier feature); GoalWizard shows locked PDF button for lower tiers.
-- **SEO:** Meta and Open Graph in `index.html`; per-framework pages at `/frameworks/:id` use `react-helmet-async` for title/description/OG.
-- **Admin dashboard:** Route `/admin` for users with `profiles.is_admin`; `AdminDashboard`; RLS in `supabase/migrations/20260131_admin_updates.sql`.
-- **User analytics page:** Route `/analytics`; `AnalyticsPage` and `analytics_events` table; `trackEvent` in `src/lib/analytics.ts`.
-- **Help Me Choose (AI-suggested framework):** `HelpMeChooseModal`; `suggestFramework` in `openrouter.ts`; prompt `prompts/suggest-framework.txt`.
-- **Blueprint refinement:** GoalWizard refine flow; `refineBlueprint` in `openrouter.ts`; `decrement_credits`; `blueprint_messages` table (migration `20260131_chat_history.sql`).
-- **Achievements and streaks:** `src/lib/gamification.ts`; milestones and streak; `AchievementsList` on Profile.
-- **Bulk export:** `BulkExportModal` in Dashboard; tier-gated (Max); branding from profile.
-- **Framework SEO pages:** `/frameworks/:id` with `FrameworkPage` and `frameworkContent.ts`; Helmet for title, description, og:title, og:description, keywords per framework.
-- **Vercel Speed Insights:** `injectSpeedInsights()` in `main.tsx`.
-- **Dashboard pagination:** Remote blueprints loaded in pages via `loadRemoteBlueprints(uid, page)` with `.range(from, to)`; "Load More" button and `hasMore` / `isLoadingMore` in `Dashboard.tsx`.
-- **Community pagination:** Templates loaded in pages via `fetchTemplates(pageToLoad)` with `.range(from, to)`; "Load More" button and `hasMore` / `isLoadingMore` in `Community.tsx`; sort by recent/top.
-- **Leaderboard:** Community leaderboard showing top contributors by total votes; `get_leaderboard` RPC; `Leaderboard.tsx` component.
-- **Gamification:**
-    - **Levels & XP:** Earn points by saving blueprints; level up as you grow.
-    - **Streaks:** Maintain a daily streak by being active.
-    - **Achievements:** Unlock badges (e.g., "First Steps", "Architect", "Dedicated") for reaching milestones.
-
-
-### Suggested improvements
-
 - **Expand test coverage:** Add unit tests (Vitest) for `openrouter`, `blueprints`, `calendarExport`, `pdfExport`, `gamification`; integration tests for `GoalWizard` and `Dashboard`. (`src/lib/tiers.test.ts` exists as a starting example.)
 - **Virtual scrolling (optional):** For very large lists (hundreds of items), consider virtual scrolling; pagination is already implemented for Dashboard and Community.
 - **Email notifications:** Receipt email on purchase is implemented (webhook → send-email). Optional: low-credits reminder, welcome email.
 - **Admin analytics:** Admin dashboard could show aggregate usage (tier conversions, payments, framework usage) beyond per-user data.
 - **Collaborative blueprints:** Allow users to share blueprints with others for real-time collaboration (requires WebSockets or Supabase Realtime).
 - **Mobile app:** Build React Native or PWA version for iOS/Android with offline-first sync.
-- **Advanced AI features:** Multi-turn conversations in Goal Wizard (follow-up questions based on answers). (AI-suggested framework and blueprint refinement are already implemented.)
-- **Gamification:** Leaderboard is implemented. Further: weekly challenges, team leaderboards. (Achievements, streaks, and community leaderboard are already implemented.)
+- **Advanced AI features:** Deeper multi-turn refinement, more context-aware follow-ups.
+- **Gamification:** Weekly challenges, team leaderboards.
 - **Export enhancements:** Export to Notion, Trello, Asana, or other project management tools; bulk calendar export; custom PDF branding (Max tier branding from profile is already used in bulk PDF export).
 - **Subscription model:** Convert one-time pricing to recurring subscriptions (monthly/yearly) for sustained revenue. Requires Stripe or MercadoPago subscriptions API.
 - **Admin enhancements:** Approve/reject/feature community templates from Admin UI; bulk user/tier management.
@@ -654,26 +884,6 @@ In short: the agent’s logic lives in the browser; the server provides secure a
 - **SEO improvements:** Per-framework pages and meta are already in place. Optional: link framework cards or "Learn more" to `/frameworks/:id` from the landing page for discoverability; implement SSR or prerendering for better indexing.
 
 **Stripe (future, US):** See [integrations/pending/stripe/](integrations/pending/stripe/).
-
-### Previously identified gaps — now addressed
-
-The following gaps have been fixed in the codebase:
-
-| Gap | Status | Implementation |
-|-----|--------|----------------|
-| Profile when logged out | Fixed | `/profile` shows "Sign in required" + Sign in button (App.tsx Route, lines 749–760) |
-| Post-payment experience | Fixed | `?payment=success` on return: toast + profile refetch; `back_url_success` → `/dashboard?payment=success` (App.tsx, mercadoPago.ts) |
-| Anonymous → signed-in merge | Fixed | `syncLocalBlueprintsToRemote` on sign-in; local blueprints uploaded, toast shows count (App.tsx, blueprints.ts) |
-| Offline delete queue | Fixed | `queueDeletedBlueprint` when offline; `processDeletedQueue` on sign-in (App.tsx handleDeleteBlueprint, blueprints.ts) |
-| Locked framework click | Fixed | Toast + Pricing CTA on click; wizard does not open (App.tsx FrameworkCard onClick) |
-| Wizard tier check (deep link) | Fixed | GoalWizard `useEffect`: if `!canUseFramework` → toast + `onBack()` (GoalWizard.tsx lines 43–48) |
-| Email after purchase | Fixed | mercado-pago-webhook calls send-email Edge Function with receipt (mercado-pago-webhook/index.ts lines 174–201) |
-| Analytics nav entry | Fixed | Analytics link in nav (desktop + mobile); route `/analytics` (App.tsx) |
-| handle-new-user webhook | Fixed | Checks `body.schema === 'auth'` and `body.table === 'users'` for Supabase auth payload (handle-new-user/index.ts) |
-| PWA | Fixed | VitePWA configured in `vite.config.ts` with manifest, icons, autoUpdate |
-| verify_webhook.js | Fixed | Uses `process.env.VITE_SUPABASE_URL` or `process.env.PROJECT_ID`; no hardcoded project ID |
-| Base tables migration | Fixed | `20240101000000_baseline_schema.sql` creates profiles, blueprints, community_templates, template_votes |
-| Template moderation (Admin) | Fixed | AdminDashboard has approve/reject/feature actions for community templates (`handleUpdateTemplate`) |
 
 ---
 

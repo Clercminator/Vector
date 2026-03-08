@@ -10,6 +10,9 @@ export const MAX_VALIDATION_ATTEMPTS = 2;
 /** After one failed critique, we allow one retry (draft → critique → draft). */
 export const MAX_CRITIQUE_RETRIES = 1;
 
+/** Max user-perspective refinement passes (draft → userReview → draft → ...). */
+export const MAX_USER_REFINEMENTS = 1;
+
 /** Max character length of conversation history passed to the draft prompt (avoids context overflow). */
 export const DRAFT_HISTORY_MAX_CHARS = 12_000;
 
