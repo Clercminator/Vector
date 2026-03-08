@@ -17,6 +17,7 @@ interface LandingPageProps {
     onHeroGetStarted?: () => void;
     onViewFramework: (fw: typeof frameworks[0]) => void;
     tier: TierId;
+    userId?: string | null;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ 
@@ -24,7 +25,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     onShowHelpChoose, 
     onHeroGetStarted, 
     onViewFramework, 
-    tier: tierProp 
+    tier: tierProp,
+    userId 
 }) => {
     const { t } = useLanguage();
     const tier = tierProp ?? DEFAULT_TIER_ID;
@@ -54,13 +56,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             exit={{ opacity: 0 }}
             className="relative z-10"
         >
-            {/* Gift badge — corner of screen */}
+            {/* Gift badge — corner of screen, only when not logged in */}
+            {!userId && (
             <div className="fixed top-24 right-4 md:top-20 md:right-6 z-30">
                 <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/90 dark:bg-emerald-500/80 text-white shadow-lg border border-emerald-400/30 backdrop-blur-sm">
                     <Gift size={18} className="shrink-0" />
                     <span className="text-sm font-medium whitespace-nowrap">{t('landing.hero.giftBadge')}</span>
                 </div>
             </div>
+            )}
 
             {/* Hero Section */}
             <section className="px-6 pt-24 pb-32 md:pt-20 md:pb-48 text-center max-w-5xl mx-auto">
@@ -73,10 +77,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         {t('landing.hero.architectYour')} <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-red-500 to-yellow-500">{t('landing.hero.ambition')}</span>
                     </h1>
-                    
-                    <InspirationalQuote />
 
-                    <p className="text-xl md:text-2xl text-gray-500 font-light max-w-2xl mx-auto mb-4 leading-relaxed">
+                    <p className="text-xl md:text-2xl text-gray-500 font-light max-w-4xl mx-auto mb-4 leading-relaxed">
                         {t('landing.hero.subtitle')}
                     </p>
                     <p className="text-base md:text-lg text-gray-400 dark:text-gray-500 max-w-xl mx-auto mb-12">
@@ -114,6 +116,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     >
                         {t('landing.hero.newHere')}
                     </button>
+                    <div className="mt-8">
+                        <InspirationalQuote />
+                    </div>
                 </motion.div>
             </section>
 

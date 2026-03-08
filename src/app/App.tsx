@@ -967,6 +967,7 @@ function App() {
                       }}
                       onViewFramework={setViewingFramework}
                       tier={tier}
+                      userId={userId}
                     />
                   }
                 />
