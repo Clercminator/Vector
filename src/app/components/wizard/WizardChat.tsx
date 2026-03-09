@@ -46,12 +46,13 @@ const ChatContent: React.FC<{
   isTyping: WizardChatProps['isTyping'];
   isAgentRunning?: boolean;
   agentStatus?: string;
+  result?: any;
   messagesEndRef: React.RefObject<HTMLDivElement>;
   children?: React.ReactNode;
   contentClassName: string;
   onEditMessage?: WizardChatProps['onEditMessage'];
-}> = ({ messages, isTyping, isAgentRunning = false, agentStatus, messagesEndRef, children, contentClassName, onEditMessage }) => {
-  const showThinking = isTyping || isAgentRunning;
+}> = ({ messages, isTyping, isAgentRunning = false, agentStatus, result, messagesEndRef, children, contentClassName, onEditMessage }) => {
+  const showThinking = (isTyping || isAgentRunning) && !result;
   const latestUserMessageId = React.useMemo(() => {
     for (let j = (messages?.length ?? 0) - 1; j >= 0; j--) {
       const m = messages[j];
@@ -214,6 +215,7 @@ export const WizardChat: React.FC<WizardChatProps> = ({
           isTyping={isTyping}
           isAgentRunning={isAgentRunning}
           agentStatus={agentStatus}
+          result={result}
           messagesEndRef={messagesEndRef}
           contentClassName={contentClassName}
           onEditMessage={onEditMessage}
@@ -232,6 +234,7 @@ export const WizardChat: React.FC<WizardChatProps> = ({
           isTyping={isTyping}
           isAgentRunning={isAgentRunning}
           agentStatus={agentStatus}
+          result={result}
           messagesEndRef={messagesEndRef}
           contentClassName={contentClassName}
           onEditMessage={onEditMessage}

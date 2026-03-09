@@ -390,7 +390,7 @@ When you chat with the “Planner Generator Coach” in the Goal Wizard, a **Lan
 **How the agent thinks, plans, and waits**
 
 - **Thinks:** Each node (consultant, ask, draft, critique, user_review) sends the conversation history, user profile, and form context to the LLM. The model reasons over this context to decide what to ask next, whether to suggest a framework, whether it has enough info to generate a blueprint, and how to improve the plan.
-- **Plans:** Before generating the final blueprint, the agent (1) gathers info via consultant/ask, (2) updates a rough-draft JSON block as it learns, (3) requires explicit user confirmation before generating, (4) runs the draft through a **critique** (framework-specific rubric), and (5) runs a **user-perspective review** (acts as the user to spot gaps). If critique or review finds issues, the agent loops back to refine the blueprint up to once each.
+- **Plans:** Before generating the final blueprint, the agent (1) gathers info via consultant/ask (for fitness/health goals it must ask about body/constraints, habits, and past experience before considering “enough info”), (2) updates a rough-draft JSON block as it learns, (3) requires **explicit user confirmation** before generating—it must ask “Does this analysis make sense? Anything to add before I generate?” or “Ready for me to generate your plan?” and never show or declare the plan ready until the user confirms, (4) runs the draft through a **critique** (framework-specific rubric), and (5) runs a **user-perspective review** (acts as the user to spot gaps). If critique or review finds issues, the agent loops back to refine the blueprint up to once each.
 - **Waits:** The agent does **not** pause mid-run. It runs from START to END in one go. When it needs the user's reply, it reaches END and checkpoints. The next message starts a new run with the restored state. See [Why we don't use interrupt](#why-we-dont-use-interrupt) below.
 
 **1. Single run, one message**
@@ -405,7 +405,7 @@ Each time you send a message, the app calls `graph.stream(inputs, config)` once.
 | **ask** | Follow-up replies: refines the plan, asks 1–2 questions, can update a “draft” JSON. Runs when a framework is already chosen. | Yes (with tools) |
 | **framework_setter** | Applies the “switch framework” tool: updates state and adds a short confirmation message. | No |
 | **tools** | Runs the LLM’s tool calls (e.g. set_framework, generate_blueprint). | No |
-| **validator** | Checks the draft JSON block in the last message; if invalid, injects a correction and sends the flow back to consultant/ask. | No |
+| **validator** | Depth check: if the LLM called generate_blueprint, requires at least 3 user messages (else injects a “ask one more question” correction). Also checks the draft JSON block; if invalid, injects a correction and sends the flow back to consultant/ask. | No |
 | **draft** | Generates the final blueprint JSON from the conversation. | Yes (no tools) |
 | **critique** | Reviews the blueprint; if it fails, sends the flow back to draft. | Yes (no tools) |
 | **user_review** | Role-plays as user; reviews blueprint; returns SATISFIED or IMPROVE. | Yes (no tools) |
