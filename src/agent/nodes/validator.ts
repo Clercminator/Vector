@@ -4,6 +4,9 @@ import { MAX_VALIDATION_ATTEMPTS } from "../constants";
 
 const DRAFT_BLOCK_REGEX = /\|\|\|DRAFT_START\|\|\|([\s\S]*?)\|\|\|DRAFT_END\|\|\|/;
 
+/** Minimum user messages before allowing generate_blueprint (depth check). */
+const MIN_USER_MESSAGES_BEFORE_DRAFT = 3;
+
 export const validatorNode = async (state: AgentStateType) => {
     const { messages, validationAttempts, framework } = state;
     if (!messages?.length) return { validationAttempts: 0 };
@@ -15,6 +18,26 @@ export const validatorNode = async (state: AgentStateType) => {
     if (!isAIMessage) return { validationAttempts: 0 };
 
     const content = lastMsg.content.toString();
+
+    // Depth check: if about to generate blueprint, ensure sufficient personalization
+    const hasGenerateBlueprint = (lastMsg as AIMessage).tool_calls?.some(
+        (tc: { name?: string }) => tc.name === "generate_blueprint"
+    );
+    if (hasGenerateBlueprint && framework) {
+        const userMessageCount = messages.filter(
+            (m) => m instanceof HumanMessage && !m.content.toString().includes("SYSTEM ERROR")
+        ).length;
+        if (userMessageCount < MIN_USER_MESSAGES_BEFORE_DRAFT) {
+            return {
+                validationAttempts: validationAttempts + 1,
+                messages: [
+                    new HumanMessage(
+                        `SYSTEM ERROR: Insufficient personalization data. The current plan would be too generic. Ask the user one more "counter-intuitive" question (e.g., what's held them back before, their typical day, or a specific constraint) before proceeding to generate_blueprint. Do NOT call generate_blueprint yet.`
+                    ),
+                ],
+            };
+        }
+    }
 
     // Malformed block: DRAFT_START without matching DRAFT_END — treat as invalid
     const hasUnclosedDraftStart = /^\|\|\|DRAFT_START\|\|\|/.test(content.trim()) || content.includes("|||DRAFT_START|||");

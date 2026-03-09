@@ -8,7 +8,7 @@ export const translations = {
     "nav.community": "Community",
     "nav.signin": "Sign in",
     "nav.signout": "Sign out",
-    "nav.getStarted": "Get Started",
+    "nav.getStarted": "Let's Plan!",
     "nav.about": "About",
     "nav.admin": "Admin",
 
@@ -588,7 +588,8 @@ export const translations = {
     "landing.hero.giftBadge": "1 free plan for new users who register",
     "landing.hero.startBuilding": "Start Building Now",
     "landing.hero.viewPricing": "View Pricing",
-    "landing.hero.helpMePlan": "Help me plan my future",
+    "landing.hero.helpMePlan": "Help me achieve my goals",
+    "landing.hero.pathHint": "Find the right framework for your goal, or go straight to the chat.",
     "landing.hero.newHere": "New here? See how it works",
     "landing.liftoff.vector": "Vector",
     "landing.howItWorks.title": "How Vector works",
@@ -1183,7 +1184,7 @@ export const translations = {
     "nav.community": "Comunidad",
     "nav.signin": "Iniciar sesión",
     "nav.signout": "Cerrar sesión",
-    "nav.getStarted": "Empezar",
+    "nav.getStarted": "Planifiquemos",
     "nav.about": "Sobre nosotros",
     "nav.admin": "Admin",
 
@@ -1768,7 +1769,8 @@ export const translations = {
     "landing.hero.giftBadge": "1 plan gratis para nuevos usuarios que se registren",
     "landing.hero.startBuilding": "Empieza gratis",
     "landing.hero.viewPricing": "Ver precios",
-    "landing.hero.helpMePlan": "Ayúdame a planear mi futuro",
+    "landing.hero.helpMePlan": "Ayúdame a lograr mis metas",
+    "landing.hero.pathHint": "Encuentra el marco adecuado para tu meta, o ve directo al chat.",
     "landing.hero.newHere": "¿Primera vez? Mira cómo funciona",
     "landing.liftoff.vector": "Vector",
     "landing.howItWorks.title": "Cómo funciona Vector",
@@ -2204,7 +2206,7 @@ export const translations = {
     "nav.community": "Comunidade",
     "nav.signin": "Entrar",
     "nav.signout": "Sair",
-    "nav.getStarted": "Começar",
+    "nav.getStarted": "Vamos planejar",
     "nav.about": "Sobre",
     "nav.admin": "Admin",
     "wizard.newConversation": "Nova Conversa",
@@ -2230,6 +2232,8 @@ export const translations = {
     "frameworks.subtitle":
       "Toda ambição requer uma lente diferente. Selecione um modelo comprovado para iniciar seu processo.",
     "frameworks.helpMeChoose": "Ajude-me a escolher",
+    "landing.hero.helpMePlan": "Ajude-me a alcançar meus objetivos",
+    "landing.hero.pathHint": "Encontre o framework certo para seu objetivo ou vá direto ao chat.",
 
     // Footer
     "footer.privacy": "Privacidade",
@@ -2718,7 +2722,7 @@ export const translations = {
     "nav.community": "Communauté",
     "nav.signin": "Se connecter",
     "nav.signout": "Déconnexion",
-    "nav.getStarted": "Commencer",
+    "nav.getStarted": "C'est parti",
     "nav.about": "À propos",
     "nav.admin": "Admin",
     "wizard.newConversation": "Nouvelle Conversation",
@@ -2744,6 +2748,8 @@ export const translations = {
     "frameworks.subtitle":
       "Chaque ambition nécessite une lentille différente. Sélectionnez un cadre éprouvé pour commencer votre processus.",
     "frameworks.helpMeChoose": "Aidez-moi à choisir",
+    "landing.hero.helpMePlan": "Aidez-moi à atteindre mes objectifs",
+    "landing.hero.pathHint": "Trouvez le bon cadre pour votre objectif, ou allez directement au chat.",
 
     // Footer
     "footer.privacy": "Confidentialité",
@@ -3234,7 +3240,7 @@ export const translations = {
     "nav.community": "Community",
     "nav.signin": "Anmelden",
     "nav.signout": "Abmelden",
-    "nav.getStarted": "Starten",
+    "nav.getStarted": "Los geht's",
     "nav.about": "Über uns",
     "nav.admin": "Admin",
 
@@ -3258,6 +3264,8 @@ export const translations = {
     "frameworks.subtitle":
       "Jede Ambition erfordert eine andere Linse. Wählen Sie ein bewährtes Framework, um Ihren Prozess zu beginnen.",
     "frameworks.helpMeChoose": "Helfen Sie mir bei der Auswahl",
+    "landing.hero.helpMePlan": "Helfen Sie mir, meine Ziele zu erreichen",
+    "landing.hero.pathHint": "Finden Sie den richtigen Rahmen für Ihr Ziel oder gehen Sie direkt zum Chat.",
 
     // Footer
     "footer.privacy": "Datenschutz",

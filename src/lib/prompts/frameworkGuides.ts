@@ -167,7 +167,7 @@ EXAMPLES — How to apply Ikigai to common goal types:
  * without web search. Condensed: author, impact, when to use, one example each.
  */
 export const frameworkGuideForConsultant = `
-COMPREHENSIVE FRAMEWORK GUIDE — Use this to recommend the best framework. Do not search the web; use only this reference.
+COMPREHENSIVE FRAMEWORK GUIDE — Use this to recommend the best framework. Each framework has a specific origin, authors, and primary use cases; recommend based on fit, not habit. Do not search the web; use only this reference.
 
 WHEN TO CHOOSE WHICH (goal signal → framework):
 - "Overwhelm," "too much to do," "efficiency" → Pareto or Eisenhower
@@ -214,4 +214,6 @@ CONCRETE EXAMPLES (goal → best framework):
 - **Mandala Chart:** 9x9 grid: 1 central goal + 8 categories × 8 steps = 64 items. Used by Shohei Ohtani and others. Best for: one big holistic goal (best player, life balance) with many dimensions. Pitfall: 64 items can be complex; choose 8 categories carefully. Example: Central goal "Best player"; 8 areas: Fitness, Mental, Control, Speed, Luck, Human Quality, etc., each with 8 steps.
 
 - **Ikigai (Mieko Kamiya):** Japanese "reason for being." Four circles: what you love, what you're good at, what the world needs, what you can be paid for; center = purpose. Best for: career/life direction, burnout, "what should I do with my life." Pitfall: intersection can feel narrow; treat as direction. Example: Love teaching, good at explaining, world needs STEM educators, paid for curriculum design → Purpose: making science accessible.
+
+- **General:** A straightforward actionable plan—steps, frequency, deadlines. No specific mental model. Best for: goals that don't clearly fit any framework above (e.g. one-off projects, mixed goals, or when the user's situation is unique and none of the frameworks' primary use cases apply). Use when the goal resists categorization or when forcing Pareto/RPM/OKR etc. would be a poor fit.
 `.trim();

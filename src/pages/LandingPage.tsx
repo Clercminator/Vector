@@ -14,6 +14,8 @@ import { toast } from 'sonner';
 interface LandingPageProps {
     onStartWizard: (fwId?: Framework) => void;
     onShowHelpChoose: () => void;
+    /** Go directly to ChatUI (wizard with consultant, no framework modal) */
+    onGoToChat?: () => void;
     /** Hero CTA: when not logged in opens auth modal, when logged in opens help-choose modal */
     onHeroGetStarted?: () => void;
     onViewFramework: (fw: typeof frameworks[0]) => void;
@@ -24,6 +26,7 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ 
     onStartWizard, 
     onShowHelpChoose, 
+    onGoToChat,
     onHeroGetStarted, 
     onViewFramework, 
     tier: tierProp,
@@ -80,10 +83,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </h1>
 
                     <HeroSubtitleChunks />
-                    <div className="flex justify-center">
+                    <p className="mt-6 text-sm text-gray-500 dark:text-gray-400 font-light">
+                        {t('landing.hero.pathHint')}
+                    </p>
+                    <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
                         <motion.button
                             onClick={onHeroGetStarted ?? onShowHelpChoose}
-                            className="cursor-pointer group relative px-12 py-6 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-xl md:text-2xl font-bold flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-2xl shadow-black/25 dark:shadow-white/10 border-2 border-transparent hover:border-gray-300 dark:hover:border-zinc-600 overflow-hidden"
+                            className="cursor-pointer group relative px-10 py-5 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-lg md:text-xl font-bold flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-2xl shadow-black/25 dark:shadow-white/10 border-2 border-transparent hover:border-gray-300 dark:hover:border-zinc-600 overflow-hidden"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             initial={{ opacity: 0, y: 10 }}
@@ -96,11 +102,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                                 animate={{ x: [0, 4, 0] }}
                                 transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
                             >
-                                <Sparkles size={28} className="text-amber-400 dark:text-amber-500 shrink-0" />
+                                <Sparkles size={24} className="text-amber-400 dark:text-amber-500 shrink-0" />
                                 {t('landing.hero.helpMePlan')}
-                                <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform shrink-0" />
+                                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform shrink-0" />
                             </motion.span>
                         </motion.button>
+                        {onGoToChat && (
+                            <motion.button
+                                onClick={onGoToChat}
+                                className="cursor-pointer px-8 py-4 rounded-2xl text-base md:text-lg font-semibold border-2 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-gray-400 dark:hover:border-zinc-500 transition-colors"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.25, duration: 0.5 }}
+                            >
+                                {t('nav.getStarted')}
+                            </motion.button>
+                        )}
                     </div>
                     <button
                         type="button"

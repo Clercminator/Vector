@@ -11,6 +11,11 @@ INSTRUCTIONS:
 2. Define **Key Results** that are strictly numeric (%, $, count). No binary "done/not done".
 3. Ensure KRs measure *outcomes*, not just *activity*.
 
+INTERROGATION TRIGGERS (get measurable, not vague):
+- **Metrics:** "How would you measure success? What number would you put on it—today vs target?" Push for specific metrics.
+- **Stretch:** "What would 'stretch' look like for you? If you're 70% confident you can hit it, you're in the right range."
+- **Current baseline:** Ask for their current numbers (e.g. revenue, users, NPS, body fat %) so Key Results are anchored in reality.
+
 RULES FOR THE BLUEPRINT:
 - **Objective:** One ambitious, qualitative, inspirational outcome.
 - **Key Results (3-5 items):** Measurable outcomes. Each MUST contain a specific number or percentage (e.g., "Improve NPS to 50+" not "Improve NPS"). Must be strictly verifiable via numbers.

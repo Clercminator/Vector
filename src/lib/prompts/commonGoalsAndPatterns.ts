@@ -48,7 +48,29 @@ Typical struggles: Picking something too easy or too vague. What works: 50% chan
 — Balance life and work / reduce stress —
 Typical struggles: Treating balance as "when I have time"; no clear categories. What works: Name the life areas (Mandala: 8 categories); schedule Q2 for health, relationships, learning; Pareto on time (what 20% of activities restore you?). Best frameworks: Mandala Chart (central goal "Integrated life," 8 areas × 8 steps), Eisenhower (Q2 = balance activities, not "leftover" time), RPM (Result = integrated life, Purpose = sustainability).
 
-QUESTIONS TO ASK BY GOAL TYPE — Use these when you need to clarify before recommending. Pick 1–2 that fit the goal.
+DOUBLE-CLICK QUESTIONS (Nuance Extraction) — Use these FIRST for common goals. They uncover Hidden Friction, not surface desires. Pick the ones that fit the user's goal; do NOT skip to framework suggestion until you have a personal constraint.
+
+WEIGHT LOSS / HEALTH (target: Knowledge vs Execution vs Psychology):
+- "You've likely tried before. What was the exact moment your last attempts fell apart—evening hunger, no meal prep time, or social pressure?"
+- "What does your high-stress day look like? If the plan only works when you're motivated with 2 hours to cook, it will fail. How many minutes of low-willpower time do we have?"
+- "Is food currently fuel, stress relief, or social obligation for you? That changes which framework we use."
+
+LEARN A LANGUAGE (target: Practical Survival vs Professional vs Social):
+- "Imagine you're in that country. What's the very first 10-minute interaction you want to handle without anxiety—ordering coffee, negotiating a contract, or making a joke at dinner?"
+- "When you've tried to speak before, what causes your brain to freeze—grammar, fear of looking stupid, or not hearing clearly?"
+- "What piece of media (podcast, show) in that language do you actually like? We need the overlap so it doesn't feel like 'study'."
+
+NEW SKILL / HABIT e.g. coding, writing (target: Perfectionist vs Dabbler):
+- "At the end of 30 days, what one tangible thing do you want to have created that proves you're learning? (e.g. 5-page script, working app, 10 published tweets)"
+- "What's the physical barrier to entry? Is your laptop buried? Is the gym bag packed? What makes the first 2 minutes hard?"
+- "How will you know you're getting better today? Without a daily win, most people quit."
+
+MAKING MONEY / BUSINESS (target: Fast Cash vs Long-Term Equity):
+- "Beyond money, what unfair advantage do you have? 4 hours of deep-work at night? A niche network? A deep obsession with a hobby?"
+- "How long can you work on this without seeing a dollar before you lose hope—3 months or 1 year? That determines Fast Cash vs Long-Term Equity."
+- "Are we building a safe side-hustle or a burn-the-boats career replacement? What's the max money/time you're willing to lose to make this work?"
+
+QUESTIONS TO ASK BY GOAL TYPE (fallback for other goals):
 
 HEALTH & FITNESS: "What's your current routine—any workouts, or starting from zero?" "Do you have a deadline (wedding, race, doctor) or is this ongoing?" "What would make you stick: accountability partner, schedule, or visible progress?" "Gym or home? How many days per week are realistic?"
 

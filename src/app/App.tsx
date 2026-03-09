@@ -955,6 +955,7 @@ function App() {
                     <LandingPage
                       onStartWizard={handleStartWizard}
                       onShowHelpChoose={() => setShowHelpChoose(true)}
+                      onGoToChat={startHelpMeFindFrameworkFlow}
                       onHeroGetStarted={() => {
                         if (!userId) {
                           setAuthReason("signup_to_try");
