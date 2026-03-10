@@ -70,10 +70,10 @@ export function FeedbackButton({ pageContext, userEmail, userId }: FeedbackButto
           "fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full px-5 py-3 shadow-xl border border-gray-200/50 dark:border-white/20 bg-white/95 dark:bg-zinc-900/95 text-gray-900 dark:text-white backdrop-blur-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500 dark:focus-visible:ring-white/50",
           pageContext.startsWith('/wizard') && "hidden md:flex"
         )}
-        aria-label="Feedback"
+        aria-label={t('feedback.button')}
       >
         <MessageCircle size={20} className="text-gray-600 dark:text-gray-300 shrink-0" />
-        <span className="text-sm font-semibold tracking-tight">Feedback</span>
+        <span className="text-sm font-semibold tracking-tight">{t('feedback.button')}</span>
       </button>
 
       <AnimatePresence>
@@ -92,7 +92,7 @@ export function FeedbackButton({ pageContext, userEmail, userId }: FeedbackButto
                     <MessageCircle size={24} className="text-white" />
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Feedback</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{t('feedback.button')}</h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                       {t('feedback.subtitle')}
                     </p>
@@ -194,7 +194,7 @@ export function FeedbackButton({ pageContext, userEmail, userId }: FeedbackButto
                       ) : (
                         <>
                           <Send size={18} />
-                          Feedback
+                          {t('feedback.button')}
                         </>
                       )}
                     </Button>

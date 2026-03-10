@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/lib/supabase';
-import { Blueprint, BlueprintResult, blueprintTitleFromAnswers, fetchBlueprintMessages, syncBlueprintMessages } from '@/lib/blueprints';
+import { Blueprint, BlueprintResult, blueprintTitleFromAnswers, fetchBlueprintMessages, syncBlueprintMessages, filterRealAnswers } from '@/lib/blueprints';
 import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, canUseFramework, FrameworkId } from '@/lib/tiers';
 import { useLanguage } from '@/app/components/language-provider';
 import { trackEvent } from '@/lib/analytics';
@@ -114,6 +114,8 @@ export const useGoalWizard = ({
     const seenDraftUpdateThisRunRef = useRef(false);
     const blueprintReceivedThisRunRef = useRef<BlueprintResult | null>(null);
     const hasAutoRunFromIntakeRef = useRef(false);
+    /** True once profile fetch has completed (success or fail). Ensures agent gets profile from message 1. */
+    const [profileLoadAttempted, setProfileLoadAttempted] = useState(false);
 
     // Framework Config Helper (Simplified for hook)
     const getFrameworkConfig = (fw: string) => {
@@ -269,10 +271,12 @@ export const useGoalWizard = ({
     }, [framework, initialBlueprint, t]);
 
     // Auto-invoke agent with intake data when coming from "Help me find the right framework"
+    // Wait for profile fetch so agent has profile (incl. gender) from message 1
     useEffect(() => {
         const ctx = (window.history.state?.usr?.context) || (location.state as any)?.context;
         if (!ctx?.objective || !framework || initialBlueprint) return;
         if (hasAutoRunFromIntakeRef.current) return;
+        if (!profileLoadAttempted) return; // Ensure profile (gender, etc.) is available before first run
         const saved = localStorage.getItem('vector_wizard_session');
         if (saved) {
             try {
@@ -299,7 +303,7 @@ export const useGoalWizard = ({
         const formContextOverride = formCtxParts.join('. ');
 
         runAgentInternal(formattedMessage, { formContextOverride });
-    }, [location.state, framework, initialBlueprint]);
+    }, [location.state, framework, initialBlueprint, profileLoadAttempted]);
 
     // Offline & Voice
     useEffect(() => {
@@ -316,10 +320,14 @@ export const useGoalWizard = ({
 
     // User Profile (credits, tier, display_name + full profile for agent personalization)
     useEffect(() => {
-        if (!supabase) return;
+        if (!supabase) {
+            setProfileLoadAttempted(true);
+            return;
+        }
         supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
             if (!user?.id) {
                 setCredits(1);
+                setProfileLoadAttempted(true);
                 return;
             }
             supabase.from('profiles')
@@ -358,8 +366,9 @@ export const useGoalWizard = ({
                         if (meta.other_observations) parts.push(`Other observations: ${meta.other_observations}`);
                         setAgentUserProfile(parts.length ? parts.join('. ') : '');
                     }
+                    setProfileLoadAttempted(true);
                 })
-                .catch(() => setCredits(1));
+                .catch(() => { setCredits(1); setProfileLoadAttempted(true); });
         });
     }, []);
 
@@ -931,7 +940,8 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
             return;
         }
         if (!result && messages.length > 0) {
-             const answers = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
+             const raw = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
+             const answers = filterRealAnswers(raw);
              const bp: Blueprint = {
                 id: initialBlueprint?.id ?? crypto.randomUUID(),
                 framework: framework || (result?.type as FrameworkId) || "general",
@@ -976,7 +986,7 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
     const promoteDraftToResult = () => {
         if (!draftResult || !draftResult.type || draftResult.isTeaser) return;
         setResult(draftResult as BlueprintResult);
-        setFinalAnswers(messages.filter(m => m.role === 'user').map(m => m.content));
+        setFinalAnswers(filterRealAnswers(messages.filter(m => m.role === 'user').map(m => m.content)));
         if (supabase) {
             supabase.auth.getUser().then(({ data: { user } }) => {
                 if (user?.id) {
@@ -992,7 +1002,8 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
     };
 
     const handleSave = async () => {
-        const answers = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
+        const raw = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
+        const answers = filterRealAnswers(raw);
         const bp: Blueprint = {
           id: initialBlueprint?.id ?? crypto.randomUUID(),
           framework: framework || (result?.type as FrameworkId) || "general",
@@ -1055,6 +1066,7 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
         handleSave,
         updateResult,
         promoteDraftToResult,
-        toggleHardMode
+        toggleHardMode,
+        userName
     };
 };

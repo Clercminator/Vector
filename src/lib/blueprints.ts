@@ -269,6 +269,12 @@ export async function syncBlueprintMessages(supabase: SupabaseClient, blueprintI
 
 
 
+/** Exclude system-injected userReview feedback (fake "Answer 6") from answers. */
+export function filterRealAnswers(answers: string[]): string[] {
+  const prefix = "User-perspective review requested improvements";
+  return (answers || []).filter((a) => !(a || "").trim().startsWith(prefix));
+}
+
 export function blueprintTitleFromAnswers(answers: string[], fallback = "Untitled blueprint") {
   const first = (answers[0] ?? "").trim();
   if (!first) return fallback;

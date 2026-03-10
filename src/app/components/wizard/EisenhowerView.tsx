@@ -200,7 +200,7 @@ export const EisenhowerView: React.FC<EisenhowerViewProps> = ({ result, updateRe
 
           <Quadrant 
               title={t('eisenhower.do')} 
-              description="Urgent & Important"
+              description={t('eisenhower.desc.urgentImportant')}
               items={result.q1 || []}
               onUpdate={(val) => updateResult(['q1'], val)}
               onCopy={() => handleCopy(result.q1 || [], t('eisenhower.do'))}
@@ -210,7 +210,7 @@ export const EisenhowerView: React.FC<EisenhowerViewProps> = ({ result, updateRe
 
           <Quadrant 
               title={t('eisenhower.schedule')} 
-              description="Not Urgent & Important"
+              description={t('eisenhower.desc.notUrgentImportant')}
               items={result.q2 || []}
               onUpdate={(val) => updateResult(['q2'], val)}
               onCopy={() => handleCopy(result.q2 || [], t('eisenhower.schedule'))}
@@ -220,7 +220,7 @@ export const EisenhowerView: React.FC<EisenhowerViewProps> = ({ result, updateRe
 
           <Quadrant 
               title={t('eisenhower.delegate')} 
-              description="Urgent & Not Important"
+              description={t('eisenhower.desc.urgentNotImportant')}
               items={result.q3 || []}
               onUpdate={(val) => updateResult(['q3'], val)}
               onCopy={() => handleCopy(result.q3 || [], t('eisenhower.delegate'))}
@@ -230,7 +230,7 @@ export const EisenhowerView: React.FC<EisenhowerViewProps> = ({ result, updateRe
 
           <Quadrant 
               title={t('eisenhower.eliminate')} 
-              description="Not Urgent & Not Important"
+              description={t('eisenhower.desc.notUrgentNotImportant')}
               items={result.q4 || []}
               onUpdate={(val) => updateResult(['q4'], val)}
               onCopy={() => handleCopy(result.q4 || [], t('eisenhower.eliminate'))}

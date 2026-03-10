@@ -709,6 +709,10 @@ export const translations = {
     "eisenhower.schedule": "Schedule (Not Urgent)",
     "eisenhower.delegate": "Delegate",
     "eisenhower.eliminate": "Eliminate",
+    "eisenhower.desc.urgentImportant": "Urgent & Important",
+    "eisenhower.desc.notUrgentImportant": "Not Urgent & Important",
+    "eisenhower.desc.urgentNotImportant": "Urgent & Not Important",
+    "eisenhower.desc.notUrgentNotImportant": "Not Urgent & Not Important",
 
     "okr.title": "OKR Systems Designer",
     "okr.q1":
@@ -1590,6 +1594,7 @@ export const translations = {
       "Construyamos tu plan. ¿Cuál es tu situación actual o tu mayor obstáculo?",
     "wizard.lockedError":
       "Este marco no está incluido en tu plan. Actualiza para usarlo.",
+    "wizard.viewFullBlueprint": "Ver plano completo, guardar e exportar",
     "wizard.yourBlueprint": "Tu Plano",
     "wizard.liveDraft": "Borrador en vivo",
     "wizard.buildingPlanUpdates":
@@ -1740,7 +1745,7 @@ export const translations = {
     "app.publish.defaultDesc": "Análisis basado en {0}",
     "app.offline": "Modo Offline",
     "app.skipToMain": "Saltar al contenido principal",
-    "feedback.button": "Feedback",
+    "feedback.button": "Comentarios",
     "feedback.subtitle":
       "Leemos cada mensaje. Tu opinión define lo que construimos.",
     "feedback.ratingLabel": "¿Cómo calificarías tu experiencia?",
@@ -1881,6 +1886,10 @@ export const translations = {
     "eisenhower.schedule": "Agendar (No Urgente)",
     "eisenhower.delegate": "Delegar",
     "eisenhower.eliminate": "Eliminar",
+    "eisenhower.desc.urgentImportant": "Urgente e Importante",
+    "eisenhower.desc.notUrgentImportant": "No Urgente e Importante",
+    "eisenhower.desc.urgentNotImportant": "Urgente y No Importante",
+    "eisenhower.desc.notUrgentNotImportant": "Ni Urgente Ni Importante",
 
     "okr.title": "Diseñador de Sistemas OKR",
     "okr.q1":

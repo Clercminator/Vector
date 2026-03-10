@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { RefreshCcw, Calendar, CheckCircle2, Download, Lock, AlertTriangle, FileText, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Blueprint, blueprintTitleFromAnswers } from '@/lib/blueprints';
+import { Blueprint, blueprintTitleFromAnswers, filterRealAnswers } from '@/lib/blueprints';
 import { blueprintToEvents, downloadIcs, exportEventsToGoogleCalendar, getGoogleAccessToken, isBlueprintCalendarWorthy } from '@/lib/calendarExport';
 import { exportToPdf } from '@/lib/pdfExport';
 import { TIER_CONFIGS, TierId } from '@/lib/tiers';
@@ -31,7 +31,7 @@ import { useGoalWizard, GoalWizardHookProps } from './wizard/useGoalWizard';
 export type { GoalWizardHookProps as GoalWizardProps };
 
 export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [showMobileDraft, setShowMobileDraft] = useState(false);
 
   React.useEffect(() => {
@@ -70,12 +70,14 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
       handleSave,
       updateResult,
       promoteDraftToResult,
-      toggleHardMode
+      toggleHardMode,
+      userName
   } = useGoalWizard(props);
 
   // Export Logic (View Layer Concern)
   const handleExport = () => {
-    const answers = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
+    const raw = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
+    const answers = filterRealAnswers(raw);
     const bp: Blueprint = {
       id: props.initialBlueprint?.id ?? crypto.randomUUID(),
       framework: props.framework || 'first-principles', // Fallback for ID generation if undefined, likely overwritten by agent
@@ -108,15 +110,21 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
 
   const handlePdfExport = () => {
      if (!result) return;
+      const raw = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
+      const answers = filterRealAnswers(raw);
       const bp: Blueprint = {
         id: props.initialBlueprint?.id ?? crypto.randomUUID(),
         framework: props.framework || 'first-principles',
-        title: props.initialBlueprint?.title ?? blueprintTitleFromAnswers(finalAnswers),
-        answers: finalAnswers,
+        title: props.initialBlueprint?.title ?? blueprintTitleFromAnswers(answers),
+        answers,
         result,
         createdAt: props.initialBlueprint?.createdAt ?? new Date().toISOString(),
       };
-      exportToPdf(bp);
+      exportToPdf(bp, undefined, {
+        language: language || 'en',
+        userName: userName || undefined,
+        messages: messages.map(m => ({ role: m.role, content: m.content })),
+      });
       toast.success(t('wizard.pdfSuccess'));
   };
 

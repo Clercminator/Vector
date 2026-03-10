@@ -15,6 +15,139 @@ export interface PdfBranding {
   primaryColor?: string; // Hex code
 }
 
+/** Options for PDF generation (localization, personalization, Q&A) */
+export interface PdfOptions {
+  /** Language code (en, es, pt, fr, de) for labels */
+  language?: string;
+  /** User display name for "Plan Personalizado para {user}" */
+  userName?: string;
+  /** Full chat messages (ai/user) to build Q&A pairs; also used to filter out system-injected answers */
+  messages?: Array<{ role: string; content: string }>;
+}
+
+// Simple labels by language for PDF (no React/i18n dependency)
+const PDF_LABELS: Record<string, Record<string, string>> = {
+  en: {
+    personalizedPlan: "Your personalized plan",
+    personalizedPlanFor: "Personalized plan for {0}",
+    executiveSummary: "Executive Summary",
+    difficultyCommitment: "Difficulty & Commitment",
+    yourSituation: "Your Situation",
+    yourWhy: "Your Why",
+    firstWeekActions: "First Week Actions",
+    milestones: "Milestones",
+    successCriteria: "Success Criteria",
+    whatToAvoid: "What to Avoid",
+    blueprintResult: "Blueprint Result",
+    qaHistory: "Q&A History",
+    question: "Question",
+    answer: "Answer",
+    urgentImportant: "Urgent & Important (Do)",
+    importantNotUrgent: "Important Not Urgent (Schedule)",
+    urgentNotImportant: "Urgent Not Important (Delegate)",
+    neither: "Neither (Eliminate)",
+  },
+  es: {
+    personalizedPlan: "Tu plan personalizado",
+    personalizedPlanFor: "Plan Personalizado para {0}",
+    executiveSummary: "Resumen Ejecutivo",
+    difficultyCommitment: "Dificultad y Compromiso",
+    yourSituation: "Tu Situación",
+    yourWhy: "Tu Porqué",
+    firstWeekActions: "Acciones de la Primera Semana",
+    milestones: "Hitos",
+    successCriteria: "Criterios de Éxito",
+    whatToAvoid: "Qué Evitar",
+    blueprintResult: "Resultado del Plan",
+    qaHistory: "Historial Preguntas y Respuestas",
+    question: "Pregunta",
+    answer: "Respuesta",
+    urgentImportant: "Urgente e Importante (Hacer)",
+    importantNotUrgent: "Importante No Urgente (Agendar)",
+    urgentNotImportant: "Urgente No Importante (Delegar)",
+    neither: "Ninguno (Eliminar)",
+  },
+  pt: {
+    personalizedPlan: "Seu plano personalizado",
+    personalizedPlanFor: "Plano Personalizado para {0}",
+    executiveSummary: "Resumo Executivo",
+    difficultyCommitment: "Dificuldade e Compromisso",
+    yourSituation: "Sua Situação",
+    yourWhy: "Seu Porquê",
+    firstWeekActions: "Ações da Primeira Semana",
+    milestones: "Marcos",
+    successCriteria: "Critérios de Sucesso",
+    whatToAvoid: "O Que Evitar",
+    blueprintResult: "Resultado do Plano",
+    qaHistory: "Histórico Perguntas e Respostas",
+    question: "Pergunta",
+    answer: "Resposta",
+    urgentImportant: "Urgente e Importante (Fazer)",
+    importantNotUrgent: "Importante Não Urgente (Agendar)",
+    urgentNotImportant: "Urgente Não Importante (Delegar)",
+    neither: "Nenhum (Eliminar)",
+  },
+  fr: {
+    personalizedPlan: "Votre plan personnalisé",
+    personalizedPlanFor: "Plan personnalisé pour {0}",
+    executiveSummary: "Résumé exécutif",
+    difficultyCommitment: "Difficulté et engagement",
+    yourSituation: "Votre situation",
+    yourWhy: "Votre pourquoi",
+    firstWeekActions: "Actions de la première semaine",
+    milestones: "Jalons",
+    successCriteria: "Critères de succès",
+    whatToAvoid: "À éviter",
+    blueprintResult: "Résultat du plan",
+    qaHistory: "Historique Q&R",
+    question: "Question",
+    answer: "Réponse",
+    urgentImportant: "Urgent et Important (Faire)",
+    importantNotUrgent: "Important Non Urgent (Planifier)",
+    urgentNotImportant: "Urgent Non Important (Déléguer)",
+    neither: "Aucun (Éliminer)",
+  },
+  de: {
+    personalizedPlan: "Ihr personalisierter Plan",
+    personalizedPlanFor: "Personalisierter Plan für {0}",
+    executiveSummary: "Zusammenfassung",
+    difficultyCommitment: "Schwierigkeit und Engagement",
+    yourSituation: "Ihre Situation",
+    yourWhy: "Ihr Warum",
+    firstWeekActions: "Aktionen der ersten Woche",
+    milestones: "Meilensteine",
+    successCriteria: "Erfolgskriterien",
+    whatToAvoid: "Zu vermeiden",
+    blueprintResult: "Planegebnis",
+    qaHistory: "Fragen & Antworten",
+    question: "Frage",
+    answer: "Antwort",
+    urgentImportant: "Dringend und wichtig (Tun)",
+    importantNotUrgent: "Wichtig nicht dringend (Planen)",
+    urgentNotImportant: "Dringend nicht wichtig (Delegieren)",
+    neither: "Weder noch (Eliminieren)",
+  },
+};
+
+function getLabel(lang: string | undefined, key: string, fallback: string, ...args: string[]): string {
+  const labels = (lang && PDF_LABELS[lang]) || PDF_LABELS.en;
+  let s = labels[key] ?? PDF_LABELS.en[key] ?? fallback;
+  args.forEach((a, i) => { s = s.replace(`{${i}}`, a); });
+  return s;
+}
+
+/** Framework ID → author image path (from featured authors) */
+const FRAMEWORK_AUTHOR_IMAGES: Record<string, string> = {
+  eisenhower: "/images/authors/dwight-d-eisenhower.jpg",
+  pareto: "/images/authors/Vilfredo_Pareto.jpg",
+  rpm: "/images/authors/tony robbins.avif",
+  "first-principles": "/images/authors/elon musk 1.jpg",
+  okr: "/images/authors/John Doerr.webp",
+  dsss: "/images/authors/Tim-Ferriss.png",
+  misogi: "/images/authors/Jesse Itzler.jpg",
+  ikigai: "/images/authors/Mieko-Kamiya.jpg",
+};
+
 // Helper: parse hex to R,G,B for jsPDF
 function hexToRgb(hex: string): [number, number, number] {
   const n = hex.replace(/^#/, "");
@@ -43,8 +176,15 @@ const loadImage = (url: string): Promise<string> => {
     });
 };
 
-export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding): Promise<jsPDF> => {
+export const generatePdf = async (
+  blueprint: Blueprint,
+  branding?: PdfBranding,
+  options?: PdfOptions
+): Promise<jsPDF> => {
   const doc = new jsPDF();
+  const lang = options?.language || "en";
+  const userName = options?.userName?.trim();
+  const messages = options?.messages;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 24;
@@ -98,11 +238,30 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
   setMuted();
   doc.text(frameworkLabel, centerX - doc.getTextWidth(frameworkLabel) / 2, coverY);
   coverY += 10;
+  // Author image for frameworks that have one (e.g. Eisenhower)
+  const fwId = String(blueprint.framework || "").toLowerCase();
+  const authorImgPath = FRAMEWORK_AUTHOR_IMAGES[fwId];
+  if (authorImgPath) {
+    try {
+      const dataUrl = await loadImage(authorImgPath);
+      const imgW = 36;
+      const imgH = 36;
+      doc.addImage(dataUrl, "PNG", centerX - imgW / 2, coverY, imgW, imgH);
+      coverY += imgH + 12;
+    } catch {
+      coverY += 10;
+    }
+  } else {
+    coverY += 10;
+  }
   doc.text(new Date(blueprint.createdAt).toLocaleDateString(), centerX - doc.getTextWidth(new Date(blueprint.createdAt).toLocaleDateString()) / 2, coverY);
   coverY += 24;
   doc.setFontSize(10);
   setMuted();
-  doc.text("Your personalized plan", centerX - doc.getTextWidth("Your personalized plan") / 2, coverY);
+  const personalizedText = userName
+    ? getLabel(lang, "personalizedPlanFor", "Personalized plan for {0}", userName)
+    : getLabel(lang, "personalizedPlan", "Your personalized plan");
+  doc.text(personalizedText, centerX - doc.getTextWidth(personalizedText) / 2, coverY);
 
   addNewPage();
   setBody();
@@ -140,7 +299,7 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
 
   // --- EXECUTIVE SUMMARY ---
   if (result?.executiveSummary) {
-    renderSection("Executive Summary", result.executiveSummary);
+    renderSection(getLabel(lang, "executiveSummary", "Executive Summary"), result.executiveSummary);
   }
 
   // --- DIFFICULTY & COMMITMENT ---
@@ -149,7 +308,7 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     setPrimary();
-    doc.text("Difficulty & Commitment", margin, y);
+    doc.text(getLabel(lang, "difficultyCommitment", "Difficulty & Commitment"), margin, y);
     setBody();
     y += 8;
     doc.setFont("helvetica", "normal");
@@ -190,25 +349,25 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
     situationParts.push(firstAnswer.slice(0, 300) + (firstAnswer.length > 300 ? "…" : ""));
   }
   if (situationParts.length > 0) {
-    renderSection("Your Situation", situationParts);
+    renderSection(getLabel(lang, "yourSituation", "Your Situation"), situationParts);
   }
 
   // --- YOUR WHY ---
   const yourWhy = result?.yourWhy || (result?.type === "rpm" && result?.purpose ? result.purpose : null);
   if (yourWhy) {
-    renderSection("Your Why", yourWhy);
+    renderSection(getLabel(lang, "yourWhy", "Your Why"), yourWhy);
   }
 
   // --- FIRST WEEK ACTIONS ---
   const firstWeek = result?.firstWeekActions;
   if (Array.isArray(firstWeek) && firstWeek.length > 0) {
-    renderSection("First Week Actions", firstWeek.map((a: string, i: number) => `${i + 1}. ${a}`));
+    renderSection(getLabel(lang, "firstWeekActions", "First Week Actions"), firstWeek.map((a: string, i: number) => `${i + 1}. ${a}`));
   }
 
   // --- MILESTONES / CHECKPOINTS ---
   const milestones = result?.milestones;
   if (Array.isArray(milestones) && milestones.length > 0) {
-    renderSection("Milestones", milestones.map((m: string) => `• ${m}`));
+    renderSection(getLabel(lang, "milestones", "Milestones"), milestones.map((m: string) => `• ${m}`));
   }
 
   // --- SUCCESS CRITERIA ---
@@ -216,7 +375,7 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
   const successMatch = !successCriteria && firstAnswer ? firstAnswer.match(/(?:Success looks like|Éxito)\s*:?\s*([^.]+)/i) : null;
   const successText = successCriteria || (successMatch?.[1]?.trim() ? `You'll know you've succeeded when: ${successMatch[1].trim()}` : null);
   if (successText) {
-    renderSection("Success Criteria", successText);
+    renderSection(getLabel(lang, "successCriteria", "Success Criteria"), successText);
   }
 
   // --- WHAT TO AVOID ---
@@ -232,7 +391,7 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
     avoidItems = result.anti_goals;
   }
   if (avoidItems.length > 0) {
-    renderSection("What to Avoid", avoidItems.map(a => `• ${a}`));
+    renderSection(getLabel(lang, "whatToAvoid", "What to Avoid"), avoidItems.map(a => `• ${a}`));
   }
 
   // Divider before Blueprint Result
@@ -249,7 +408,7 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     setPrimary();
-    doc.text("Blueprint Result", margin, y);
+    doc.text(getLabel(lang, "blueprintResult", "Blueprint Result"), margin, y);
     setBody();
     y += 12;
 
@@ -355,10 +514,10 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
             }
             y += 6;
         };
-        renderQuadrant("Urgent & Important (Do)", result.q1 || []);
-        renderQuadrant("Important Not Urgent (Schedule)", result.q2 || []);
-        renderQuadrant("Urgent Not Important (Delegate)", result.q3 || []);
-        renderQuadrant("Neither (Eliminate)", result.q4 || []);
+        renderQuadrant(getLabel(lang, "urgentImportant", "Urgent & Important (Do)"), result.q1 || []);
+        renderQuadrant(getLabel(lang, "importantNotUrgent", "Important Not Urgent (Schedule)"), result.q2 || []);
+        renderQuadrant(getLabel(lang, "urgentNotImportant", "Urgent Not Important (Delegate)"), result.q3 || []);
+        renderQuadrant(getLabel(lang, "neither", "Neither (Eliminate)"), result.q4 || []);
     }
     else if (result.type === 'okr') {
         doc.setFont("helvetica", "bold");
@@ -487,56 +646,93 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
   doc.line(margin, y, pageWidth - margin, y);
   y += 12;
 
-  // Q&A Section — Vector theme
+  // Q&A Section — Vector theme (only real user answers; exclude system-injected userReview feedback)
+  const USER_REVIEW_PREFIX = "User-perspective review requested improvements";
+  const isFakeAnswer = (text: string) =>
+    (text || "").trim().startsWith(USER_REVIEW_PREFIX);
+
+  // Build Q&A pairs from messages when available; otherwise use filtered answers only
+  type QAPair = { question?: string; answer: string };
+  let qaPairs: QAPair[] = [];
+  if (Array.isArray(messages) && messages.length > 0) {
+    let lastAi = "";
+    for (const m of messages) {
+      if (m.role === "ai" && m.content) {
+        lastAi = m.content.replace(/\|\|\[.*?\]\s*$/s, "").replace(/\|\|DRAFT_START[\s\S]*\|\|DRAFT_END\|\|/g, "").trim().slice(0, 600);
+      }
+      if (m.role === "user" && !isFakeAnswer(m.content)) {
+        qaPairs.push({
+          question: lastAi.length > 20 ? lastAi : undefined,
+          answer: m.content,
+        });
+      }
+    }
+  } else {
+    const realAnswers = (blueprint.answers || []).filter((a) => !isFakeAnswer(a));
+    qaPairs = realAnswers.map((answer) => ({ answer }));
+  }
+
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   setPrimary();
-  doc.text("Q&A History", margin, y);
+  doc.text(getLabel(lang, "qaHistory", "Q&A History"), margin, y);
   setBody();
   y += 12;
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
 
-  // Helper to format structured answers (e.g. "Goal: X. Stakes: Y." or multi-line → bullet-style)
   const formatAnswer = (text: string): string[] => {
     const trimmed = (text || "").trim();
     if (!trimmed) return [];
-    // Split by newlines first
-    const byLines = trimmed.split(/\n+/).map(s => s.replace(/^[\s•\-]+\s*/, "").trim()).filter(Boolean);
+    const byLines = trimmed.split(/\n+/).map((s) => s.replace(/^[\s•\-]+\s*/, "").trim()).filter(Boolean);
     if (byLines.length > 1) return byLines;
-    // Split by ". " to get sentences (e.g. "Goal: X. Stakes: Y. Obstacles: Z" → 3 bullets)
-    const bySentence = trimmed.split(/\.\s+/).map(s => s.trim()).filter(s => s.length > 2);
-    if (bySentence.length > 1) return bySentence.map(s => (s.endsWith(".") ? s : s + "."));
+    const bySentence = trimmed.split(/\.\s+/).map((s) => s.trim()).filter((s) => s.length > 2);
+    if (bySentence.length > 1) return bySentence.map((s) => (s.endsWith(".") ? s : s + "."));
     return [trimmed];
   };
 
-  blueprint.answers.forEach((ans, i) => {
+  const qLabel = getLabel(lang, "question", "Question");
+  const aLabel = getLabel(lang, "answer", "Answer");
+  qaPairs.forEach((pair, i) => {
+    if (pair.question) {
       doc.setFont("helvetica", "bold");
       setPrimary();
-      doc.text(`Answer ${i + 1}:`, margin, y);
+      doc.text(`${qLabel} ${i + 1}:`, margin, y);
       setBody();
       y += 7;
       doc.setFont("helvetica", "normal");
-      const segments = formatAnswer(ans);
-      if (segments.length > 1) {
-        segments.forEach(seg => {
-          const lines = doc.splitTextToSize(`• ${seg}`, contentWidth - 10);
-          lines.forEach((line: string) => {
-            doc.text(line, margin + 5, y);
-            y += 5;
-          });
+      const qLines = doc.splitTextToSize(pair.question, contentWidth);
+      qLines.forEach((line: string) => {
+        doc.text(line, margin + 5, y);
+        y += 5;
+      });
+      y += 6;
+    }
+    doc.setFont("helvetica", "bold");
+    setPrimary();
+    doc.text(`${aLabel} ${i + 1}:`, margin, y);
+    setBody();
+    y += 7;
+    doc.setFont("helvetica", "normal");
+    const segments = formatAnswer(pair.answer);
+    if (segments.length > 1) {
+      segments.forEach((seg) => {
+        const lines = doc.splitTextToSize(`• ${seg}`, contentWidth - 10);
+        lines.forEach((line: string) => {
+          doc.text(line, margin + 5, y);
+          y += 5;
         });
-      } else {
-        const lines = doc.splitTextToSize(ans, contentWidth);
-        doc.text(lines, margin, y);
-        y += lines.length * 5;
-      }
-      y += 10;
-
-      if (y > pageHeight - 40) {
-          addNewPage();
-      }
+      });
+    } else {
+      const lines = doc.splitTextToSize(pair.answer, contentWidth);
+      lines.forEach((line: string) => {
+        doc.text(line, margin, y);
+        y += 5;
+      });
+    }
+    y += 10;
+    if (y > pageHeight - 40) addNewPage();
   });
 
   // Footer: Vector wordmark + page numbers on every page
@@ -553,7 +749,7 @@ export const generatePdf = async (blueprint: Blueprint, branding?: PdfBranding):
   return doc;
 };
 
-export const exportToPdf = async (blueprint: Blueprint, branding?: PdfBranding) => {
-    const doc = await generatePdf(blueprint, branding);
+export const exportToPdf = async (blueprint: Blueprint, branding?: PdfBranding, options?: PdfOptions) => {
+    const doc = await generatePdf(blueprint, branding, options);
     doc.save(`vector-blueprint-${blueprint.title.replace(/\s+/g, '-').toLowerCase()}.pdf`);
 };
