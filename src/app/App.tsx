@@ -564,6 +564,8 @@ function App() {
 
     setSelectedFramework(fwId);
     setActiveBlueprint(undefined);
+    // Fresh consultant flow (Planifiquemos): clear session so user gets the default welcome, not a restored Eisenhower/other session
+    if (fwId == null) localStorage.removeItem("vector_wizard_session");
     navigate("/wizard", { state: { framework: fwId, context } });
   };
 

@@ -668,7 +668,7 @@ export const translations = {
     // Framework Titles & Questions
     "fp.title": "Goal Planner Generator",
     "fp.q1":
-      "Hello! I'm your Goal Planner Generator. To build a solid foundation, I need to understand your context. What is your primary goal or the specific problem you're trying to solve? The more details you share, the better the blueprint.",
+      "Hello! I'm your Goal Planner Generator. If you're here, you're looking for real change and need a solid strategy. Many fail for lack of a constant action plan, but you're in the right place. Tell me: what goal do you want to achieve, in how much time, and how important is it to you? We'll create a plan tailored to you. The more details you share, the better the result. It's time to change your life.",
     "fp.q2":
       "What are the fundamental truths you know for sure about this goal? Break it down to the non-negotiable facts.",
     "fp.q3":
