@@ -23,6 +23,8 @@ import {
 } from "@/lib/blueprints";
 import { supabase } from "@/lib/supabase";
 import { createCheckout, isMercadoPagoConfigured } from "@/lib/mercadoPago";
+import { createLemonSqueezyCheckout, isLemonSqueezyConfigured } from "@/lib/lemonSqueezy";
+import { usePaymentRegion } from "@/hooks/usePaymentRegion";
 import { trackEvent } from "@/lib/analytics"; // Imported trackEvent
 
 import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID } from "@/lib/tiers";
@@ -161,6 +163,7 @@ function App() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const { region: paymentRegion, setRegion: setPaymentRegion, isLoading: isPaymentRegionLoading } = usePaymentRegion();
   const [authReady, setAuthReady] = useState(false);
   const [authReason, setAuthReason] = useState<"signup_to_try" | null>(null);
 
@@ -731,9 +734,15 @@ function App() {
       return;
     }
 
-    // 3. Handle Paid Tiers (Standard/Max)
+    // 3. Handle Paid Tiers (Standard/Max) - route by region
+    const useLemonSqueezy = paymentRegion === "global";
+    const useMercadoPago = paymentRegion === "latam";
 
-    if (!isMercadoPagoConfigured()) {
+    if (useMercadoPago && !isMercadoPagoConfigured()) {
+      toast.error("Payments are not configured yet (Test Mode).");
+      return;
+    }
+    if (useLemonSqueezy && !isLemonSqueezyConfigured()) {
       toast.error("Payments are not configured yet (Test Mode).");
       return;
     }
@@ -763,13 +772,21 @@ function App() {
         throw new Error("Invalid tier configuration");
       }
 
-      await createCheckout(supabase!, {
-        tier: config.id, // e.g. 'standard'
-        title: `Vector - ${tierName}`, // e.g. 'Vector - Standard Plan'
-        amount: config.priceUsd,
-        currency: "USD", // Or configurable
-        userId: userId,
-      });
+      if (useLemonSqueezy) {
+        await createLemonSqueezyCheckout(supabase!, {
+          tier: tierId as "standard" | "max",
+          userId,
+          userEmail: userEmail ?? undefined,
+        });
+      } else {
+        await createCheckout(supabase!, {
+          tier: config.id,
+          title: `Vector - ${tierName}`,
+          amount: config.priceUsd,
+          currency: "USD",
+          userId: userId,
+        });
+      }
       // Checkout opens in new tab; clear overlay so this tab is usable
       setIsCheckoutLoading(false);
     } catch (e: any) {
@@ -840,7 +857,9 @@ function App() {
             <div className="flex flex-col items-center gap-4">
               <div className="w-12 h-12 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin" />
               <p className="font-medium text-lg animate-pulse">
-                Redirecting to MercadoPago...
+                {paymentRegion === "latam"
+                  ? t("pricing.redirectMercadoPago") || "Redirecting to checkout..."
+                  : t("pricing.redirectLemonSqueezy") || "Redirecting to checkout..."}
               </p>
             </div>
           </motion.div>
@@ -1071,8 +1090,12 @@ function App() {
                     >
                       <PricingSection
                         onSelectTier={handlePricingTier}
+                        onSelectCryptoTier={() => toast.info(t("pricing.cryptoComingSoon") || "Crypto payments (Binance Pay) coming soon. Contact us to get notified.")}
                         currentTier={tier}
                         userEmail={userEmail}
+                        paymentRegion={paymentRegion}
+                        setPaymentRegion={setPaymentRegion}
+                        isPaymentRegionLoading={isPaymentRegionLoading}
                       />
                     </motion.div>
                   }

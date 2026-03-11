@@ -9,7 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/app/components/ui/label';
 import { Switch } from '@/app/components/ui/switch';
 import { useNavigate } from 'react-router-dom';
-import { createCheckout } from '@/lib/mercadoPago';
+import { createCheckout, isMercadoPagoConfigured } from '@/lib/mercadoPago';
+import { createLemonSqueezyCheckout, isLemonSqueezyConfigured } from '@/lib/lemonSqueezy';
+import { usePaymentRegion } from '@/hooks/usePaymentRegion';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { AchievementsList } from '@/app/components/AchievementsList';
@@ -220,17 +222,39 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
     }
   };
 
+  const { region: paymentRegion } = usePaymentRegion();
+
   const handlePricingTier = async (tierId: string) => {
+    if (!supabase) return;
     const config = TIER_CONFIGS[tierId as TierId];
     if (!config || config.priceUsd <= 0) return;
+
+    const useLemonSqueezy = paymentRegion === "global";
+    if (useLemonSqueezy && !isLemonSqueezyConfigured()) {
+      toast.error("Payments are not configured yet (Test Mode).");
+      return;
+    }
+    if (!useLemonSqueezy && !isMercadoPagoConfigured()) {
+      toast.error("Payments are not configured yet (Test Mode).");
+      return;
+    }
     
     try {
-      await createCheckout(supabase, {
-        tier: tierId.charAt(0).toUpperCase() + tierId.slice(1),
-        amount: config.priceUsd,
-        currency: 'USD',
-        userId,
-      });
+      if (useLemonSqueezy) {
+        await createLemonSqueezyCheckout(supabase, {
+          tier: tierId as "standard" | "max",
+          userId,
+          userEmail: userEmail ?? undefined,
+        });
+      } else {
+        await createCheckout(supabase, {
+          tier: config.id,
+          title: `Vector - ${config.id}`,
+          amount: config.priceUsd,
+          currency: 'USD',
+          userId,
+        });
+      }
     } catch (e) {
       console.error(e);
       toast.error(t('common.error') || "Failed to initiate checkout.");

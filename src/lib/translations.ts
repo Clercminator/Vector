@@ -289,6 +289,15 @@ export const translations = {
     "pricing.feature.enterprise.admin": "Admin dashboard & analytics",
     "pricing.feature.enterprise.integration": "Custom framework integration",
     "pricing.feature.enterprise.support": "Dedicated support",
+    "pricing.regionDetecting": "Detecting region...",
+    "pricing.regionLatam": "Showing LATAM payment (MercadoPago)",
+    "pricing.regionGlobal": "Showing US/EU payment (Cards, PayPal)",
+    "pricing.switchToGlobal": "Paying from US/EU? Switch",
+    "pricing.switchToLatam": "Paying from LATAM? Switch",
+    "pricing.payWithCrypto": "Pay with crypto (Binance Pay)",
+    "pricing.cryptoComingSoon": "Crypto payments (Binance Pay) coming soon. Contact us to get notified.",
+    "pricing.redirectMercadoPago": "Redirecting to checkout...",
+    "pricing.redirectLemonSqueezy": "Redirecting to checkout...",
 
     // Pricing FAQ / How it works
     "pricing.faq.title": "Understanding plans & features",
@@ -1483,6 +1492,15 @@ export const translations = {
     "pricing.feature.enterprise.integration":
       "Integración de métodos personalizados",
     "pricing.feature.enterprise.support": "Soporte dedicado",
+    "pricing.regionDetecting": "Detectando región...",
+    "pricing.regionLatam": "Pago LATAM (MercadoPago)",
+    "pricing.regionGlobal": "Pago US/EU (Tarjetas, PayPal)",
+    "pricing.switchToGlobal": "¿Pagas desde US/EU? Cambiar",
+    "pricing.switchToLatam": "¿Pagas desde LATAM? Cambiar",
+    "pricing.payWithCrypto": "Pagar con cripto (Binance Pay)",
+    "pricing.cryptoComingSoon": "Pagos con cripto (Binance Pay) próximamente. Contáctanos para recibir aviso.",
+    "pricing.redirectMercadoPago": "Redirigiendo al pago...",
+    "pricing.redirectLemonSqueezy": "Redirigiendo al pago...",
 
     // Pricing FAQ / How it works
     "pricing.faq.title": "Entender los planes y las funciones",
@@ -2390,6 +2408,15 @@ export const translations = {
     "pricing.feature.enterprise.integration":
       "Integração de modelos personalizados",
     "pricing.feature.enterprise.support": "Suporte dedicado",
+    "pricing.regionDetecting": "Detectando região...",
+    "pricing.regionLatam": "Pagamento LATAM (MercadoPago)",
+    "pricing.regionGlobal": "Pagamento US/EU (Cartões, PayPal)",
+    "pricing.switchToGlobal": "Paga dos EUA/Europa? Trocar",
+    "pricing.switchToLatam": "Paga da LATAM? Trocar",
+    "pricing.payWithCrypto": "Pagar com cripto (Binance Pay)",
+    "pricing.cryptoComingSoon": "Pagamentos em cripto (Binance Pay) em breve. Entre em contato para ser avisado.",
+    "pricing.redirectMercadoPago": "Redirecionando para pagamento...",
+    "pricing.redirectLemonSqueezy": "Redirecionando para pagamento...",
 
     // Community
     "community.title": "Modelos da Comunidade",
@@ -2905,6 +2932,15 @@ export const translations = {
     "pricing.feature.enterprise.integration":
       "Intégration de modèles personnalisés",
     "pricing.feature.enterprise.support": "Support dédié",
+    "pricing.regionDetecting": "Détection de la région...",
+    "pricing.regionLatam": "Paiement LATAM (MercadoPago)",
+    "pricing.regionGlobal": "Paiement US/UE (Cartes, PayPal)",
+    "pricing.switchToGlobal": "Vous payez depuis les US/UE ? Changer",
+    "pricing.switchToLatam": "Vous payez depuis l'Amérique latine ? Changer",
+    "pricing.payWithCrypto": "Payer en crypto (Binance Pay)",
+    "pricing.cryptoComingSoon": "Paiements crypto (Binance Pay) bientôt disponibles. Contactez-nous pour être notifié.",
+    "pricing.redirectMercadoPago": "Redirection vers le paiement...",
+    "pricing.redirectLemonSqueezy": "Redirection vers le paiement...",
 
     // Community
     "community.title": "Modèles de la Communauté",
@@ -3418,6 +3454,15 @@ export const translations = {
     "pricing.feature.enterprise.admin": "Admin-Dashboard & Analysen",
     "pricing.feature.enterprise.integration": "Individuelle Modell-Integration",
     "pricing.feature.enterprise.support": "Dedizierter Support",
+    "pricing.regionDetecting": "Region wird erkannt...",
+    "pricing.regionLatam": "LATAM-Zahlung (MercadoPago)",
+    "pricing.regionGlobal": "US/EU-Zahlung (Karten, PayPal)",
+    "pricing.switchToGlobal": "Aus US/EU zahlend? Wechseln",
+    "pricing.switchToLatam": "Aus LATAM zahlend? Wechseln",
+    "pricing.payWithCrypto": "Mit Krypto zahlen (Binance Pay)",
+    "pricing.cryptoComingSoon": "Krypto-Zahlungen (Binance Pay) demnächst. Kontaktieren Sie uns für eine Benachrichtigung.",
+    "pricing.redirectMercadoPago": "Weiterleitung zur Kasse...",
+    "pricing.redirectLemonSqueezy": "Weiterleitung zur Kasse...",
 
     // Community
     "community.title": "Community-Vorlagen",

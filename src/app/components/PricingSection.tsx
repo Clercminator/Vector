@@ -1,17 +1,22 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Check } from 'lucide-react';
+import { Check, CreditCard, Coins } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '@/app/components/language-provider';
 import { TIER_CONFIGS, type TierId } from '@/lib/tiers';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/app/components/ui/accordion';
 import { trackEvent } from '@/lib/analytics';
+import type { PaymentRegion } from '@/hooks/usePaymentRegion';
 
 export const PricingSection: React.FC<{ 
   onSelectTier?: (tierName: string, tierId?: string) => void;
+  onSelectCryptoTier?: () => void;
   currentTier?: TierId;
   userEmail?: string | null;
-}> = ({ onSelectTier, currentTier, userEmail }) => {
+  paymentRegion?: PaymentRegion;
+  setPaymentRegion?: (r: PaymentRegion) => void;
+  isPaymentRegionLoading?: boolean;
+}> = ({ onSelectTier, onSelectCryptoTier, currentTier, userEmail, paymentRegion = "global", setPaymentRegion, isPaymentRegionLoading = false }) => {
   const { t } = useLanguage();
 
   React.useEffect(() => {
@@ -94,6 +99,30 @@ export const PricingSection: React.FC<{
         <p className="text-lg text-gray-500 dark:text-gray-400 font-light max-w-2xl mx-auto">
           {t('pricing.subtitle')}
         </p>
+        {setPaymentRegion && (
+          <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
+            {isPaymentRegionLoading ? (
+              <span className="text-sm text-gray-400">{t('pricing.regionDetecting') || 'Detecting region...'}</span>
+            ) : (
+              <>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {paymentRegion === 'latam'
+                    ? (t('pricing.regionLatam') || 'Showing LATAM payment (MercadoPago)')
+                    : (t('pricing.regionGlobal') || 'Showing US/EU payment (Cards, PayPal)')}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPaymentRegion(paymentRegion === 'latam' ? 'global' : 'latam')}
+                  className="text-sm text-purple-600 dark:text-purple-400 hover:underline"
+                >
+                  {paymentRegion === 'latam'
+                    ? (t('pricing.switchToGlobal') || 'Paying from US/EU? Switch')
+                    : (t('pricing.switchToLatam') || 'Paying from LATAM? Switch')}
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -140,19 +169,37 @@ export const PricingSection: React.FC<{
               ))}
             </ul>
 
-            <button
-              onClick={() => handleCta(tier.name, tier.id)}
-              disabled={tier.isCurrent}
-              className={`w-full py-4 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                tier.isCurrent 
-                  ? 'bg-blue-500/10 text-blue-500 cursor-default'
-                  : tier.popular
-                    ? 'bg-black dark:bg-white text-white dark:text-black shadow-xl shadow-black/20 dark:shadow-white/10'
-                    : 'bg-gray-50 dark:bg-zinc-800 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700'
-              }`}
-            >
-              {tier.cta}
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={() => handleCta(tier.name, tier.id)}
+                disabled={tier.isCurrent}
+                className={`w-full py-4 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 ${
+                  tier.isCurrent 
+                    ? 'bg-blue-500/10 text-blue-500 cursor-default'
+                    : tier.popular
+                      ? 'bg-black dark:bg-white text-white dark:text-black shadow-xl shadow-black/20 dark:shadow-white/10'
+                      : 'bg-gray-50 dark:bg-zinc-800 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700'
+                }`}
+              >
+                {(tier.id === 'standard' || tier.id === 'max') && !tier.isCurrent && (
+                  <CreditCard size={18} />
+                )}
+                {tier.cta}
+              </button>
+              {(tier.id === 'standard' || tier.id === 'max') && !tier.isCurrent && onSelectCryptoTier && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    confetti({ particleCount: 80, spread: 50, origin: { y: 0.6 } });
+                    onSelectCryptoTier();
+                  }}
+                  className="w-full py-2.5 rounded-xl text-sm font-medium border border-amber-500/50 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 dark:hover:bg-amber-500/10 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Coins size={16} />
+                  {t('pricing.payWithCrypto') || 'Pay with crypto (Binance Pay)'}
+                </button>
+              )}
+            </div>
           </motion.div>
         ))}
       </div>

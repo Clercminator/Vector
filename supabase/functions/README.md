@@ -13,6 +13,8 @@ This folder contains the Supabase Edge Functions used by Vector. Deploy them via
 | `mercado-pago-webhook` | Handles payment notifications; updates credits/tier | `MERCADOPAGO_ACCESS_TOKEN` |
 | `openrouter-proxy` | Proxies AI requests to Open Router | `OPENROUTER_API_KEY` or `OPENROUTER_API_KEY_2` |
 | `send-email` | Sends transactional emails | `RESEND_API_KEY` |
+| `lemonsqueezy-checkout` | Creates Lemon Squeezy checkout for US/EU users | `LEMONSQUEEZY_API_KEY`, `LEMONSQUEEZY_STORE_ID`, `LEMONSQUEEZY_VARIANT_STANDARD`, `LEMONSQUEEZY_VARIANT_MAX` |
+| `lemonsqueezy-webhook` | Handles Lemon Squeezy payment notifications; updates credits/tier | `LEMONSQUEEZY_WEBHOOK_SECRET` |
 | **`get-shared-blueprint`** | **Returns shared plan data by token** (for `/share/:token`) | None (uses `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, auto-injected) |
 
 ---
