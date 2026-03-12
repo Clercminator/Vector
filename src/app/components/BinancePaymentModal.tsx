@@ -31,8 +31,8 @@ export function BinancePaymentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Coins className="h-5 w-5 text-amber-500" />
             {t("pricing.binance.title") || "Pay with Binance (Crypto)"}
@@ -42,7 +42,7 @@ export function BinancePaymentModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-6 pr-1 -mr-1">
           <div className="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4">
             <p className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-2">
               {t("pricing.binance.tier") || "Plan"}: {tierName}
@@ -55,12 +55,22 @@ export function BinancePaymentModal({
             </p>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center gap-3">
             <img
-              src="/BinanceQR.png"
+              src="/QR.png"
               alt="Binance Pay QR Code"
-              className="w-48 h-48 object-contain rounded-lg border border-gray-200 dark:border-zinc-700"
+              className="w-64 h-64 min-w-[200px] min-h-[200px] max-w-[280px] max-h-[280px] object-contain rounded-lg border border-gray-200 dark:border-zinc-700"
             />
+            <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+              <p>
+                <span className="font-medium text-gray-700 dark:text-gray-300">
+                  {(import.meta.env.VITE_BINANCE_USERNAME as string) || "ElClerc"}
+                </span>
+              </p>
+              <p className="text-xs mt-0.5">
+                ID: {(import.meta.env.VITE_BINANCE_ID as string) || "122989111"}
+              </p>
+            </div>
           </div>
 
           <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
@@ -92,7 +102,7 @@ export function BinancePaymentModal({
                 onOpenChat();
                 onOpenChange(false);
               }}
-              className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+              className="w-full bg-amber-600 hover:bg-amber-700 text-white shrink-0"
             >
               <MessageCircle className="h-4 w-4 mr-2" />
               {t("pricing.binance.openChat") || "Open chat to notify us"}

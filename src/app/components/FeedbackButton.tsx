@@ -67,7 +67,7 @@ export function FeedbackButton({ pageContext, userEmail, userId }: FeedbackButto
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full px-5 py-3 shadow-xl border border-gray-200/50 dark:border-white/20 bg-white/95 dark:bg-zinc-900/95 text-gray-900 dark:text-white backdrop-blur-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500 dark:focus-visible:ring-white/50",
+          "fixed bottom-6 left-6 z-40 flex items-center gap-2.5 rounded-full px-5 py-3 shadow-xl border border-gray-200/50 dark:border-white/20 bg-white/95 dark:bg-zinc-900/95 text-gray-900 dark:text-white backdrop-blur-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500 dark:focus-visible:ring-white/50",
           pageContext.startsWith('/wizard') && "hidden md:flex"
         )}
         aria-label={t('feedback.button')}
