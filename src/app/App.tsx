@@ -37,7 +37,6 @@ import { OnboardingModal } from "@/app/components/OnboardingModal";
 import { HelpMeChooseModal } from "@/app/components/HelpMeChooseModal";
 import { FeedbackButton } from "@/app/components/FeedbackButton";
 import { Logo } from "@/app/components/Logo";
-import { SupportButton } from "@/app/components/SupportButton";
 import { BinancePaymentModal } from "@/app/components/BinancePaymentModal";
 import { ChatwootWidget, openChatwoot } from "@/app/components/ChatwootWidget";
 
@@ -1273,8 +1272,6 @@ function App() {
           </Suspense>
         </ErrorBoundary>
       </main>
-
-      <SupportButton />
 
       {/* Footer */}
       {location.pathname !== "/wizard" && (

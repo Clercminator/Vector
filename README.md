@@ -803,6 +803,14 @@ Other deps: `canvas-confetti`, `date-fns`, `react-hook-form`, `recharts`, `@verc
 
 ---
 
+## Support Button (Crisis Resources)
+
+Vector previously had a floating **Support** button (`src/app/components/SupportButton.tsx`) that opened a modal titled **“Support & Crisis Resources”**. It was designed to show **country-specific crisis/support resources** (phone numbers + links) from a Supabase table named `support_resources` (filtered by `enabled = true`).
+
+- **Note**: This is **not** the normal “customer support” flow. The app now uses **Chatwoot** for customer support.
+- **Current status**: The button is **removed from the UI** to avoid overlapping with the Chatwoot bubble and the Feedback button.
+- **If you want it back**: re-add `<SupportButton />` in `src/app/App.tsx` and ensure the `support_resources` table is populated.
+
 <a id="architectural-decisions"></a>
 ## AI Architecture & Tech Stack Decisions
 
