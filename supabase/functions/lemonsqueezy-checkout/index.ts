@@ -32,7 +32,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   const apiKey = Deno.env.get("LEMONSQUEEZY_API_KEY");
   const storeId = Deno.env.get("LEMONSQUEEZY_STORE_ID");
-  const variantStandard = Deno.env.get("LEMONSQUEEZY_VARIANT_STANDARD");
+  const variantStandard =
+    Deno.env.get("LEMONSQUEEZY_VARIANT_STANDARD") ?? Deno.env.get("LEMONSQUEEZY_VARIANT_BUILDER");
   const variantMax = Deno.env.get("LEMONSQUEEZY_VARIANT_MAX");
 
   if (!apiKey?.trim() || !storeId?.trim()) {

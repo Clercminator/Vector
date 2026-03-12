@@ -38,6 +38,8 @@ import { HelpMeChooseModal } from "@/app/components/HelpMeChooseModal";
 import { FeedbackButton } from "@/app/components/FeedbackButton";
 import { Logo } from "@/app/components/Logo";
 import { SupportButton } from "@/app/components/SupportButton";
+import { BinancePaymentModal } from "@/app/components/BinancePaymentModal";
+import { ChatwootWidget, openChatwoot } from "@/app/components/ChatwootWidget";
 
 import { LandingPage } from "@/pages/LandingPage";
 import { Header } from "@/app/components/layout/Header";
@@ -164,6 +166,12 @@ function App() {
   const [syncError, setSyncError] = useState<string | null>(null);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const { region: paymentRegion, setRegion: setPaymentRegion, isLoading: isPaymentRegionLoading } = usePaymentRegion();
+  const [binanceModal, setBinanceModal] = useState<{ open: boolean; tierId: string; tierName: string; amountUsd: number }>({
+    open: false,
+    tierId: "",
+    tierName: "",
+    amountUsd: 0,
+  });
   const [authReady, setAuthReady] = useState(false);
   const [authReason, setAuthReason] = useState<"signup_to_try" | null>(null);
 
@@ -873,6 +881,15 @@ function App() {
       </a>
       <ParticleBackground />
       <Toaster />
+      <ChatwootWidget />
+      <BinancePaymentModal
+        open={binanceModal.open}
+        onOpenChange={(open) => setBinanceModal((m) => ({ ...m, open }))}
+        tierId={binanceModal.tierId}
+        tierName={binanceModal.tierName}
+        amountUsd={binanceModal.amountUsd}
+        onOpenChat={openChatwoot}
+      />
       <AuthModal
         open={authOpen}
         onOpenChange={(open) => {
@@ -1090,7 +1107,9 @@ function App() {
                     >
                       <PricingSection
                         onSelectTier={handlePricingTier}
-                        onSelectCryptoTier={() => toast.info(t("pricing.cryptoComingSoon") || "Crypto payments (Binance Pay) coming soon. Contact us to get notified.")}
+                        onSelectCryptoTier={(tierId, tierName, amountUsd) =>
+                          setBinanceModal({ open: true, tierId, tierName, amountUsd })
+                        }
                         currentTier={tier}
                         userEmail={userEmail}
                         paymentRegion={paymentRegion}

@@ -10,7 +10,7 @@ import type { PaymentRegion } from '@/hooks/usePaymentRegion';
 
 export const PricingSection: React.FC<{ 
   onSelectTier?: (tierName: string, tierId?: string) => void;
-  onSelectCryptoTier?: () => void;
+  onSelectCryptoTier?: (tierId: string, tierName: string, amountUsd: number) => void;
   currentTier?: TierId;
   userEmail?: string | null;
   paymentRegion?: PaymentRegion;
@@ -191,7 +191,8 @@ export const PricingSection: React.FC<{
                   type="button"
                   onClick={() => {
                     confetti({ particleCount: 80, spread: 50, origin: { y: 0.6 } });
-                    onSelectCryptoTier();
+                    const config = TIER_CONFIGS[tier.id as TierId];
+                    onSelectCryptoTier(tier.id, tier.name, config?.priceUsd ?? 0);
                   }}
                   className="w-full py-2.5 rounded-xl text-sm font-medium border border-amber-500/50 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 dark:hover:bg-amber-500/10 transition-colors flex items-center justify-center gap-2"
                 >
