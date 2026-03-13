@@ -1,17 +1,16 @@
 import * as React from "react";
 import { Toaster as Sonner, ToasterProps } from "sonner";
+import { useTheme } from "next-themes";
 
 /**
  * Sonner Toaster wrapper for this Vite/React app.
- *
- * Note: The original shadcn/ui template uses `next-themes` for theme detection.
- * This project is not a Next.js app and does not currently mount a ThemeProvider,
- * so we default to a consistent theme and rely on CSS variables for colors.
+ * Follows the app's light/dark theme from next-themes.
  */
 const Toaster = ({ ...props }: ToasterProps) => {
+  const { resolvedTheme } = useTheme();
   return (
     <Sonner
-      theme="light"
+      theme={(resolvedTheme as "light" | "dark") || "light"}
       position="top-right"
       className="toaster group"
       style={

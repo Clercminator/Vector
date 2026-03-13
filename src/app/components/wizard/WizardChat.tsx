@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useLanguage } from '@/app/components/language-provider';
 import ReactMarkdown from 'react-markdown';
 import { ThinkingIndicator } from './ThinkingIndicator';
 import { ScrollArea } from '@/app/components/ui/scroll-area';
@@ -52,6 +53,7 @@ const ChatContent: React.FC<{
   contentClassName: string;
   onEditMessage?: WizardChatProps['onEditMessage'];
 }> = ({ messages, isTyping, isAgentRunning = false, agentStatus, result, messagesEndRef, children, contentClassName, onEditMessage }) => {
+  const { t } = useLanguage();
   const showThinking = (isTyping || isAgentRunning) && !result;
   const latestUserMessageId = React.useMemo(() => {
     for (let j = (messages?.length ?? 0) - 1; j >= 0; j--) {
@@ -81,10 +83,23 @@ const ChatContent: React.FC<{
     cancelEdit();
   };
 
+  const displayMessages = messages || [];
+  const showEmptyState = displayMessages.length === 0;
+
   return (
   <div className={contentClassName}>
+    {showEmptyState && (
+      <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+        <p className="text-base text-gray-500 dark:text-gray-400 max-w-md mb-2">
+          {t('wizard.emptyStatePrompt') || 'Share your goal and Vector will help you build a plan.'}
+        </p>
+        <p className="text-sm text-gray-400 dark:text-gray-500">
+          {t('wizard.emptyStateExamples') || 'Examples: "Run a 5K in 3 months" · "Launch my side project" · "Improve my Spanish"'}
+        </p>
+      </div>
+    )}
     <AnimatePresence mode="popLayout">
-      {(messages || []).map((msg, i) => {
+      {displayMessages.map((msg, i) => {
         if (msg.role === 'system') {
           return (
             <motion.div key={msg.id ?? i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center py-2">
@@ -161,6 +176,20 @@ const ChatContent: React.FC<{
                 ) : (
                   <ReactMarkdown
                     components={{
+                      a: ({ node, href, children, ...props }) => {
+                        const safeHref = href && /^https?:\/\//i.test(href) ? href : '#';
+                        return (
+                          <a
+                            href={safeHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 dark:text-blue-400 hover:underline"
+                            {...props}
+                          >
+                            {children}
+                          </a>
+                        );
+                      },
                       p: ({ node, ...props }) => <p className="mb-4 leading-relaxed text-inherit last:mb-0" {...props} />,
                       ul: ({ node, ...props }) => <ul className="mb-4 pl-4 space-y-2" {...props} />,
                       ol: ({ node, ...props }) => <ol className="mb-4 pl-4 space-y-2" {...props} />,

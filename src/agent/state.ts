@@ -64,6 +64,11 @@ export const AgentState = Annotation.Root({
   userReviewRequestsRefinement: Annotation<boolean>({
     reducer: (x, y) => y ?? x,
     default: () => false
+  }),
+  /** Set by approval_gate after interrupt resume: { confirmed: boolean, userMessage?: string }. Used to route to draft or ask. */
+  approvalGateResult: Annotation<{ confirmed: boolean; userMessage?: string } | undefined>({
+    reducer: (x, y) => y ?? x,
+    default: () => undefined
   })
 });
 

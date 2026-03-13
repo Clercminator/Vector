@@ -9,6 +9,8 @@ import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, canUseFramework, FrameworkId } f
 import { useLanguage } from '@/app/components/language-provider';
 import { trackEvent } from '@/lib/analytics';
 import { graph } from '@/agent/goalAgent';
+import { Command, isInterrupted, INTERRUPT } from '@langchain/langgraph';
+import { CONFIRM_PLAN_INTERRUPT_TYPE } from '@/agent/nodes/approvalGate';
 import { AIMessage, HumanMessage } from '@langchain/core/messages';
 
 export interface GoalWizardHookProps {
@@ -88,6 +90,8 @@ export const useGoalWizard = ({
         return uuidv4();
     });
     const [isAgentRunning, setIsAgentRunning] = useState(false);
+    /** True when graph is paused at approval_gate—user must click "Generate my plan" or type to continue. */
+    const [awaitingPlanConfirmation, setAwaitingPlanConfirmation] = useState(false);
     
     // UI Feedback State
     const [draftPulse, setDraftPulse] = useState(false);
@@ -164,12 +168,13 @@ export const useGoalWizard = ({
         const savedSession = localStorage.getItem('vector_wizard_session');
         if (savedSession) {
             try {
-                const { threadId: savedThreadId, messages: savedMsgs, step: savedStep, draftResult: savedDraft, framework: savedFw, timestamp } = JSON.parse(savedSession);
+                const { threadId: savedThreadId, messages: savedMsgs, step: savedStep, draftResult: savedDraft, framework: savedFw, timestamp, awaitingPlanConfirmation: savedAwaiting } = JSON.parse(savedSession);
                 if (Date.now() - timestamp < 24 * 60 * 60 * 1000 && savedFw === framework) {
                      if (savedThreadId) setThreadId(savedThreadId);
                      if (savedMsgs.length > 0) setMessages(ensureMessageIds(savedMsgs));
                      if (savedStep) setStep(savedStep);
                      if (savedDraft) setDraftResult(savedDraft);
+                     if (savedAwaiting === true) setAwaitingPlanConfirmation(true);
                 }
             } catch (e) {
                 localStorage.removeItem('vector_wizard_session');
@@ -183,11 +188,11 @@ export const useGoalWizard = ({
     useEffect(() => {
         if (messages.length > 0) {
             const session = {
-                threadId, messages, step, draftResult, framework, timestamp: Date.now()
+                threadId, messages, step, draftResult, framework, timestamp: Date.now(), awaitingPlanConfirmation
             };
             localStorage.setItem('vector_wizard_session', JSON.stringify(session));
         }
-    }, [messages, step, draftResult, framework, threadId]);
+    }, [messages, step, draftResult, framework, threadId, awaitingPlanConfirmation]);
 
     // Initialization Logic
     useEffect(() => {
@@ -407,6 +412,7 @@ export const useGoalWizard = ({
 
     const clearSession = () => {
         lastAppendedContentRef.current = null;
+        setAwaitingPlanConfirmation(false);
         localStorage.removeItem('vector_wizard_session');
         setStep(0);
         setResult(null);
@@ -559,6 +565,7 @@ export const useGoalWizard = ({
         }
         setInputValue('');
         setSuggestionChips([]);
+        setAwaitingPlanConfirmation(false);
         setIsTyping(true);
         setIsAgentRunning(true);
         setAgentPhase('thinking');
@@ -611,6 +618,17 @@ export const useGoalWizard = ({
                 const updateData: any = isTuple ? event[1] : event;
                 const updateKeys = updateData && typeof updateData === 'object' ? Object.keys(updateData) : [];
                 LOG(`event #${eventIndex}`, { isTuple, streamMode, updateKeys, hasMessages: !!(updateData?.messages), messagesLength: updateData?.messages?.length });
+
+                // Detect interrupt (approval gate): user must click "Generate my plan" or type to continue
+                if (isInterrupted(updateData)) {
+                    const interrupts = (updateData as any)[INTERRUPT] as Array<{ value?: { type?: string } }>;
+                    if (Array.isArray(interrupts) && interrupts.some((i) => i?.value?.type === CONFIRM_PLAN_INTERRUPT_TYPE)) {
+                        if (isMounted.current) {
+                            setAwaitingPlanConfirmation(true);
+                            LOG('interrupt detected: awaiting plan confirmation');
+                        }
+                    }
+                }
 
                 // Track when draft node ran this turn (for fallback promotion from values)
                 if (streamMode === 'updates' && updateData && typeof updateData === 'object' && 'draft' in updateData) {
@@ -757,7 +775,7 @@ export const useGoalWizard = ({
                      }
                      
                      const msgType = getMsgType(lastMsg);
-                     const isTool = msgType === 'tool' || !!lastMsg?.tool_call_id || (lastMsg?.name && ['set_framework', 'generate_blueprint'].includes(lastMsg.name));
+                     const isTool = msgType === 'tool' || !!lastMsg?.tool_call_id || (lastMsg?.name && ['set_framework', 'request_confirmation'].includes(lastMsg.name));
                      const isAIMessage = !isTool && (
                         msgType === 'ai' || 
                         lastMsg?.role === 'ai' ||
@@ -881,6 +899,180 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
     };
 
     const runAgent = async (userText: string) => runAgentInternal(userText);
+
+    /** Resume from approval_gate interrupt: either generate (confirmed: true) or continue conversation (confirmed: false, userMessage). */
+    const runAgentResume = async (payload: { confirmed: boolean; userMessage?: string }) => {
+        const effectiveThreadId = threadId;
+        if (!effectiveThreadId) return;
+        if (credits !== null && credits <= 0) {
+            toast.error(t('wizard.outOfCredits') || "Low credits.", { action: { label: "Pricing", onClick: () => navigate('/pricing') } });
+            return;
+        }
+        if (isRunningRef.current || isTyping || isAgentRunning) return;
+        setAwaitingPlanConfirmation(false);
+        isRunningRef.current = true;
+        if (payload.confirmed) {
+            setAgentPhase('drafting');
+        } else if (payload.userMessage) {
+            setMessages((prev) => [...prev, { id: uuidv4(), role: 'user', content: payload.userMessage!, editedOnce: false }]);
+            setInputValue('');
+        }
+        setResult(null);
+        setDraftResult(null);
+        setIsTyping(true);
+        setIsAgentRunning(true);
+
+        try {
+            const config = { configurable: { thread_id: effectiveThreadId }, streamMode: ["updates", "values"] as const };
+            const inputs = new Command({ resume: payload });
+            const generator = await graph.stream(inputs, config);
+            isRunningRef.current = true;
+            let didReceiveAgentMessage = false;
+            let eventIndex = 0;
+            lastAppendedContentRef.current = null;
+            hasDeductedCreditThisRunRef.current = false;
+            seenDraftUpdateThisRunRef.current = false;
+            blueprintReceivedThisRunRef.current = null;
+
+            for await (const event of generator) {
+                eventIndex++;
+                if (!isMounted.current || !isRunningRef.current) break;
+                const isTuple = Array.isArray(event) && event.length === 2 && typeof event[0] === 'string';
+                const streamMode: string | null = isTuple ? (event[0] as string) : null;
+                const updateData: any = isTuple ? event[1] : event;
+                const updateKeys = updateData && typeof updateData === 'object' ? Object.keys(updateData) : [];
+
+                if (streamMode === 'updates' && updateData && typeof updateData === 'object' && 'draft' in updateData) {
+                    seenDraftUpdateThisRunRef.current = true;
+                    if (isMounted.current) setAgentPhase('reviewing');
+                }
+                if (streamMode === 'updates' && updateKeys.includes('critique') && isMounted.current) setAgentPhase('finalizing');
+                if (streamMode === 'updates' && updateKeys.includes('user_review') && isMounted.current) setAgentPhase('thinking');
+
+                let blueprintFromStream: any = null;
+                if (streamMode === 'updates' && updateData && typeof updateData === 'object') {
+                    blueprintFromStream = updateData?.draft?.blueprint ?? null;
+                    if (!blueprintFromStream) {
+                        for (const key of Object.keys(updateData)) {
+                            const nodeOut = (updateData as Record<string, unknown>)[key];
+                            if (nodeOut && typeof nodeOut === 'object' && (nodeOut as any).blueprint) {
+                                blueprintFromStream = (nodeOut as any).blueprint;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!blueprintFromStream && streamMode === 'values' && seenDraftUpdateThisRunRef.current && updateData?.blueprint) {
+                    blueprintFromStream = updateData.blueprint;
+                }
+                if (blueprintFromStream && typeof blueprintFromStream === 'object' && blueprintFromStream.type && !(blueprintFromStream as any).isTeaser) {
+                    const bp = blueprintFromStream as BlueprintResult;
+                    if (isMounted.current) {
+                        let graphMessages = updateData?.messages;
+                        if (!graphMessages && streamMode === 'updates' && updateData && typeof updateData === 'object') {
+                            for (const key of Object.keys(updateData)) {
+                                const nodeOut = (updateData as Record<string, unknown>)[key];
+                                if (nodeOut && typeof nodeOut === 'object' && Array.isArray((nodeOut as any).messages)) {
+                                    graphMessages = (nodeOut as any).messages;
+                                    break;
+                                }
+                            }
+                        }
+                        const userAnswers = Array.isArray(graphMessages)
+                            ? graphMessages.filter((m: any) => m.role === 'user' || m._getType?.() === 'human').map((m: any) => typeof m.content === 'string' ? m.content : String(m.content ?? ''))
+                            : [];
+                        blueprintReceivedThisRunRef.current = bp;
+                        setResult(bp);
+                        setFinalAnswers(userAnswers.length > 0 ? userAnswers : []);
+                        setDraftResult((prev: any) => prev ? { ...prev, ...bp } : bp);
+                        if (supabase && !hasDeductedCreditThisRunRef.current) {
+                            hasDeductedCreditThisRunRef.current = true;
+                            supabase.auth.getUser().then(({ data: { user } }) => {
+                                if (user?.id) supabase.rpc('decrement_credits', { amount_to_deduct: 1 }).then(({ data, error }) => {
+                                    if (!error && data != null) setCredits(data as number);
+                                }).catch(() => {});
+                            });
+                        }
+                        trackEvent('wizard_completed', { framework: framework || bp.framework });
+                    }
+                }
+
+                const frameworkSetter = updateData?.framework_setter || (Array.isArray(event) && event?.[0] === 'framework_setter' && event?.[1] ? event[1] : null);
+                if (frameworkSetter) {
+                    const newFw = frameworkSetter.framework;
+                    if (newFw && newFw !== framework && onSwitchFramework) {
+                        setDraftResult(null);
+                        onSwitchFramework(newFw as FrameworkId, !canUseFramework(tier, newFw as FrameworkId));
+                    }
+                }
+
+                let messageList: any[] | null = null;
+                if (streamMode === 'values' && updateData?.messages && Array.isArray(updateData.messages)) messageList = updateData.messages;
+                else if (updateData?.messages && Array.isArray(updateData.messages)) messageList = updateData.messages;
+                else if (updateData && typeof updateData === 'object') {
+                    for (const key of Object.keys(updateData)) {
+                        const val = (updateData as Record<string, unknown>)[key];
+                        if (val && typeof val === 'object' && Array.isArray((val as any).messages)) {
+                            messageList = (val as any).messages;
+                            break;
+                        }
+                    }
+                }
+                if (messageList && messageList.length > 0) {
+                    let lastMsg = messageList[messageList.length - 1];
+                    const getMsgType = (m: any) => m?._getType?.() ?? m?.type ?? (m?.role === 'assistant' || m?.role === 'ai' ? 'ai' : m?.role === 'user' ? 'human' : undefined);
+                    if (getMsgType(lastMsg) !== 'ai') {
+                        const aiIdx = messageList.map((m: any) => getMsgType(m)).lastIndexOf('ai');
+                        if (aiIdx >= 0) lastMsg = messageList[aiIdx];
+                    }
+                    const msgType = getMsgType(lastMsg);
+                    const isTool = msgType === 'tool' || !!lastMsg?.tool_call_id || (lastMsg?.name && ['set_framework', 'request_confirmation'].includes(lastMsg.name));
+                    const isAIMessage = !isTool && (msgType === 'ai' || lastMsg?.role === 'ai' || lastMsg?.role === 'assistant' || lastMsg?.constructor?.name === 'AIMessage' || (lastMsg?.content != null && lastMsg?.content !== '' && msgType !== 'human' && msgType !== 'system'));
+                    if (isAIMessage && lastMsg?.content != null) {
+                        const rawContent = typeof lastMsg.content === 'string' ? lastMsg.content : String(lastMsg.content ?? '');
+                        const { cleanText, suggestions, draft } = extractContent(rawContent);
+                        let textToShow = (cleanText.trim() || rawContent.trim().slice(0, 2000)).trim();
+                        if (lastAppendedContentRef.current !== textToShow && textToShow) {
+                            lastAppendedContentRef.current = textToShow;
+                            setMessages((prev) => {
+                                if (prev.some((m) => m.role === 'ai' && m.content === textToShow)) return prev;
+                                return [...prev, { id: uuidv4(), role: 'ai', content: textToShow }];
+                            });
+                            if (suggestions?.length) setSuggestionChips(suggestions);
+                            if (draft) setDraftResult((prev: any) => ({ ...prev, ...draft, type: framework }));
+                            didReceiveAgentMessage = true;
+                        }
+                        setIsTyping(false);
+                    }
+                }
+            }
+            if (isMounted.current && blueprintReceivedThisRunRef.current) setResult(blueprintReceivedThisRunRef.current);
+        } catch (e: any) {
+            console.error("Resume Error:", e);
+            setAwaitingPlanConfirmation(true);
+            const msg = (e?.message ?? '').toLowerCase();
+            let errorMsg = t('errors.agentGeneric') || "We couldn't complete your plan. Please try again.";
+            if (msg.includes('timeout') || msg.includes('fetch') || msg.includes('network')) {
+                errorMsg = t('errors.agentTimeout') || "The request took too long. Please try again.";
+            } else if (msg.includes('429') || msg.includes('rate')) {
+                errorMsg = t('errors.agentRateLimit') || "Too many requests. Please wait a moment and try again.";
+            }
+            toast.error(errorMsg, {
+                action: {
+                    label: t('common.retry') || "Retry",
+                    onClick: () => runAgentResume(payload),
+                },
+            });
+            setMessages((prev) => [...prev, { id: uuidv4(), role: 'ai', content: `⚠️ **Error**: ${errorMsg}` }]);
+        } finally {
+            isRunningRef.current = false;
+            if (isMounted.current) {
+                setIsAgentRunning(false);
+                setIsTyping(false);
+                setAgentPhase('thinking');
+            }
+        }
+    };
 
     const editUserMessageOnce = async (messageId: string, newContent: string) => {
         const trimmed = (newContent ?? '').trim();
@@ -1056,6 +1248,8 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
         messagesEndRef,
         draftPulse,
         runAgent,
+        runAgentResume,
+        awaitingPlanConfirmation,
         editUserMessageOnce,
         toggleListening,
         handleStop,

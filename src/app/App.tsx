@@ -258,6 +258,11 @@ function App() {
   }, []);
 
   useEffect(() => {
+    document.body.dataset.hideAuxiliaryChat = location.pathname.startsWith("/wizard") ? "true" : "";
+    return () => { document.body.dataset.hideAuxiliaryChat = ""; };
+  }, [location.pathname]);
+
+  useEffect(() => {
     // Check initial session
     supabase?.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
@@ -466,7 +471,7 @@ function App() {
     } catch (e: any) {
       console.error("Failed to load blueprints", e);
       setSyncError(e.message || "Unknown error");
-      toast.error(t("app.sync.error"));
+      toast.error(t("app.sync.error"), { duration: 6000 });
     } finally {
       setBlueprintsLoading(false);
       setIsLoadingMore(false);
@@ -664,6 +669,7 @@ function App() {
         toast.error(
           t("errors.syncFailed") ||
             "Couldn't save. Check your connection and try again.",
+          { duration: 6000 }
         );
         // Revert local optimistic update if needed?
         // For now we keep local state as "unsynced" effectively.
@@ -699,6 +705,7 @@ function App() {
         toast.error(
           t("errors.syncFailed") ||
             "Couldn't save. Check your connection and try again.",
+          { duration: 6000 }
         );
         // Revert optimistic update
         setBlueprints(loadLocalBlueprints());
@@ -746,11 +753,11 @@ function App() {
     const useMercadoPago = paymentRegion === "latam";
 
     if (useMercadoPago && !isMercadoPagoConfigured()) {
-      toast.error("Payments are not configured yet (Test Mode).");
+      toast.error(t("errors.paymentsNotConfigured") || "Payments are not configured yet (Test Mode).", { duration: 6000 });
       return;
     }
     if (useLemonSqueezy && !isLemonSqueezyConfigured()) {
-      toast.error("Payments are not configured yet (Test Mode).");
+      toast.error(t("errors.paymentsNotConfigured") || "Payments are not configured yet (Test Mode).", { duration: 6000 });
       return;
     }
 
@@ -958,11 +965,13 @@ function App() {
         onGetStarted={startHelpMeFindFrameworkFlow}
       />
 
-      <FeedbackButton
-        pageContext={location.pathname}
-        userEmail={userEmail}
-        userId={userId}
-      />
+      {!location.pathname.startsWith("/wizard") && (
+        <FeedbackButton
+          pageContext={location.pathname}
+          userEmail={userEmail}
+          userId={userId}
+        />
+      )}
 
       <main
         id="main-content"

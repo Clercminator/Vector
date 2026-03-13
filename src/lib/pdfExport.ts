@@ -1,6 +1,15 @@
 import { jsPDF } from "jspdf";
 import { Blueprint } from "@/lib/blueprints";
 
+/**
+ * PDF Export Format Parity
+ * ------------------------
+ * Full layout (matches in-app visualization): first-principles, pareto, rpm, okr, eisenhower, dsss, misogi, ikigai
+ * Simplified (bullet lists / text): mandalas — app uses spatial grid; PDF uses structured lists
+ * All frameworks include: cover, executive summary, difficulty, your situation, your why,
+ * first week actions, milestones, success criteria, what to avoid, blueprint result, Q&A history
+ */
+
 /** Vector app theme (from theme.css) — used when branding is not provided */
 const VECTOR_THEME = {
   primary: [255, 255, 255] as [number, number, number],   // #FFFFFF (White text)
@@ -208,9 +217,11 @@ export const generatePdf = async (
       doc.rect(0, 0, pageWidth, pageHeight, 'F');
   };
 
+  let currentPage = 1;
   // Helper to add new page with background
   const addNewPage = () => {
       doc.addPage();
+      currentPage++;
       fillBackground();
       y = margin;
   };
@@ -222,8 +233,8 @@ export const generatePdf = async (
   // --- COVER PAGE ---
   fillBackground();
   const centerX = pageWidth / 2;
-  let coverY = pageHeight * 0.3;
-  doc.setFontSize(28);
+  let coverY = pageHeight * 0.25;
+  doc.setFontSize(32);
   doc.setFont("helvetica", "bold");
   setPrimary();
   const coverTitleLines = doc.splitTextToSize(displayTitle, contentWidth);
@@ -232,11 +243,11 @@ export const generatePdf = async (
     doc.text(line, centerX - lineWidth / 2, coverY);
     coverY += 12;
   });
-  coverY += 16;
-  doc.setFontSize(12);
+  coverY += 20;
+  doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
   setMuted();
-  doc.text(frameworkLabel, centerX - doc.getTextWidth(frameworkLabel) / 2, coverY);
+  if (frameworkLabel) doc.text(frameworkLabel, centerX - doc.getTextWidth(frameworkLabel) / 2, coverY);
   coverY += 10;
   // Author image for frameworks that have one (e.g. Eisenhower)
   const fwId = String(blueprint.framework || "").toLowerCase();
@@ -264,16 +275,27 @@ export const generatePdf = async (
   doc.text(personalizedText, centerX - doc.getTextWidth(personalizedText) / 2, coverY);
 
   addNewPage();
+
+  // TOC page (page 2) — will be filled at end
+  const tocPageNum = currentPage;
+  addNewPage();
   setBody();
 
-  // Helper: ensure space for at least minLines, add new page if needed
+  // Helper: ensure space for at least minLines, add new page if needed (pagination control)
   const ensureSpace = (minLines = 5) => {
     if (y > pageHeight - margin - minLines * 7) addNewPage();
   };
 
+  // TOC: collect section names and page numbers for final render
+  const tocEntries: { name: string; page: number }[] = [];
+  const recordToc = (name: string) => {
+    tocEntries.push({ name, page: currentPage });
+  };
+
   // Helper: render a section (heading + content)
   const renderSection = (heading: string, content: string | string[], options?: { indent?: boolean }) => {
-    ensureSpace(8);
+    recordToc(heading);
+    ensureSpace(12);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     setPrimary();
@@ -304,6 +326,7 @@ export const generatePdf = async (
 
   // --- DIFFICULTY & COMMITMENT ---
   if (result?.difficulty || result?.difficultyReason || result?.commitment) {
+    recordToc(getLabel(lang, "difficultyCommitment", "Difficulty & Commitment"));
     ensureSpace(6);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
@@ -404,6 +427,7 @@ export const generatePdf = async (
 
   // Result Section
   if (blueprint.result) {
+    recordToc(getLabel(lang, "blueprintResult", "Blueprint Result"));
     ensureSpace(10);
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
@@ -631,6 +655,33 @@ export const generatePdf = async (
         }
         y += 6;
     }
+    else if (result.type === 'mandalas') {
+        const mandala = result as { centralGoal?: string; categories?: Array<{ name: string; steps?: string[]; why?: string }> };
+        doc.setFont("helvetica", "bold");
+        setPrimary();
+        doc.text("Central Goal:", margin, y);
+        setBody();
+        y += 8;
+        doc.setFont("helvetica", "normal");
+        const goalLines = doc.splitTextToSize(mandala.centralGoal || "", contentWidth);
+        goalLines.forEach((line: string) => { doc.text(line, margin + 5, y); y += 6; });
+        y += 10;
+        (mandala.categories || []).forEach((cat: { name: string; steps?: string[]; why?: string }, i: number) => {
+            ensureSpace(10);
+            doc.setFont("helvetica", "bold");
+            setPrimary();
+            doc.text(`${i + 1}. ${cat.name || "Category"}`, margin, y);
+            setBody();
+            y += 8;
+            doc.setFont("helvetica", "normal");
+            (cat.steps || []).filter(Boolean).forEach((step: string, j: number) => {
+                const stepLines = doc.splitTextToSize(`  • ${step}`, contentWidth - 15);
+                stepLines.forEach((line: string) => { doc.text(line, margin + 5, y); y += 6; });
+            });
+            y += 6;
+        });
+        y += 6;
+    }
   }
 
   y += 14;
@@ -672,6 +723,7 @@ export const generatePdf = async (
     qaPairs = realAnswers.map((answer) => ({ answer }));
   }
 
+  recordToc(getLabel(lang, "qaHistory", "Q&A History"));
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   setPrimary();
@@ -735,6 +787,38 @@ export const generatePdf = async (
     if (y > pageHeight - 40) addNewPage();
   });
 
+  // Fill TOC page (clickable links when textWithLink is available)
+  if (tocEntries.length > 0) {
+    doc.setPage(tocPageNum);
+    fillBackground();
+    setPrimary();
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Table of Contents", margin, margin + 10);
+    setBody();
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    let tocY = margin + 28;
+    const textWithLink = (doc as any).textWithLink;
+    for (const entry of tocEntries) {
+      if (tocY > pageHeight - margin - 20) break;
+      const pageStr = String(entry.page);
+      if (typeof textWithLink === "function") {
+        try {
+          textWithLink.call(doc, entry.name, margin, tocY, { pageNumber: entry.page });
+          setMuted();
+          doc.text(pageStr, pageWidth - margin - doc.getTextWidth(pageStr), tocY);
+          setBody();
+        } catch {
+          doc.text(`${entry.name} ............. ${pageStr}`, margin, tocY);
+        }
+      } else {
+        doc.text(`${entry.name} ............. ${pageStr}`, margin, tocY);
+      }
+      tocY += 10;
+    }
+  }
+
   // Footer: Vector wordmark + page numbers on every page
   const pageCount = doc.getNumberOfPages();
   for (let p = 1; p <= pageCount; p++) {
@@ -749,7 +833,18 @@ export const generatePdf = async (
   return doc;
 };
 
+/** Sanitize and truncate filename; add date prefix. */
+function sanitizePdfFilename(title: string): string {
+  const date = new Date().toISOString().slice(0, 10);
+  const safe = title
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .toLowerCase()
+    .slice(0, 50);
+  return safe ? `vector-${date}-${safe}.pdf` : `vector-${date}-blueprint.pdf`;
+}
+
 export const exportToPdf = async (blueprint: Blueprint, branding?: PdfBranding, options?: PdfOptions) => {
     const doc = await generatePdf(blueprint, branding, options);
-    doc.save(`vector-blueprint-${blueprint.title.replace(/\s+/g, '-').toLowerCase()}.pdf`);
+    doc.save(sanitizePdfFilename(blueprint.title));
 };

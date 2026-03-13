@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { RefreshCcw, Calendar, CheckCircle2, Download, Lock, AlertTriangle, FileText, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { RefreshCcw, Calendar, CheckCircle2, Download, Lock, AlertTriangle, FileText, X, Maximize2, Minimize2, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Blueprint, blueprintTitleFromAnswers, filterRealAnswers } from '@/lib/blueprints';
@@ -32,7 +33,29 @@ export type { GoalWizardHookProps as GoalWizardProps };
 
 export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [showMobileDraft, setShowMobileDraft] = useState(false);
+  const [fullscreenBlueprint, setFullscreenBlueprint] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.get('view') === 'fullscreen';
+  });
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('view') === 'fullscreen') setFullscreenBlueprint(true);
+  }, [location.search]);
+
+  const handleShare = () => {
+    const base = window.location.origin + window.location.pathname;
+    const params = new URLSearchParams(location.search);
+    params.set('view', 'fullscreen');
+    if (props.framework) params.set('framework', props.framework);
+    const url = `${base}?${params.toString()}`;
+    navigator.clipboard.writeText(url);
+    toast.success(t('common.copiedToClipboard') || 'Link copied to clipboard');
+  };
 
   React.useEffect(() => {
       // Fire wizard_started once per session/mount
@@ -60,6 +83,8 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
       messagesEndRef,
       draftPulse,
       runAgent,
+      runAgentResume,
+      awaitingPlanConfirmation,
       editUserMessageOnce,
       toggleListening,
       handleStop,
@@ -108,7 +133,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
     );
   };
 
-  const handlePdfExport = () => {
+  const handlePdfExport = async () => {
      if (!result) return;
       const raw = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
       const answers = filterRealAnswers(raw);
@@ -120,12 +145,18 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
         result,
         createdAt: props.initialBlueprint?.createdAt ?? new Date().toISOString(),
       };
-      exportToPdf(bp, undefined, {
-        language: language || 'en',
-        userName: userName || undefined,
-        messages: messages.map(m => ({ role: m.role, content: m.content })),
-      });
-      toast.success(t('wizard.pdfSuccess'));
+      toast.promise(
+        exportToPdf(bp, undefined, {
+          language: language || 'en',
+          userName: userName || undefined,
+          messages: messages.map(m => ({ role: m.role, content: m.content })),
+        }).then(() => {}),
+        {
+          loading: t('wizard.pdfGenerating') || 'Generating PDF…',
+          success: t('wizard.pdfSuccess'),
+          error: t('common.error'),
+        }
+      );
   };
 
   return (
@@ -153,17 +184,44 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <WizardHeader 
-          onBack={props.onBack}
-          isHardMode={isHardMode}
-          onToggleHardMode={toggleHardMode}
-          onRestart={handleSafeRestart}
-      />
+      {!fullscreenBlueprint && (
+        <WizardHeader 
+            onBack={props.onBack}
+            isHardMode={isHardMode}
+            onToggleHardMode={toggleHardMode}
+            onRestart={handleSafeRestart}
+        />
+      )}
 
-      <div className={cn("flex-grow flex flex-col min-h-0", result && "flex")}>
+      {fullscreenBlueprint && result && (
+        <div className="absolute top-4 right-4 z-50 flex gap-2">
+          <button
+            type="button"
+            onClick={handleShare}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-gray-200 dark:border-zinc-700 shadow-lg hover:shadow-xl transition-all cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-200"
+            aria-label="Share link"
+          >
+            <Share2 size={18} /> Share
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setFullscreenBlueprint(false);
+              navigate('/wizard', { replace: true, state: { framework: props.framework } });
+            }}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-gray-200 dark:border-zinc-700 shadow-lg hover:shadow-xl transition-all cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-200"
+            aria-label="Exit fullscreen"
+          >
+            <Minimize2 size={18} /> Exit
+          </button>
+        </div>
+      )}
+
+      <div className={cn("flex-grow flex flex-col min-h-0", result && "flex", fullscreenBlueprint && "pt-4")}>
         {/* Result mode: this area scrolls so you can see full grid and chat */}
         {result ? (
-          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden min-w-0 custom-scrollbar">
+          <div className={cn("flex-1 min-h-0 overflow-y-auto overflow-x-hidden min-w-0 custom-scrollbar", fullscreenBlueprint && "flex flex-col")}>
+            {!fullscreenBlueprint && (
             <WizardChat
               messages={messages}
               isTyping={isTyping}
@@ -180,6 +238,12 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                 onBack={props.onBack}
               />
             </WizardChat>
+            )}
+            {fullscreenBlueprint && (
+              <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                <WizardResult result={result} updateResult={updateResult} onBack={props.onBack} />
+              </div>
+            )}
           </div>
         ) : (
           /* Draft mode: two-column layout so the right panel can use full height (no absolute/clipping) */
@@ -205,17 +269,35 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
               <WizardInput
                 inputValue={inputValue}
                 setInputValue={setInputValue}
-                onSubmit={(e) => { e.preventDefault(); runAgent(inputValue); }}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const text = inputValue.trim();
+                  if (!text) return;
+                  if (awaitingPlanConfirmation) {
+                    runAgentResume({ confirmed: false, userMessage: text });
+                  } else {
+                    runAgent(text);
+                  }
+                }}
                 isTyping={isTyping}
                 isAgentRunning={isAgentRunning}
                 isOffline={isOffline}
                 suggestionChips={suggestionChips}
-                onRunAgent={runAgent}
+                onRunAgent={(text) => {
+                  if (awaitingPlanConfirmation) {
+                    runAgentResume({ confirmed: false, userMessage: text });
+                  } else {
+                    runAgent(text);
+                  }
+                }}
                 isSpeechSupported={isSpeechSupported}
                 toggleListening={toggleListening}
                 isListening={isListening}
                 onStop={handleStop}
-                topAction={draftResult && (
+                awaitingPlanConfirmation={awaitingPlanConfirmation}
+                onConfirmGenerate={() => runAgentResume({ confirmed: true })}
+                onGoDeeper={() => runAgentResume({ confirmed: false, userMessage: "I want to go deeper before generating. Please ask me more nuanced questions about my goal, constraints, or what's held me back." })}
+                topAction={draftResult && !awaitingPlanConfirmation && (
                   <button
                     type="button"
                     onClick={() => setShowMobileDraft(!showMobileDraft)}
@@ -257,13 +339,23 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
           const isTeaser = (result as any)?.isTeaser;
           const showCreditConsumed = !isTeaser;
           return (
-          <div className="flex-none flex flex-col gap-3 py-4 px-4 pb-safe border-t border-gray-100 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm">
+          <div data-print-hide className={cn("flex-none flex flex-col gap-3 py-4 px-4 pb-safe border-t border-gray-100 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm", fullscreenBlueprint && "hidden")}>
             {showCreditConsumed && (
               <p className="text-center text-xs text-gray-500 dark:text-gray-400">
                 {t('wizard.creditConsumedInPlan')}
               </p>
             )}
             <div className="flex flex-wrap gap-2 sm:gap-4 items-center justify-center px-1">
+            <button
+              onClick={() => {
+                setFullscreenBlueprint(true);
+                navigate('/wizard?view=fullscreen', { replace: true });
+              }}
+              className="flex items-center gap-2 cursor-pointer px-4 py-2.5 sm:px-6 sm:py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium text-sm sm:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 shrink-0"
+              aria-label="Full screen view"
+            >
+              <Maximize2 size={16} className="sm:w-[18px] sm:h-[18px]" /> Full screen
+            </button>
             <button 
               onClick={handleSafeRestart} 
               className="flex items-center gap-2 cursor-pointer px-4 py-2.5 sm:px-6 sm:py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium text-sm sm:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 shrink-0"

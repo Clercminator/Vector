@@ -208,7 +208,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
       if (email && email !== userEmail) {
         const { error: emailError } = await supabase.auth.updateUser({ email });
         if (emailError) throw emailError;
-        toast.info("Check your new email to confirm the change.");
+        toast.info(t('profile.checkEmailConfirm') || "Check your new email to confirm the change.", { duration: 8000 });
       }
 
       if (error) throw error;
@@ -231,11 +231,11 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
 
     const useLemonSqueezy = paymentRegion === "global";
     if (useLemonSqueezy && !isLemonSqueezyConfigured()) {
-      toast.error("Payments are not configured yet (Test Mode).");
+      toast.error(t('errors.paymentsNotConfigured') || "Payments are not configured yet (Test Mode).", { duration: 6000 });
       return;
     }
     if (!useLemonSqueezy && !isMercadoPagoConfigured()) {
-      toast.error("Payments are not configured yet (Test Mode).");
+      toast.error(t('errors.paymentsNotConfigured') || "Payments are not configured yet (Test Mode).", { duration: 6000 });
       return;
     }
     

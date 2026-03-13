@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Send, Mic, WifiOff, Maximize2, Minimize2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Send, Mic, WifiOff, Maximize2, Minimize2, Sparkles, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/app/components/language-provider';
 
 interface WizardInputProps {
@@ -15,6 +15,12 @@ interface WizardInputProps {
   toggleListening: () => void;
   isListening: boolean;
   onStop: () => void;
+  /** When true, show "Generate my plan" and "Not ready yet, go deeper" buttons. */
+  awaitingPlanConfirmation?: boolean;
+  /** Called when user clicks "Generate my plan". */
+  onConfirmGenerate?: () => void;
+  /** Called when user clicks "Not ready yet, let's keep going deeper" — Vector asks more nuanced questions. */
+  onGoDeeper?: () => void;
   /** Renders above suggestion chips (e.g. "Ver borrador" on mobile to avoid overlap) */
   topAction?: React.ReactNode;
 }
@@ -32,10 +38,20 @@ export const WizardInput: React.FC<WizardInputProps> = ({
   toggleListening,
   isListening,
   onStop,
+  awaitingPlanConfirmation = false,
+  onConfirmGenerate,
+  onGoDeeper,
   topAction
 }) => {
   const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
+  const generateBtnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (awaitingPlanConfirmation && generateBtnRef.current) {
+      generateBtnRef.current.focus({ preventScroll: true });
+    }
+  }, [awaitingPlanConfirmation]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
@@ -65,14 +81,57 @@ export const WizardInput: React.FC<WizardInputProps> = ({
         : t('wizard.placeholder') || 'Write your answer...';
 
   return (
-    <div className="flex-none p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-gray-100 dark:border-zinc-800 z-20 pb-safe">
+    <div data-print-hide className="flex-none p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-gray-100 dark:border-zinc-800 z-20 pb-safe">
       <div className="max-w-4xl mx-auto w-full relative">
+      
+      {/* Two explicit choices when Vector is ready — generate or go deeper */}
+      {awaitingPlanConfirmation && onConfirmGenerate && onGoDeeper && (
+        <div
+          role="region"
+          aria-label={t('wizard.approvalGateLabel') || "Ready to generate plan. Choose an action."}
+          aria-live="polite"
+          className="mb-3 space-y-2"
+        >
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {t('wizard.planReminderShort') || t('wizard.personalizedPlanReminder') || "Add any other details that matter, or click to generate."}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+          <button
+            ref={generateBtnRef}
+            type="button"
+            onClick={onConfirmGenerate}
+            disabled={isTyping || isAgentRunning}
+            aria-label={t('wizard.generatePlanAria') || t('wizard.generatePlan') || "Generate my plan"}
+            aria-busy={String(isTyping || isAgentRunning)}
+            className="flex items-center justify-center gap-2 flex-1 sm:flex-initial px-5 py-3 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black dark:focus-visible:ring-white"
+          >
+            {(isTyping || isAgentRunning) ? (
+              <Loader2 size={18} className="animate-spin" aria-hidden />
+            ) : (
+              <Sparkles size={18} aria-hidden />
+            )}
+            {t('wizard.generatePlan') || 'Generate my plan'}
+          </button>
+          <button
+            type="button"
+            onClick={onGoDeeper}
+            disabled={isTyping || isAgentRunning}
+            aria-label={t('wizard.goDeeperAria') || t('wizard.notReadyGoDeeper') || "Not ready yet, keep exploring with more questions"}
+            title={t('wizard.notReadyGoDeeper') || "Not ready yet, let's keep going deeper into the problem"}
+            className="flex items-center justify-center gap-2 flex-1 sm:flex-initial px-5 py-3 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-zinc-700 rounded-full font-medium text-sm shadow-sm hover:bg-gray-200 dark:hover:bg-zinc-700 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500"
+          >
+            <span className="sm:hidden">{t('wizard.goDeeperShort') || "Go deeper"}</span>
+            <span className="hidden sm:inline">{t('wizard.notReadyGoDeeper') || "Not ready yet, let's keep going deeper into the problem"}</span>
+          </button>
+          </div>
+        </div>
+      )}
       
       {/* Top action (e.g. Ver borrador on mobile) */}
       {topAction && <div className="mb-3">{topAction}</div>}
       
-      {/* Suggestion Chips */}
-      {!isTyping && !isAgentRunning && (suggestionChips || []).length > 0 && (
+      {/* Suggestion Chips — hidden when approval gate is visible to reduce clutter */}
+      {!awaitingPlanConfirmation && !isTyping && !isAgentRunning && (suggestionChips || []).length > 0 && (
          <div className="flex gap-2 mb-3 overflow-x-auto pb-2 scrollbar-none">
             {(suggestionChips || []).map((chip) => (
                <button 

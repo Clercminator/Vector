@@ -5,6 +5,7 @@ import { Button } from '@/app/components/ui/button';
 import { motion, AnimatePresence } from 'motion/react';
 import { LayoutTemplate, X, CheckCircle2, ChevronRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/app/components/language-provider';
 
 interface GoalTemplate {
   id: string;
@@ -20,6 +21,7 @@ interface TrackerGoalTemplatesProps {
 }
 
 export function TrackerGoalTemplates({ blueprint, color, onApplied }: TrackerGoalTemplatesProps) {
+  const { t } = useLanguage();
   const [templates, setTemplates] = useState<GoalTemplate[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [applyingId, setApplyingId] = useState<string | null>(null);
@@ -54,7 +56,7 @@ export function TrackerGoalTemplates({ blueprint, color, onApplied }: TrackerGoa
 
       if (itemsError) throw itemsError;
       if (!items || items.length === 0) {
-        toast.info("This template has no items.");
+        toast.info(t('errors.templateNoItems') || "This template has no items.");
         setApplyingId(null);
         return;
       }

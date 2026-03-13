@@ -79,7 +79,7 @@ export const IkigaiView: React.FC<IkigaiViewProps> = ({ result, updateResult }) 
 
   const handleCopySection = (text: string, title: string) => {
     navigator.clipboard.writeText(`# ${title}\n${text}`);
-    toast.success("Copied to clipboard");
+    toast.success(t('common.copiedToClipboard'));
   };
 
   const handleCopyFull = () => {
@@ -91,7 +91,7 @@ export const IkigaiView: React.FC<IkigaiViewProps> = ({ result, updateResult }) 
       `\n## ${t('ikigai.paidFor')}\n${result.paidFor || ''}`,
     ];
     navigator.clipboard.writeText(parts.join('\n'));
-    toast.success("Copied full Ikigai strategy");
+    toast.success(t('common.copiedToClipboard'));
   };
 
   return (

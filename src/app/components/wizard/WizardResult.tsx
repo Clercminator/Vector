@@ -98,7 +98,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
           result.initiative ? `\n## ${t('okr.initiative')}\n${result.initiative}` : '',
         ];
         navigator.clipboard.writeText(parts.join(''));
-        toast.success('Copied to clipboard');
+        toast.success(t('common.copiedToClipboard'));
       };
       return (
         <Wrapper>
@@ -171,7 +171,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
           `\n# ${t('fp.newApproach')}\n${result.newApproach || ''}`,
         ];
         navigator.clipboard.writeText(parts.join('\n'));
-        toast.success('Copied to clipboard');
+        toast.success(t('common.copiedToClipboard'));
       };
        return (
         <Wrapper>
@@ -222,7 +222,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
           `\n# ${t('rpm.map')}\n${(result.plan || []).map((p: string) => `- ${p}`).join('\n')}`,
         ];
         navigator.clipboard.writeText(parts.join('\n'));
-        toast.success('Copied to clipboard');
+        toast.success(t('common.copiedToClipboard'));
       };
       return (
         <Wrapper>
@@ -292,7 +292,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
           `\n# The Purification\n${result.purification || ''}`,
         ];
         navigator.clipboard.writeText(parts.join('\n'));
-        toast.success('Copied to clipboard');
+        toast.success(t('common.copiedToClipboard'));
       };
       return (
         <Wrapper>

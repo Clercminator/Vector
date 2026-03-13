@@ -108,7 +108,7 @@ export function Dashboard({
           localStorage.setItem('pinned_blueprints', JSON.stringify(newPinned));
       } catch (err: any) {
           if (err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-              toast.error("Storage full: Cannot pin more items. Please unpin some first.");
+              toast.error(t('errors.storageFull') || "Storage full: Cannot pin more items. Please unpin some first.", { duration: 6000 });
               // Rollback state
               setPinnedIds(pinnedIds); 
           }

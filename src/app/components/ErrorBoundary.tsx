@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
-import { AlertTriangle, Copy, RefreshCw } from "lucide-react";
+import { AlertTriangle, Copy } from "lucide-react";
 import { toast } from "sonner";
+import { LanguageContext } from "@/app/components/language-provider";
 
 interface Props {
   children: ReactNode;
@@ -34,6 +35,8 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
+        <LanguageContext.Consumer>
+          {(ctx) => (
         <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/50 flex items-center gap-3">
             <AlertTriangle className="text-red-500 flex-shrink-0" size={20} />
             <div className="flex-1 min-w-0">
@@ -49,7 +52,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <button 
                 onClick={() => {
                    navigator.clipboard.writeText(this.state.error?.message + "\n" + this.state.error?.stack);
-                   toast.success("Error copied to clipboard");
+                   toast.success(ctx?.t?.('common.errorCopiedToClipboard') ?? "Error copied to clipboard");
                 }}
                 className="p-1.5 bg-gray-100 dark:bg-zinc-800 rounded-lg text-gray-500 hover:text-black dark:hover:text-white transition-colors"
                 title="Copy Error"
@@ -57,6 +60,8 @@ export class ErrorBoundary extends Component<Props, State> {
                 <Copy size={16} />
             </button>
         </div>
+          )}
+        </LanguageContext.Consumer>
       );
     }
 

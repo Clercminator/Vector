@@ -16,6 +16,7 @@ import { draftNode } from "./nodes/draft";
 import { critiqueNode } from "./nodes/critique";
 import { userReviewNode } from "./nodes/userReview";
 import { validatorNode } from "./nodes/validator";
+import { approvalGateNode } from "./nodes/approvalGate";
 
 // 1. Tool Node
 const toolNode = new ToolNode(tools);
@@ -43,17 +44,31 @@ const routeStep = (state: AgentStateType) => {
   const { messages, steps } = state;
   if (!messages?.length) return END;
   const lastMsg = messages[messages.length - 1] as AIMessage;
-  if (steps > MAX_STEPS_BEFORE_DRAFT) return "draft";
+  if (steps > MAX_STEPS_BEFORE_DRAFT) return "approval_gate";
   if (lastMsg.tool_calls && lastMsg.tool_calls.length > 0) {
-      if (lastMsg.tool_calls.some(tc => tc.name === 'generate_blueprint')) {
-          return "draft";
-      }
       return "tools";
   }
-  
-  if (lastMsg.content.toString().trim().toUpperCase().includes("READY")) return "draft"; // Deprecated fallback
-
   return END;
+};
+
+/** After tools: if request_confirmation was executed, go to approval_gate; else ask. */
+const routeAfterTools = (state: AgentStateType) => {
+  const { messages } = state;
+  if (!messages?.length) return "ask";
+  const aiWithCalls = [...(messages || [])].reverse().find(
+    (m: any) => (m._getType?.() === "ai" || m.constructor?.name === "AIMessage") && (m as AIMessage).tool_calls?.length
+  ) as AIMessage | undefined;
+  if (aiWithCalls?.tool_calls?.some((tc: { name?: string }) => tc.name === "request_confirmation")) {
+    return "approval_gate";
+  }
+  return "ask";
+};
+
+/** After approval_gate: if user confirmed, go to draft; else ask (user wanted to continue). */
+const routeAfterApprovalGate = (state: AgentStateType) => {
+  const r = state.approvalGateResult;
+  if (r?.confirmed) return "draft";
+  return "ask";
 };
 
 const routeCritique = (state: AgentStateType) => {
@@ -118,13 +133,22 @@ const workflow = new StateGraph(AgentState)
       consultant: "consultant",
       framework_setter: "framework_setter",
       tools: "tools",
+      approval_gate: "approval_gate",
       draft: "draft",
       [END]: END
   })
   
   .addEdge("framework_setter", "ask")
   
-  .addEdge("tools", "ask")
+  .addNode("approval_gate", approvalGateNode)
+  .addConditionalEdges("tools", routeAfterTools, {
+      approval_gate: "approval_gate",
+      ask: "ask"
+  })
+  .addConditionalEdges("approval_gate", routeAfterApprovalGate, {
+      draft: "draft",
+      ask: "ask"
+  })
 
   // Draft/Critique Flow
   .addEdge("draft", "critique")

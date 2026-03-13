@@ -47,21 +47,28 @@ export function AuthModal({
     }
   }, [open, reason]);
   const [isLoading, setIsLoading] = useState(false);
+  const [emailSentState, setEmailSentState] = useState<{ email: string; type: 'signup' | 'magic_link' | 'forgot_password' } | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captchaRef = React.useRef<HCaptcha>(null);
   
+  const passwordValid = useMemo(() => {
+    if (mode !== 'signup') return password.length >= 6;
+    return password.length >= 6 && /\d/.test(password) && /[a-zA-Z]/.test(password);
+  }, [password, mode]);
+
   const canSubmit = useMemo(() => {
       if (mode === 'magic_link' || mode === 'forgot_password') {
           return email.trim().includes("@");
       }
-      return email.trim().includes("@") && password.length >= 6;
-  }, [email, password, mode]);
+      return email.trim().includes("@") && passwordValid;
+  }, [email, password, passwordValid, mode]);
 
   const handleOpenChange = (next: boolean) => {
     if (!next) {
         setMode("signin");
         setEmail("");
         setPassword("");
+        setEmailSentState(null);
         setCaptchaToken(null);
         captchaRef.current?.resetCaptcha();
     }
@@ -134,9 +141,10 @@ export function AuthModal({
             data = res.data;
             if (!error) {
                  if (data.user && !data.session) {
-                     toast.success("Please check your email to confirm your account.");
+                     setEmailSentState({ email: trimmedEmail, type: 'signup' });
+                     toast.success(t('auth.checkEmailConfirm') || "Please check your email to confirm your account.", { duration: 10000 });
                  } else {
-                     toast.success("Account created successfully!");
+                     toast.success(t('auth.accountCreated') || "Account created successfully!", { duration: 6000 });
                      onOpenChange(false);
                  }
             }
@@ -150,7 +158,8 @@ export function AuthModal({
              });
              error = res.error;
             if (!error) {
-                toast.success(t('auth.success') || "Magic link sent! Check your inbox.");
+                setEmailSentState({ email: trimmedEmail, type: 'magic_link' });
+                toast.success(t('auth.success') || "Magic link sent! Check your inbox.", { duration: 10000 });
             }
         } else if (mode === 'forgot_password') {
             const res = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
@@ -159,7 +168,8 @@ export function AuthModal({
             });
             error = res.error;
             if (!error) {
-                 toast.success("Password reset link sent to your email.");
+                setEmailSentState({ email: trimmedEmail, type: 'forgot_password' });
+                toast.success(t('auth.resetLinkSent') || "Password reset link sent to your email.", { duration: 10000 });
             }
         }
 
@@ -167,7 +177,7 @@ export function AuthModal({
 
     } catch (e: any) {
         console.error("Auth error:", e);
-        toast.error(e.message || "Authentication failed");
+        toast.error(e.message || t('auth.authenticationFailed') || "Authentication failed", { duration: 6000 });
         captchaRef.current?.resetCaptcha();
         setCaptchaToken(null);
     } finally {
@@ -210,6 +220,31 @@ export function AuthModal({
               </div>
             )}
 
+            {emailSentState ? (
+              <div className="rounded-2xl border border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800/50 p-6 space-y-3">
+                <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                  <Mail className="w-5 h-5 shrink-0" />
+                  <span className="font-semibold">{t('auth.checkEmail')}</span>
+                </div>
+                <p className="text-sm text-green-600 dark:text-green-300">
+                  {emailSentState.type === 'signup' && (t('auth.checkEmailConfirmDesc') || "We've sent a confirmation link to your email. Click it to activate your account.")}
+                  {emailSentState.type === 'magic_link' && (t('auth.magicLinkSentDesc') || "We've sent a sign-in link to your email. Click it to sign in.")}
+                  {emailSentState.type === 'forgot_password' && (t('auth.resetLinkSentDesc') || "We've sent a password reset link. Check your inbox and follow the instructions.")}
+                </p>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  {t('auth.checkSpam')}
+                </p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-500 break-all">
+                  {emailSentState.email}
+                </p>
+                <button
+                  onClick={() => { setEmailSentState(null); setMode("signin"); }}
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  {t('auth.tryDifferentEmail')}
+                </button>
+              </div>
+            ) : (
             <div className="space-y-4">
                 {/* Social Auth Buttons */}
                 {(mode === 'signin' || mode === 'signup') && (
@@ -286,6 +321,11 @@ export function AuthModal({
                         disabled={isLoading}
                         className="h-12 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-xl px-4 focus:ring-2 focus:ring-blue-500/20 transition-all dark:text-white"
                         />
+                        {mode === 'signup' && (
+                          <p className="text-xs text-zinc-500 dark:text-zinc-500 ml-1">
+                            {t('auth.passwordRequirements') || "At least 6 characters, with letters and numbers."}
+                          </p>
+                        )}
                       </div>
                   )}
                   
@@ -353,10 +393,13 @@ export function AuthModal({
                     )}
                 </div>
             </div>
+            )}
             
-            <p className="mt-4 text-center text-[10px] text-zinc-400 dark:text-zinc-600 px-2">
+            {!emailSentState && (
+              <p className="mt-4 text-center text-[10px] text-zinc-400 dark:text-zinc-600 px-2">
                 {t('auth.terms')}
-            </p>
+              </p>
+            )}
         </div>
       </DialogContent>
     </Dialog>

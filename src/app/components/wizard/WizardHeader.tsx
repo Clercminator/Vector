@@ -18,7 +18,7 @@ export const WizardHeader: React.FC<WizardHeaderProps> = ({
   const { t } = useLanguage();
 
   return (
-    <div className="w-full max-w-full mx-auto flex-none pt-4 px-4 md:px-8 flex justify-between items-center bg-transparent z-20">
+    <div data-print-hide className="w-full max-w-full mx-auto flex-none pt-4 px-4 md:px-8 flex justify-between items-center bg-transparent z-20">
       <div className="flex items-center gap-4">
           <button 
             onClick={onBack}

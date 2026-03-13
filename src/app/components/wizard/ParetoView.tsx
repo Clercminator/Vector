@@ -191,7 +191,7 @@ export const ParetoView: React.FC<ParetoViewProps> = ({ result, updateResult }) 
   const handleCopy = (items: string[], title: string) => {
       const text = [`# ${title}`, ...items.map(i => `- ${i}`)].join('\n');
       navigator.clipboard.writeText(text);
-      toast.success("Copied to clipboard");
+      toast.success(t('common.copiedToClipboard'));
   };
 
   const handleCopyFull = () => {
@@ -201,7 +201,7 @@ export const ParetoView: React.FC<ParetoViewProps> = ({ result, updateResult }) 
      ];
      const text = sections.map(s => `# ${s.title}\n${s.items.map(i => `- ${i}`).join('\n')}`).join('\n\n');
      navigator.clipboard.writeText(text);
-     toast.success("Copied full Pareto");
+     toast.success(t('common.copiedToClipboard'));
   };
 
   return (

@@ -1,29 +1,64 @@
-import { HumanMessage, AIMessage } from "@langchain/core/messages";
+import { HumanMessage, AIMessage, SystemMessage } from "@langchain/core/messages";
 import { AgentStateType } from "../state";
 import { MAX_VALIDATION_ATTEMPTS } from "../constants";
+import { invokeWithFallback } from "../utils";
 
 const DRAFT_BLOCK_REGEX = /\|\|\|DRAFT_START\|\|\|([\s\S]*?)\|\|\|DRAFT_END\|\|\|/;
 
-/** Minimum user messages before allowing generate_blueprint (depth check). */
+/** Minimum user messages before allowing request_confirmation (depth check fallback). */
 const MIN_USER_MESSAGES_BEFORE_DRAFT = 3;
 
+/** LLM-based sufficiency check: do we have enough personalized info for a non-generic plan? */
+async function checkSufficiencyForPlan(
+    goal: string,
+    framework: string,
+    convSummary: string,
+    language: string
+): Promise<{ sufficient: boolean; suggestion?: string }> {
+    try {
+        const prompt = `You are a validator. Given the goal, framework, and conversation summary below, decide if we have ENOUGH PERSONALIZED information to create a non-generic, tailored plan.
+
+Goal: ${goal}
+Framework: ${framework}
+Conversation (last 1500 chars): ${convSummary.slice(-1500)}
+
+Consider: For ANY goal type, we need user-specific details (constraints, numbers, preferences, past experience). For fitness/health goals: body/constraints, habits, lifestyle, past failures. For learning goals: current level, time available, learning style. Use natural reasoning—no hardcoded fields.
+
+Reply with JSON only: {"sufficient": true|false, "suggestion": "one specific question to ask if insufficient (omit if sufficient)"}
+Language for suggestion: ${language}`;
+
+        const response = await invokeWithFallback(
+            [new SystemMessage(prompt)],
+            { temperature: 0, bindTools: false }
+        );
+        const text = response.content.toString().trim();
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) return { sufficient: true };
+        const parsed = JSON.parse(jsonMatch[0]) as { sufficient?: boolean; suggestion?: string };
+        return {
+            sufficient: parsed.sufficient === true,
+            suggestion: typeof parsed.suggestion === "string" ? parsed.suggestion : undefined,
+        };
+    } catch {
+        return { sufficient: true };
+    }
+}
+
 export const validatorNode = async (state: AgentStateType) => {
-    const { messages, validationAttempts, framework } = state;
+    const { messages, validationAttempts, framework, goal, language } = state;
     if (!messages?.length) return { validationAttempts: 0 };
 
     const lastMsg = messages[messages.length - 1];
     const isAIMessage = lastMsg instanceof AIMessage;
 
-    // Only validate and replace when last message is from the AI
     if (!isAIMessage) return { validationAttempts: 0 };
 
     const content = lastMsg.content.toString();
 
-    // Depth check: if about to generate blueprint, ensure sufficient personalization
-    const hasGenerateBlueprint = (lastMsg as AIMessage).tool_calls?.some(
-        (tc: { name?: string }) => tc.name === "generate_blueprint"
+    const hasRequestConfirmation = (lastMsg as AIMessage).tool_calls?.some(
+        (tc: { name?: string }) => tc.name === "request_confirmation"
     );
-    if (hasGenerateBlueprint && framework) {
+    if (hasRequestConfirmation && framework) {
         const userMessageCount = messages.filter(
             (m) => m instanceof HumanMessage && !m.content.toString().includes("SYSTEM ERROR")
         ).length;
@@ -32,7 +67,24 @@ export const validatorNode = async (state: AgentStateType) => {
                 validationAttempts: validationAttempts + 1,
                 messages: [
                     new HumanMessage(
-                        `SYSTEM ERROR: Insufficient personalization data. The current plan would be too generic. Ask the user one more "counter-intuitive" question (e.g., what's held them back before, their typical day, or a specific constraint) before proceeding to generate_blueprint. Do NOT call generate_blueprint yet.`
+                        `SYSTEM ERROR: Insufficient personalization data. Ask the user at least one more question (e.g., constraints, typical day, what's held them back before) before requesting confirmation. Do NOT call request_confirmation yet.`
+                    ),
+                ],
+            };
+        }
+        const convSummary = messages.map((m) => m.content.toString()).join("\n");
+        const { sufficient, suggestion } = await checkSufficiencyForPlan(
+            goal || "",
+            framework,
+            convSummary,
+            language || "en"
+        );
+        if (!sufficient && suggestion) {
+            return {
+                validationAttempts: validationAttempts + 1,
+                messages: [
+                    new HumanMessage(
+                        `SYSTEM ERROR: Not yet enough personalized information for a non-generic plan. Ask the user: "${suggestion}" Then summarize and ask for confirmation. Do NOT call request_confirmation until you have this.`
                     ),
                 ],
             };

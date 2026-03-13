@@ -46,6 +46,8 @@ export const translations = {
     "common.loading": "Loading...",
     "common.loadMore": "Load More",
     "common.error": "Something went wrong",
+    "common.errorCopiedToClipboard": "Error copied to clipboard",
+    "common.retry": "Retry",
 
     // Onboarding
     "onboarding.welcome.title": "Welcome to Vector",
@@ -230,6 +232,20 @@ export const translations = {
     "auth.signIn": "Sign In",
     "auth.sendMagicLink": "Send Magic Link",
     "auth.completeCaptcha": "Please complete the captcha.",
+    "auth.checkEmailConfirm": "Please check your email to confirm your account.",
+    "auth.checkEmailConfirmDesc": "We've sent a confirmation link to your email. Click it to activate your account.",
+    "auth.passwordRequirements": "At least 6 characters, with letters and numbers.",
+    "auth.accountCreated": "Account created successfully!",
+    "auth.resetLinkSent": "Password reset link sent to your email.",
+    "auth.resetLinkSentDesc": "We've sent a password reset link. Check your inbox and follow the instructions.",
+    "auth.magicLinkSentDesc": "We've sent a sign-in link to your email. Click it to sign in.",
+    "auth.authenticationFailed": "Authentication failed",
+    "profile.checkEmailConfirm": "Check your new email to confirm the change.",
+    "errors.storageFull": "Storage full: Cannot pin more items. Please unpin some first.",
+    "errors.paymentsNotConfigured": "Payments are not configured yet (Test Mode).",
+    "errors.templateNoItems": "This template has no items.",
+    "feedback.analysisFailed": "Could not determine the best framework. Please try again or pick manually.",
+    "feedback.analysisError": "Analysis failed.",
 
     // Dashboard
     // Dashboard
@@ -483,6 +499,14 @@ export const translations = {
     "wizard.inputCollapse": "Collapse",
     "wizard.viewDraft": "View Draft",
     "wizard.closeDraft": "Close Draft",
+    "wizard.generatePlan": "Generate my plan",
+    "wizard.notReadyGoDeeper": "Not ready yet, let's keep going deeper into the problem",
+    "wizard.goDeeperShort": "Go deeper",
+    "wizard.personalizedPlanReminder": "For a truly personalized plan, share any other details that may be important before generating.",
+    "wizard.planReminderShort": "Add any other details that matter, or click to generate.",
+    "wizard.approvalGateLabel": "Ready to generate plan. Choose an action.",
+    "wizard.generatePlanAria": "Generate my plan",
+    "wizard.goDeeperAria": "Not ready yet, keep exploring with more questions",
     "wizard.blueprintReadyBelow":
       "Your {0} blueprint is ready below. Review your personalized plan and refine as needed.",
     "wizard.planStepsPlaceholder":
@@ -494,6 +518,9 @@ export const translations = {
     "wizard.creditConsumedInPlan":
       "1 plan was used from your balance for this conversation.",
     "wizard.pdfSuccess": "PDF Downloaded!",
+    "wizard.pdfGenerating": "Generating PDF…",
+    "wizard.emptyStatePrompt": "Share your goal and Vector will help you build a plan.",
+    "wizard.emptyStateExamples": "Examples: \"Run a 5K in 3 months\" · \"Launch my side project\" · \"Improve my Spanish\"",
     "wizard.ruleBased": " (Rule-based when out of plans)",
 
     // Difficulty badge
@@ -1249,6 +1276,7 @@ export const translations = {
     "common.copiedToClipboard": "Copiado al portapapeles",
     "common.clickToEdit": "Clic para editar...",
     "common.error": "Algo salió mal",
+    "common.errorCopiedToClipboard": "Error copiado al portapapeles",
 
     // Onboarding
     "onboarding.welcome.title": "Bienvenido a Vector",
@@ -1439,6 +1467,20 @@ export const translations = {
     "auth.signIn": "Iniciar sesión",
     "auth.sendMagicLink": "Enviar enlace mágico",
     "auth.completeCaptcha": "Completa el captcha, por favor.",
+    "auth.checkEmailConfirm": "Revisa tu correo para confirmar tu cuenta.",
+    "auth.checkEmailConfirmDesc": "Hemos enviado un enlace de confirmación a tu correo. Haz clic para activar tu cuenta.",
+    "auth.passwordRequirements": "Mínimo 6 caracteres, con letras y números.",
+    "auth.accountCreated": "¡Cuenta creada correctamente!",
+    "auth.resetLinkSent": "Enlace de restablecimiento enviado a tu correo.",
+    "auth.resetLinkSentDesc": "Hemos enviado un enlace para restablecer tu contraseña. Revisa tu correo y sigue las instrucciones.",
+    "auth.magicLinkSentDesc": "Hemos enviado un enlace de acceso a tu correo. Haz clic para iniciar sesión.",
+    "auth.authenticationFailed": "Error de autenticación",
+    "profile.checkEmailConfirm": "Revisa tu nuevo correo para confirmar el cambio.",
+    "errors.storageFull": "Almacenamiento lleno: No puedes anclar más elementos. Elimina algunos primero.",
+    "errors.paymentsNotConfigured": "Los pagos no están configurados (Modo de prueba).",
+    "errors.templateNoItems": "Esta plantilla no tiene elementos.",
+    "feedback.analysisFailed": "No se pudo determinar el mejor marco. Intenta de nuevo o elige manualmente.",
+    "feedback.analysisError": "Error en el análisis.",
 
     // Dashboard
     // Dashboard
@@ -2316,6 +2358,7 @@ export const translations = {
     "common.example": "Exemplo",
     "common.use": "Usar este modelo",
     "common.copiedToClipboard": "Copiado para a área de transferência",
+    "common.errorCopiedToClipboard": "Erro copiado para a área de transferência",
 
     // Onboarding
     "onboarding.welcome.title": "Bem-vindo ao Vector",
@@ -2841,6 +2884,7 @@ export const translations = {
     "common.example": "Exemple",
     "common.use": "Utiliser ce modèle",
     "common.copiedToClipboard": "Copié dans le presse-papiers",
+    "common.errorCopiedToClipboard": "Erreur copiée dans le presse-papiers",
 
     // Onboarding
     "onboarding.welcome.title": "Bienvenue sur Vector",
@@ -3366,6 +3410,7 @@ export const translations = {
     "common.example": "Beispiel",
     "common.use": "Dieses Modell verwenden",
     "common.copiedToClipboard": "In die Zwischenablage kopiert",
+    "common.errorCopiedToClipboard": "Fehler in die Zwischenablage kopiert",
 
     // Onboarding
     "onboarding.welcome.title": "Willkommen bei Vector",

@@ -31,3 +31,35 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Print styles for blueprint views */
+@media print {
+  /* Hide non-content: nav, header, input, footer actions */
+  header,
+  nav,
+  [data-print-hide],
+  .print\:hide { display: none !important; }
+  /* Avoid awkward page breaks inside cards and sections */
+  .print\:break-inside-avoid,
+  [data-print-avoid-break] {
+    page-break-inside: avoid;
+  }
+  /* Reset scroll/overflow for print */
+  .overflow-auto, .overflow-y-auto, .overflow-x-auto {
+    overflow: visible !important;
+  }
+  /* Ensure blueprint content prints with background where needed */
+  .bg-white, .dark\:bg-zinc-900 {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* Hide Chatwoot bubble in Chat/Goal Wizard UI to reduce clutter */
+body[data-hide-auxiliary-chat="true"] [id*="chatwoot"],
+body[data-hide-auxiliary-chat="true"] [class*="woot-widget"],
+body[data-hide-auxiliary-chat="true"] [class*="woot--bubble"],
+body[data-hide-auxiliary-chat="true"] .woot-widget-holder,
+body[data-hide-auxiliary-chat="true"] #chatwoot_live_chat_widget {
+  display: none !important;
+}
