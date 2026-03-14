@@ -862,7 +862,9 @@ function App() {
     setIsMenuOpen(false);
   }, [location.pathname]);
 
-  if (location.pathname === "/x7-internal") {
+  const isInternalAdmin =
+    location.pathname === "/x7-internal" || location.pathname === "/x7-internal/";
+  if (isInternalAdmin) {
     return (
       <div className="min-h-screen bg-zinc-950 text-white">
         <Toaster />
