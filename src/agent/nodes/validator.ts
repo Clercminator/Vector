@@ -67,7 +67,7 @@ export const validatorNode = async (state: AgentStateType) => {
                 validationAttempts: validationAttempts + 1,
                 messages: [
                     new HumanMessage(
-                        `SYSTEM ERROR: Insufficient personalization data. Ask the user at least one more question (e.g., constraints, typical day, what's held them back before) before requesting confirmation. Do NOT call request_confirmation yet.`
+                        `SYSTEM ERROR: Insufficient personalization data. Ask the user at least 3–4 more questions (e.g., constraints, typical day, what's held them back before) before requesting confirmation. Do NOT call request_confirmation yet.`
                     ),
                 ],
             };

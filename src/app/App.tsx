@@ -104,6 +104,11 @@ const SharedPlanView = React.lazy(() =>
 const TodayPage = React.lazy(() =>
   import("@/pages/TodayPage").then((module) => ({ default: module.TodayPage })),
 );
+const InternalAdminGate = React.lazy(() =>
+  import("@/app/components/internal/InternalAdminGate").then((m) => ({
+    default: m.InternalAdminGate,
+  })),
+);
 
 import { frameworks, Framework } from "@/lib/frameworks";
 
@@ -856,6 +861,17 @@ function App() {
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
+
+  if (location.pathname === "/x7-internal") {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white">
+        <Toaster />
+        <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" /></div>}>
+          <InternalAdminGate />
+        </Suspense>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white transition-colors duration-300 font-sans selection:bg-purple-500/30 flex flex-col">

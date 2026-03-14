@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+# Vector — Double-Click Probe Eval: How deep do models go in extracting user context?
+# Run: npx promptfoo eval --env-file=.env.backend
+# View: npx promptfoo view
+
+description: "Vector — Probe Depth: Do models double-click on user context?"
+
+prompts:
+  - file://promptfoo/vector-blueprint-prompt.txt
+
+providers:
+  - "openrouter:deepseek/deepseek-v3.2"
+  - "openrouter:z-ai/glm-5"
+  - "openrouter:google/gemini-3.1-pro-preview"
+  - "openrouter:openai/gpt-5.4"
+  - "openrouter:moonshotai/kimi-k2.5"
+  - "openrouter:moonshotai/kimi-k2-thinking"
+  - "openrouter:qwen/qwen3.5-397b-a17b"
+
+tests:
+  - description: "Weight loss — rich context, gaps (sleep, injuries, meal prep, stress)"
+    vars:
+      system_prompt: file://promptfoo/consultant-probe.txt
+      user_content: |
+        I've been wanting to lose weight for a while now. I'm 42, work from home so I'm sitting most of the day. I tried keto last year and stuck with it for maybe 3 weeks—it was too restrictive and I felt awful. I have two kids so evenings are chaotic. I don't really know how much I should lose, maybe 10–15 lbs? I've heard strength training is better than just cardio but I've never done it. Oh and I'm on medication for blood pressure, not sure if that matters.
+    assert:
+      - type: llm-rubric
+        value: |
+          The response MUST ask at least 3–4 specific follow-up questions that would uncover personal constraints, past failure details, or hidden friction (e.g., sleep, meal timing, injuries, low-willpower time, stress triggers, what made keto fail, gym vs home). Each question must be tailored to this user's situation—not generic. The response must NOT suggest a framework (Pareto, RPM, OKR, etc.) and must NOT give a plan or list of steps. It should do a deep research on the user before any recommendation.
+
+  - description: "Startup growth — rich context, gaps (ICP, churn, distribution, constraints)"
+    vars:
+      system_prompt: file://promptfoo/consultant-probe.txt
+      user_content: |
+        We're a small SaaS, 3 people, been stuck at around $15K MRR for 6 months. We've done some Facebook ads and content marketing but nothing really moved the needle. Our churn is okay, around 5% monthly. We're bootstrapped so we can't throw money at it. I think the product is solid—we get good feedback—but we're not sure how to get in front of more of the right people. We've tried cold email, didn't work great.
+    assert:
+      - type: llm-rubric
+        value: |
+          The response MUST ask at least 3–4 specific follow-up questions that would uncover bottlenecks or constraints (e.g., who is the ideal customer, what caused churn, distribution channel focus, time/money runway, unfair advantage, fast cash vs long-term). Each question must be tailored to this startup's situation—not generic. The response must NOT suggest a framework and must NOT give a plan or list of steps. It should do a deep research on the user before any recommendation.
+
+  - description: "Learn Portuguese — rich context, gaps (speaking freeze, media, deadline)"
+    vars:
+      system_prompt: file://promptfoo/consultant-probe.txt
+      user_content: |
+        I want to hold a 15-minute conversation in Portuguese before my partner's family reunion in Brazil in 4 months. I've tried Duolingo on and off for a year—I can read a bit but I freeze when I have to speak. My partner is Brazilian so I hear it at home, but we usually speak English. I have maybe 30 minutes a day. I'm not sure if I should focus on vocab, grammar, or just forcing myself to talk more.
+    assert:
+      - type: llm-rubric
+        value: |
+          The response MUST ask at least 3–4 specific follow-up questions that would uncover hidden friction (e.g., what causes the freeze when speaking—grammar fear, not hearing clearly, embarrassment; what media/shows they like in Portuguese; how they'll practice speaking; what the first conversation they want to nail is). Each question must be tailored to this user—not generic. The response must NOT suggest a framework and must NOT give a plan or list of steps. It should do a deep research on the user before any recommendation.

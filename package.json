@@ -8,6 +8,8 @@
     "dev": "vite",
     "preview": "vite preview",
     "test": "vitest",
+    "promptfoo:eval": "npx promptfoo eval --env-file=.env.backend",
+    "promptfoo:view": "npx promptfoo view",
     "prerender": "node scripts/prerender.js"
   },
   "dependencies": {
