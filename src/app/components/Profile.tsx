@@ -89,6 +89,16 @@ import { Lock } from 'lucide-react';
 
 import { useLanguage } from '@/app/components/language-provider';
 
+/** Same logic as useGoalWizard: regular credits are 0 when expired. */
+function getEffectiveCredits(data: ProfileData): { available: number; regularValid: number; extra: number; isExpired: boolean } {
+  const regular = data.credits ?? 0;
+  const extra = data.extra_credits ?? 0;
+  const expiresAt = data.credits_expires_at ? new Date(data.credits_expires_at) : null;
+  const regularValid = expiresAt && expiresAt.getTime() < Date.now() ? 0 : regular;
+  const isExpired = !!(expiresAt && expiresAt.getTime() < Date.now());
+  return { available: regularValid + extra, regularValid, extra, isExpired };
+}
+
 // ... interfaces
 
 export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileProps) {
@@ -409,7 +419,7 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
     };
 
   const currentTierConfig = TIER_CONFIGS[data.tier as TierId] || TIER_CONFIGS['architect'];
-
+  const eff = getEffectiveCredits(data);
   const { filled: personalInfoFilled, total: personalInfoTotal, percent: personalInfoPercent, isLow: personalInfoLow } = computePersonalInfoCompletion(data);
 
   return (
@@ -468,7 +478,7 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
                 </div>
                 <div className="bg-yellow-50 dark:bg-yellow-900/10 p-3 rounded-2xl flex flex-col items-center">
                   <Zap className="text-yellow-500 mb-1" size={18} />
-                  <span className="text-xl font-bold text-yellow-900 dark:text-yellow-200">{data.credits}</span>
+                  <span className="text-xl font-bold text-yellow-900 dark:text-yellow-200">{eff.available}</span>
                   <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-wider">{t('profile.credits')}</span>
                 </div>
                 <div className="bg-orange-50 dark:bg-orange-900/10 p-3 rounded-2xl flex flex-col items-center">
@@ -502,11 +512,11 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
                          <Zap className="text-yellow-500" size={20} />
                       </div>
                       <div>
-                         <p className="text-sm font-bold">{data.credits}</p>
+                         <p className="text-sm font-bold">{eff.regularValid}</p>
                          <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">{t('profile.normalCredits') || 'Normal Credits'}</p>
                          {data.credits_expires_at && (
-                           <p className="text-[10px] text-zinc-400 mt-1">
-                             {t('profile.expires').replace('{0}', new Date(data.credits_expires_at).toLocaleDateString())}
+                           <p className={`text-[10px] mt-1 ${eff.isExpired ? 'text-amber-400' : 'text-zinc-400'}`}>
+                             {eff.isExpired ? t('profile.expired') : t('profile.expires').replace('{0}', new Date(data.credits_expires_at).toLocaleDateString())}
                            </p>
                          )}
                       </div>
