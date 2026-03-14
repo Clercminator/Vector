@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
-import { INTERNAL_ADMIN_USERNAME, INTERNAL_ADMIN_PASSWORD } from "@/app/lib/internalAdminConfig";
 import { internalAdminLogin } from "./internalAdminApi";
-
-const SESSION_KEY = "x7_admin_session";
 
 export function AdminLoginPage({ onSuccess }: { onSuccess: () => void }) {
   const [username, setUsername] = useState("");
@@ -19,7 +16,7 @@ export function AdminLoginPage({ onSuccess }: { onSuccess: () => void }) {
     try {
       const result = await internalAdminLogin({ username, password });
       if (result.ok) {
-        sessionStorage.setItem(SESSION_KEY, "1");
+        sessionStorage.setItem("x7_admin_session", "1");
         onSuccess();
       } else {
         setError(result.error ?? "Invalid credentials");
@@ -81,15 +78,4 @@ export function AdminLoginPage({ onSuccess }: { onSuccess: () => void }) {
   );
 }
 
-export function getInternalAdminCredentials(): { username: string; password: string } | null {
-  if (typeof sessionStorage === "undefined") return null;
-  if (sessionStorage.getItem(SESSION_KEY) !== "1") return null;
-  return {
-    username: INTERNAL_ADMIN_USERNAME,
-    password: INTERNAL_ADMIN_PASSWORD,
-  };
-}
-
-export function clearInternalAdminSession() {
-  sessionStorage.removeItem(SESSION_KEY);
-}
+export { getInternalAdminCredentials, clearInternalAdminSession } from "./internalAdminApi";

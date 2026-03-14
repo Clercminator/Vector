@@ -3,6 +3,23 @@
  * Credentials are sent with each request for verification.
  */
 
+import { INTERNAL_ADMIN_USERNAME, INTERNAL_ADMIN_PASSWORD } from "@/app/lib/internalAdminConfig";
+
+const SESSION_KEY = "x7_admin_session";
+
+export function getInternalAdminCredentials(): { username: string; password: string } | null {
+  if (typeof sessionStorage === "undefined") return null;
+  if (sessionStorage.getItem(SESSION_KEY) !== "1") return null;
+  return {
+    username: INTERNAL_ADMIN_USERNAME,
+    password: INTERNAL_ADMIN_PASSWORD,
+  };
+}
+
+export function clearInternalAdminSession() {
+  sessionStorage.removeItem(SESSION_KEY);
+}
+
 const getBaseUrl = () =>
   (import.meta.env.VITE_SUPABASE_URL as string)?.replace(/\/$/, "") ?? "";
 
