@@ -23,6 +23,16 @@ export function clearInternalAdminSession() {
 const getBaseUrl = () =>
   (import.meta.env.VITE_SUPABASE_URL as string)?.replace(/\/$/, "") ?? "";
 
+const getAuthHeaders = () => {
+  const key =
+    (import.meta.env.VITE_SUPABASE_ANON_KEY as string) ??
+    (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string);
+  return {
+    "Content-Type": "application/json",
+    ...(key ? { Authorization: `Bearer ${key}` } : {}),
+  };
+};
+
 export interface InternalAdminCredentials {
   username: string;
   password: string;
@@ -34,7 +44,7 @@ export async function internalAdminLogin(
   const url = `${getBaseUrl()}/functions/v1/internal-admin`;
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify({
       username: creds.username,
       password: creds.password,
@@ -55,7 +65,7 @@ export async function internalAdminListUsers(
   const url = `${getBaseUrl()}/functions/v1/internal-admin`;
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify({
       username: creds.username,
       password: creds.password,
@@ -79,7 +89,7 @@ export async function internalAdminUpdateUser(
   const url = `${getBaseUrl()}/functions/v1/internal-admin`;
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify({
       username: creds.username,
       password: creds.password,
