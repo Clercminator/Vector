@@ -16,12 +16,12 @@ ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 
 -- Policies
 
--- 1. Users can view their own payments
+DROP POLICY IF EXISTS "Users can view own payments" ON payments;
 CREATE POLICY "Users can view own payments"
   ON payments FOR SELECT
   USING (auth.uid() = user_id);
 
--- 2. Admins can view all payments
+DROP POLICY IF EXISTS "Admins can view all payments" ON payments;
 CREATE POLICY "Admins can view all payments"
   ON payments FOR SELECT
   USING (EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND is_admin = true));

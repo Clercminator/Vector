@@ -1,4 +1,4 @@
-create table analytics_events (
+CREATE TABLE IF NOT EXISTS analytics_events (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users(id) on delete cascade not null,
   event_type text not null,
@@ -6,14 +6,16 @@ create table analytics_events (
   created_at timestamptz default now()
 );
 
-alter table analytics_events enable row level security;
+ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY;
 
-create policy "Users can insert their own events"
-  on analytics_events for insert
-  with check (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can insert their own events" ON analytics_events;
+CREATE POLICY "Users can insert their own events"
+  ON analytics_events FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
 
-create policy "Users can view their own events"
-  on analytics_events for select
-  using (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can view their own events" ON analytics_events;
+CREATE POLICY "Users can view their own events"
+  ON analytics_events FOR SELECT
+  USING (auth.uid() = user_id);
   
 -- Optional: Allow admins to view all (if you have an admin role system, add policy here)

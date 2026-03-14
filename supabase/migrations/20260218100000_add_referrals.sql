@@ -16,9 +16,11 @@ CREATE INDEX IF NOT EXISTS idx_profiles_referrer_code ON profiles(referrer_code)
 -- RLS for referrers (Public read, Admin write)
 ALTER TABLE referrers ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Referrers are public read" ON referrers;
 CREATE POLICY "Referrers are public read" ON referrers
     FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Admins can insert/update referrers" ON referrers;
 CREATE POLICY "Admins can insert/update referrers" ON referrers
     FOR ALL USING (
         exists (select 1 from profiles where user_id = auth.uid() and is_admin = true)

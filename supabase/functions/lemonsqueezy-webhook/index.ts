@@ -109,8 +109,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     const { error: rpcError } = await supabase.rpc("increment_credits", {
-      user_id: targetUserId,
-      amount: creditsToAdd,
+      target_user_id: targetUserId,
+      amount_to_add: creditsToAdd,
     });
     if (rpcError) console.error("Failed to increment credits:", rpcError);
 

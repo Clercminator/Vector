@@ -15,11 +15,13 @@ create index if not exists idx_feedback_user_id on public.feedback(user_id);
 alter table public.feedback enable row level security;
 
 -- Anyone (including anonymous) can submit feedback
+drop policy if exists "Anyone can insert feedback" on public.feedback;
 create policy "Anyone can insert feedback"
   on public.feedback for insert
   with check (true);
 
 -- Only admins can read feedback
+drop policy if exists "Admins can view all feedback" on public.feedback;
 create policy "Admins can view all feedback"
   on public.feedback for select
   using (public.is_admin());
