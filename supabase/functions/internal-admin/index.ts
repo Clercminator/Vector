@@ -1,11 +1,12 @@
 // Internal Admin Edge Function - Hidden admin operations
-// Credentials: Modify here to change. Must match frontend login.
-// Uses service_role to bypass RLS for profile updates.
+// Credentials: Set in Supabase Dashboard → Edge Functions → internal-admin → Secrets
+//   INTERNAL_ADMIN_USERNAME, INTERNAL_ADMIN_PASSWORD
+// If unset, fallback to values below. Uses service_role to bypass RLS for profile updates.
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const INTERNAL_ADMIN_USERNAME = "Clercminator";
-const INTERNAL_ADMIN_PASSWORD = "VectorMoneyMachine$$$777!";
+const INTERNAL_ADMIN_USERNAME = Deno.env.get("INTERNAL_ADMIN_USERNAME") ?? "Clercminator";
+const INTERNAL_ADMIN_PASSWORD = Deno.env.get("INTERNAL_ADMIN_PASSWORD") ?? "VectorMoneyMachine$$$777!";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
