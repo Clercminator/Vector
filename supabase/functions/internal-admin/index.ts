@@ -5,8 +5,8 @@
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const INTERNAL_ADMIN_USERNAME = Deno.env.get("INTERNAL_ADMIN_USERNAME") ?? "Clercminator";
-const INTERNAL_ADMIN_PASSWORD = Deno.env.get("INTERNAL_ADMIN_PASSWORD") ?? "VectorMoneyMachine$$$777!";
+const INTERNAL_ADMIN_USERNAME = (Deno.env.get("INTERNAL_ADMIN_USERNAME") ?? "Clercminator").trim();
+const INTERNAL_ADMIN_PASSWORD = (Deno.env.get("INTERNAL_ADMIN_PASSWORD") ?? "VectorMoneyMachine$$$777!").trim();
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -26,10 +26,9 @@ function jsonResponse(data: unknown, status = 200) {
 }
 
 function verifyCredentials(username: string, password: string): boolean {
-  return (
-    username === INTERNAL_ADMIN_USERNAME &&
-    password === INTERNAL_ADMIN_PASSWORD
-  );
+  const u = typeof username === "string" ? username.trim() : "";
+  const p = typeof password === "string" ? password.trim() : "";
+  return u.length > 0 && p.length > 0 && u === INTERNAL_ADMIN_USERNAME && p === INTERNAL_ADMIN_PASSWORD;
 }
 
 interface InternalAdminRequest {
