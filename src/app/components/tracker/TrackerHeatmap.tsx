@@ -1,6 +1,6 @@
 import React from 'react';
 import { GoalLog } from '@/lib/blueprints';
-import { getTileHeatmapData } from '@/lib/trackerStats';
+import { getTileHeatmapData, toLocalDateKey } from '@/lib/trackerStats';
 
 interface TrackerHeatmapProps {
   logs: GoalLog[];
@@ -16,11 +16,11 @@ export function TrackerHeatmap({ logs, daysBack = 35, color, className = '' }: T
   const cells = Array.from({ length: daysBack }).map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (daysBack - 1) + i);
-    const dateStr = d.toDateString();
+    const dateStr = toLocalDateKey(d);
     return {
       date: d,
       dateStr,
-      active: data[dateStr] || false
+      active: data[dateStr] ?? false,
     };
   });
   

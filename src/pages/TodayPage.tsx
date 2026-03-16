@@ -2,12 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '@/lib/supabase';
-import { Blueprint, BlueprintTracker, GoalLog } from '@/lib/blueprints';
+import { Blueprint, BlueprintTracker } from '@/lib/blueprints';
+import { getStepIdsAndLabels } from '@/lib/trackerSteps';
+import { isOnline, addPendingGoalLog, flushPendingQueue, onTrackerSynced } from '@/lib/trackerOffline';
 import { useLanguage } from '@/app/components/language-provider';
 import { Button } from '@/app/components/ui/button';
-import { Header } from '@/app/components/layout/Header';
-import { Plus, CheckCircle2, Clock, CalendarHeart, ArrowRight } from 'lucide-react';
+import { Plus, CheckCircle2, Clock, CalendarHeart, Target } from 'lucide-react';
 import { toast } from 'sonner';
+
+type TodayInfiniteItem = {
+  type: 'infinite';
+  blueprint: Blueprint;
+  tracker: BlueprintTracker;
+  completedToday: boolean;
+  streakOrLast: string;
+};
+type TodayFiniteItem = {
+  type: 'finite';
+  blueprint: Blueprint;
+  tracker: BlueprintTracker;
+  completedSteps: number;
+  totalSteps: number;
+};
+type TodayItem = TodayInfiniteItem | TodayFiniteItem;
 
 export function TodayPage() {
   const { t } = useLanguage();
@@ -15,11 +32,27 @@ export function TodayPage() {
 
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
-  const [dueItems, setDueItems] = useState<{ blueprint: Blueprint; tracker: BlueprintTracker; completedToday: boolean; streakOrLast: string }[]>([]);
+  const [dueItems, setDueItems] = useState<TodayItem[]>([]);
 
   useEffect(() => {
     loadTodayData();
   }, []);
+
+  useEffect(() => {
+    if (!supabase || !userId) return;
+    const runFlushThenReload = () => {
+      flushPendingQueue(supabase, userId).then(({ flushed }) => {
+        if (flushed > 0) loadTodayData();
+      });
+    };
+    if (isOnline()) runFlushThenReload();
+    const unsub = onTrackerSynced(() => loadTodayData());
+    window.addEventListener('online', runFlushThenReload);
+    return () => {
+      unsub();
+      window.removeEventListener('online', runFlushThenReload);
+    };
+  }, [userId]);
 
   const loadTodayData = async () => {
     if (!supabase) return;
@@ -58,42 +91,58 @@ export function TodayPage() {
       const dayMap: Record<number, string> = { 0: 'sun', 1: 'mon', 2: 'tue', 3: 'wed', 4: 'thu', 5: 'fri', 6: 'sat' };
       const currentDayStr = dayMap[new Date().getDay()];
 
-      const items = trackers.map((tracker: BlueprintTracker) => {
-        const blueprint = bps.find(b => b.id === tracker.blueprint_id);
-        if (!blueprint) return null;
+      const infiniteItems: TodayInfiniteItem[] = [];
+      const finiteItems: TodayFiniteItem[] = [];
 
-        // Is it due today?
-        let isDue = false;
-        if (!tracker.frequency || tracker.frequency === 'daily' || tracker.frequency === 'custom') {
+      for (const tracker of trackers) {
+        const blueprint = bps.find((b) => b.id === tracker.blueprint_id);
+        if (!blueprint) continue;
+
+        if (tracker.plan_kind === 'infinite') {
+          const bpLogs = logsByBp[blueprint.id] || [];
+          const completedToday = bpLogs.some(
+            (l: any) => (l.kind === 'check_in' && l.payload?.done) || l.kind === 'step_done'
+          );
+          const lastDoneAt = bpLogs
+            .filter((l: any) => (l.kind === 'check_in' && l.payload?.done) || l.kind === 'step_done')
+            .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+          const lastDoneDate = lastDoneAt ? new Date(lastDoneAt.created_at).getTime() : 0;
+          const sevenDaysAgo = Date.now() - 7 * 24 * 3600 * 1000;
+
+          let isDue = false;
+          if (tracker.frequency === 'weekly') {
+            isDue = lastDoneDate < sevenDaysAgo;
+          } else {
             const rd = tracker.reminder_days || [];
             if (rd.length === 0 || rd.includes('*') || rd.includes(currentDayStr)) {
-                isDue = true;
+              isDue = true;
             }
-        }
+          }
 
-        // Check if done today
-        const bpLogs = logsByBp[blueprint.id] || [];
-        const completedToday = bpLogs.some((l: any) => 
-            (l.kind === 'check_in' && l.payload?.done) || l.kind === 'step_done'
-        );
+          let streakOrLast = '0 days';
+          if (tracker.last_activity_at) {
+            const lastD = new Date(tracker.last_activity_at);
+            const diff = Math.floor((Date.now() - lastD.getTime()) / (1000 * 3600 * 24));
+            if (diff <= 1) streakOrLast = 'Active';
+            else streakOrLast = `Last: ${diff} days ago`;
+          } else {
+            streakOrLast = 'Not started';
+          }
 
-        let streakOrLast = '0 days';
-        if (tracker.last_activity_at) {
-             const lastD = new Date(tracker.last_activity_at);
-             const diff = Math.floor((new Date().getTime() - lastD.getTime()) / (1000 * 3600 * 24));
-             if (diff <= 1) streakOrLast = 'Active';
-             else streakOrLast = `Last: ${diff} days ago`;
+          if (isDue) {
+            infiniteItems.push({ type: 'infinite', blueprint, tracker, completedToday, streakOrLast });
+          }
         } else {
-             streakOrLast = 'Not started';
+          const steps = getStepIdsAndLabels(blueprint.result, blueprint.framework);
+          const totalSteps = steps.length;
+          const completedSteps = tracker.completed_step_ids?.length ?? 0;
+          if (totalSteps > 0) {
+            finiteItems.push({ type: 'finite', blueprint, tracker, completedSteps, totalSteps });
+          }
         }
+      }
 
-        if (isDue) {
-            return { blueprint, tracker, completedToday, streakOrLast };
-        }
-        return null;
-      }).filter(Boolean);
-
-      setDueItems(items as any);
+      setDueItems([...infiniteItems, ...finiteItems]);
     } catch (e) {
       console.error(e);
     }
@@ -101,26 +150,38 @@ export function TodayPage() {
   };
 
   const handleQuickLog = async (blueprintId: string) => {
-    if (!supabase || !userId) return;
+    if (!userId) return;
+    if (!isOnline()) {
+      addPendingGoalLog(blueprintId, userId, 'check_in', { payload: { done: true } });
+      setDueItems((prev) =>
+        prev.map((item) =>
+          item.type === 'infinite' && item.blueprint.id === blueprintId
+            ? { ...item, completedToday: true, streakOrLast: 'Active' }
+            : item
+        )
+      );
+      toast.success(t('tracker.savedOffline') || 'Saved locally. Will sync when back online.');
+      return;
+    }
+    if (!supabase) return;
     try {
-        const newLog = {
-            blueprint_id: blueprintId,
-            user_id: userId,
-            kind: 'check_in',
-            payload: { done: true }
-        };
-
-        const { error } = await supabase.from('goal_logs').insert(newLog);
-        if (error) throw error;
-        
-        // Update local state instantly
-        setDueItems(prev => prev.map(item => 
-            item.blueprint.id === blueprintId ? { ...item, completedToday: true, streakOrLast: 'Active' } : item
-        ));
-        
-        toast.success(t('tracker.loggedSummary') || "Activity logged!");
+      const { error } = await supabase.from('goal_logs').insert({
+        blueprint_id: blueprintId,
+        user_id: userId,
+        kind: 'check_in',
+        payload: { done: true },
+      });
+      if (error) throw error;
+      setDueItems((prev) =>
+        prev.map((item) =>
+          item.type === 'infinite' && item.blueprint.id === blueprintId
+            ? { ...item, completedToday: true, streakOrLast: 'Active' }
+            : item
+        )
+      );
+      toast.success(t('tracker.loggedSummary') || 'Activity logged!');
     } catch (e) {
-        toast.error(t('common.error'));
+      toast.error(t('common.error'));
     }
   };
 
@@ -151,41 +212,86 @@ export function TodayPage() {
       ) : (
           <div className="space-y-4">
               <AnimatePresence>
-                  {dueItems.map(({ blueprint, tracker, completedToday, streakOrLast }) => (
-                      <motion.div 
+                  {dueItems.map((item) => {
+                    const { blueprint } = item;
+                    if (item.type === 'infinite') {
+                      const { completedToday, streakOrLast } = item;
+                      return (
+                        <motion.div
                           key={blueprint.id}
                           layout
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all cursor-pointer ${completedToday ? 'bg-gray-50 dark:bg-zinc-800/50 border-gray-200 dark:border-zinc-800' : 'bg-white dark:bg-zinc-900 border-blue-200 dark:border-blue-900 hover:border-blue-300 shadow-sm'}`}
                           onClick={() => navigate(`/track/${blueprint.id}`)}
-                      >
+                        >
                           <div className="flex-1 pr-4">
-                              <h3 className={`text-lg md:text-xl font-bold mb-1 ${completedToday ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
-                                  {blueprint.title}
-                              </h3>
-                              <p className="text-sm font-bold text-gray-500 flex items-center gap-2">
-                                  <Clock size={14} className={completedToday ? 'text-gray-400' : 'text-blue-500'} /> 
-                                  {streakOrLast}
-                              </p>
+                            <h3 className={`text-lg md:text-xl font-bold mb-1 ${completedToday ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                              {blueprint.title}
+                            </h3>
+                            <p className="text-sm font-bold text-gray-500 flex items-center gap-2">
+                              <Clock size={14} className={completedToday ? 'text-gray-400' : 'text-blue-500'} />
+                              {streakOrLast}
+                            </p>
                           </div>
-                          
                           <div className="shrink-0">
-                              {completedToday ? (
-                                  <div className="w-14 h-14 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
-                                      <CheckCircle2 size={28} className="text-green-600 dark:text-green-400" />
-                                  </div>
-                              ) : (
-                                  <button 
-                                      onClick={(e) => { e.stopPropagation(); handleQuickLog(blueprint.id); }}
-                                      className="w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-white shadow-lg cursor-pointer flex-shrink-0"
-                                  >
-                                      <Plus size={32} />
-                                  </button>
-                              )}
+                            {completedToday ? (
+                              <div className="w-14 h-14 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
+                                <CheckCircle2 size={28} className="text-green-600 dark:text-green-400" />
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                aria-label={t('tracker.logToday') || 'Log today'}
+                                onClick={(e) => { e.stopPropagation(); handleQuickLog(blueprint.id); }}
+                                className="w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-white shadow-lg cursor-pointer flex-shrink-0"
+                              >
+                                <Plus size={32} />
+                              </button>
+                            )}
                           </div>
+                        </motion.div>
+                      );
+                    }
+                    const { completedSteps, totalSteps } = item;
+                    const allDone = totalSteps > 0 && completedSteps >= totalSteps;
+                    return (
+                      <motion.div
+                        key={blueprint.id}
+                        layout
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all cursor-pointer ${allDone ? 'bg-gray-50 dark:bg-zinc-800/50 border-gray-200 dark:border-zinc-800' : 'bg-white dark:bg-zinc-900 border-amber-200 dark:border-amber-900/50 hover:border-amber-300 shadow-sm'}`}
+                        onClick={() => navigate(`/track/${blueprint.id}`)}
+                      >
+                        <div className="flex-1 pr-4">
+                          <h3 className={`text-lg md:text-xl font-bold mb-1 ${allDone ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                            {blueprint.title}
+                          </h3>
+                          <p className="text-sm font-bold text-gray-500 flex items-center gap-2">
+                            <Target size={14} className={allDone ? 'text-gray-400' : 'text-amber-500'} />
+                            {completedSteps} / {totalSteps} {t('tracker.steps') || 'steps'}
+                          </p>
+                        </div>
+                        <div className="shrink-0 flex items-center gap-2">
+                          <div className="w-24 h-10 rounded-full bg-gray-200 dark:bg-zinc-700 overflow-hidden flex">
+                            <div
+                              className="h-full bg-amber-500 dark:bg-amber-600 transition-all"
+                              style={{ width: `${totalSteps ? (completedSteps / totalSteps) * 100 : 0}%` }}
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            aria-label={t('tracker.backToPlans') || 'Open tracker'}
+                            onClick={(e) => { e.stopPropagation(); navigate(`/track/${blueprint.id}`); }}
+                            className="px-4 py-2 rounded-xl font-bold text-sm bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors"
+                          >
+                            {allDone ? (t('tracker.status.completed') || 'Done') : (t('tracker.openTracker') || 'Open')}
+                          </button>
+                        </div>
                       </motion.div>
-                  ))}
+                    );
+                  })}
               </AnimatePresence>
           </div>
       )}

@@ -11,7 +11,15 @@ import { Textarea } from '@/app/components/ui/textarea';
 import { ArrowLeft, CheckCircle2, Circle, Clock, MessageSquare, Target, PenLine, Settings, ShieldAlert, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getStepIdsAndLabels, inferPlanKind } from '@/lib/trackerSteps';
-import { getBestStreaks, getScorePercentage, generateCalendarHighlights, getCurrentStreakDetails } from '@/lib/trackerStats';
+import { getBestStreaks, getScorePercentage, generateCalendarHighlights, getCurrentStreakDetails, toLocalDateKey } from '@/lib/trackerStats';
+import {
+  isOnline,
+  addPendingGoalLog,
+  addPendingTrackerUpdate,
+  addPendingGoalLogDelete,
+  flushPendingQueue,
+  onTrackerSynced,
+} from '@/lib/trackerOffline';
 
 import { TrackerHeatmap } from './tracker/TrackerHeatmap';
 import { TrackerScore } from './tracker/TrackerScore';
@@ -137,6 +145,23 @@ export function TrackerPage() {
     loadData();
   }, [blueprintId]);
 
+  useEffect(() => {
+    if (!supabase || !userId) return;
+    const runFlushThenReload = () => {
+      flushPendingQueue(supabase, userId).then(({ flushed }) => {
+        if (flushed > 0) loadData();
+      });
+    };
+    if (isOnline()) runFlushThenReload();
+    const unsub = onTrackerSynced(() => loadData());
+    const onOnline = () => runFlushThenReload();
+    window.addEventListener('online', onOnline);
+    return () => {
+      unsub();
+      window.removeEventListener('online', onOnline);
+    };
+  }, [blueprintId, userId]);
+
   const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value;
     const oldStatus = tracker.status;
@@ -155,108 +180,157 @@ export function TrackerPage() {
   };
 
   const handleToggleStep = async (stepId: string) => {
-    if (!tracker || !supabase) return;
-    
+    if (!tracker || !blueprintId) return;
     const isCompleted = tracker.completed_step_ids?.includes(stepId);
-    let newCompleted: string[];
-    
-    if (isCompleted) {
-        newCompleted = tracker.completed_step_ids.filter((id: string) => id !== stepId);
-    } else {
-        newCompleted = [...(tracker.completed_step_ids || []), stepId];
-    }
-    
+    const newCompleted = isCompleted
+      ? tracker.completed_step_ids.filter((id: string) => id !== stepId)
+      : [...(tracker.completed_step_ids || []), stepId];
     const oldTracker = { ...tracker };
     setTracker({ ...tracker, completed_step_ids: newCompleted });
 
-    let ops = [];
-    ops.push(supabase.from('blueprint_tracker').update({ completed_step_ids: newCompleted }).eq('blueprint_id', blueprintId));
-    
-    if (!isCompleted) {
-        ops.push(supabase.from('goal_logs').insert({
-            blueprint_id: blueprintId,
-            user_id: userId,
-            kind: 'step_done',
-            payload: { step_id: stepId }
-        }).select().single());
+    if (!isOnline()) {
+      addPendingTrackerUpdate(blueprintId, newCompleted);
+      if (!isCompleted && userId) {
+        addPendingGoalLog(blueprintId, userId, 'step_done', { payload: { step_id: stepId } });
+        setLogs(
+          (prev) =>
+            [
+              {
+                id: `offline_${Date.now()}`,
+                blueprint_id: blueprintId,
+                user_id: userId,
+                kind: 'step_done',
+                payload: { step_id: stepId },
+                created_at: new Date().toISOString(),
+              },
+              ...prev,
+            ] as any[]
+        );
+        setTracker((prev) => (prev ? { ...prev, last_activity_at: new Date().toISOString() } : null));
+      }
+      toast.success(t('tracker.savedOffline') || 'Saved locally. Will sync when back online.');
+      return;
     }
 
+    if (!supabase || !userId) return;
+    const ops = [
+      supabase.from('blueprint_tracker').update({ completed_step_ids: newCompleted }).eq('blueprint_id', blueprintId),
+    ];
+    if (!isCompleted) {
+      ops.push(
+        supabase.from('goal_logs').insert({
+          blueprint_id: blueprintId,
+          user_id: userId,
+          kind: 'step_done',
+          payload: { step_id: stepId },
+        }).select().single()
+      );
+    }
     try {
-        const results = await Promise.all(ops);
-        const updateError = results[0].error;
-        if (updateError) throw updateError;
-
-        if (!isCompleted && results[1] && !results[1].error) {
-            setLogs([results[1].data, ...logs]);
-        }
+      const results = await Promise.all(ops);
+      if (results[0].error) throw results[0].error;
+      if (!isCompleted && results[1] && !(results[1] as any).error) {
+        setLogs([(results[1] as any).data, ...logs]);
+        setTracker((prev) => (prev ? { ...prev, last_activity_at: new Date().toISOString() } : null));
+      }
     } catch (e) {
-        console.error(e);
-        toast.error(t('errors.trackerUpdateFailed') || "Couldn't update. Please try again.");
-        setTracker(oldTracker); // Rollback
+      console.error(e);
+      toast.error(t('errors.trackerUpdateFailed') || "Couldn't update. Please try again.");
+      setTracker(oldTracker);
     }
   };
 
   const handleLogToday = async (note?: string) => {
-    if (!supabase || !userId) return;
-    
+    if (!userId) return;
     const newLog = {
-        blueprint_id: blueprintId,
-        user_id: userId,
-        kind: 'check_in',
-        content: note ? note.trim() : null,
-        payload: { done: true }
+      blueprint_id: blueprintId,
+      user_id: userId,
+      kind: 'check_in' as const,
+      content: note?.trim() ?? null,
+      payload: { done: true },
     };
-
+    if (!isOnline()) {
+      addPendingGoalLog(blueprintId, userId, 'check_in', {
+        content: newLog.content,
+        payload: newLog.payload,
+      });
+      setLogs([
+        { ...newLog, id: `offline_${Date.now()}`, created_at: new Date().toISOString() } as any,
+        ...logs,
+      ]);
+      setTracker((prev) => (prev ? { ...prev, last_activity_at: new Date().toISOString() } : null));
+      toast.success(t('tracker.savedOffline') || 'Saved locally. Will sync when back online.');
+      return;
+    }
+    if (!supabase) return;
     const { data, error } = await supabase.from('goal_logs').insert(newLog).select().single();
     if (error) {
-        toast.error(t('errors.trackerUpdateFailed') || "Couldn't update. Please try again.");
-        throw error;
-    } else {
-        setLogs([data, ...logs]);
-        toast.success("Activity logged! ✔️");
+      toast.error(t('errors.trackerUpdateFailed') || "Couldn't update. Please try again.");
+      throw error;
     }
+    setLogs([data, ...logs]);
+    setTracker((prev) => (prev ? { ...prev, last_activity_at: new Date().toISOString() } : null));
+    toast.success("Activity logged! ✔️");
   };
 
   const handleAddJournal = async () => {
-    if (!supabase || !userId || !journalContent.trim()) return;
+    if (!userId || !journalContent.trim()) return;
     setIsSubmitting(true);
-    
-    const newLog = {
-        blueprint_id: blueprintId,
-        user_id: userId,
-        kind: 'journal',
-        content: journalContent.trim()
-    };
-
+    const content = journalContent.trim();
+    const newLog = { blueprint_id: blueprintId, user_id: userId, kind: 'journal' as const, content };
+    if (!isOnline()) {
+      addPendingGoalLog(blueprintId, userId, 'journal', { content });
+      setLogs(
+        ([{ ...newLog, id: `offline_${Date.now()}`, created_at: new Date().toISOString(), payload: {} } as any, ...logs] as any[]).sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+      );
+      setTracker((prev) => (prev ? { ...prev, last_activity_at: new Date().toISOString() } : null));
+      setJournalContent('');
+      toast.success(t('tracker.savedOffline') || 'Saved locally. Will sync when back online.');
+      setIsSubmitting(false);
+      return;
+    }
+    if (!supabase) {
+      setIsSubmitting(false);
+      return;
+    }
     const { data, error } = await supabase.from('goal_logs').insert(newLog).select().single();
     if (error) {
-        toast.error(t('errors.trackerUpdateFailed') || "Couldn't update. Please try again.");
+      toast.error(t('errors.trackerUpdateFailed') || "Couldn't update. Please try again.");
     } else {
-        setLogs([data, ...logs].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
-        setJournalContent('');
-        toast.success("Journal saved.");
+      setLogs([data, ...logs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+      setTracker((prev) => (prev ? { ...prev, last_activity_at: new Date().toISOString() } : null));
+      setJournalContent('');
+      toast.success("Journal saved.");
     }
     setIsSubmitting(false);
   };
 
   const handleLogSetback = async (reason: string) => {
-    if (!supabase || !userId) return;
-    
-    const newLog = {
-        blueprint_id: blueprintId,
-        user_id: userId,
-        kind: 'setback',
-        content: reason || null
-    };
-
+    if (!userId) return;
+    const newLog = { blueprint_id: blueprintId, user_id: userId, kind: 'setback' as const, content: reason || null };
+    if (!isOnline()) {
+      addPendingGoalLog(blueprintId, userId, 'setback', { content: newLog.content });
+      setLogs(
+        ([
+          { ...newLog, id: `offline_${Date.now()}`, created_at: new Date().toISOString(), payload: {} } as any,
+          ...logs,
+        ] as any[]).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      );
+      setTracker((prev) => (prev ? { ...prev, last_activity_at: new Date().toISOString() } : null));
+      toast.success(t('tracker.savedOffline') || 'Saved locally. Will sync when back online.');
+      return;
+    }
+    if (!supabase) return;
     const { data, error } = await supabase.from('goal_logs').insert(newLog).select().single();
     if (error) {
-        toast.error(t('errors.trackerUpdateFailed') || "Couldn't update. Please try again.");
-        throw error;
-    } else {
-        setLogs([data, ...logs].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
-        toast.success("Setback logged");
+      toast.error(t('errors.trackerUpdateFailed') || "Couldn't update. Please try again.");
+      throw error;
     }
+    setLogs([data, ...logs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    setTracker((prev) => (prev ? { ...prev, last_activity_at: new Date().toISOString() } : null));
+    toast.success("Setback logged");
   };
 
   const handleSaveSettings = async (bpUpdates: any, trUpdates: any) => {
@@ -274,38 +348,65 @@ export function TrackerPage() {
   };
 
   const handleSavePastEdit = async (date: Date, markActive: boolean) => {
-    if (!supabase || !userId) return;
-    const dateStr = date.toDateString();
-    
-    // Find if there is an existing check-in for this day
-    const existingLog = logs.find(l => {
-      return l.kind === 'check_in' && new Date(l.created_at).toDateString() === dateStr && l.payload?.done;
-    });
+    if (!userId) return;
+    const dateStr = toLocalDateKey(date);
+    const existingLog = logs.find(
+      (l) => l.kind === 'check_in' && toLocalDateKey(new Date(l.created_at)) === dateStr && l.payload?.done
+    );
 
     if (markActive && !existingLog) {
-      // Create new check-in for past date
-      // We need to set created_at to the past date (noon time to avoid timezone edge cases)
       const pastDate = new Date(date);
       pastDate.setHours(12, 0, 0, 0);
-
-      const newLog = {
+      const created_at = pastDate.toISOString();
+      if (!isOnline()) {
+        addPendingGoalLog(blueprintId, userId, 'check_in', {
+          payload: { done: true },
+          created_at,
+        });
+        setLogs(
+          ([
+            {
+              id: `offline_${Date.now()}`,
+              blueprint_id: blueprintId,
+              user_id: userId,
+              kind: 'check_in',
+              payload: { done: true },
+              created_at,
+            } as any,
+            ...logs,
+          ] as any[]).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        );
+        setTracker((prev) => (prev ? { ...prev, last_activity_at: new Date().toISOString() } : null));
+        toast.success(t('tracker.savedOffline') || 'Saved locally. Will sync when back online.');
+        return;
+      }
+      if (!supabase) return;
+      const { data, error } = await supabase
+        .from('goal_logs')
+        .insert({
           blueprint_id: blueprintId,
           user_id: userId,
           kind: 'check_in',
           payload: { done: true },
-          created_at: pastDate.toISOString()
-      };
-
-      const { data, error } = await supabase.from('goal_logs').insert(newLog).select().single();
+          created_at,
+        })
+        .select()
+        .single();
       if (error) throw error;
       setLogs([data, ...logs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+      setTracker((prev) => (prev ? { ...prev, last_activity_at: new Date().toISOString() } : null));
       toast.success("Past activity logged!");
-      
     } else if (!markActive && existingLog) {
-      // Delete the existing check-in
+      if (!isOnline()) {
+        addPendingGoalLogDelete(existingLog.id);
+        setLogs(logs.filter((l) => l.id !== existingLog.id));
+        toast.success(t('tracker.savedOffline') || 'Saved locally. Will sync when back online.');
+        return;
+      }
+      if (!supabase) return;
       const { error } = await supabase.from('goal_logs').delete().eq('id', existingLog.id);
       if (error) throw error;
-      setLogs(logs.filter(l => l.id !== existingLog.id));
+      setLogs(logs.filter((l) => l.id !== existingLog.id));
       toast.success("Activity removed.");
     }
   };
@@ -403,7 +504,7 @@ export function TrackerPage() {
   const bestStreaks = getBestStreaks(filteredLogs);
   const { streakStartedAt, count: currentStreak } = getCurrentStreakDetails(filteredLogs);
   const score = getScorePercentage(filteredLogs, tracker, steps.length, 7); // 7-day trailing score
-  const isDoneToday = highlights.has(new Date().toDateString());
+  const isDoneToday = highlights.has(toLocalDateKey(new Date()));
 
   const savingsAmount = tracker?.savings_enabled && tracker?.savings_baseline ? currentStreak * tracker.savings_baseline : null;
   const savingsUnit = tracker?.savings_unit || '$';
@@ -697,7 +798,7 @@ export function TrackerPage() {
         isOpen={isPastEditModalOpen} 
         onClose={() => setIsPastEditModalOpen(false)} 
         date={selectedDate} 
-        isActive={selectedDate ? highlights.has(selectedDate.toDateString()) : false} 
+        isActive={selectedDate ? highlights.has(toLocalDateKey(selectedDate)) : false} 
         color={colorAccent}
         onSave={handleSavePastEdit}
       />

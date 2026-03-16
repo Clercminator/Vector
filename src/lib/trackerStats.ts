@@ -1,5 +1,13 @@
 import { GoalLog, BlueprintTracker } from './blueprints';
 
+/** Local calendar date key (YYYY-MM-DD) so streaks and heatmaps respect user timezone. */
+export function toLocalDateKey(date: Date): string {
+  const y = date.getFullYear();
+  const m = date.getMonth();
+  const day = date.getDate();
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
 export function getActiveDates(logs: GoalLog[]): Date[] {
   const activeDates = new Set<string>();
   for (const log of logs) {
@@ -9,27 +17,26 @@ export function getActiveDates(logs: GoalLog[]): Date[] {
     } else if (log.kind === 'step_done') {
       isActive = true;
     }
-    
     if (isActive) {
-      const d = new Date(log.created_at);
-      activeDates.add(d.toDateString());
+      activeDates.add(toLocalDateKey(new Date(log.created_at)));
     }
   }
-  return Array.from(activeDates).map(ds => new Date(ds)).sort((a, b) => b.getTime() - a.getTime());
+  return Array.from(activeDates)
+    .map((ds) => {
+      const [y, m, d] = ds.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    })
+    .sort((a, b) => b.getTime() - a.getTime());
 }
 
-export function getCurrentStreakDetails(logs: GoalLog[]): { count: number, streakStartedAt: Date | null } {
-  const dailyStatus: Record<string, { active: boolean, setback: boolean }> = {};
-  
+export function getCurrentStreakDetails(logs: GoalLog[]): { count: number; streakStartedAt: Date | null } {
+  const dailyStatus: Record<string, { active: boolean; setback: boolean }> = {};
+
   for (const log of logs) {
-    const d = new Date(log.created_at);
-    d.setHours(0, 0, 0, 0);
-    const dateStr = d.toISOString();
-    
+    const dateStr = toLocalDateKey(new Date(log.created_at));
     if (!dailyStatus[dateStr]) {
       dailyStatus[dateStr] = { active: false, setback: false };
     }
-    
     if (log.kind === 'setback') {
       dailyStatus[dateStr].setback = true;
     } else if ((log.kind === 'check_in' && log.payload?.done) || log.kind === 'step_done') {
@@ -39,27 +46,23 @@ export function getCurrentStreakDetails(logs: GoalLog[]): { count: number, strea
 
   let count = 0;
   let streakStartedAt: Date | null = null;
-  let d = new Date();
-  d.setHours(0, 0, 0, 0);
-  
-  const todayStr = d.toISOString();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = toLocalDateKey(today);
 
   if (dailyStatus[todayStr]?.setback) {
     return { count: 0, streakStartedAt: null };
   }
 
+  let d = new Date(today);
   if (!dailyStatus[todayStr]?.active) {
     d.setDate(d.getDate() - 1);
   }
 
   while (true) {
-    const ds = d.toISOString();
+    const ds = toLocalDateKey(d);
     const stat = dailyStatus[ds];
-    
-    if (stat?.setback) {
-      break;
-    }
-    
+    if (stat?.setback) break;
     if (stat?.active) {
       count++;
       streakStartedAt = new Date(d);
@@ -171,19 +174,16 @@ export function getScorePercentage(logs: GoalLog[], tracker: BlueprintTracker, t
 }
 
 export function getTileHeatmapData(logs: GoalLog[], daysBack: number = 28): Record<string, boolean> {
-  const activeDates = getActiveDates(logs).map(d => d.toDateString());
+  const activeDates = new Set(getActiveDates(logs).map((d) => toLocalDateKey(d)));
   const map: Record<string, boolean> = {};
-  
   for (let i = daysBack - 1; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const ds = d.toDateString();
-      map[ds] = activeDates.includes(ds);
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    map[toLocalDateKey(d)] = activeDates.has(toLocalDateKey(d));
   }
-  
   return map;
 }
 
 export function generateCalendarHighlights(logs: GoalLog[]): Set<string> {
-    return new Set(getActiveDates(logs).map(d => d.toDateString()));
+  return new Set(getActiveDates(logs).map((d) => toLocalDateKey(d)));
 }

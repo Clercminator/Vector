@@ -180,40 +180,50 @@ export function Dashboard({
     }
   }, []);
 
-  useEffect(() => {
-    // Fetch trackers for currently displayed blueprints
+  const fetchTrackersAndLogs = React.useCallback(() => {
     if (!supabase || filteredBlueprints.length === 0) return;
-    const ids = filteredBlueprints.map(b => b.id);
-    
-    // Fetch trackers
-    supabase.from('blueprint_tracker').select('*').in('blueprint_id', ids)
+    const ids = filteredBlueprints.map((b) => b.id);
+
+    supabase
+      .from('blueprint_tracker')
+      .select('*')
+      .in('blueprint_id', ids)
       .then(({ data }) => {
-          if (data) {
-              const map: Record<string, any> = {};
-              data.forEach(t => map[t.blueprint_id] = t);
-              setTrackers(map);
-          }
+        if (data) {
+          const map: Record<string, any> = {};
+          data.forEach((t) => (map[t.blueprint_id] = t));
+          setTrackers(map);
+        }
       });
 
-    // Fetch logs for the last 14 days to keep it lightweight for heatmap
     const fourteenDaysAgo = new Date();
     fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
-    
-    supabase.from('goal_logs')
+    supabase
+      .from('goal_logs')
       .select('id, blueprint_id, created_at, kind, payload')
       .in('blueprint_id', ids)
       .gte('created_at', fourteenDaysAgo.toISOString())
       .then(({ data }) => {
-          if (data) {
-              const map: Record<string, any[]> = {};
-              ids.forEach(id => map[id] = []);
-              data.forEach(l => {
-                  map[l.blueprint_id].push(l);
-              });
-              setLogsMap(map);
-          }
+        if (data) {
+          const map: Record<string, any[]> = {};
+          ids.forEach((id) => (map[id] = []));
+          data.forEach((l) => map[l.blueprint_id].push(l));
+          setLogsMap(map);
+        }
       });
   }, [filteredBlueprints]);
+
+  useEffect(() => {
+    fetchTrackersAndLogs();
+  }, [fetchTrackersAndLogs]);
+
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') fetchTrackersAndLogs();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [fetchTrackersAndLogs]);
 
   return (
     <ErrorBoundary name="Dashboard">

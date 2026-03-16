@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/app/components/language-provider';
+import { toLocalDateKey } from '@/lib/trackerStats';
 
 interface TrackerCalendarProps {
-  highlightedDates: Set<string>; // active dates (toDateString)
+  highlightedDates: Set<string>; // active dates (YYYY-MM-DD local)
   color?: string;
   onDayClick?: (date: Date) => void;
   className?: string;
@@ -31,11 +32,11 @@ export function TrackerCalendar({ highlightedDates, color, onDayClick, className
     days.push(<div key={`empty-${i}`} className="w-8 h-8 md:w-10 md:h-10"></div>);
   }
 
-  const todayStr = new Date().toDateString();
+  const todayStr = toLocalDateKey(new Date());
 
   for (let day = 1; day <= daysInMonth; day++) {
     const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    const dStr = d.toDateString();
+    const dStr = toLocalDateKey(d);
     const isActive = highlightedDates.has(dStr);
     const isToday = dStr === todayStr;
 

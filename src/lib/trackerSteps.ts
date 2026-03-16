@@ -1,5 +1,16 @@
 import { BlueprintResult } from "./blueprints";
 
+/** Get value from result supporting both camelCase and snake_case (API may return either). */
+function getResultArray(result: any, camelKey: string, snakeKey?: string): string[] | undefined {
+  const arr = result[camelKey] ?? result[snakeKey ?? camelKey.replace(/([A-Z])/g, "_$1").toLowerCase()];
+  return Array.isArray(arr) ? arr : undefined;
+}
+
+function getResultString(result: any, camelKey: string, snakeKey?: string): string | undefined {
+  const s = result[camelKey] ?? result[snakeKey ?? camelKey.replace(/([A-Z])/g, "_$1").toLowerCase()];
+  return typeof s === "string" ? s : undefined;
+}
+
 export function inferPlanKind(
   result: BlueprintResult,
   framework: string,
@@ -18,11 +29,13 @@ export function getStepIdsAndLabels(
   if (!result || typeof result !== "object") return [];
 
   const steps: { stepId: string; label: string }[] = [];
+  const r = result as any;
 
   switch (framework) {
     case "rpm": {
-      if ("plan" in result && Array.isArray(result.plan)) {
-        return result.plan.map((step, index) => ({
+      const plan = getResultArray(r, "plan");
+      if (plan?.length) {
+        return plan.map((step, index) => ({
           stepId: `plan.${index}`,
           label: step,
         }));
@@ -30,8 +43,9 @@ export function getStepIdsAndLabels(
       break;
     }
     case "okr": {
-      if ("keyResults" in result && Array.isArray(result.keyResults)) {
-        return result.keyResults.map((kr, index) => ({
+      const keyResults = getResultArray(r, "keyResults", "key_results");
+      if (keyResults?.length) {
+        return keyResults.map((kr, index) => ({
           stepId: `keyResults.${index}`,
           label: kr,
         }));
@@ -53,16 +67,17 @@ export function getStepIdsAndLabels(
       break;
     }
     case "mandalas": {
-      if ("categories" in result && Array.isArray((result as any).categories)) {
-        (result as any).categories.forEach((cat: any, catIndex: number) => {
-          if ("steps" in cat && Array.isArray(cat.steps)) {
-            cat.steps.forEach((step: string, stepIndex: number) => {
-              steps.push({
-                stepId: `categories.${catIndex}.steps.${stepIndex}`,
-                label: `[${cat.name || "Category"}] ${step}`,
-              });
+      const categories = r.categories as Array<{ name?: string; steps?: string[] }> | undefined;
+      if (Array.isArray(categories)) {
+        categories.forEach((cat: any, catIndex: number) => {
+          const stepList = Array.isArray(cat?.steps) ? cat.steps : [];
+          const name = cat?.name ?? "Category";
+          stepList.forEach((step: string, stepIndex: number) => {
+            steps.push({
+              stepId: `categories.${catIndex}.steps.${stepIndex}`,
+              label: `[${name}] ${step}`,
             });
-          }
+          });
         });
       }
       break;
@@ -132,10 +147,17 @@ export function getStepIdsAndLabels(
       break;
     }
     case "ikigai": {
-      const pillars = ["love", "goodAt", "worldNeeds", "paidFor", "purpose"];
-      pillars.forEach((pillar, idx) => {
-        if (pillar in result && typeof (result as any)[pillar] === "string") {
-          steps.push({ stepId: `pillar.${idx}`, label: `[${pillar.toUpperCase()}] ${(result as any)[pillar]}` });
+      const pillarKeys = [
+        ["love", "love"],
+        ["goodAt", "good_at"],
+        ["worldNeeds", "world_needs"],
+        ["paidFor", "paid_for"],
+        ["purpose", "purpose"],
+      ] as const;
+      pillarKeys.forEach(([camel, snake], idx) => {
+        const val = r[camel] ?? r[snake];
+        if (typeof val === "string" && val.trim()) {
+          steps.push({ stepId: `pillar.${idx}`, label: `[${camel.toUpperCase()}] ${val}` });
         }
       });
       break;

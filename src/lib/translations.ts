@@ -1083,6 +1083,8 @@ export const translations = {
     "tracker.planNotFound": "Plan not found",
     "tracker.unauthorized": "You don't have access to this plan.",
     "tracker.editPlan": "Edit plan",
+    "tracker.openTracker": "Open",
+    "tracker.savedOffline": "Saved locally. Will sync when back online.",
     "tracker.trackingQuestion": "Tracking question",
     "tracker.trackingQuestionPlaceholder":
       "e.g. Did you follow your plan today?",
