@@ -166,11 +166,12 @@ export const draftNode = async (state: AgentStateType) => {
         ? blueprint.centralGoal.trim()
         : (typeof blueprint.central_goal === "string" && blueprint.central_goal.trim() ? blueprint.central_goal.trim() : "Your central goal (edit to refine)");
       const rawCats = Array.isArray(blueprint.categories) ? blueprint.categories : [];
-      const padSteps = (steps: unknown): string[] => {
-        const arr = Array.isArray(steps)
-          ? steps.map((s: unknown) => (typeof s === "string" ? s : s != null ? String(s) : ""));
-        return Array.from({ length: 8 }, (_, i) => (arr[i] ?? "").trim() || "");
-      };
+        const padSteps = (steps: unknown): string[] => {
+          const arr = Array.isArray(steps)
+            ? steps.map((s: unknown) => (typeof s === "string" ? s : s != null ? String(s) : ""))
+            : [];
+          return Array.from({ length: 8 }, (_, i) => (arr[i] ?? "").trim() || "");
+        };
       const categories = Array.from({ length: 8 }, (_, i) => {
         const raw = rawCats[i] && typeof rawCats[i] === "object" ? rawCats[i] as Record<string, unknown> : {};
         const name = typeof raw.name === "string" && raw.name.trim() ? raw.name.trim() : "";
