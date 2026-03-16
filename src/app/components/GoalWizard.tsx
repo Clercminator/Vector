@@ -173,10 +173,10 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel className="cursor-pointer">{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmRestart}
-              className="bg-amber-600 hover:bg-amber-700 focus:ring-amber-500"
+              className="bg-amber-600 hover:bg-amber-700 focus:ring-amber-500 cursor-pointer"
             >
               {t('wizard.restartWarning.confirm')}
             </AlertDialogAction>
@@ -190,6 +190,8 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
             isHardMode={isHardMode}
             onToggleHardMode={toggleHardMode}
             onRestart={handleSafeRestart}
+            onSave={handleSave}
+            canSave={messages.length > 0}
         />
       )}
 
@@ -301,7 +303,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                   <button
                     type="button"
                     onClick={() => setShowMobileDraft(!showMobileDraft)}
-                    className="lg:hidden w-full px-4 py-2 bg-black/80 dark:bg-white/90 text-white dark:text-black rounded-full text-xs font-bold shadow-lg backdrop-blur-md flex items-center justify-center gap-2"
+                    className="lg:hidden w-full px-4 py-2 bg-black/80 dark:bg-white/90 text-white dark:text-black rounded-full text-xs font-bold shadow-lg backdrop-blur-md flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all"
                   >
                     {showMobileDraft ? <X size={12} /> : <FileText size={12} />}
                     {showMobileDraft ? t('wizard.closeDraft') : t('wizard.viewDraft')}
@@ -347,6 +349,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
             )}
             <div className="flex flex-wrap gap-2 sm:gap-4 items-center justify-center px-1">
             <button
+              type="button"
               onClick={() => {
                 setFullscreenBlueprint(true);
                 navigate('/wizard?view=fullscreen', { replace: true });
@@ -356,8 +359,9 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
             >
               <Maximize2 size={16} className="sm:w-[18px] sm:h-[18px]" /> Full screen
             </button>
-            <button 
-              onClick={handleSafeRestart} 
+            <button
+              type="button"
+              onClick={handleSafeRestart}
               className="flex items-center gap-2 cursor-pointer px-4 py-2.5 sm:px-6 sm:py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium text-sm sm:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 shrink-0"
             >
                 <RefreshCcw size={16} className="sm:w-[18px] sm:h-[18px]" />{t('wizard.restart')}
@@ -365,9 +369,10 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
 
             {/* Calendar Export — only when blueprint has multiple schedulable items */}
             {showCalendarExport && (
-            <button 
-               onClick={handleExport} 
-               className="flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-full shadow-lg transition-all font-medium text-sm sm:text-base cursor-pointer bg-blue-600 text-white hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-950 shrink-0"
+            <button
+              type="button"
+              onClick={handleExport}
+              className="flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-full shadow-lg transition-all font-medium text-sm sm:text-base cursor-pointer bg-blue-600 text-white hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-950 shrink-0"
             >
                <Calendar size={16} className="sm:w-[18px] sm:h-[18px]" />
                {t('wizard.export')}
@@ -375,21 +380,23 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
             )}
 
             {/* PDF Export */}
-            <button 
-               onClick={handlePdfExport} 
-               disabled={!TIER_CONFIGS[props.tier || 'architect'].canExportPdf}
-               className={`flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-full shadow-lg transition-all font-medium text-sm sm:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-950 shrink-0 ${
-                   !TIER_CONFIGS[props.tier || 'architect'].canExportPdf 
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed focus-visible:ring-gray-400' 
+            <button
+              type="button"
+              onClick={handlePdfExport}
+              disabled={!TIER_CONFIGS[props.tier || 'architect'].canExportPdf}
+              className={`flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-full shadow-lg transition-all font-medium text-sm sm:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-950 shrink-0 ${
+                  !TIER_CONFIGS[props.tier || 'architect'].canExportPdf
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed focus-visible:ring-gray-400'
                     : 'cursor-pointer bg-red-600 text-white hover:shadow-xl focus-visible:ring-red-500'
-               }`}
+              }`}
             >
                {TIER_CONFIGS[props.tier || 'architect'].canExportPdf ? <Download size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Lock size={16} />}
                PDF
             </button>
 
-            <button 
-              onClick={handleSave} 
+            <button
+              type="button"
+              onClick={handleSave}
               className="flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 bg-black dark:bg-white text-white dark:text-black rounded-full shadow-lg hover:shadow-xl transition-all font-medium text-sm sm:text-base cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black dark:focus-visible:ring-offset-white shrink-0"
             >
                 <CheckCircle2 size={16} className="sm:w-[18px] sm:h-[18px]" />{t('wizard.save')}

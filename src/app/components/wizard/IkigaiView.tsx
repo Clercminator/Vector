@@ -52,9 +52,10 @@ const IkigaiSection: React.FC<IkigaiSectionProps> = ({
           {icon}
           <h4 className="font-bold text-lg uppercase tracking-wide opacity-90">{title}</h4>
         </div>
-        <button 
+        <button
+          type="button"
           onClick={onCopy}
-          className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 opacity-40 hover:opacity-100 transition-all"
+          className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 opacity-40 hover:opacity-100 transition-all cursor-pointer"
           title="Copy section"
           aria-label="Copy section"
         >
@@ -99,9 +100,10 @@ export const IkigaiView: React.FC<IkigaiViewProps> = ({ result, updateResult }) 
       {isMobile && <DesktopRecommendedBanner className="mb-8" />}
       {/* Top Bar with Copy Strategy */}
       <div className="flex justify-end mb-8">
-        <button 
+        <button
+          type="button"
           onClick={handleCopyFull}
-          className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95"
+          className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95 cursor-pointer"
         >
           <Copy size={16} />
           Copy Strategy

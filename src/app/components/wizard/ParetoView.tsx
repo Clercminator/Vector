@@ -93,9 +93,10 @@ const ParetoList = ({
                 </div>
            </div>
            
-           <button 
+           <button
+                type="button"
                 onClick={onCopy}
-                className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 opacity-40 hover:opacity-100 transition-all"
+                className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 opacity-40 hover:opacity-100 transition-all cursor-pointer"
                 title="Copy list"
                 aria-label="Copy list"
            >
@@ -113,21 +114,21 @@ const ParetoList = ({
                     className="flex items-start gap-4 group relative"
                 >
                    <div className="mt-1.5 flex flex-col gap-1 opacity-0 group-hover:opacity-40 transition-opacity absolute -left-6">
-                       <button 
+                       <button
                             type="button"
-                            onClick={() => handleMove(i, -1)} 
+                            onClick={() => handleMove(i, -1)}
                             disabled={i === 0}
-                            className="hover:text-blue-600 disabled:opacity-20 transition-colors"
+                            className="hover:text-blue-600 disabled:opacity-20 transition-colors cursor-pointer disabled:cursor-not-allowed"
                             title="Move up"
                             aria-label="Move up"
                        >
                            <ArrowUp size={12} strokeWidth={3} />
                        </button>
-                       <button 
+                       <button
                             type="button"
-                            onClick={() => handleMove(i, 1)} 
+                            onClick={() => handleMove(i, 1)}
                             disabled={i === items.length - 1}
-                            className="hover:text-blue-600 disabled:opacity-20 transition-colors"
+                            className="hover:text-blue-600 disabled:opacity-20 transition-colors cursor-pointer disabled:cursor-not-allowed"
                             title="Move down"
                             aria-label="Move down"
                        >
@@ -158,9 +159,10 @@ const ParetoList = ({
                        />
                    </div>
                    
-                   <button 
+                   <button
+                        type="button"
                         onClick={() => handleDeleteItem(i)}
-                        className="opacity-0 group-hover:opacity-100 p-2 text-red-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                        className="opacity-0 group-hover:opacity-100 p-2 text-red-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all cursor-pointer"
                         title="Delete item"
                         aria-label="Delete item"
                    >
@@ -168,11 +170,12 @@ const ParetoList = ({
                    </button>
                </motion.div>
            ))}
-           <button 
+           <button
+                type="button"
                 onClick={handleAddItem}
-                className={`flex items-center gap-2 font-bold transition-all mt-6 px-4 py-3 rounded-xl border-2 border-dashed w-full justify-center ${
-                    isVital 
-                    ? 'border-blue-200 dark:border-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20' 
+                className={`flex items-center gap-2 font-bold transition-all mt-6 px-4 py-3 rounded-xl border-2 border-dashed w-full justify-center cursor-pointer ${
+                    isVital
+                    ? 'border-blue-200 dark:border-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
                     : 'border-gray-200 dark:border-zinc-700 text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-800'
                 }`}
            >
@@ -208,9 +211,10 @@ export const ParetoView: React.FC<ParetoViewProps> = ({ result, updateResult }) 
     <div className="mt-8 w-full max-w-[90rem] mx-auto px-4">
         {isMobile && <DesktopRecommendedBanner className="mb-8 max-w-6xl mx-auto" />}
         <div className="flex justify-end mb-8 max-w-6xl mx-auto">
-           <button 
+           <button
+                type="button"
                 onClick={handleCopyFull}
-                className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95"
+                className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95 cursor-pointer"
            >
                <Copy size={16} />
                Copy Strategy

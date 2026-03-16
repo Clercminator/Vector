@@ -279,7 +279,7 @@ function App() {
           .then((count) => {
             if (count > 0) {
               toast.success(t("app.syncedBlueprints", { count }), {
-                duration: 4000,
+                duration: 15000,
               });
               // Reload remote to include just synced
               loadRemoteBlueprints(session.user.id, 0);
@@ -476,7 +476,7 @@ function App() {
     } catch (e: any) {
       console.error("Failed to load blueprints", e);
       setSyncError(e.message || "Unknown error");
-      toast.error(t("app.sync.error"), { duration: 6000 });
+      toast.error(t("app.sync.error"), { duration: 15000 });
     } finally {
       setBlueprintsLoading(false);
       setIsLoadingMore(false);
@@ -637,7 +637,7 @@ function App() {
 
             if (newLevel > (profile.level || 1)) {
               toast.success(`🎉 Level Up! You are now Level ${newLevel}!`, {
-                duration: 5000,
+                duration: 15000,
               });
               confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
             }
@@ -674,7 +674,7 @@ function App() {
         toast.error(
           t("errors.syncFailed") ||
             "Couldn't save. Check your connection and try again.",
-          { duration: 6000 }
+          { duration: 15000 }
         );
         // Revert local optimistic update if needed?
         // For now we keep local state as "unsynced" effectively.
@@ -710,7 +710,7 @@ function App() {
         toast.error(
           t("errors.syncFailed") ||
             "Couldn't save. Check your connection and try again.",
-          { duration: 6000 }
+          { duration: 15000 }
         );
         // Revert optimistic update
         setBlueprints(loadLocalBlueprints());
@@ -758,11 +758,11 @@ function App() {
     const useMercadoPago = paymentRegion === "latam";
 
     if (useMercadoPago && !isMercadoPagoConfigured()) {
-      toast.error(t("errors.paymentsNotConfigured") || "Payments are not configured yet (Test Mode).", { duration: 6000 });
+      toast.error(t("errors.paymentsNotConfigured") || "Payments are not configured yet (Test Mode).", { duration: 15000 });
       return;
     }
     if (useLemonSqueezy && !isLemonSqueezyConfigured()) {
-      toast.error(t("errors.paymentsNotConfigured") || "Payments are not configured yet (Test Mode).", { duration: 6000 });
+      toast.error(t("errors.paymentsNotConfigured") || "Payments are not configured yet (Test Mode).", { duration: 15000 });
       return;
     }
 

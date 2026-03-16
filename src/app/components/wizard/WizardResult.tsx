@@ -34,16 +34,18 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
           <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
             You've generated a <strong>Teaser Preview</strong>. Upgrade to the <strong>Standard Plan</strong> to reveal the full detailed strategy.
           </p>
-          <button 
+          <button
+            type="button"
             onClick={() => navigate('/pricing')}
-            className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl hover:shadow-2xl flex items-center justify-center gap-2"
+            className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl hover:shadow-2xl flex items-center justify-center gap-2 cursor-pointer"
           >
             <Zap size={20} className="fill-current" />
             Upgrade Now
           </button>
-          <button 
-             onClick={onBack}
-             className="mt-4 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          <button
+            type="button"
+            onClick={onBack}
+            className="mt-4 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
           >
             No thanks, take me back
           </button>
@@ -108,7 +110,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
           className="mt-8 w-full max-w-4xl mx-auto bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl border border-purple-200 dark:border-purple-900/40 overflow-hidden relative"
         >
           <div className="absolute top-0 right-0 z-10 p-4">
-            <button type="button" onClick={copyOkr} className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white/90 dark:bg-zinc-800/90 border border-gray-200 dark:border-zinc-700 px-4 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95" aria-label="Copy strategy">
+            <button type="button" onClick={copyOkr} className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white/90 dark:bg-zinc-800/90 border border-gray-200 dark:border-zinc-700 px-4 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95 cursor-pointer" aria-label="Copy strategy">
               <Copy size={16} />
               Copy Strategy
             </button>
@@ -177,7 +179,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
         <Wrapper>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-8 w-full max-w-4xl mx-auto space-y-6">
           <div className="flex justify-end mb-4">
-            <button type="button" onClick={copyFp} className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95" aria-label="Copy strategy">
+            <button type="button" onClick={copyFp} className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95 cursor-pointer" aria-label="Copy strategy">
               <Copy size={16} />
               Copy Strategy
             </button>
@@ -228,7 +230,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
         <Wrapper>
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 w-full max-w-5xl mx-auto bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-200 dark:border-zinc-800 flex flex-col md:flex-row relative">
           <div className="absolute top-4 right-4 z-10">
-            <button type="button" onClick={copyRpm} className="flex items-center gap-2 text-sm font-bold text-white/90 hover:text-white transition-all bg-black/20 hover:bg-black/30 border border-white/20 px-4 py-2.5 rounded-full shadow-sm" aria-label="Copy strategy">
+            <button type="button" onClick={copyRpm} className="flex items-center gap-2 text-sm font-bold text-white/90 hover:text-white transition-all bg-black/20 hover:bg-black/30 border border-white/20 px-4 py-2.5 rounded-full shadow-sm cursor-pointer" aria-label="Copy strategy">
               <Copy size={16} />
               Copy Strategy
             </button>
@@ -298,7 +300,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
         <Wrapper>
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 w-full max-w-4xl mx-auto space-y-8">
           <div className="flex justify-end">
-            <button type="button" onClick={copyMisogi} className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95" aria-label="Copy strategy">
+            <button type="button" onClick={copyMisogi} className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95 cursor-pointer" aria-label="Copy strategy">
               <Copy size={16} />
               Copy Strategy
             </button>

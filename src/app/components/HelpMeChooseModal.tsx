@@ -62,10 +62,10 @@ export function HelpMeChooseModal({ userId, onClose, onSelect, onLearnMore }: He
             setSuggestion(result.id);
             setExplanation(result.explanation);
         } else {
-            toast.error(t('feedback.analysisFailed') || "Could not determine the best framework. Please try again or pick manually.", { duration: 6000 });
+            toast.error(t('feedback.analysisFailed') || "Could not determine the best framework. Please try again or pick manually.", { duration: 15000 });
         }
     } catch {
-        toast.error(t('feedback.analysisError') || "Analysis failed.", { duration: 6000 });
+        toast.error(t('feedback.analysisError') || "Analysis failed.", { duration: 15000 });
     } finally {
         setLoading(false);
     }

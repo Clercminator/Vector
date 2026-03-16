@@ -165,6 +165,10 @@ const checkpointer = isSupabaseConfigured && supabase
     ? new SupabaseCheckpointer(supabase) 
     : new MemorySaver();
 
+// Use interruptBefore instead of interrupt() inside the node: interrupt() relies on
+// AsyncLocalStorage which is not reliably set in the browser, causing "Called interrupt()
+// outside the context of a graph". Pausing before approval_gate works in all environments.
 export const graph = workflow.compile({
   checkpointer: checkpointer,
+  interruptBefore: ["approval_gate"],
 });

@@ -2,7 +2,7 @@
 
 Stripe is **not** integrated in Vector today. This folder documents the intended Stripe flow for **future implementation** when you have a registered business in the US.
 
-**Current payments:** Vector uses **MercadoPago** (Latam, including Argentina). See the main [README](../../../README.md) (sections "Backend", "Payment Flow (MercadoPago)", "Edge Functions") for the active payment flow.
+**Current payments:** Vector uses **MercadoPago** (LATAM) and **Lemon Squeezy** (global). See [integrations README](../../README.md) and the main [README](../../../README.md) (Backend, Edge Functions) for the active payment flow.
 
 ---
 

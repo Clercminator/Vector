@@ -418,7 +418,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                                                 label: t('nav.pricing'),
                                                 onClick: () => navigate('/pricing')
                                             },
-                                            duration: 4000
+                                            duration: 15000
                                         });
                                         return;
                                     }

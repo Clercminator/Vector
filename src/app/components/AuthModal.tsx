@@ -142,9 +142,9 @@ export function AuthModal({
             if (!error) {
                  if (data.user && !data.session) {
                      setEmailSentState({ email: trimmedEmail, type: 'signup' });
-                     toast.success(t('auth.checkEmailConfirm') || "Please check your email to confirm your account.", { duration: 10000 });
+                     toast.success(t('auth.checkEmailConfirm') || "Please check your email to confirm your account.", { duration: 15000 });
                  } else {
-                     toast.success(t('auth.accountCreated') || "Account created successfully!", { duration: 6000 });
+                     toast.success(t('auth.accountCreated') || "Account created successfully!", { duration: 15000 });
                      onOpenChange(false);
                  }
             }
@@ -159,7 +159,7 @@ export function AuthModal({
              error = res.error;
             if (!error) {
                 setEmailSentState({ email: trimmedEmail, type: 'magic_link' });
-                toast.success(t('auth.success') || "Magic link sent! Check your inbox.", { duration: 10000 });
+                toast.success(t('auth.success') || "Magic link sent! Check your inbox.", { duration: 15000 });
             }
         } else if (mode === 'forgot_password') {
             const res = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
@@ -169,7 +169,7 @@ export function AuthModal({
             error = res.error;
             if (!error) {
                 setEmailSentState({ email: trimmedEmail, type: 'forgot_password' });
-                toast.success(t('auth.resetLinkSent') || "Password reset link sent to your email.", { duration: 10000 });
+                toast.success(t('auth.resetLinkSent') || "Password reset link sent to your email.", { duration: 15000 });
             }
         }
 
@@ -177,7 +177,7 @@ export function AuthModal({
 
     } catch (e: any) {
         console.error("Auth error:", e);
-        toast.error(e.message || t('auth.authenticationFailed') || "Authentication failed", { duration: 6000 });
+        toast.error(e.message || t('auth.authenticationFailed') || "Authentication failed", { duration: 15000 });
         captchaRef.current?.resetCaptcha();
         setCaptchaToken(null);
     } finally {

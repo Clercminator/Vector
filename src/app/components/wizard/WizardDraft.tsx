@@ -375,15 +375,16 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
                                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                                 {isTyping || isAgentRunning ? t('wizard.liveDraft') : t('wizard.yourBlueprint')}
                             </div>
-                            <button onClick={() => setShowMobileDraft(false)} className="p-2 bg-gray-100 dark:bg-zinc-800 rounded-full" aria-label="Close draft panel">
+                            <button type="button" onClick={() => setShowMobileDraft(false)} className="p-2 bg-gray-100 dark:bg-zinc-800 rounded-full cursor-pointer hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors" aria-label="Close draft panel">
                                 <X size={16} />
                             </button>
                         </div>
                         {!draftResult?.isTeaser && draftResult?.type && onFinalize && !isTyping && !isAgentRunning && (
                             <div className="flex-none px-4 pb-4">
                                 <button
+                                    type="button"
                                     onClick={onFinalize}
-                                    className="w-full py-3 px-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-semibold flex items-center justify-center gap-2"
+                                    className="w-full py-3 px-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-transform"
                                 >
                                     <CheckCircle2 size={18} />
                                     {t('wizard.viewFullBlueprint')}

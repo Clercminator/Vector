@@ -102,8 +102,8 @@ export const WizardInput: React.FC<WizardInputProps> = ({
             onClick={onConfirmGenerate}
             disabled={isTyping || isAgentRunning}
             aria-label={t('wizard.generatePlanAria') || t('wizard.generatePlan') || "Generate my plan"}
-            aria-busy={String(isTyping || isAgentRunning)}
-            className="flex items-center justify-center gap-2 flex-1 sm:flex-initial px-5 py-3 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black dark:focus-visible:ring-white"
+            aria-busy={isTyping || isAgentRunning ? "true" : "false"}
+            className="flex items-center justify-center gap-2 flex-1 sm:flex-initial px-5 py-3 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black dark:focus-visible:ring-white"
           >
             {(isTyping || isAgentRunning) ? (
               <Loader2 size={18} className="animate-spin" aria-hidden />
@@ -118,7 +118,7 @@ export const WizardInput: React.FC<WizardInputProps> = ({
             disabled={isTyping || isAgentRunning}
             aria-label={t('wizard.goDeeperAria') || t('wizard.notReadyGoDeeper') || "Not ready yet, keep exploring with more questions"}
             title={t('wizard.notReadyGoDeeper') || "Not ready yet, let's keep going deeper into the problem"}
-            className="flex items-center justify-center gap-2 flex-1 sm:flex-initial px-5 py-3 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-zinc-700 rounded-full font-medium text-sm shadow-sm hover:bg-gray-200 dark:hover:bg-zinc-700 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500"
+            className="flex items-center justify-center gap-2 flex-1 sm:flex-initial px-5 py-3 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-zinc-700 rounded-full font-medium text-sm shadow-sm hover:bg-gray-200 dark:hover:bg-zinc-700 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500"
           >
             <span className="sm:hidden">{t('wizard.goDeeperShort') || "Go deeper"}</span>
             <span className="hidden sm:inline">{t('wizard.notReadyGoDeeper') || "Not ready yet, let's keep going deeper into the problem"}</span>
@@ -196,8 +196,8 @@ export const WizardInput: React.FC<WizardInputProps> = ({
           type="submit"
           aria-label="Send message"
           disabled={!inputValue.trim() || isTyping || isAgentRunning || isOffline}
-          className={`absolute right-2 w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer ${expanded ? 'top-6' : 'top-1/2 -translate-y-1/2'} ${
-              (!inputValue.trim() && !isAgentRunning) || isOffline ? 'bg-gray-200 text-gray-400 dark:bg-zinc-800 dark:text-zinc-600' : 'bg-black dark:bg-white text-white dark:text-black hover:scale-105 active:scale-95'
+          className={`absolute right-2 w-10 h-10 rounded-xl flex items-center justify-center transition-all ${expanded ? 'top-6' : 'top-1/2 -translate-y-1/2'} ${
+              (!inputValue.trim() && !isAgentRunning) || isOffline ? 'bg-gray-200 text-gray-400 dark:bg-zinc-800 dark:text-zinc-600 cursor-not-allowed' : 'cursor-pointer bg-black dark:bg-white text-white dark:text-black hover:scale-105 active:scale-95'
           }`}
         >
           <Send size={20} />

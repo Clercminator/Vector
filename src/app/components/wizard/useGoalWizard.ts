@@ -398,7 +398,7 @@ export const useGoalWizard = ({
     useEffect(() => {
         if (!framework) return;
         if (!isPreviewMode && !canUseFramework(tier, framework)) {
-          toast.error(t('wizard.lockedError') || "This framework is not available in your plan.", { duration: 5000 });
+          toast.error(t('wizard.lockedError') || "This framework is not available in your plan.", { duration: 15000 });
           onBack();
         }
     }, [tier, framework, onBack, t, isPreviewMode]);
@@ -619,10 +619,15 @@ export const useGoalWizard = ({
                 const updateKeys = updateData && typeof updateData === 'object' ? Object.keys(updateData) : [];
                 LOG(`event #${eventIndex}`, { isTuple, streamMode, updateKeys, hasMessages: !!(updateData?.messages), messagesLength: updateData?.messages?.length });
 
-                // Detect interrupt (approval gate): user must click "Generate my plan" or type to continue
+                // Detect interrupt (approval gate): we use interruptBefore(["approval_gate"]) so the only
+                // interrupt in this graph is before the plan-confirmation step. Show buttons for any interrupt.
                 if (isInterrupted(updateData)) {
-                    const interrupts = (updateData as any)[INTERRUPT] as Array<{ value?: { type?: string } }>;
-                    if (Array.isArray(interrupts) && interrupts.some((i) => i?.value?.type === CONFIRM_PLAN_INTERRUPT_TYPE)) {
+                    const interrupts = (updateData as any)[INTERRUPT] as Array<{ value?: { type?: string; node?: string } }>;
+                    const isPlanConfirmation = Array.isArray(interrupts) && (
+                        interrupts.some((i) => i?.value?.type === CONFIRM_PLAN_INTERRUPT_TYPE) ||
+                        interrupts.some((i) => i?.value?.node === 'approval_gate')
+                    );
+                    if (isPlanConfirmation || (Array.isArray(interrupts) && interrupts.length > 0)) {
                         if (isMounted.current) {
                             setAwaitingPlanConfirmation(true);
                             LOG('interrupt detected: awaiting plan confirmation');
@@ -924,7 +929,8 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
 
         try {
             const config = { configurable: { thread_id: effectiveThreadId }, streamMode: ["updates", "values"] as const };
-            const inputs = new Command({ resume: payload });
+            // interruptBefore: state is resumed by updating approvalGateResult (not interrupt() return value).
+            const inputs = new Command({ update: { approvalGateResult: payload } });
             const generator = await graph.stream(inputs, config);
             isRunningRef.current = true;
             let didReceiveAgentMessage = false;
@@ -1196,12 +1202,13 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
     const handleSave = async () => {
         const raw = finalAnswers.length ? finalAnswers : messages.filter(m => m.role === 'user').map(m => m.content);
         const answers = filterRealAnswers(raw);
+        const effectiveResult = result ?? draftResult ?? { type: (framework || 'general') as FrameworkId };
         const bp: Blueprint = {
           id: initialBlueprint?.id ?? crypto.randomUUID(),
-          framework: framework || (result?.type as FrameworkId) || "general",
+          framework: framework || (result?.type as FrameworkId) || (draftResult?.type as FrameworkId) || "general",
           title: initialBlueprint?.title ?? blueprintTitleFromAnswers(answers),
           answers,
-          result,
+          result: effectiveResult as BlueprintResult,
           createdAt: initialBlueprint?.createdAt ?? new Date().toISOString(),
         };
     

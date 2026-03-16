@@ -76,9 +76,10 @@ const Quadrant = ({
                <p className="text-xs font-medium opacity-60 ml-11">{description}</p>
            </div>
            
-           <button 
+           <button
+                type="button"
                 onClick={onCopy}
-                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 opacity-40 hover:opacity-100 transition-all"
+                className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 opacity-40 hover:opacity-100 transition-all cursor-pointer"
                 title="Copy list"
                 aria-label="Copy list"
            >
@@ -98,19 +99,21 @@ const Quadrant = ({
                 >
                    {/* Drag/Move Controls */}
                    <div className="mt-3 flex flex-col gap-1 opacity-0 group-hover:opacity-40 transition-opacity absolute -left-1">
-                       <button 
-                            onClick={() => handleMove(i, -1)} 
+                       <button
+                            type="button"
+                            onClick={() => handleMove(i, -1)}
                             disabled={i === 0}
-                            className="hover:text-blue-600 disabled:opacity-20 transition-colors"
+                            className="hover:text-blue-600 disabled:opacity-20 transition-colors cursor-pointer disabled:cursor-not-allowed"
                             title="Move Up"
                             aria-label="Move Up"
                         >
                            <ArrowUp size={10} strokeWidth={3} />
                        </button>
-                       <button 
-                            onClick={() => handleMove(i, 1)} 
+                       <button
+                            type="button"
+                            onClick={() => handleMove(i, 1)}
                             disabled={i === items.length - 1}
-                            className="hover:text-blue-600 disabled:opacity-20 transition-colors"
+                            className="hover:text-blue-600 disabled:opacity-20 transition-colors cursor-pointer disabled:cursor-not-allowed"
                             title="Move Down"
                             aria-label="Move Down"
                         >
@@ -129,9 +132,10 @@ const Quadrant = ({
                            placeholder="Type a task..."
                        />
                        
-                       <button 
+                       <button
+                            type="button"
                             onClick={() => handleDeleteItem(i)}
-                            className="opacity-0 group-hover/item:opacity-100 p-1.5 text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all absolute top-1 right-1"
+                            className="opacity-0 group-hover/item:opacity-100 p-1.5 text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all absolute top-1 right-1 cursor-pointer"
                             title="Delete item"
                             aria-label="Delete item"
                        >
@@ -141,9 +145,10 @@ const Quadrant = ({
                </motion.div>
            ))}
            
-           <button 
+           <button
+                type="button"
                 onClick={handleAddItem}
-                className="w-full flex items-center justify-center gap-2 text-sm font-semibold opacity-50 hover:opacity-100 transition-all mt-4 py-3 rounded-xl border border-dashed border-current hover:bg-black/5 dark:hover:bg-white/5"
+                className="w-full flex items-center justify-center gap-2 text-sm font-semibold opacity-50 hover:opacity-100 transition-all mt-4 py-3 rounded-xl border border-dashed border-current hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
            >
                <Plus size={16} />
                {t('common.addItem')}
@@ -179,9 +184,10 @@ export const EisenhowerView: React.FC<EisenhowerViewProps> = ({ result, updateRe
     <div className="mt-8 w-full max-w-[90rem] mx-auto px-4 md:px-8">
        {isMobile && <DesktopRecommendedBanner className="mb-6" />}
        <div className="flex justify-end mb-6">
-           <button 
+           <button
+                type="button"
                 onClick={handleCopyFull}
-                className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95"
+                className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95 cursor-pointer"
            >
                <Copy size={16} />
                Copy Strategy

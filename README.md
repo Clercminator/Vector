@@ -911,6 +911,11 @@ Vector/
 │   ├── prerender.js             # Prerenders routes for SEO (puppeteer)
 │   └── verify_webhook.js        # Tests MercadoPago webhook endpoint
 │
+├── integrations/                # Payment providers: docs and pointers (see integrations/README.md)
+│   ├── mercado-pago/           # LATAM (active)
+│   ├── lemonsqueezy/           # Global US/EU (active)
+│   └── pending/stripe/         # Future implementation
+│
 ├── src/
 │   ├── main.tsx                  # Entry: HelmetProvider, BrowserRouter, ThemeProvider, LanguageProvider, ErrorBoundary, App; Vercel Speed Insights + Analytics
 │   ├── styles/                   # Global CSS (Tailwind, theme variables, fonts)
@@ -960,7 +965,8 @@ Vector/
 │       ├── tiers.ts              # Tier config: credits, frameworks, features (Architect/Standard/Max/Enterprise)
 │       ├── calendarExport.ts     # Turn blueprint into events; Google Calendar or .ics
 │       ├── pdfExport.ts          # Blueprint to PDF; branding from profile
-│       ├── mercadoPago.ts        # MercadoPago checkout (calls Edge Function, redirects)
+│       ├── mercadoPago.ts        # MercadoPago checkout LATAM (calls Edge Function, redirects)
+│       ├── lemonSqueezy.ts       # Lemon Squeezy checkout global (calls Edge Function, redirects)
 │       ├── gamification.ts       # Achievements, streaks; checkAndAwardAchievements
 │       ├── analytics.ts          # trackEvent; analytics_events table
 │       ├── translations.ts       # All copy: en + es (and keys for t(key))
@@ -1112,7 +1118,7 @@ Some framework result views (Mandala, Eisenhower, Ikigai, Pareto) show a banner 
 - **i18n:** Custom: `LanguageProvider` + `translations.ts` + `t(key)` in components.  
 - **AI:** Open Router in `src/lib/openrouter.ts`; GoalWizard calls it after the last answer and falls back to rule-based `generateResult` on failure or missing key.  
 - **Schema:** Run migrations in `supabase/migrations/`; ensure base tables and RPCs `decrement_credits` / `increment_credits` and `profiles.tier` exist.
-- **Backend:** Supabase Edge Functions (openrouter-proxy, mercado-pago-preference, mercado-pago-webhook). Stripe is in **integrations/pending/stripe/** for future implementation.
+- **Backend:** Supabase Edge Functions (openrouter-proxy, mercado-pago-preference, mercado-pago-webhook, lemonsqueezy-checkout, lemonsqueezy-webhook). Payment docs: **integrations/** (MercadoPago, Lemon Squeezy active; Stripe pending).
 
 ---
 
