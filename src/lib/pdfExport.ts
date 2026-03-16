@@ -145,17 +145,21 @@ function getLabel(lang: string | undefined, key: string, fallback: string, ...ar
   return s;
 }
 
-/** Framework ID → author image path (from featured authors) */
+/** Framework ID → author image path (from public/images/authors). Every framework has an entry so the cover always tries to show an image. */
 const FRAMEWORK_AUTHOR_IMAGES: Record<string, string> = {
-  eisenhower: "/images/authors/dwight-d-eisenhower.jpg",
+  "first-principles": "/images/authors/elon musk 1.jpg",
   pareto: "/images/authors/Vilfredo_Pareto.jpg",
   rpm: "/images/authors/tony robbins.avif",
-  "first-principles": "/images/authors/elon musk 1.jpg",
+  eisenhower: "/images/authors/dwight-d-eisenhower.jpg",
   okr: "/images/authors/John Doerr.webp",
   dsss: "/images/authors/Tim-Ferriss.png",
+  mandalas: "/images/authors/Tim-Ferriss.png",
+  gps: "/images/authors/Tim-Ferriss.png",
   misogi: "/images/authors/Jesse Itzler.jpg",
   ikigai: "/images/authors/Mieko-Kamiya.jpg",
+  general: "/images/authors/elon musk 1.jpg",
 };
+const FALLBACK_AUTHOR_IMAGE = "/images/authors/Tim-Ferriss.png";
 
 // Helper: parse hex to R,G,B for jsPDF
 function hexToRgb(hex: string): [number, number, number] {
@@ -197,6 +201,8 @@ export const generatePdf = async (
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 24;
+  const footerReserve = 22;
+  const contentBottom = pageHeight - margin - footerReserve;
   const contentWidth = pageWidth - margin * 2;
   let y = margin;
 
@@ -227,7 +233,7 @@ export const generatePdf = async (
   };
 
   const result = blueprint.result as any;
-  const displayTitle = result?.shortTitle ? String(result.shortTitle) : blueprint.title;
+  const displayTitle = (blueprint.title || result?.shortTitle || "").trim() || "Your Plan";
   const frameworkLabel = String(blueprint.framework || "").replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 
   // --- COVER PAGE ---
@@ -249,22 +255,29 @@ export const generatePdf = async (
   setMuted();
   if (frameworkLabel) doc.text(frameworkLabel, centerX - doc.getTextWidth(frameworkLabel) / 2, coverY);
   coverY += 10;
-  // Author image for frameworks that have one (e.g. Eisenhower)
   const fwId = String(blueprint.framework || "").toLowerCase();
-  const authorImgPath = FRAMEWORK_AUTHOR_IMAGES[fwId];
-  if (authorImgPath) {
+  const authorImgPath = FRAMEWORK_AUTHOR_IMAGES[fwId] || FALLBACK_AUTHOR_IMAGE;
+  let imageLoaded = false;
+  try {
+    const dataUrl = await loadImage(authorImgPath);
+    const imgW = 40;
+    const imgH = 40;
+    doc.addImage(dataUrl, "PNG", centerX - imgW / 2, coverY, imgW, imgH);
+    coverY += imgH + 12;
+    imageLoaded = true;
+  } catch {
     try {
-      const dataUrl = await loadImage(authorImgPath);
-      const imgW = 36;
-      const imgH = 36;
-      doc.addImage(dataUrl, "PNG", centerX - imgW / 2, coverY, imgW, imgH);
+      const fallbackUrl = await loadImage(FALLBACK_AUTHOR_IMAGE);
+      const imgW = 40;
+      const imgH = 40;
+      doc.addImage(fallbackUrl, "PNG", centerX - imgW / 2, coverY, imgW, imgH);
       coverY += imgH + 12;
+      imageLoaded = true;
     } catch {
       coverY += 10;
     }
-  } else {
-    coverY += 10;
   }
+  if (!imageLoaded) coverY += 10;
   doc.text(new Date(blueprint.createdAt).toLocaleDateString(), centerX - doc.getTextWidth(new Date(blueprint.createdAt).toLocaleDateString()) / 2, coverY);
   coverY += 24;
   doc.setFontSize(10);
@@ -281,18 +294,15 @@ export const generatePdf = async (
   addNewPage();
   setBody();
 
-  // Helper: ensure space for at least minLines, add new page if needed (pagination control)
+  // Helper: ensure space for at least minLines, add new page if needed (content must stay above footer)
   const ensureSpace = (minLines = 5) => {
-    if (y > pageHeight - margin - minLines * 7) addNewPage();
+    if (y > contentBottom - minLines * 7) addNewPage();
   };
 
-  // Helper: write a multi-line text block with automatic pagination
+  // Helper: write a multi-line text block with automatic pagination (respects contentBottom)
   const writeMultilineText = (lines: string[], x: number, lineHeight = 5) => {
     lines.forEach((line) => {
-      // if we're too close to the bottom, go to a new page before writing the next line
-      if (y > pageHeight - margin - lineHeight - 2) {
-        addNewPage();
-      }
+      if (y > contentBottom - lineHeight - 2) addNewPage();
       doc.text(line, x, y);
       y += lineHeight;
     });
@@ -304,10 +314,10 @@ export const generatePdf = async (
     tocEntries.push({ name, page: currentPage });
   };
 
-  // Helper: render a section (heading + content)
+  // Helper: render a section (heading + content). Ensure space first so TOC records the correct start page after any new page.
   const renderSection = (heading: string, content: string | string[], options?: { indent?: boolean }) => {
-    recordToc(heading);
     ensureSpace(12);
+    recordToc(heading);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     setPrimary();
@@ -322,7 +332,7 @@ export const generatePdf = async (
       if (!item?.trim()) return;
       const lines = doc.splitTextToSize(item, contentWidth - indent);
       // ensure enough space for this entire block; if not, start on a fresh page
-      if (y > pageHeight - margin - (lines.length + 1) * 5) {
+      if (y > contentBottom - (lines.length + 1) * 5) {
         addNewPage();
       }
       writeMultilineText(lines as string[], margin + indent);
@@ -338,8 +348,8 @@ export const generatePdf = async (
 
   // --- DIFFICULTY & COMMITMENT ---
   if (result?.difficulty || result?.difficultyReason || result?.commitment) {
+    ensureSpace(10);
     recordToc(getLabel(lang, "difficultyCommitment", "Difficulty & Commitment"));
-    ensureSpace(6);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     setPrimary();
@@ -352,12 +362,15 @@ export const generatePdf = async (
     if (result.difficulty) parts.push(`Level: ${String(result.difficulty).replace(/\b\w/g, c => c.toUpperCase())}`);
     if (result.commitment) parts.push(`Estimated: ${result.commitment}`);
     if (parts.length > 0) {
-      doc.text(parts.join(" · "), margin, y);
+      const partLines = doc.splitTextToSize(parts.join(" · "), contentWidth);
+      if (y > contentBottom - (partLines.length + 1) * 5) addNewPage();
+      writeMultilineText(partLines as string[], margin, 5);
       y += 6;
     }
     if (result.difficultyReason) {
       const drLines = doc.splitTextToSize(result.difficultyReason, contentWidth);
-      drLines.forEach((line: string) => { doc.text(line, margin, y); y += 5; });
+      if (y > contentBottom - (drLines.length + 1) * 5) addNewPage();
+      writeMultilineText(drLines as string[], margin, 5);
       y += 4;
     }
     y += 8;
@@ -439,8 +452,8 @@ export const generatePdf = async (
 
   // Result Section
   if (blueprint.result) {
+    ensureSpace(12);
     recordToc(getLabel(lang, "blueprintResult", "Blueprint Result"));
-    ensureSpace(10);
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     setPrimary();
@@ -460,7 +473,7 @@ export const generatePdf = async (
        doc.setFont("helvetica", "normal");
        (result.truths || []).forEach((t: string, i: number) => {
            const lines = doc.splitTextToSize(`${i+1}. ${t}`, contentWidth);
-           if (y > pageHeight - margin - (lines.length + 1) * 7) {
+           if (y > contentBottom - (lines.length + 1) * 7) {
              addNewPage();
            }
            writeMultilineText(lines as string[], margin, 7);
@@ -473,7 +486,7 @@ export const generatePdf = async (
        y += 8;
        doc.setFont("helvetica", "normal");
        const lines = doc.splitTextToSize(result.newApproach || "", contentWidth);
-       if (y > pageHeight - margin - (lines.length + 1) * 7) {
+       if (y > contentBottom - (lines.length + 1) * 7) {
          addNewPage();
        }
        writeMultilineText(lines as string[], margin, 7);
@@ -488,7 +501,7 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (result.vital || []).forEach((item: string) => {
              const lines = doc.splitTextToSize(`• ${item}`, contentWidth - 10);
-             if (y > pageHeight - margin - (lines.length + 1) * 6) {
+             if (y > contentBottom - (lines.length + 1) * 6) {
                addNewPage();
              }
              writeMultilineText(lines as string[], margin + 5, 6);
@@ -502,7 +515,7 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (result.trivial || []).forEach((item: string) => {
              const lines = doc.splitTextToSize(`• ${item}`, contentWidth - 10);
-             if (y > pageHeight - margin - (lines.length + 1) * 6) {
+             if (y > contentBottom - (lines.length + 1) * 6) {
                addNewPage();
              }
              writeMultilineText(lines as string[], margin + 5, 6);
@@ -512,7 +525,7 @@ export const generatePdf = async (
         doc.setFont("helvetica", "bold");
         setPrimary();
         const resultLines = doc.splitTextToSize(`Result: ${result.result || ""}`, contentWidth);
-        if (y > pageHeight - margin - (resultLines.length + 1) * 6) {
+        if (y > contentBottom - (resultLines.length + 1) * 6) {
           addNewPage();
         }
         writeMultilineText(resultLines as string[], margin, 6);
@@ -525,7 +538,7 @@ export const generatePdf = async (
         y += 8;
         doc.setFont("helvetica", "italic");
         const pLines = doc.splitTextToSize(result.purpose || "", contentWidth);
-        if (y > pageHeight - margin - (pLines.length + 1) * 7) {
+        if (y > contentBottom - (pLines.length + 1) * 7) {
           addNewPage();
         }
         writeMultilineText(pLines as string[], margin + 5, 7);
@@ -539,7 +552,7 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (result.plan || []).forEach((item: string, i: number) => {
             const lines = doc.splitTextToSize(`${i+1}. ${item}`, contentWidth - 10);
-            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+            if (y > contentBottom - (lines.length + 1) * 6) {
               addNewPage();
             }
             writeMultilineText(lines as string[], margin + 5, 6);
@@ -562,7 +575,7 @@ export const generatePdf = async (
             } else {
                 items.forEach(it => {
                     const itemLines = doc.splitTextToSize(`• ${it}`, contentWidth - 10);
-                    if (y > pageHeight - margin - (itemLines.length + 1) * 6) {
+                    if (y > contentBottom - (itemLines.length + 1) * 6) {
                       addNewPage();
                     }
                     writeMultilineText(itemLines as string[], margin + 5, 6);
@@ -579,7 +592,7 @@ export const generatePdf = async (
         doc.setFont("helvetica", "bold");
         setPrimary();
         const objLines = doc.splitTextToSize(`Objective: ${result.objective || ""}`, contentWidth);
-        if (y > pageHeight - margin - (objLines.length + 1) * 6) {
+        if (y > contentBottom - (objLines.length + 1) * 6) {
           addNewPage();
         }
         writeMultilineText(objLines as string[], margin, 6);
@@ -593,7 +606,7 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (result.keyResults || []).forEach((kr: string, i: number) => {
             const lines = doc.splitTextToSize(`${i+1}. ${kr}`, contentWidth - 10);
-            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+            if (y > contentBottom - (lines.length + 1) * 6) {
               addNewPage();
             }
             writeMultilineText(lines as string[], margin + 5, 6);
@@ -614,7 +627,7 @@ export const generatePdf = async (
         y += 8;
         doc.setFont("helvetica", "normal");
         const goalLines = doc.splitTextToSize(result.goal || "", contentWidth);
-        if (y > pageHeight - margin - (goalLines.length + 1) * 6) {
+        if (y > contentBottom - (goalLines.length + 1) * 6) {
           addNewPage();
         }
         writeMultilineText(goalLines as string[], margin + 5, 6);
@@ -628,7 +641,7 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (result.plan || []).forEach((item: string, i: number) => {
             const lines = doc.splitTextToSize(`${i + 1}. ${item}`, contentWidth);
-            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+            if (y > contentBottom - (lines.length + 1) * 6) {
               addNewPage();
             }
             writeMultilineText(lines as string[], margin + 5, 6);
@@ -643,7 +656,7 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (result.system || []).forEach((item: string, i: number) => {
             const lines = doc.splitTextToSize(`${i + 1}. ${item}`, contentWidth);
-            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+            if (y > contentBottom - (lines.length + 1) * 6) {
               addNewPage();
             }
             writeMultilineText(lines as string[], margin + 5, 6);
@@ -659,7 +672,7 @@ export const generatePdf = async (
             doc.setFont("helvetica", "normal");
             result.anti_goals.forEach((item: string) => {
                 const lines = doc.splitTextToSize(`• ${item}`, contentWidth);
-                if (y > pageHeight - margin - (lines.length + 1) * 6) {
+                if (y > contentBottom - (lines.length + 1) * 6) {
                   addNewPage();
                 }
                 writeMultilineText(lines as string[], margin + 5, 6);
@@ -685,7 +698,7 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (dsss.deconstruct || []).forEach((item: string) => {
             const lines = doc.splitTextToSize(`• ${item}`, contentWidth);
-            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+            if (y > contentBottom - (lines.length + 1) * 6) {
               addNewPage();
             }
             writeMultilineText(lines as string[], margin + 5, 6);
@@ -699,7 +712,7 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (dsss.selection || []).forEach((item: string) => {
             const lines = doc.splitTextToSize(`• ${item}`, contentWidth);
-            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+            if (y > contentBottom - (lines.length + 1) * 6) {
               addNewPage();
             }
             writeMultilineText(lines as string[], margin + 5, 6);
@@ -713,7 +726,7 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (dsss.sequence || []).forEach((item: string, i: number) => {
             const lines = doc.splitTextToSize(`${i + 1}. ${item}`, contentWidth);
-            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+            if (y > contentBottom - (lines.length + 1) * 6) {
               addNewPage();
             }
             writeMultilineText(lines as string[], margin + 5, 6);
@@ -726,7 +739,7 @@ export const generatePdf = async (
         y += 8;
         doc.setFont("helvetica", "normal");
         const stakesLines = doc.splitTextToSize(dsss.stakes || "", contentWidth);
-        if (y > pageHeight - margin - (stakesLines.length + 1) * 6) {
+        if (y > contentBottom - (stakesLines.length + 1) * 6) {
           addNewPage();
         }
         writeMultilineText(stakesLines as string[], margin + 5, 6);
@@ -742,7 +755,7 @@ export const generatePdf = async (
             y += 8;
             doc.setFont("helvetica", "normal");
             const lines = doc.splitTextToSize(ik.purpose, contentWidth);
-            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+            if (y > contentBottom - (lines.length + 1) * 6) {
               addNewPage();
             }
             writeMultilineText(lines as string[], margin + 5, 6);
@@ -762,7 +775,7 @@ export const generatePdf = async (
                 y += 6;
                 doc.setFont("helvetica", "normal");
                 const textLines = doc.splitTextToSize(val, contentWidth);
-                if (y > pageHeight - margin - (textLines.length + 1) * 6) {
+                if (y > contentBottom - (textLines.length + 1) * 6) {
                   addNewPage();
                 }
                 writeMultilineText(textLines as string[], margin + 5, 6);
@@ -771,21 +784,31 @@ export const generatePdf = async (
         }
         y += 6;
     }
-    else if (result.type === 'mandalas') {
-        const mandala = result as { centralGoal?: string; categories?: Array<{ name: string; steps?: string[]; why?: string }> };
+    else if (result.type === 'mandalas' || (blueprint.framework === 'mandalas' && (result.centralGoal || result.central_goal || (result.categories && result.categories.length > 0)))) {
+        const mandala = result as { centralGoal?: string; central_goal?: string; categories?: Array<{ name: string; steps?: string[]; why?: string }> };
+        const centralGoalText = (mandala.centralGoal || mandala.central_goal || blueprint.title || "").trim();
         doc.setFont("helvetica", "bold");
         setPrimary();
         doc.text("Central Goal:", margin, y);
         setBody();
         y += 8;
         doc.setFont("helvetica", "normal");
-        const goalLines = doc.splitTextToSize(mandala.centralGoal || "", contentWidth);
-        if (y > pageHeight - margin - (goalLines.length + 1) * 6) {
-          addNewPage();
+        if (centralGoalText) {
+          const goalLines = doc.splitTextToSize(centralGoalText, contentWidth);
+          if (y > contentBottom - (goalLines.length + 1) * 6) addNewPage();
+          writeMultilineText(goalLines as string[], margin + 5, 6);
+          y += 10;
         }
-        writeMultilineText(goalLines as string[], margin + 5, 6);
-        y += 10;
-        (mandala.categories || []).forEach((cat: { name: string; steps?: string[]; why?: string }, i: number) => {
+        const categories = mandala.categories || [];
+        if (categories.length > 0) {
+          doc.setFont("helvetica", "bold");
+          setPrimary();
+          doc.text("Your Mandala (Categories & Steps):", margin, y);
+          setBody();
+          y += 8;
+          doc.setFont("helvetica", "normal");
+        }
+        categories.forEach((cat: { name?: string; steps?: string[]; why?: string }, i: number) => {
             ensureSpace(10);
             doc.setFont("helvetica", "bold");
             setPrimary();
@@ -793,13 +816,16 @@ export const generatePdf = async (
             setBody();
             y += 8;
             doc.setFont("helvetica", "normal");
-            (cat.steps || []).filter(Boolean).forEach((step: string, j: number) => {
+            (cat.steps || []).filter(Boolean).forEach((step: string) => {
                 const stepLines = doc.splitTextToSize(`  • ${step}`, contentWidth - 15);
-                if (y > pageHeight - margin - (stepLines.length + 1) * 6) {
-                  addNewPage();
-                }
+                if (y > contentBottom - (stepLines.length + 1) * 6) addNewPage();
                 writeMultilineText(stepLines as string[], margin + 5, 6);
             });
+            if (cat.why && String(cat.why).trim()) {
+              const whyLines = doc.splitTextToSize(`  Why: ${cat.why}`, contentWidth - 15);
+              if (y > contentBottom - (whyLines.length + 1) * 6) addNewPage();
+              writeMultilineText(whyLines as string[], margin + 5, 6);
+            }
             y += 6;
         });
         y += 6;
@@ -808,10 +834,7 @@ export const generatePdf = async (
 
   y += 14;
 
-  // Page break before Q&A if result section was long
-  if (y > pageHeight - 80) {
-    addNewPage();
-  }
+  if (y > contentBottom - 30) addNewPage();
 
   // Divider before Q&A
   setDrawBorder();
@@ -827,16 +850,21 @@ export const generatePdf = async (
   // Build Q&A pairs from messages when available; otherwise use filtered answers only
   type QAPair = { question?: string; answer: string };
   let qaPairs: QAPair[] = [];
+  const stripMarkdown = (s: string) =>
+    (s || "").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/\*([^*]+)\*/g, "$1").replace(/^#+\s*/gm, "").trim();
+
   if (Array.isArray(messages) && messages.length > 0) {
     let lastAi = "";
     for (const m of messages) {
       if (m.role === "ai" && m.content) {
-        lastAi = m.content.replace(/\|\|\[.*?\]\s*$/s, "").replace(/\|\|DRAFT_START[\s\S]*\|\|DRAFT_END\|\|/g, "").trim().slice(0, 600);
+        lastAi = stripMarkdown(
+          m.content.replace(/\|\|\[.*?\]\s*$/s, "").replace(/\|\|DRAFT_START[\s\S]*\|\|DRAFT_END\|\|/g, "").trim()
+        );
       }
       if (m.role === "user" && !isFakeAnswer(m.content)) {
         qaPairs.push({
           question: lastAi.length > 20 ? lastAi : undefined,
-          answer: m.content,
+          answer: stripMarkdown(m.content),
         });
       }
     }
@@ -845,6 +873,7 @@ export const generatePdf = async (
     qaPairs = realAnswers.map((answer) => ({ answer }));
   }
 
+  ensureSpace(10);
   recordToc(getLabel(lang, "qaHistory", "Q&A History"));
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
@@ -870,19 +899,19 @@ export const generatePdf = async (
   const aLabel = getLabel(lang, "answer", "Answer");
   qaPairs.forEach((pair, i) => {
     if (pair.question) {
+      ensureSpace(8);
       doc.setFont("helvetica", "bold");
       setPrimary();
       doc.text(`${qLabel} ${i + 1}:`, margin, y);
       setBody();
       y += 7;
       doc.setFont("helvetica", "normal");
-      const qLines = doc.splitTextToSize(pair.question, contentWidth);
-      qLines.forEach((line: string) => {
-        doc.text(line, margin + 5, y);
-        y += 5;
-      });
+      const qLines = doc.splitTextToSize(pair.question, contentWidth - 5);
+      if (y > contentBottom - qLines.length * 5) addNewPage();
+      writeMultilineText(qLines as string[], margin + 5, 5);
       y += 6;
     }
+    ensureSpace(8);
     doc.setFont("helvetica", "bold");
     setPrimary();
     doc.text(`${aLabel} ${i + 1}:`, margin, y);
@@ -893,20 +922,15 @@ export const generatePdf = async (
     if (segments.length > 1) {
       segments.forEach((seg) => {
         const lines = doc.splitTextToSize(`• ${seg}`, contentWidth - 10);
-        lines.forEach((line: string) => {
-          doc.text(line, margin + 5, y);
-          y += 5;
-        });
+        if (y > contentBottom - (lines.length + 1) * 5) addNewPage();
+        writeMultilineText(lines as string[], margin + 5, 5);
       });
     } else {
       const lines = doc.splitTextToSize(pair.answer, contentWidth);
-      lines.forEach((line: string) => {
-        doc.text(line, margin, y);
-        y += 5;
-      });
+      if (y > contentBottom - (lines.length + 1) * 5) addNewPage();
+      writeMultilineText(lines as string[], margin, 5);
     }
     y += 10;
-    if (y > pageHeight - 40) addNewPage();
   });
 
   // Fill TOC page (clickable links when textWithLink is available)

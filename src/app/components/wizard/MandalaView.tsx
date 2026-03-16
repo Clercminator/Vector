@@ -417,7 +417,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                   <div className="text-center mb-12">
                       <span className="text-xs font-bold uppercase tracking-widest text-zinc-500">{t('mandala.centralGoalPlaceholder')}</span>
                       <EditableText 
-                        value={result.centralGoal} 
+                        value={result.centralGoal ?? ''} 
                         onChange={(val) => updateResult(['centralGoal'], val)} 
                         className="text-4xl font-black text-center mt-2 bg-transparent border-transparent"
                       />
@@ -427,7 +427,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                           <div className="flex items-center gap-4 mb-6">
                               <span className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">{i+1}</span>
                               <EditableText 
-                                value={cat.name} 
+                                value={cat.name ?? ''} 
                                 onChange={(val) => updateCategoryName(i, val)} 
                                 className="text-xl font-bold flex-grow bg-transparent border-transparent"
                                 placeholder={t('mandala.categoryPlaceholder')}
@@ -649,7 +649,7 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                                     <OverviewCard
                                         key={gridIndex}
                                         index={gridIndex}
-                                        title={result.centralGoal}
+                                        title={result.centralGoal ?? ''}
                                         isCenter={true}
                                         onClick={() => setZoomIndex(gridIndex)}
                                         onChange={(val) => updateResult(['centralGoal'], val)}
@@ -684,8 +684,8 @@ export const MandalaView: React.FC<MandalaViewProps> = ({ result, updateResult }
                              if (zoomIndex === CENTER_INDEX) {
                                   return (
                                       <ClusterDrillDown 
-                                        title={result.centralGoal}
-                                        items={(result.categories ?? []).map(c => c.name)}
+                                        title={result.centralGoal ?? ''}
+                                        items={(result.categories ?? []).map(c => c.name ?? '')}
                                         isCenter={true}
                                         onTitleChange={(val) => updateResult(['centralGoal'], val)}
                                         onItemChange={(idx, val) => updateCategoryName(idx, val)}

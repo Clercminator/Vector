@@ -10,7 +10,8 @@
     "test": "vitest",
     "promptfoo:eval": "npx promptfoo eval --env-file=.env.backend",
     "promptfoo:view": "npx promptfoo view",
-    "prerender": "node scripts/prerender.js"
+    "prerender": "node scripts/prerender.js",
+    "deploy:openrouter-proxy": "npx supabase functions deploy openrouter-proxy"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",

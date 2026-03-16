@@ -4,20 +4,23 @@ import { useLanguage } from '@/app/components/language-provider';
 import { cn } from './ui/utils';
 
 interface EditableTextProps {
-  value: string;
+  value?: string | null;
   onChange: (value: string) => void;
   className?: string;
   multiline?: boolean;
   placeholder?: string;
 }
 
+const safeStr = (v: string | null | undefined): string => (v != null && typeof v === 'string' ? v : '');
+
 export const EditableText: React.FC<EditableTextProps> = ({ value, onChange, className = '', multiline = false, placeholder = "Click to edit..." }) => {
+  const safeValue = safeStr(value);
   const [isEditing, setIsEditing] = useState(false);
-  const [localValue, setLocalValue] = useState(value);
+  const [localValue, setLocalValue] = useState(safeValue);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    setLocalValue(value);
+    setLocalValue(safeStr(value));
   }, [value]);
 
   useEffect(() => {
@@ -27,14 +30,15 @@ export const EditableText: React.FC<EditableTextProps> = ({ value, onChange, cla
   }, [isEditing]);
 
   const handleSave = () => {
-    if (localValue.trim() !== value) {
-      onChange(localValue);
+    const trimmed = safeStr(localValue);
+    if (trimmed !== safeValue) {
+      onChange(trimmed);
     }
     setIsEditing(false);
   };
 
   const handleCancel = () => {
-    setLocalValue(value);
+    setLocalValue(safeValue);
     setIsEditing(false);
   };
 
@@ -52,7 +56,7 @@ export const EditableText: React.FC<EditableTextProps> = ({ value, onChange, cla
         {multiline ? (
           <textarea
             ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-            value={localValue}
+            value={localValue ?? ''}
             onChange={(e) => setLocalValue(e.target.value)}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
@@ -65,7 +69,7 @@ export const EditableText: React.FC<EditableTextProps> = ({ value, onChange, cla
         ) : (
           <input
             ref={inputRef as React.RefObject<HTMLInputElement>}
-            value={localValue}
+            value={localValue ?? ''}
             onChange={(e) => setLocalValue(e.target.value)}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
@@ -84,11 +88,11 @@ export const EditableText: React.FC<EditableTextProps> = ({ value, onChange, cla
       onClick={() => setIsEditing(true)}
       className={cn(
         "relative group cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 rounded-lg px-2 -mx-2 transition-colors duration-200",
-        !value && "text-gray-400 italic",
+        !safeValue && "text-gray-400 italic",
         className
       )}
     >
-      {value || placeholder}
+      {safeValue || placeholder}
       <span className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white dark:bg-zinc-800 rounded-full p-1 shadow-sm">
         <Pencil size={12} className="text-gray-500 dark:text-gray-400" />
       </span>

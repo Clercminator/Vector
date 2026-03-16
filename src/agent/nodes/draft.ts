@@ -50,6 +50,47 @@ export const draftNode = async (state: AgentStateType) => {
     }
   };
 
+  const toStrArray = (v: unknown): string[] => {
+    if (Array.isArray(v)) return v.map((s: unknown) => (typeof s === "string" ? s : s != null ? String(s) : "")).filter(Boolean);
+    if (typeof v === "string" && v.trim()) return [v.trim()];
+    return [];
+  };
+  const toStr = (v: unknown, fallback: string): string =>
+    typeof v === "string" && v.trim() ? v.trim() : fallback;
+
+  /** Ensures every framework has safe shapes so UI/PDF never see undefined or empty required fields. */
+  function normalizeBlueprintForFramework(bp: Record<string, unknown>): void {
+    const t = (bp.type as string) || "";
+    if (t === "pareto") {
+      bp.vital = toStrArray(bp.vital).length ? toStrArray(bp.vital) : ["(Add vital priority)"];
+      bp.trivial = toStrArray(bp.trivial).length ? toStrArray(bp.trivial) : ["(Add trivial to avoid)"];
+    } else if (t === "first-principles") {
+      bp.truths = toStrArray(bp.truths).length ? toStrArray(bp.truths) : ["(Add a key truth)"];
+      bp.newApproach = toStr(bp.newApproach, "(Add your new approach)");
+    } else if (t === "okr") {
+      bp.objective = toStr(bp.objective, "(Your objective)");
+      bp.keyResults = toStrArray(bp.keyResults).length ? toStrArray(bp.keyResults) : ["(Key result 1)"];
+      bp.initiative = toStr(bp.initiative, "(Main initiative)");
+    } else if (t === "general") {
+      bp.steps = toStrArray(bp.steps).length ? toStrArray(bp.steps) : ["(Add your first step)"];
+    } else if (t === "dsss") {
+      bp.deconstruct = toStrArray(bp.deconstruct).length ? toStrArray(bp.deconstruct) : ["(Subskill 1)"];
+      bp.selection = toStrArray(bp.selection).length ? toStrArray(bp.selection) : ["(20% to focus on)"];
+      bp.sequence = toStrArray(bp.sequence).length ? toStrArray(bp.sequence) : ["(Step 1)"];
+      bp.stakes = toStr(bp.stakes, "(Accountability commitment)");
+    } else if (t === "misogi") {
+      bp.challenge = toStr(bp.challenge, "(Your challenge)");
+      bp.gap = toStr(bp.gap, "(Gap to close)");
+      bp.purification = toStr(bp.purification, "(Purification steps)");
+    } else if (t === "ikigai") {
+      bp.love = toStr(bp.love, "(What you love)");
+      bp.goodAt = toStr(bp.goodAt, "(What you're good at)");
+      bp.worldNeeds = toStr(bp.worldNeeds, "(What the world needs)");
+      bp.paidFor = toStr(bp.paidFor, "(What you can be paid for)");
+      bp.purpose = toStr(bp.purpose, "(Your ikigai)");
+    }
+  }
+
   try {
     let response = await invokeWithFallback([new SystemMessage(prompt)], { temperature: 0.2, bindTools: false });
     let content = response.content.toString().trim();
@@ -100,6 +141,51 @@ export const draftNode = async (state: AgentStateType) => {
         q4: toStrArray(blueprint.q4),
       };
     }
+
+    if (blueprint.type === "gps") {
+      const toStrArray = (v: unknown): string[] => {
+        if (Array.isArray(v)) return v.filter(Boolean).map((s: unknown) => (typeof s === "string" ? s : String(s)));
+        if (typeof v === "string" && v.trim()) return [v.trim()];
+        return [];
+      };
+      const goalStr = typeof blueprint.goal === "string" && blueprint.goal.trim() ? blueprint.goal.trim() : "Your clear outcome (edit to refine)";
+      const planArr = toStrArray(blueprint.plan);
+      const systemArr = toStrArray(blueprint.system);
+      const antiArr = toStrArray(blueprint.anti_goals);
+      blueprint = {
+        ...blueprint,
+        goal: goalStr,
+        plan: planArr.length > 0 ? planArr : ["(Add your first major move.)"],
+        system: systemArr.length > 0 ? systemArr : ["(Add your first system habit or trigger.)"],
+        anti_goals: antiArr,
+      };
+    }
+
+    if (blueprint.type === "mandalas") {
+      const centralGoalStr = typeof blueprint.centralGoal === "string" && blueprint.centralGoal.trim()
+        ? blueprint.centralGoal.trim()
+        : (typeof blueprint.central_goal === "string" && blueprint.central_goal.trim() ? blueprint.central_goal.trim() : "Your central goal (edit to refine)");
+      const rawCats = Array.isArray(blueprint.categories) ? blueprint.categories : [];
+      const padSteps = (steps: unknown): string[] => {
+        const arr = Array.isArray(steps)
+          ? steps.map((s: unknown) => (typeof s === "string" ? s : s != null ? String(s) : ""));
+        return Array.from({ length: 8 }, (_, i) => (arr[i] ?? "").trim() || "");
+      };
+      const categories = Array.from({ length: 8 }, (_, i) => {
+        const raw = rawCats[i] && typeof rawCats[i] === "object" ? rawCats[i] as Record<string, unknown> : {};
+        const name = typeof raw.name === "string" && raw.name.trim() ? raw.name.trim() : "";
+        const steps = padSteps(raw.steps);
+        return { name, steps, ...(raw.why != null && { why: String(raw.why) }), ...(raw.stepWhys != null && { stepWhys: raw.stepWhys }) };
+      });
+      blueprint = {
+        ...blueprint,
+        centralGoal: centralGoalStr,
+        categories,
+      };
+    }
+
+    // Ensure every framework has safe shapes so UI/PDF never see undefined or empty required fields.
+    normalizeBlueprintForFramework(blueprint);
 
     const frameworkLabel = framework ? String(framework).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '';
     const closingMessage = frameworkLabel
