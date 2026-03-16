@@ -785,6 +785,10 @@ export const translations = {
     "gps.goal": "Goal",
     "gps.plan": "Plan",
     "gps.system": "System",
+    "gps.antiGoals": "Anti-Goals",
+    "gps.goalDesc": "The destination",
+    "gps.planDesc": "The route to get there",
+    "gps.systemDesc": "Habits & environment that keep you on track",
     "gps.q1": "What is your main Goal? (The Destination)",
     "gps.q2": "What is your Plan to get there? (The Route)",
     "gps.q3":
@@ -911,6 +915,10 @@ export const translations = {
     "fw.dsss.cons.0": "Requires discipline",
     "fw.dsss.cons.1": "Stakes can be stressful",
     "fw.dsss.cons.2": "Needs good analysis",
+    "dsss.deconstruct": "Deconstruct",
+    "dsss.selection": "Selection",
+    "dsss.sequence": "Sequence",
+    "dsss.stakes": "Stakes",
 
     "fw.mandalas.definition":
       "A visual chart with a central core goal surrounded by 8 distinct categories, each with 8 actionable steps (64 total items).",

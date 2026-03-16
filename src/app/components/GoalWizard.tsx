@@ -276,9 +276,13 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                   const text = inputValue.trim();
                   if (!text) return;
                   if (awaitingPlanConfirmation) {
-                    runAgentResume({ confirmed: false, userMessage: text });
+                    runAgentResume({ confirmed: false, userMessage: text }).catch((err) => {
+                      console.error('[Wizard] runAgentResume failed', err);
+                    });
                   } else {
-                    runAgent(text);
+                    runAgent(text).catch((err) => {
+                      console.error('[Wizard] runAgent failed', err);
+                    });
                   }
                 }}
                 isTyping={isTyping}
@@ -287,9 +291,9 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                 suggestionChips={suggestionChips}
                 onRunAgent={(text) => {
                   if (awaitingPlanConfirmation) {
-                    runAgentResume({ confirmed: false, userMessage: text });
+                    runAgentResume({ confirmed: false, userMessage: text }).catch((err) => console.error('[Wizard] runAgentResume failed', err));
                   } else {
-                    runAgent(text);
+                    runAgent(text).catch((err) => console.error('[Wizard] runAgent failed', err));
                   }
                 }}
                 isSpeechSupported={isSpeechSupported}
@@ -297,8 +301,8 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                 isListening={isListening}
                 onStop={handleStop}
                 awaitingPlanConfirmation={awaitingPlanConfirmation}
-                onConfirmGenerate={() => runAgentResume({ confirmed: true })}
-                onGoDeeper={() => runAgentResume({ confirmed: false, userMessage: "I want to go deeper before generating. Please ask me more nuanced questions about my goal, constraints, or what's held me back." })}
+                onConfirmGenerate={() => runAgentResume({ confirmed: true }).catch((err) => console.error('[Wizard] runAgentResume failed', err))}
+                onGoDeeper={() => runAgentResume({ confirmed: false, userMessage: "I want to go deeper before generating. Please ask me more nuanced questions about my goal, constraints, or what's held me back." }).catch((err) => console.error('[Wizard] runAgentResume failed', err))}
                 topAction={draftResult && !awaitingPlanConfirmation && (
                   <button
                     type="button"

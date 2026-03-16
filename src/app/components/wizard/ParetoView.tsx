@@ -207,19 +207,46 @@ export const ParetoView: React.FC<ParetoViewProps> = ({ result, updateResult }) 
      toast.success(t('common.copiedToClipboard'));
   };
 
+  const vitalCount = (result.vital || []).length;
+  const trivialCount = (result.trivial || []).length;
+  const total = vitalCount + trivialCount || 1;
+  const vitalPct = total ? Math.round((vitalCount / total) * 100) : 20;
+
   return (
     <div className="mt-8 w-full max-w-[90rem] mx-auto px-4">
         {isMobile && <DesktopRecommendedBanner className="mb-8 max-w-6xl mx-auto" />}
-        <div className="flex justify-end mb-8 max-w-6xl mx-auto">
-           <button
-                type="button"
-                onClick={handleCopyFull}
-                className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95 cursor-pointer"
-           >
-               <Copy size={16} />
-               Copy Strategy
-           </button>
-       </div>
+        <div className="max-w-6xl mx-auto mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          {/* 80/20 visual + focus line */}
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Focus ratio</span>
+              <div className="flex h-8 rounded-full overflow-hidden border border-gray-200 dark:border-zinc-700 shadow-inner w-40 bg-gray-100 dark:bg-zinc-800">
+                <div
+                  className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500 flex items-center justify-center min-w-[2rem]"
+                  style={{ width: `${Math.max(10, vitalPct)}%` }}
+                  title={`${vitalCount} vital (${vitalPct}%)`}
+                >
+                  {vitalCount > 0 && <span className="text-[10px] font-bold text-white drop-shadow">{vitalCount}</span>}
+                </div>
+                <div className="flex-1 flex items-center justify-center" title={`${trivialCount} lower impact`}>
+                  {trivialCount > 0 && <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">{trivialCount}</span>}
+                </div>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              <span className="font-semibold text-blue-600 dark:text-blue-400">{vitalCount} high-impact</span>
+              {trivialCount > 0 && <><span className="mx-1">·</span><span>{trivialCount} to deprioritize</span></>}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleCopyFull}
+            className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95 cursor-pointer shrink-0"
+          >
+            <Copy size={16} />
+            Copy Strategy
+          </button>
+        </div>
 
         <div className="grid lg:grid-cols-[1.3fr_1fr] gap-8 w-full max-w-6xl mx-auto items-start">
           <motion.div 

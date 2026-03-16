@@ -9,6 +9,8 @@ import { MandalaView } from './MandalaView';
 import { EisenhowerView } from './EisenhowerView';
 import { ParetoView } from './ParetoView';
 import { IkigaiView } from './IkigaiView';
+import { GpsView } from './GpsView';
+import { DsssView } from './DsssView';
 import { DifficultyBadge } from './DifficultyBadge';
 
 interface WizardResultProps {
@@ -360,6 +362,22 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
         </Wrapper>
       );
     }
-    
+
+    if (result.type === 'gps') {
+      return (
+        <Wrapper>
+          <GpsView result={result} updateResult={updateResult} />
+        </Wrapper>
+      );
+    }
+
+    if (result.type === 'dsss') {
+      return (
+        <Wrapper>
+          <DsssView result={result} updateResult={updateResult} />
+        </Wrapper>
+      );
+    }
+
     return null;
 };

@@ -135,6 +135,7 @@ export const useGoalWizard = ({
             'misogi': { title: t('misogi.title'), questions: [t('misogi.q1'), t('misogi.q2'), t('misogi.q3')] },
             'ikigai': { title: t('ikigai.title'), questions: [t('ikigai.q1'), t('ikigai.q2'), t('ikigai.q3'), t('ikigai.q4')] },
             'dsss': { title: t('fw.dsss.title'), questions: [t('wizard.dsss.firstQuestion')] },
+            'gps': { title: t('gps.title'), questions: [t('gps.q1'), t('gps.q2'), t('gps.q3')] },
             'general': { title: t('fp.title'), questions: [t('fp.q1')] }
         };
         if (!fw) return { title: t('fp.title'), questions: [t('fp.q1')] }; // Default Goal Planner Generator
@@ -619,19 +620,23 @@ export const useGoalWizard = ({
                 const updateKeys = updateData && typeof updateData === 'object' ? Object.keys(updateData) : [];
                 LOG(`event #${eventIndex}`, { isTuple, streamMode, updateKeys, hasMessages: !!(updateData?.messages), messagesLength: updateData?.messages?.length });
 
-                // Detect interrupt (approval gate): we use interruptBefore(["approval_gate"]) so the only
-                // interrupt in this graph is before the plan-confirmation step. Show buttons for any interrupt.
-                if (isInterrupted(updateData)) {
-                    const interrupts = (updateData as any)[INTERRUPT] as Array<{ value?: { type?: string; node?: string } }>;
-                    const isPlanConfirmation = Array.isArray(interrupts) && (
-                        interrupts.some((i) => i?.value?.type === CONFIRM_PLAN_INTERRUPT_TYPE) ||
-                        interrupts.some((i) => i?.value?.node === 'approval_gate')
-                    );
-                    if (isPlanConfirmation || (Array.isArray(interrupts) && interrupts.length > 0)) {
-                        if (isMounted.current) {
-                            setAwaitingPlanConfirmation(true);
-                            LOG('interrupt detected: awaiting plan confirmation');
-                        }
+                // Detect interrupt (approval gate): interruptBefore(["approval_gate"]) pauses before the node.
+                // Show the two buttons whenever we see an interrupt so the user can proceed or go deeper.
+                const hasInterrupt = (data: any): boolean => {
+                    if (!data || typeof data !== 'object') return false;
+                    try {
+                        if (typeof isInterrupted === 'function' && isInterrupted(data)) return true;
+                        const key = typeof INTERRUPT !== 'undefined' ? INTERRUPT : '__interrupt__';
+                        const arr = data[key] ?? data['__interrupt__'];
+                        return Array.isArray(arr) ? arr.length > 0 : !!arr;
+                    } catch {
+                        return false;
+                    }
+                };
+                if (hasInterrupt(updateData) || (!isTuple && hasInterrupt(event))) {
+                    if (isMounted.current) {
+                        setAwaitingPlanConfirmation(true);
+                        LOG('interrupt detected: awaiting plan confirmation');
                     }
                 }
 
@@ -687,17 +692,19 @@ export const useGoalWizard = ({
                         setDraftResult((prev: any) => prev ? { ...prev, ...bp } : bp);
                         if (supabase && !hasDeductedCreditThisRunRef.current) {
                             hasDeductedCreditThisRunRef.current = true;
-                            supabase.auth.getUser().then(({ data: { user } }) => {
-                                if (user?.id) {
-                                    supabase.rpc('decrement_credits', { amount_to_deduct: 1 })
-                                        .then(({ data, error }) => {
-                                            if (!error && data != null) {
-                                                setCredits(data as number);
-                                            }
-                                        })
-                                        .catch(() => {});
-                                }
-                            });
+                            supabase.auth.getUser()
+                                .then(({ data: { user } }) => {
+                                    if (user?.id) {
+                                        supabase.rpc('decrement_credits', { amount_to_deduct: 1 })
+                                            .then(({ data, error }) => {
+                                                if (!error && data != null && isMounted.current) {
+                                                    setCredits(data as number);
+                                                }
+                                            })
+                                            .catch(() => {});
+                                    }
+                                })
+                                .catch(() => {});
                         }
                         LOG('blueprint from stream → setResult, decrement_credits');
                         
@@ -993,11 +1000,17 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
                         setDraftResult((prev: any) => prev ? { ...prev, ...bp } : bp);
                         if (supabase && !hasDeductedCreditThisRunRef.current) {
                             hasDeductedCreditThisRunRef.current = true;
-                            supabase.auth.getUser().then(({ data: { user } }) => {
-                                if (user?.id) supabase.rpc('decrement_credits', { amount_to_deduct: 1 }).then(({ data, error }) => {
-                                    if (!error && data != null) setCredits(data as number);
-                                }).catch(() => {});
-                            });
+                            supabase.auth.getUser()
+                                .then(({ data: { user } }) => {
+                                    if (user?.id) {
+                                        supabase.rpc('decrement_credits', { amount_to_deduct: 1 })
+                                            .then(({ data, error }) => {
+                                                if (!error && data != null && isMounted.current) setCredits(data as number);
+                                            })
+                                            .catch(() => {});
+                                    }
+                                })
+                                .catch(() => {});
                         }
                         trackEvent('wizard_completed', { framework: framework || bp.framework });
                     }
@@ -1186,15 +1199,17 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
         setResult(draftResult as BlueprintResult);
         setFinalAnswers(filterRealAnswers(messages.filter(m => m.role === 'user').map(m => m.content)));
         if (supabase) {
-            supabase.auth.getUser().then(({ data: { user } }) => {
-                if (user?.id) {
-                    supabase.rpc('decrement_credits', { amount_to_deduct: 1 })
-                        .then(({ data, error }) => {
-                            if (!error && data != null) setCredits(data as number);
-                        })
-                        .catch(() => {});
-                }
-            });
+            supabase.auth.getUser()
+                .then(({ data: { user } }) => {
+                    if (user?.id) {
+                        supabase.rpc('decrement_credits', { amount_to_deduct: 1 })
+                            .then(({ data, error }) => {
+                                if (!error && data != null) setCredits(data as number);
+                            })
+                            .catch(() => {});
+                    }
+                })
+                .catch(() => {});
         }
         trackEvent('wizard_completed', { framework: framework || (draftResult as any).framework });
     };

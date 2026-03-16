@@ -246,6 +246,96 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
               );
           }
 
+          if (draft.type === 'dsss') {
+              const deconstruct = draft.deconstruct ?? [];
+              const selection = draft.selection ?? [];
+              const sequence = draft.sequence ?? [];
+              const stakes = draft.stakes?.trim() || '';
+              return (
+                  <div className="space-y-4">
+                      <div className="p-4 bg-orange-50 dark:bg-orange-950/30 rounded-xl border border-orange-200/60 dark:border-orange-900/40">
+                          <h5 className="font-bold text-orange-700 dark:text-orange-400 text-sm mb-2">{t('dsss.deconstruct')}</h5>
+                          {deconstruct.length > 0 ? (
+                              <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 space-y-0.5">
+                                  {deconstruct.map((v: string, i: number) => <li key={i}>{v}</li>)}
+                              </ul>
+                          ) : (
+                              <p className="text-sm text-gray-400 dark:text-gray-500 italic">{t('wizard.planStepsPlaceholder')}</p>
+                          )}
+                      </div>
+                      <div className="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200/60 dark:border-amber-900/40">
+                          <h5 className="font-bold text-amber-700 dark:text-amber-400 text-sm mb-2">{t('dsss.selection')}</h5>
+                          {selection.length > 0 ? (
+                              <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 space-y-0.5">
+                                  {selection.map((v: string, i: number) => <li key={i}>{v}</li>)}
+                              </ul>
+                          ) : (
+                              <p className="text-sm text-gray-400 dark:text-gray-500 italic">{t('wizard.planStepsPlaceholder')}</p>
+                          )}
+                      </div>
+                      <div className="p-4 bg-yellow-50/80 dark:bg-yellow-950/20 rounded-xl border border-yellow-200/60 dark:border-yellow-900/30">
+                          <h5 className="font-bold text-yellow-700 dark:text-yellow-400 text-sm mb-2">{t('dsss.sequence')}</h5>
+                          {sequence.length > 0 ? (
+                              <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 space-y-0.5">
+                                  {sequence.map((v: string, i: number) => <li key={i}>{v}</li>)}
+                              </ul>
+                          ) : (
+                              <p className="text-sm text-gray-400 dark:text-gray-500 italic">{t('wizard.planStepsPlaceholder')}</p>
+                          )}
+                      </div>
+                      {stakes && (
+                          <div className="p-4 bg-red-50/80 dark:bg-red-950/20 rounded-xl border border-red-200/60 dark:border-red-900/30">
+                              <h5 className="font-bold text-red-700 dark:text-red-400 text-sm mb-2">{t('dsss.stakes')}</h5>
+                              <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{stakes}</p>
+                          </div>
+                      )}
+                  </div>
+              );
+          }
+
+          if (draft.type === 'gps') {
+              const goal = draft.goal?.trim() || '';
+              const plan = draft.plan ?? [];
+              const system = draft.system ?? [];
+              const antiGoals = draft.anti_goals ?? [];
+              return (
+                  <div className="space-y-4">
+                      <div className="p-4 bg-sky-50 dark:bg-sky-950/30 rounded-xl border border-sky-200/60 dark:border-sky-900/40">
+                          <h5 className="font-bold text-sky-700 dark:text-sky-400 text-sm mb-2">{t('gps.goal')}</h5>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white leading-tight">{goal || t('wizard.planStepsPlaceholder')}</p>
+                      </div>
+                      <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+                          <h5 className="font-bold text-sky-600 dark:text-sky-400 text-sm mb-2">{t('gps.plan')}</h5>
+                          {plan.length > 0 ? (
+                              <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 space-y-0.5">
+                                  {plan.map((v: string, i: number) => <li key={i}>{v}</li>)}
+                              </ul>
+                          ) : (
+                              <p className="text-sm text-gray-400 dark:text-gray-500 italic">{t('wizard.planStepsPlaceholder')}</p>
+                          )}
+                      </div>
+                      <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+                          <h5 className="font-bold text-cyan-600 dark:text-cyan-400 text-sm mb-2">{t('gps.system')}</h5>
+                          {system.length > 0 ? (
+                              <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 space-y-0.5">
+                                  {system.map((v: string, i: number) => <li key={i}>{v}</li>)}
+                              </ul>
+                          ) : (
+                              <p className="text-sm text-gray-400 dark:text-gray-500 italic">{t('wizard.planStepsPlaceholder')}</p>
+                          )}
+                      </div>
+                      {antiGoals.length > 0 && (
+                          <div className="p-4 bg-amber-50/80 dark:bg-amber-950/20 rounded-xl border border-amber-200/60 dark:border-amber-900/30">
+                              <h5 className="font-bold text-amber-700 dark:text-amber-400 text-sm mb-2">{t('gps.antiGoals') || 'Anti-Goals'}</h5>
+                              <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 space-y-0.5">
+                                  {antiGoals.map((v: string, i: number) => <li key={i}>{v}</li>)}
+                              </ul>
+                          </div>
+                      )}
+                  </div>
+              );
+          }
+
           if (draft.type === 'rpm') {
               const hasPlan = draft.plan != null && Array.isArray(draft.plan) && draft.plan.length > 0;
               return (

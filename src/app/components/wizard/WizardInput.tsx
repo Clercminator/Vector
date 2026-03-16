@@ -84,45 +84,45 @@ export const WizardInput: React.FC<WizardInputProps> = ({
     <div data-print-hide className="flex-none p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-gray-100 dark:border-zinc-800 z-20 pb-safe">
       <div className="max-w-4xl mx-auto w-full relative">
       
-      {/* Two explicit choices when Vector is ready — generate or go deeper */}
+      {/* Approval gate: two clear, non-blocking choices when Vector is ready to generate the plan */}
       {awaitingPlanConfirmation && onConfirmGenerate && onGoDeeper && (
         <div
           role="region"
           aria-label={t('wizard.approvalGateLabel') || "Ready to generate plan. Choose an action."}
           aria-live="polite"
-          className="mb-3 space-y-2"
+          className="flex-shrink-0 relative z-10 mb-4 p-4 rounded-2xl bg-gray-50/90 dark:bg-zinc-900/90 border border-gray-200 dark:border-zinc-700 shadow-sm"
         >
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
             {t('wizard.planReminderShort') || t('wizard.personalizedPlanReminder') || "Add any other details that matter, or click to generate."}
           </p>
-          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-          <button
-            ref={generateBtnRef}
-            type="button"
-            onClick={onConfirmGenerate}
-            disabled={isTyping || isAgentRunning}
-            aria-label={t('wizard.generatePlanAria') || t('wizard.generatePlan') || "Generate my plan"}
-            aria-busy={isTyping || isAgentRunning ? "true" : "false"}
-            className="flex items-center justify-center gap-2 flex-1 sm:flex-initial px-5 py-3 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black dark:focus-visible:ring-white"
-          >
-            {(isTyping || isAgentRunning) ? (
-              <Loader2 size={18} className="animate-spin" aria-hidden />
-            ) : (
-              <Sparkles size={18} aria-hidden />
-            )}
-            {t('wizard.generatePlan') || 'Generate my plan'}
-          </button>
-          <button
-            type="button"
-            onClick={onGoDeeper}
-            disabled={isTyping || isAgentRunning}
-            aria-label={t('wizard.goDeeperAria') || t('wizard.notReadyGoDeeper') || "Not ready yet, keep exploring with more questions"}
-            title={t('wizard.notReadyGoDeeper') || "Not ready yet, let's keep going deeper into the problem"}
-            className="flex items-center justify-center gap-2 flex-1 sm:flex-initial px-5 py-3 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-zinc-700 rounded-full font-medium text-sm shadow-sm hover:bg-gray-200 dark:hover:bg-zinc-700 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500"
-          >
-            <span className="sm:hidden">{t('wizard.goDeeperShort') || "Go deeper"}</span>
-            <span className="hidden sm:inline">{t('wizard.notReadyGoDeeper') || "Not ready yet, let's keep going deeper into the problem"}</span>
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+            <button
+              ref={generateBtnRef}
+              type="button"
+              onClick={onConfirmGenerate}
+              disabled={isTyping || isAgentRunning}
+              aria-label={t('wizard.generatePlanAria') || t('wizard.generatePlan') || "Generate my plan"}
+              aria-busy={isTyping || isAgentRunning ? "true" : "false"}
+              className="flex items-center justify-center gap-2 flex-1 min-w-0 sm:flex-initial px-5 py-3 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black dark:focus-visible:ring-white"
+            >
+              {(isTyping || isAgentRunning) ? (
+                <Loader2 size={18} className="animate-spin shrink-0" aria-hidden />
+              ) : (
+                <Sparkles size={18} className="shrink-0" aria-hidden />
+              )}
+              <span className="truncate">{t('wizard.generatePlan') || 'Generate my plan'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={onGoDeeper}
+              disabled={isTyping || isAgentRunning}
+              aria-label={t('wizard.goDeeperAria') || t('wizard.notReadyGoDeeper') || "Not ready yet, keep exploring with more questions"}
+              title={t('wizard.notReadyGoDeeper') || "Not ready yet, let's keep going deeper into the problem"}
+              className="flex items-center justify-center gap-2 flex-1 min-w-0 sm:flex-initial px-5 py-3 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 border-2 border-gray-200 dark:border-zinc-600 rounded-full font-medium text-sm shadow-sm hover:bg-gray-100 dark:hover:bg-zinc-700 hover:border-gray-300 dark:hover:border-zinc-500 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500"
+            >
+              <span className="sm:hidden truncate">{t('wizard.goDeeperShort') || "Go deeper"}</span>
+              <span className="hidden sm:inline truncate">{t('wizard.notReadyGoDeeper') || "Not ready yet, let's keep going deeper into the problem"}</span>
+            </button>
           </div>
         </div>
       )}
