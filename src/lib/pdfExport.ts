@@ -286,6 +286,18 @@ export const generatePdf = async (
     if (y > pageHeight - margin - minLines * 7) addNewPage();
   };
 
+  // Helper: write a multi-line text block with automatic pagination
+  const writeMultilineText = (lines: string[], x: number, lineHeight = 5) => {
+    lines.forEach((line) => {
+      // if we're too close to the bottom, go to a new page before writing the next line
+      if (y > pageHeight - margin - lineHeight - 2) {
+        addNewPage();
+      }
+      doc.text(line, x, y);
+      y += lineHeight;
+    });
+  };
+
   // TOC: collect section names and page numbers for final render
   const tocEntries: { name: string; page: number }[] = [];
   const recordToc = (name: string) => {
@@ -309,11 +321,11 @@ export const generatePdf = async (
     items.forEach(item => {
       if (!item?.trim()) return;
       const lines = doc.splitTextToSize(item, contentWidth - indent);
-      lines.forEach((line: string) => {
-        ensureSpace(1);
-        doc.text(line, margin + indent, y);
-        y += 5;
-      });
+      // ensure enough space for this entire block; if not, start on a fresh page
+      if (y > pageHeight - margin - (lines.length + 1) * 5) {
+        addNewPage();
+      }
+      writeMultilineText(lines as string[], margin + indent);
       y += 2;
     });
     y += 6;
@@ -448,8 +460,10 @@ export const generatePdf = async (
        doc.setFont("helvetica", "normal");
        (result.truths || []).forEach((t: string, i: number) => {
            const lines = doc.splitTextToSize(`${i+1}. ${t}`, contentWidth);
-           doc.text(lines, margin, y);
-           y += lines.length * 7;
+           if (y > pageHeight - margin - (lines.length + 1) * 7) {
+             addNewPage();
+           }
+           writeMultilineText(lines as string[], margin, 7);
        });
        y += 5;
        doc.setFont("helvetica", "bold");
@@ -459,8 +473,11 @@ export const generatePdf = async (
        y += 8;
        doc.setFont("helvetica", "normal");
        const lines = doc.splitTextToSize(result.newApproach || "", contentWidth);
-       doc.text(lines, margin, y);
-       y += lines.length * 7 + 12;
+       if (y > pageHeight - margin - (lines.length + 1) * 7) {
+         addNewPage();
+       }
+       writeMultilineText(lines as string[], margin, 7);
+       y += 12;
     }
     else if (result.type === 'pareto') {
         doc.setFont("helvetica", "bold");
@@ -471,7 +488,10 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (result.vital || []).forEach((item: string) => {
              const lines = doc.splitTextToSize(`• ${item}`, contentWidth - 10);
-             lines.forEach((line: string) => { doc.text(line, margin + 5, y); y += 6; });
+             if (y > pageHeight - margin - (lines.length + 1) * 6) {
+               addNewPage();
+             }
+             writeMultilineText(lines as string[], margin + 5, 6);
         });
         y += 6;
         doc.setFont("helvetica", "bold");
@@ -482,14 +502,20 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (result.trivial || []).forEach((item: string) => {
              const lines = doc.splitTextToSize(`• ${item}`, contentWidth - 10);
-             lines.forEach((line: string) => { doc.text(line, margin + 5, y); y += 6; });
+             if (y > pageHeight - margin - (lines.length + 1) * 6) {
+               addNewPage();
+             }
+             writeMultilineText(lines as string[], margin + 5, 6);
         });
     }
     else if (result.type === 'rpm') {
         doc.setFont("helvetica", "bold");
         setPrimary();
         const resultLines = doc.splitTextToSize(`Result: ${result.result || ""}`, contentWidth);
-        resultLines.forEach((line: string) => { doc.text(line, margin, y); y += 6; });
+        if (y > pageHeight - margin - (resultLines.length + 1) * 6) {
+          addNewPage();
+        }
+        writeMultilineText(resultLines as string[], margin, 6);
         setBody();
         y += 10;
         doc.setFont("helvetica", "bold");
@@ -499,8 +525,11 @@ export const generatePdf = async (
         y += 8;
         doc.setFont("helvetica", "italic");
         const pLines = doc.splitTextToSize(result.purpose || "", contentWidth);
-        doc.text(pLines, margin + 5, y);
-        y += pLines.length * 7 + 5;
+        if (y > pageHeight - margin - (pLines.length + 1) * 7) {
+          addNewPage();
+        }
+        writeMultilineText(pLines as string[], margin + 5, 7);
+        y += 5;
         
         doc.setFont("helvetica", "bold");
         setPrimary();
@@ -510,7 +539,10 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (result.plan || []).forEach((item: string, i: number) => {
             const lines = doc.splitTextToSize(`${i+1}. ${item}`, contentWidth - 10);
-            lines.forEach((line: string) => { doc.text(line, margin + 5, y); y += 6; });
+            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+              addNewPage();
+            }
+            writeMultilineText(lines as string[], margin + 5, 6);
         });
     }
     else if (result.type === 'eisenhower') {
@@ -530,10 +562,10 @@ export const generatePdf = async (
             } else {
                 items.forEach(it => {
                     const itemLines = doc.splitTextToSize(`• ${it}`, contentWidth - 10);
-                    itemLines.forEach((line: string) => {
-                        doc.text(line, margin + 5, y);
-                        y += 6;
-                    });
+                    if (y > pageHeight - margin - (itemLines.length + 1) * 6) {
+                      addNewPage();
+                    }
+                    writeMultilineText(itemLines as string[], margin + 5, 6);
                 });
             }
             y += 6;
@@ -547,7 +579,10 @@ export const generatePdf = async (
         doc.setFont("helvetica", "bold");
         setPrimary();
         const objLines = doc.splitTextToSize(`Objective: ${result.objective || ""}`, contentWidth);
-        objLines.forEach((line: string) => { doc.text(line, margin, y); y += 6; });
+        if (y > pageHeight - margin - (objLines.length + 1) * 6) {
+          addNewPage();
+        }
+        writeMultilineText(objLines as string[], margin, 6);
         setBody();
         y += 6;
         doc.setFont("helvetica", "bold");
@@ -558,7 +593,10 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (result.keyResults || []).forEach((kr: string, i: number) => {
             const lines = doc.splitTextToSize(`${i+1}. ${kr}`, contentWidth - 10);
-            lines.forEach((line: string) => { doc.text(line, margin + 5, y); y += 6; });
+            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+              addNewPage();
+            }
+            writeMultilineText(lines as string[], margin + 5, 6);
         });
         y += 5;
         doc.setFont("helvetica", "bold");
@@ -576,8 +614,11 @@ export const generatePdf = async (
         y += 8;
         doc.setFont("helvetica", "normal");
         const goalLines = doc.splitTextToSize(result.goal || "", contentWidth);
-        doc.text(goalLines, margin + 5, y);
-        y += goalLines.length * 6 + 8;
+        if (y > pageHeight - margin - (goalLines.length + 1) * 6) {
+          addNewPage();
+        }
+        writeMultilineText(goalLines as string[], margin + 5, 6);
+        y += 8;
 
         doc.setFont("helvetica", "bold");
         setPrimary();
@@ -587,8 +628,10 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (result.plan || []).forEach((item: string, i: number) => {
             const lines = doc.splitTextToSize(`${i + 1}. ${item}`, contentWidth);
-            doc.text(lines, margin + 5, y);
-            y += lines.length * 6;
+            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+              addNewPage();
+            }
+            writeMultilineText(lines as string[], margin + 5, 6);
         });
         y += 6;
 
@@ -600,8 +643,10 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (result.system || []).forEach((item: string, i: number) => {
             const lines = doc.splitTextToSize(`${i + 1}. ${item}`, contentWidth);
-            doc.text(lines, margin + 5, y);
-            y += lines.length * 6;
+            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+              addNewPage();
+            }
+            writeMultilineText(lines as string[], margin + 5, 6);
         });
         y += 6;
 
@@ -614,8 +659,10 @@ export const generatePdf = async (
             doc.setFont("helvetica", "normal");
             result.anti_goals.forEach((item: string) => {
                 const lines = doc.splitTextToSize(`• ${item}`, contentWidth);
-                doc.text(lines, margin + 5, y);
-                y += lines.length * 6;
+                if (y > pageHeight - margin - (lines.length + 1) * 6) {
+                  addNewPage();
+                }
+                writeMultilineText(lines as string[], margin + 5, 6);
             });
             y += 6;
         }
@@ -638,8 +685,10 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (dsss.deconstruct || []).forEach((item: string) => {
             const lines = doc.splitTextToSize(`• ${item}`, contentWidth);
-            doc.text(lines, margin + 5, y);
-            y += lines.length * 6;
+            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+              addNewPage();
+            }
+            writeMultilineText(lines as string[], margin + 5, 6);
         });
         y += 6;
         doc.setFont("helvetica", "bold");
@@ -650,8 +699,10 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (dsss.selection || []).forEach((item: string) => {
             const lines = doc.splitTextToSize(`• ${item}`, contentWidth);
-            doc.text(lines, margin + 5, y);
-            y += lines.length * 6;
+            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+              addNewPage();
+            }
+            writeMultilineText(lines as string[], margin + 5, 6);
         });
         y += 6;
         doc.setFont("helvetica", "bold");
@@ -662,8 +713,10 @@ export const generatePdf = async (
         doc.setFont("helvetica", "normal");
         (dsss.sequence || []).forEach((item: string, i: number) => {
             const lines = doc.splitTextToSize(`${i + 1}. ${item}`, contentWidth);
-            doc.text(lines, margin + 5, y);
-            y += lines.length * 6;
+            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+              addNewPage();
+            }
+            writeMultilineText(lines as string[], margin + 5, 6);
         });
         y += 6;
         doc.setFont("helvetica", "bold");
@@ -673,8 +726,11 @@ export const generatePdf = async (
         y += 8;
         doc.setFont("helvetica", "normal");
         const stakesLines = doc.splitTextToSize(dsss.stakes || "", contentWidth);
-        doc.text(stakesLines, margin + 5, y);
-        y += stakesLines.length * 6 + 12;
+        if (y > pageHeight - margin - (stakesLines.length + 1) * 6) {
+          addNewPage();
+        }
+        writeMultilineText(stakesLines as string[], margin + 5, 6);
+        y += 12;
     }
     else if (result.type === 'ikigai') {
         const ik = result as { purpose?: string; love?: string; goodAt?: string; worldNeeds?: string; paidFor?: string };
@@ -686,8 +742,11 @@ export const generatePdf = async (
             y += 8;
             doc.setFont("helvetica", "normal");
             const lines = doc.splitTextToSize(ik.purpose, contentWidth);
-            doc.text(lines, margin + 5, y);
-            y += lines.length * 6 + 8;
+            if (y > pageHeight - margin - (lines.length + 1) * 6) {
+              addNewPage();
+            }
+            writeMultilineText(lines as string[], margin + 5, 6);
+            y += 8;
         }
         for (const [label, val] of [
             ["What you love", ik.love],
@@ -703,8 +762,11 @@ export const generatePdf = async (
                 y += 6;
                 doc.setFont("helvetica", "normal");
                 const textLines = doc.splitTextToSize(val, contentWidth);
-                doc.text(textLines, margin + 5, y);
-                y += textLines.length * 6 + 6;
+                if (y > pageHeight - margin - (textLines.length + 1) * 6) {
+                  addNewPage();
+                }
+                writeMultilineText(textLines as string[], margin + 5, 6);
+                y += 6;
             }
         }
         y += 6;
@@ -718,7 +780,10 @@ export const generatePdf = async (
         y += 8;
         doc.setFont("helvetica", "normal");
         const goalLines = doc.splitTextToSize(mandala.centralGoal || "", contentWidth);
-        goalLines.forEach((line: string) => { doc.text(line, margin + 5, y); y += 6; });
+        if (y > pageHeight - margin - (goalLines.length + 1) * 6) {
+          addNewPage();
+        }
+        writeMultilineText(goalLines as string[], margin + 5, 6);
         y += 10;
         (mandala.categories || []).forEach((cat: { name: string; steps?: string[]; why?: string }, i: number) => {
             ensureSpace(10);
@@ -730,7 +795,10 @@ export const generatePdf = async (
             doc.setFont("helvetica", "normal");
             (cat.steps || []).filter(Boolean).forEach((step: string, j: number) => {
                 const stepLines = doc.splitTextToSize(`  • ${step}`, contentWidth - 15);
-                stepLines.forEach((line: string) => { doc.text(line, margin + 5, y); y += 6; });
+                if (y > pageHeight - margin - (stepLines.length + 1) * 6) {
+                  addNewPage();
+                }
+                writeMultilineText(stepLines as string[], margin + 5, 6);
             });
             y += 6;
         });
