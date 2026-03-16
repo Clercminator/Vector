@@ -102,7 +102,6 @@ export const WizardInput: React.FC<WizardInputProps> = ({
               onClick={onConfirmGenerate}
               disabled={isTyping || isAgentRunning}
               aria-label={t('wizard.generatePlanAria') || t('wizard.generatePlan') || "Generate my plan"}
-              aria-busy={isTyping || isAgentRunning ? "true" : "false"}
               className="flex items-center justify-center gap-2 flex-1 min-w-0 sm:flex-initial px-5 py-3 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-black dark:focus-visible:ring-white"
             >
               {(isTyping || isAgentRunning) ? (

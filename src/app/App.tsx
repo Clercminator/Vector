@@ -1048,24 +1048,39 @@ function App() {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -20 }}
                     >
-                      <GoalWizard
-                        framework={
-                          location.state?.framework || selectedFramework
-                        }
-                        onBack={() => navigate("/")}
-                        onSaveBlueprint={handleSaveBlueprint}
-                        initialBlueprint={activeBlueprint}
-                        tier={tier}
-                        onSwitchFramework={(fw, isPreview) => {
-                          setSelectedFramework(fw);
-                          // Soft update URL/Location state so the wizard re-renders with new prop
-                          navigate("/wizard", {
-                            state: { framework: fw, isPreview },
-                            replace: true,
-                          });
-                        }}
-                        isPreviewMode={location.state?.isPreview}
-                      />
+                      {(() => {
+                        // Prefer explicit framework from navigation state.
+                        const fwFromState = (location.state as { framework?: Framework; isPreview?: boolean } | null)?.framework;
+                        const isPreviewFromState = (location.state as { framework?: Framework; isPreview?: boolean } | null)?.isPreview;
+                        // Fallback to framework persisted in App state.
+                        const fwFromSelected = selectedFramework;
+                        // Finally, allow ?framework=gps style URLs (for shared/fullscreen links).
+                        const search = new URLSearchParams(location.search);
+                        const fwFromQuery = search.get("framework") as Framework | null;
+                        const effectiveFramework = fwFromState ?? fwFromSelected ?? fwFromQuery ?? undefined;
+
+                        return (
+                          <GoalWizard
+                            framework={effectiveFramework}
+                            onBack={() => navigate("/")}
+                            onSaveBlueprint={handleSaveBlueprint}
+                            initialBlueprint={activeBlueprint}
+                            tier={tier}
+                            onSwitchFramework={(fw, isPreview) => {
+                              setSelectedFramework(fw);
+                              // Soft update URL/location state so the wizard re-renders with the new framework,
+                              // and keep query params (e.g. ?view=fullscreen&framework=gps) in sync for sharing.
+                              const params = new URLSearchParams(location.search);
+                              params.set("framework", fw);
+                              navigate(`/wizard?${params.toString()}`, {
+                                state: { framework: fw, isPreview },
+                                replace: true,
+                              });
+                            }}
+                            isPreviewMode={isPreviewFromState}
+                          />
+                        );
+                      })()}
                     </motion.div>
                   }
                 />

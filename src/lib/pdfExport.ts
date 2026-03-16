@@ -567,6 +567,60 @@ export const generatePdf = async (
         setBody();
         y += 10;
     }
+    else if (result.type === "gps") {
+        // GPS: Goal, Plan, System, Anti-Goals
+        doc.setFont("helvetica", "bold");
+        setPrimary();
+        doc.text("Goal:", margin, y);
+        setBody();
+        y += 8;
+        doc.setFont("helvetica", "normal");
+        const goalLines = doc.splitTextToSize(result.goal || "", contentWidth);
+        doc.text(goalLines, margin + 5, y);
+        y += goalLines.length * 6 + 8;
+
+        doc.setFont("helvetica", "bold");
+        setPrimary();
+        doc.text("Plan (Major Moves):", margin, y);
+        setBody();
+        y += 8;
+        doc.setFont("helvetica", "normal");
+        (result.plan || []).forEach((item: string, i: number) => {
+            const lines = doc.splitTextToSize(`${i + 1}. ${item}`, contentWidth);
+            doc.text(lines, margin + 5, y);
+            y += lines.length * 6;
+        });
+        y += 6;
+
+        doc.setFont("helvetica", "bold");
+        setPrimary();
+        doc.text("System (Habits & Environment):", margin, y);
+        setBody();
+        y += 8;
+        doc.setFont("helvetica", "normal");
+        (result.system || []).forEach((item: string, i: number) => {
+            const lines = doc.splitTextToSize(`${i + 1}. ${item}`, contentWidth);
+            doc.text(lines, margin + 5, y);
+            y += lines.length * 6;
+        });
+        y += 6;
+
+        if (Array.isArray(result.anti_goals) && result.anti_goals.length > 0) {
+            doc.setFont("helvetica", "bold");
+            setPrimary();
+            doc.text("Anti-Goals (What We'll Avoid):", margin, y);
+            setBody();
+            y += 8;
+            doc.setFont("helvetica", "normal");
+            result.anti_goals.forEach((item: string) => {
+                const lines = doc.splitTextToSize(`• ${item}`, contentWidth);
+                doc.text(lines, margin + 5, y);
+                y += lines.length * 6;
+            });
+            y += 6;
+        }
+        y += 6;
+    }
     else if (result.type === 'dsss') {
         const dsss = result as { objective?: string; deconstruct?: string[]; selection?: string[]; sequence?: string[]; stakes?: string };
         if (dsss.objective) {

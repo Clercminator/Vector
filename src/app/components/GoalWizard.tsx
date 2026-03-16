@@ -209,7 +209,13 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
             type="button"
             onClick={() => {
               setFullscreenBlueprint(false);
-              navigate('/wizard', { replace: true, state: { framework: props.framework } });
+              const params = new URLSearchParams(location.search);
+              params.delete('view');
+              if (props.framework) params.set('framework', props.framework);
+              navigate(`/wizard${params.toString() ? `?${params.toString()}` : ''}`, {
+                replace: true,
+                state: { framework: props.framework },
+              });
             }}
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-gray-200 dark:border-zinc-700 shadow-lg hover:shadow-xl transition-all cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-200"
             aria-label="Exit fullscreen"
@@ -356,7 +362,13 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
               type="button"
               onClick={() => {
                 setFullscreenBlueprint(true);
-                navigate('/wizard?view=fullscreen', { replace: true });
+                const params = new URLSearchParams(location.search);
+                params.set('view', 'fullscreen');
+                if (props.framework) params.set('framework', props.framework);
+                navigate(`/wizard?${params.toString()}`, {
+                  replace: true,
+                  state: { framework: props.framework },
+                });
               }}
               className="flex items-center gap-2 cursor-pointer px-4 py-2.5 sm:px-6 sm:py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium text-sm sm:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 shrink-0"
               aria-label="Full screen view"

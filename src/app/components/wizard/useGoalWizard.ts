@@ -786,9 +786,17 @@ export const useGoalWizard = ({
                          if (aiIdx >= 0) lastMsg = messageList[aiIdx];
                      }
                      
-                     const msgType = getMsgType(lastMsg);
-                     const isTool = msgType === 'tool' || !!lastMsg?.tool_call_id || (lastMsg?.name && ['set_framework', 'request_confirmation'].includes(lastMsg.name));
-                     const isAIMessage = !isTool && (
+                    const msgType = getMsgType(lastMsg);
+                    const isTool = msgType === 'tool' || !!lastMsg?.tool_call_id || (lastMsg?.name && ['set_framework', 'request_confirmation'].includes(lastMsg.name));
+                    // If the model called our confirmation tool, surface the approval-gate UI
+                    const toolCalls = (lastMsg as any)?.tool_calls;
+                    if (Array.isArray(toolCalls) && toolCalls.some((tc: any) => tc?.name === 'request_confirmation')) {
+                        if (isMounted.current) {
+                            setAwaitingPlanConfirmation(true);
+                            LOG(`event #${eventIndex} request_confirmation detected → awaitingPlanConfirmation=true`);
+                        }
+                    }
+                    const isAIMessage = !isTool && (
                         msgType === 'ai' || 
                         lastMsg?.role === 'ai' ||
                         lastMsg?.role === 'assistant' ||
