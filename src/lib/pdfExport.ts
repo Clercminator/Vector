@@ -233,7 +233,9 @@ export const generatePdf = async (
   };
 
   const result = blueprint.result as any;
-  const displayTitle = (blueprint.title || result?.shortTitle || "").trim() || "Your Plan";
+  // Use full first answer for cover title (blueprint.title is truncated to 60 chars for UI)
+  const fullTitleFromAnswer = (blueprint.answers?.[0] ?? "").trim();
+  const displayTitle = (fullTitleFromAnswer || blueprint.title || result?.shortTitle || "").trim() || "Your Plan";
   const frameworkLabel = String(blueprint.framework || "").replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 
   // --- COVER PAGE ---
@@ -258,19 +260,26 @@ export const generatePdf = async (
   const fwId = String(blueprint.framework || "").toLowerCase();
   const authorImgPath = FRAMEWORK_AUTHOR_IMAGES[fwId] || FALLBACK_AUTHOR_IMAGE;
   let imageLoaded = false;
+  const imgW = 40;
+  const imgH = 40;
+  const imgCenterY = coverY + imgH / 2;
+  const drawCircularAuthorImage = (dataUrl: string) => {
+    doc.saveGraphicsState();
+    doc.circle(centerX, imgCenterY, imgH / 2, null);
+    doc.clip();
+    doc.discardPath?.();
+    doc.addImage(dataUrl, "PNG", centerX - imgW / 2, coverY, imgW, imgH);
+    doc.restoreGraphicsState();
+  };
   try {
     const dataUrl = await loadImage(authorImgPath);
-    const imgW = 40;
-    const imgH = 40;
-    doc.addImage(dataUrl, "PNG", centerX - imgW / 2, coverY, imgW, imgH);
+    drawCircularAuthorImage(dataUrl);
     coverY += imgH + 12;
     imageLoaded = true;
   } catch {
     try {
       const fallbackUrl = await loadImage(FALLBACK_AUTHOR_IMAGE);
-      const imgW = 40;
-      const imgH = 40;
-      doc.addImage(fallbackUrl, "PNG", centerX - imgW / 2, coverY, imgW, imgH);
+      drawCircularAuthorImage(fallbackUrl);
       coverY += imgH + 12;
       imageLoaded = true;
     } catch {
@@ -686,7 +695,11 @@ export const generatePdf = async (
         if (dsss.objective) {
             doc.setFont("helvetica", "bold");
             setPrimary();
-            doc.text(`Objective: ${dsss.objective}`, margin, y);
+            const objLines = doc.splitTextToSize(`Objective: ${dsss.objective}`, contentWidth);
+            if (y > contentBottom - (objLines.length + 1) * 6) {
+              addNewPage();
+            }
+            writeMultilineText(objLines as string[], margin, 6);
             setBody();
             y += 10;
         }

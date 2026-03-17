@@ -25,6 +25,7 @@ import { TrackerHeatmap } from './tracker/TrackerHeatmap';
 import { TrackerScore } from './tracker/TrackerScore';
 import { TrackerCalendar } from './tracker/TrackerCalendar';
 import { TrackerStreakCounter } from './tracker/TrackerStreakCounter';
+import { TrackerStreaksList } from './tracker/TrackerStreaksList';
 import { TrackerGoalTemplates } from './tracker/TrackerGoalTemplates';
 import { TrackerSubGoals } from './tracker/TrackerSubGoals';
 import { TrackerTasks } from './tracker/TrackerTasks';
@@ -74,6 +75,11 @@ export function TrackerPage() {
 
   const loadData = async () => {
     if (!supabase) return;
+    if (!blueprintId) {
+      setError('not-found');
+      setLoading(false);
+      return;
+    }
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -144,6 +150,24 @@ export function TrackerPage() {
   useEffect(() => {
     loadData();
   }, [blueprintId]);
+
+  const filteredLogs = React.useMemo(() => {
+    if (dateRange === 'all') return logs;
+    const now = new Date();
+    if (dateRange === '7days') {
+      const cutoff = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+      return logs.filter(l => new Date(l.created_at) >= cutoff);
+    }
+    if (dateRange === '30days') {
+      const cutoff = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
+      return logs.filter(l => new Date(l.created_at) >= cutoff);
+    }
+    if (dateRange === 'this_year') {
+      const cutoff = new Date(now.getFullYear(), 0, 1);
+      return logs.filter(l => new Date(l.created_at) >= cutoff);
+    }
+    return logs;
+  }, [logs, dateRange]);
 
   useEffect(() => {
     if (!supabase || !userId) return;
@@ -481,24 +505,6 @@ export function TrackerPage() {
   
   const themeClass = FRAMEWORK_THEMES[blueprint.framework] || FRAMEWORK_THEMES['default'];
   const colorAccent = tracker?.color || undefined;
-
-  const filteredLogs = React.useMemo(() => {
-    if (dateRange === 'all') return logs;
-    const now = new Date();
-    if (dateRange === '7days') {
-        const cutoff = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
-        return logs.filter(l => new Date(l.created_at) >= cutoff);
-    }
-    if (dateRange === '30days') {
-        const cutoff = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
-        return logs.filter(l => new Date(l.created_at) >= cutoff);
-    }
-    if (dateRange === 'this_year') {
-        const cutoff = new Date(now.getFullYear(), 0, 1);
-        return logs.filter(l => new Date(l.created_at) >= cutoff);
-    }
-    return logs;
-  }, [logs, dateRange]);
 
   const highlights = generateCalendarHighlights(filteredLogs);
   const bestStreaks = getBestStreaks(filteredLogs);
