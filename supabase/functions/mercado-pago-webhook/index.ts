@@ -84,6 +84,21 @@ async function handleWebhook(req: Request): Promise<Response> {
       return okResponse();
     }
 
+    const paymentIdStr = String(paymentId);
+
+    // Idempotency: skip if we already processed this payment (MercadoPago can resend webhooks)
+    const { data: existing } = await supabase
+      .from("payments")
+      .select("id")
+      .eq("provider", "mercadopago")
+      .eq("provider_payment_id", paymentIdStr)
+      .limit(1)
+      .maybeSingle();
+    if (existing) {
+      console.log(`Payment ${paymentIdStr} already processed, skipping.`);
+      return okResponse();
+    }
+
     const targetUserId = paymentData.external_reference;
     const payerEmail = paymentData.payer?.email;
 
@@ -95,13 +110,18 @@ async function handleWebhook(req: Request): Promise<Response> {
     console.log(`Processing approved payment for user: ${targetUserId}`);
 
     const amount = parseFloat(paymentData.transaction_amount);
-    let creditsToAdd = 5;
-    let newTier = "architect";
+    if (isNaN(amount) || amount < 1) {
+      console.warn("Invalid or zero amount, skipping:", amount);
+      return okResponse();
+    }
 
+    // Align with TIER_CONFIGS: standard 5 credits / ~$6, max 20 credits / ~$13
+    let creditsToAdd: number;
+    let newTier: string;
     if (amount >= 10) {
       creditsToAdd = 20;
       newTier = "max";
-    } else if (amount >= 5) {
+    } else {
       creditsToAdd = 5;
       newTier = "standard";
     }
@@ -110,9 +130,25 @@ async function handleWebhook(req: Request): Promise<Response> {
       target_user_id: targetUserId,
       amount_to_add: creditsToAdd,
     });
-    if (rpcError) console.error("Failed to increment credits:", rpcError);
+    if (rpcError) {
+      console.error("Failed to increment credits:", rpcError);
+      return new Response(JSON.stringify({ error: "Failed to update credits" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    await supabase.from("profiles").update({ tier: newTier }).eq("user_id", targetUserId);
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({ tier: newTier })
+      .eq("user_id", targetUserId);
+    if (profileError) {
+      console.error("Failed to update profile tier:", profileError);
+      return new Response(JSON.stringify({ error: "Failed to update plan" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     await supabase.from("payments").insert({
       user_id: targetUserId,
@@ -120,7 +156,7 @@ async function handleWebhook(req: Request): Promise<Response> {
       currency: paymentData.currency_id || "USD",
       status: "approved",
       provider: "mercadopago",
-      provider_payment_id: String(paymentId),
+      provider_payment_id: paymentIdStr,
       metadata: paymentData,
     });
 
@@ -136,7 +172,7 @@ async function handleWebhook(req: Request): Promise<Response> {
                 amount: amount,
                 currency: paymentData.currency_id || "USD",
                 tier: newTier,
-                payment_id: String(paymentId)
+                payment_id: paymentIdStr
             }
         });
         console.log(`Attributed payment to referrer: ${profile.referrer_code}`);

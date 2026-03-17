@@ -201,7 +201,9 @@ function App() {
       confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
       // Clean URL
       window.history.replaceState({}, "", "/dashboard");
-      // Refresh profile (tier should be updated by webhook, but we might need to wait or poll)
+      // Refresh profile so credits and tier update (webhook may have already run)
+      refreshProfile();
+      // Refresh again in case webhook was slightly delayed
       setTimeout(refreshProfile, 2000);
     } else if (paymentStatus === "failure") {
       toast.error(
