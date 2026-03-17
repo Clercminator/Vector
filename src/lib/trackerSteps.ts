@@ -162,6 +162,16 @@ export function getStepIdsAndLabels(
       });
       break;
     }
+    case "general": {
+      const stepsArr = getResultArray(r, "steps");
+      if (stepsArr?.length) {
+        return stepsArr.map((step, index) => ({
+          stepId: `steps.${index}`,
+          label: step,
+        }));
+      }
+      break;
+    }
     default:
       return [];
   }

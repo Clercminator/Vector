@@ -39,8 +39,25 @@ export function blueprintToEvents(bp: Blueprint, opts?: { startAt?: Date; minute
   if (result?.type === "first-principles") tasks.push(`Build: ${result.newApproach}`);
   if (result?.type === "dsss") {
     const d = result as { sequence?: string[]; selection?: string[] };
-    // Sequence = ordered phases; selection = 20% focus areas — both are calendar-worthy
     tasks.push(...(d.sequence ?? []), ...(d.selection ?? []));
+  }
+  if (result?.type === "gps") {
+    const g = result as { plan?: string[]; system?: string[] };
+    tasks.push(...(g.plan ?? []), ...(g.system ?? []));
+  }
+  if (result?.type === "mandalas") {
+    const cats = (result as { categories?: Array<{ steps?: string[] }> }).categories ?? [];
+    for (const cat of cats) {
+      if (Array.isArray(cat.steps)) tasks.push(...cat.steps);
+    }
+  }
+  if (result?.type === "misogi") {
+    const pur = (result as { purification?: string | string[] }).purification;
+    if (Array.isArray(pur)) tasks.push(...pur);
+    else if (typeof pur === "string" && pur.trim()) tasks.push(pur);
+  }
+  if (result?.type === "general") {
+    tasks.push(...(result.steps ?? []));
   }
 
   const clean = tasks.map((t) => (t ?? "").trim()).filter(Boolean);

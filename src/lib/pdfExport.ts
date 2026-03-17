@@ -843,6 +843,54 @@ export const generatePdf = async (
         });
         y += 6;
     }
+    else if (result.type === 'misogi') {
+        const toStr = (v: unknown): string =>
+          Array.isArray(v) ? (v as string[]).map(String).filter(Boolean).join(' ') : (typeof v === 'string' ? v : String(v ?? ''));
+        doc.setFont("helvetica", "bold");
+        setPrimary();
+        doc.text("The Challenge:", margin, y);
+        setBody();
+        y += 8;
+        doc.setFont("helvetica", "normal");
+        const challengeLines = doc.splitTextToSize(toStr(result.challenge), contentWidth);
+        if (y > contentBottom - (challengeLines.length + 1) * 6) addNewPage();
+        writeMultilineText(challengeLines as string[], margin + 5, 6);
+        y += 10;
+        doc.setFont("helvetica", "bold");
+        setPrimary();
+        doc.text("The Failure Gap:", margin, y);
+        setBody();
+        y += 8;
+        doc.setFont("helvetica", "normal");
+        const gapLines = doc.splitTextToSize(toStr(result.gap), contentWidth);
+        if (y > contentBottom - (gapLines.length + 1) * 6) addNewPage();
+        writeMultilineText(gapLines as string[], margin + 5, 6);
+        y += 10;
+        doc.setFont("helvetica", "bold");
+        setPrimary();
+        doc.text("The Purification:", margin, y);
+        setBody();
+        y += 8;
+        doc.setFont("helvetica", "normal");
+        const purifLines = doc.splitTextToSize(toStr(result.purification), contentWidth);
+        if (y > contentBottom - (purifLines.length + 1) * 6) addNewPage();
+        writeMultilineText(purifLines as string[], margin + 5, 6);
+        y += 6;
+    }
+    else if (result.type === 'general') {
+        doc.setFont("helvetica", "bold");
+        setPrimary();
+        doc.text("Action Steps:", margin, y);
+        setBody();
+        y += 8;
+        doc.setFont("helvetica", "normal");
+        (result.steps || []).forEach((step: string, i: number) => {
+            const lines = doc.splitTextToSize(`${i + 1}. ${step}`, contentWidth - 10);
+            if (y > contentBottom - (lines.length + 1) * 6) addNewPage();
+            writeMultilineText(lines as string[], margin + 5, 6);
+        });
+        y += 6;
+    }
   }
 
   y += 14;

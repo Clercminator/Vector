@@ -289,11 +289,16 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
     }
 
     if (result.type === 'misogi') {
+      const toStr = (v: unknown): string =>
+        Array.isArray(v) ? v.map(String).filter(Boolean).join('\n') : (typeof v === 'string' ? v : String(v ?? ''));
+      const challenge = toStr(result.challenge);
+      const gap = toStr(result.gap);
+      const purification = toStr(result.purification);
       const copyMisogi = () => {
         const parts = [
-          `# The Challenge\n${result.challenge || ''}`,
-          `\n# The Failure Gap\n${result.gap || ''}`,
-          `\n# The Purification\n${result.purification || ''}`,
+          `# The Challenge\n${challenge}`,
+          `\n# The Failure Gap\n${gap}`,
+          `\n# The Purification\n${purification}`,
         ];
         navigator.clipboard.writeText(parts.join('\n'));
         toast.success(t('common.copiedToClipboard'));
@@ -313,7 +318,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
                  <span className="inline-block px-4 py-1.5 rounded-full bg-white/10 text-red-100 text-xs font-bold uppercase tracking-[0.3em] mb-8 border border-white/20">The Challenge (50% Fail Rate)</span>
                  <div className="text-4xl md:text-5xl font-black leading-tight tracking-tight">
                     <EditableText 
-                        value={result.challenge} 
+                        value={challenge} 
                         onChange={(val) => updateResult(['challenge'], val)} 
                         multiline 
                         className="bg-transparent border-white/20 text-center"
@@ -326,7 +331,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
               <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-gray-200 dark:border-zinc-800 shadow-xl">
                  <h4 className="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-sm mb-4">The Failure Gap</h4>
                  <EditableText 
-                    value={result.gap} 
+                    value={gap} 
                     onChange={(val) => updateResult(['gap'], val)}
                     multiline
                     className="text-xl font-medium text-gray-900 dark:text-gray-100 leading-relaxed"
@@ -335,7 +340,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
               <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-gray-200 dark:border-zinc-800 shadow-xl">
                  <h4 className="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-sm mb-4">The Purification</h4>
                  <EditableText 
-                    value={result.purification} 
+                    value={purification} 
                     onChange={(val) => updateResult(['purification'], val)}
                     multiline
                     className="text-xl font-medium text-gray-900 dark:text-gray-100 leading-relaxed"
@@ -375,6 +380,40 @@ export const WizardResult: React.FC<WizardResultProps> = ({ result, updateResult
       return (
         <Wrapper>
           <DsssView result={result} updateResult={updateResult} />
+        </Wrapper>
+      );
+    }
+
+    if (result.type === 'general') {
+      const steps = Array.isArray(result.steps) ? result.steps : [];
+      const copyGeneral = () => {
+        const parts = `# ${t('general.steps') || 'Action Steps'}\n${steps.map((s: string, i: number) => `${i + 1}. ${s}`).join('\n')}`;
+        navigator.clipboard.writeText(parts);
+        toast.success(t('common.copiedToClipboard'));
+      };
+      return (
+        <Wrapper>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-8 w-full max-w-4xl mx-auto space-y-6">
+            <div className="flex justify-end mb-4">
+              <button type="button" onClick={copyGeneral} className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95 cursor-pointer" aria-label="Copy strategy">
+                <Copy size={16} />
+                Copy Strategy
+              </button>
+            </div>
+            <div className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-zinc-700/80 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 flex items-center justify-center font-semibold">
+                  <Layers size={20} />
+                </div>
+                <h4 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">{t('general.steps') || 'Action Steps'}</h4>
+              </div>
+              <EditableList
+                items={steps}
+                onChange={(val) => updateResult(['steps'], val)}
+                itemClassName="text-base md:text-lg text-gray-700 dark:text-gray-200 leading-relaxed pl-5 py-2 border-l-2 border-slate-300 dark:border-zinc-600 hover:border-blue-500 dark:hover:border-blue-400 transition-colors"
+              />
+            </div>
+          </motion.div>
         </Wrapper>
       );
     }

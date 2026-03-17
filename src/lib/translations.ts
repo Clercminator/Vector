@@ -723,6 +723,7 @@ export const translations = {
       "Based on these truths, what's a completely new way to build this from the ground up?",
     "fp.truths": "Fundamental Truths",
     "fp.newApproach": "The New Architecture",
+    "general.steps": "Action Steps",
     "common.addItem": "Add Item",
     "common.copiedToClipboard": "Copied to clipboard",
     "common.clickToEdit": "Click to edit...",
@@ -1787,6 +1788,9 @@ export const translations = {
       "¿Cuáles son las verdades fundamentales que sabes con certeza? Desglosa el problema en hechos innegociables.",
     "fp.q3":
       "Basado en estas verdades, ¿cuál es una forma completamente nueva de construir esto desde cero?",
+    "fp.truths": "Verdades Fundamentales",
+    "fp.newApproach": "La Nueva Arquitectura",
+    "general.steps": "Pasos de Acción",
 
     // Admin Dashboard
     "admin.title": "Panel de Administración",

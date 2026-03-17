@@ -1,4 +1,4 @@
-export type FrameworkId = "first-principles" | "pareto" | "rpm" | "eisenhower" | "okr" | "misogi" | "mandalas" | "ikigai" | "general";
+export type FrameworkId = "first-principles" | "pareto" | "rpm" | "eisenhower" | "okr" | "dsss" | "mandalas" | "gps" | "misogi" | "ikigai" | "general";
 
 export type BlueprintResult =
   | { type: "first-principles"; truths: string[]; newApproach: string }
@@ -11,6 +11,7 @@ export type BlueprintResult =
   | { type: "dsss"; deconstruct: string[]; selection: string[]; sequence: string[]; stakes: string }
   | { type: "gps"; goal: string; plan: string[]; system: string[]; anti_goals?: string[] }
   | { type: "misogi"; challenge: string | string[]; gap: string | string[]; purification: string | string[] }
+  | { type: "general"; steps: string[] }
   | Record<string, unknown>;
 
 export interface Blueprint {
