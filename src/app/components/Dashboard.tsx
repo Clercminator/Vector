@@ -375,6 +375,8 @@ export function Dashboard({
                             <button 
                                 onClick={(e) => togglePin(e, bp.id)}
                                 className={`cursor-pointer p-2 rounded-full transition-colors hover:bg-white/50 dark:hover:bg-black/20 ${isPinned ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600 hover:text-yellow-400'}`}
+                                title={isPinned ? (t('dashboard.unpin') || 'Unpin') : (t('dashboard.pin') || 'Pin')}
+                                aria-label={isPinned ? (t('dashboard.unpin') || 'Unpin') : (t('dashboard.pin') || 'Pin')}
                             >
                                 <Star size={20} fill={isPinned ? "currentColor" : "none"} />
                             </button>
@@ -442,13 +444,13 @@ export function Dashboard({
                             Open <ArrowRight size={14} />
                         </span>
                         
-                        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex gap-2 items-center" onClick={(e) => e.stopPropagation()}>
                              <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     navigate(`/track/${bp.id}`);
                                 }}
-                                className="px-3 py-1.5 text-xs font-bold bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/40 dark:hover:bg-blue-800/60 text-blue-700 dark:text-blue-300 rounded-full transition-colors cursor-pointer"
+                                className="min-h-[44px] px-4 py-2.5 text-sm font-bold bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/40 dark:hover:bg-blue-800/60 text-blue-700 dark:text-blue-300 rounded-full transition-colors cursor-pointer touch-manipulation"
                              >
                                  {t('dashboard.track')}
                              </button>
@@ -458,10 +460,10 @@ export function Dashboard({
                                     e.stopPropagation();
                                     setDeleteId(bp.id); // Trigger dialog
                                 }}
-                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
-                                title="Delete"
+                                className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors cursor-pointer touch-manipulation"
+                                title={t('dashboard.delete') || 'Delete'}
                              >
-                                 <Trash2 size={16} />
+                                 <Trash2 size={18} />
                              </button>
                         </div>
                     </div>
@@ -510,8 +512,8 @@ export function Dashboard({
                         )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                        <button onClick={(e) => { e.stopPropagation(); navigate(`/track/${bp.id}`); }} className="text-blue-600 dark:text-blue-400 font-bold text-sm bg-blue-100/50 dark:bg-blue-900/40 hover:bg-blue-100 dark:hover:bg-blue-800/60 transition-colors px-4 py-2 rounded-xl">Track</button>
-                        <button onClick={(e) => { e.stopPropagation(); setDeleteId(bp.id); }} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors shrink-0">
+                        <button onClick={(e) => { e.stopPropagation(); navigate(`/track/${bp.id}`); }} className="min-h-[44px] text-blue-600 dark:text-blue-400 font-bold text-sm bg-blue-100/50 dark:bg-blue-900/40 hover:bg-blue-100 dark:hover:bg-blue-800/60 transition-colors px-4 py-2 rounded-xl touch-manipulation" title={t('dashboard.track')}>{t('dashboard.track')}</button>
+                        <button onClick={(e) => { e.stopPropagation(); setDeleteId(bp.id); }} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center" title={t('dashboard.delete') || 'Delete'} aria-label={t('dashboard.delete') || 'Delete'}>
                             <Trash2 size={18} />
                         </button>
                     </div>
@@ -545,7 +547,7 @@ export function Dashboard({
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${theme.iconBg} ${theme.iconColor}`}>
                               <Icon size={18} />
                           </div>
-                          <button onClick={(e) => { e.stopPropagation(); setDeleteId(bp.id); }} className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg transition-colors">
+                          <button onClick={(e) => { e.stopPropagation(); setDeleteId(bp.id); }} className="min-h-[44px] min-w-[44px] flex items-center justify-center p-1.5 text-gray-400 hover:text-red-500 rounded-lg transition-colors" title={t('dashboard.delete') || 'Delete'} aria-label={t('dashboard.delete') || 'Delete'}>
                               <Trash2 size={16} />
                           </button>
                       </div>

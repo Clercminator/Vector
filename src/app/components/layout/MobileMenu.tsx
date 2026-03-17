@@ -38,18 +38,18 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-white dark:bg-zinc-950 pt-24 px-6 flex flex-col gap-6"
+            className="fixed inset-0 z-40 bg-white dark:bg-zinc-950 pt-24 px-6 pb-8 flex flex-col gap-6 overflow-y-auto overflow-x-hidden"
         >
-            <button onClick={() => { navigate('/'); onClose(); }} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.frameworks')}</button>
-            <button onClick={() => { navigate('/community'); onClose(); }} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/community' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.community')}</button>
+            <button onClick={() => { navigate('/'); onClose(); }} className={`min-h-[48px] flex items-center text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left w-full ${location.pathname === '/' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.frameworks')}</button>
+            <button onClick={() => { navigate('/community'); onClose(); }} className={`min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/community' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.community')}</button>
             {userEmail && (
-                <button onClick={() => { navigate('/today'); onClose(); }} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/today' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('tracker.today') || 'Today'}</button>
+                <button onClick={() => { navigate('/today'); onClose(); }} className={`min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/today' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('tracker.today') || 'Today'}</button>
             )}
             {userEmail && (
-                <button onClick={() => { navigate('/dashboard'); onClose(); }} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/dashboard' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.blueprints')}</button>
+                <button onClick={() => { navigate('/dashboard'); onClose(); }} className={`min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/dashboard' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.blueprints')}</button>
             )}
-            <button onClick={() => { navigate('/pricing'); onClose(); }} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/pricing' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.pricing')}</button>
-            <button onClick={() => { navigate('/about'); onClose(); }} className={`text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/about' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.about')}</button>
+            <button onClick={() => { navigate('/pricing'); onClose(); }} className={`min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/pricing' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.pricing')}</button>
+            <button onClick={() => { navigate('/about'); onClose(); }} className={`min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === '/about' ? 'text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2' : 'text-gray-600 dark:text-gray-400'}`}>{t('nav.about')}</button>
             
             <div className="flex items-center gap-4 py-4">
                 <ThemeToggle />
@@ -57,7 +57,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             </div>
 
             {userEmail && (
-                <button onClick={() => { navigate('/profile'); onClose(); }} className="text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white flex items-center gap-3">
+                <button onClick={() => { navigate('/profile'); onClose(); }} className="min-h-[48px] text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white flex items-center gap-3 w-full">
                     <Avatar className="w-8 h-8">
                         <AvatarImage src={avatarUrl || ''} />
                         <AvatarFallback className="bg-gray-100 dark:bg-zinc-800 text-xs text-black dark:text-white">
@@ -68,18 +68,18 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                 </button>
             )}
             {isAdmin && (
-                <button onClick={() => { navigate('/admin'); onClose(); }} className="text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white">{t('nav.admin')}</button>
+                <button onClick={() => { navigate('/admin'); onClose(); }} className="min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white">{t('nav.admin')}</button>
             )}
             <button
                 onClick={() => {
                     onClose();
                     userEmail ? onSignOut() : onSignIn();
                 }}
-                className="text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white"
+                className="min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white"
             >
                 {userEmail ? t('nav.signout') : t('nav.signin')}
             </button>
-            <button onClick={() => { onGetStarted(); onClose(); }} className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-lg font-bold">{t('nav.getStarted')}</button>
+            <button onClick={() => { onGetStarted(); onClose(); }} className="w-full min-h-[48px] py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-lg font-bold touch-manipulation">{t('nav.getStarted')}</button>
         </motion.div>
     );
 };

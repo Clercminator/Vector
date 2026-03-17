@@ -244,7 +244,7 @@ export function TodayPage() {
                                 type="button"
                                 aria-label={t('tracker.logToday') || 'Log today'}
                                 onClick={(e) => { e.stopPropagation(); handleQuickLog(blueprint.id); }}
-                                className="w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-white shadow-lg flex-shrink-0 cursor-pointer"
+                                className="min-h-[48px] min-w-[48px] w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-white shadow-lg flex-shrink-0 cursor-pointer touch-manipulation"
                               >
                                 <Plus size={32} />
                               </button>
@@ -287,7 +287,7 @@ export function TodayPage() {
                             type="button"
                             aria-label={t('tracker.backToPlans') || 'Open tracker'}
                             onClick={(e) => { e.stopPropagation(); navigate(`/track/${blueprint.id}`); }}
-                            className="px-4 py-2 rounded-xl font-bold text-sm bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors cursor-pointer"
+                            className="min-h-[44px] px-4 py-2 rounded-xl font-bold text-sm bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors cursor-pointer touch-manipulation"
                           >
                             {allDone ? (t('tracker.status.completed') || 'Done') : (t('tracker.openTracker') || 'Open')}
                           </button>

@@ -89,8 +89,8 @@ export const Header: React.FC<HeaderProps> = ({
                     </button>
                 </div>
 
-                {/* Mobile Menu Toggle */}
-                <button className="md:hidden text-gray-900 dark:text-white" onClick={onMenuToggle}>
+                {/* Mobile Menu Toggle - 44px min touch target */}
+                <button className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2 -m-2 text-gray-900 dark:text-white touch-manipulation" onClick={onMenuToggle} aria-expanded={isMenuOpen ? "true" : "false"} aria-label={isMenuOpen ? t('common.close') : 'Menu'}>
                     {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
             </div>

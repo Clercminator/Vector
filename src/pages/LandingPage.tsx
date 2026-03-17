@@ -89,7 +89,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
                         <motion.button
                             onClick={onHeroGetStarted ?? onShowHelpChoose}
-                            className="cursor-pointer group relative px-10 py-5 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-lg md:text-xl font-bold flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-2xl shadow-black/25 dark:shadow-white/10 border-2 border-transparent hover:border-gray-300 dark:hover:border-zinc-600 overflow-hidden"
+                            className="cursor-pointer group relative min-h-[48px] px-10 py-5 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-lg md:text-xl font-bold flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-2xl shadow-black/25 dark:shadow-white/10 border-2 border-transparent hover:border-gray-300 dark:hover:border-zinc-600 overflow-hidden touch-manipulation"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             initial={{ opacity: 0, y: 10 }}
@@ -110,7 +110,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         {onGoToChat && (
                             <motion.button
                                 onClick={onGoToChat}
-                                className="cursor-pointer px-8 py-4 rounded-2xl text-base md:text-lg font-semibold border-2 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-gray-400 dark:hover:border-zinc-500 transition-colors"
+                                className="cursor-pointer min-h-[48px] px-8 py-4 rounded-2xl text-base md:text-lg font-semibold border-2 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-gray-400 dark:hover:border-zinc-500 transition-colors touch-manipulation"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 initial={{ opacity: 0, y: 10 }}

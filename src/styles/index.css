@@ -2,6 +2,14 @@
 @import "./tailwind.css";
 @import "./theme.css";
 
+/* Mobile: prevent horizontal overflow and improve tap response */
+html, body {
+  overflow-x: hidden;
+}
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
 /* Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;

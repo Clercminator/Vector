@@ -547,48 +547,58 @@ export function TrackerPage() {
                 </h1>
             </div>
             
-            <div className="shrink-0 flex items-center gap-2">
-                {isInfinite && (
+            <div className="shrink-0 flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2">
+                    {isInfinite && (
+                        <button 
+                          onClick={() => setIsSetbackModalOpen(true)}
+                          className="min-h-[44px] px-3 py-2.5 rounded-xl border border-red-200 dark:border-red-900/40 text-sm font-bold bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors cursor-pointer touch-manipulation"
+                        >
+                          {t('tracker.logSetback') || "Log Setback"}
+                        </button>
+                    )}
                     <button 
-                      onClick={() => setIsSetbackModalOpen(true)}
-                      className="px-3 py-2.5 rounded-xl border border-red-200 dark:border-red-900/40 text-sm font-bold bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors cursor-pointer"
+                      onClick={handleShare}
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2.5 rounded-xl border border-blue-200 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors cursor-pointer touch-manipulation"
+                      title={t('tracker.share.title') || "Share Plan"}
                     >
-                      {t('tracker.logSetback') || "Log Setback"}
+                      <Share2 size={20} />
                     </button>
-                )}
-                <button 
-                  onClick={handleShare}
-                  className="p-2.5 rounded-xl border border-blue-200 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors cursor-pointer"
-                  title={t('tracker.share.title') || "Share Plan"}
-                >
-                  <Share2 size={20} />
-                </button>
-                <button 
-                  onClick={() => setIsEditPanelOpen(true)}
-                  className="p-2.5 rounded-xl border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                >
-                  <Settings size={20} />
-                </button>
-                <select 
-                    value={dateRange} 
-                    onChange={e => setDateRange(e.target.value as any)}
-                    className="bg-white dark:bg-zinc-800 border font-bold border-gray-200 dark:border-zinc-700 text-sm rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                >
-                    <option value="all">{t('tracker.rangeAll') || "All Time"}</option>
-                    <option value="7days">{t('tracker.range7Days') || "Last 7 Days"}</option>
-                    <option value="30days">{t('tracker.range30Days') || "Last 30 Days"}</option>
-                    <option value="this_year">{t('tracker.rangeYear') || "This Year"}</option>
-                </select>
-                <select 
-                    value={tracker?.status || 'active'} 
-                    onChange={handleStatusChange}
-                    className="bg-white dark:bg-zinc-800 border font-bold border-gray-200 dark:border-zinc-700 text-sm rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                >
-                    <option value="active">{t('tracker.status.active')}</option>
-                    <option value="completed">{t('tracker.status.completed')}</option>
-                    <option value="paused">{t('tracker.status.paused')}</option>
-                    <option value="abandoned">{t('tracker.status.abandoned')}</option>
-                </select>
+                    <button 
+                      onClick={() => setIsEditPanelOpen(true)}
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2.5 rounded-xl border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer touch-manipulation"
+                      title={t('tracker.settings') || 'Settings'}
+                      aria-label={t('tracker.settings') || 'Settings'}
+                    >
+                      <Settings size={20} />
+                    </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <select 
+                        value={dateRange} 
+                        onChange={e => setDateRange(e.target.value as any)}
+                        className="min-h-[44px] bg-white dark:bg-zinc-800 border font-bold border-gray-200 dark:border-zinc-700 text-sm rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer touch-manipulation flex-1 sm:flex-none min-w-0"
+                        aria-label={t('tracker.rangeAll') || 'Date range'}
+                        title={t('tracker.rangeAll') || 'Date range'}
+                    >
+                        <option value="all">{t('tracker.rangeAll') || "All Time"}</option>
+                        <option value="7days">{t('tracker.range7Days') || "Last 7 Days"}</option>
+                        <option value="30days">{t('tracker.range30Days') || "Last 30 Days"}</option>
+                        <option value="this_year">{t('tracker.rangeYear') || "This Year"}</option>
+                    </select>
+                    <select 
+                        value={tracker?.status || 'active'} 
+                        onChange={handleStatusChange}
+                        className="min-h-[44px] bg-white dark:bg-zinc-800 border font-bold border-gray-200 dark:border-zinc-700 text-sm rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer touch-manipulation flex-1 sm:flex-none min-w-0"
+                        aria-label={t('tracker.status.active') || 'Plan status'}
+                        title={t('tracker.status.active') || 'Plan status'}
+                    >
+                        <option value="active">{t('tracker.status.active')}</option>
+                        <option value="completed">{t('tracker.status.completed')}</option>
+                        <option value="paused">{t('tracker.status.paused')}</option>
+                        <option value="abandoned">{t('tracker.status.abandoned')}</option>
+                    </select>
+                </div>
             </div>
         </div>
       </div>
