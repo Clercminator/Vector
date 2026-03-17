@@ -120,7 +120,7 @@ export function TrackerSubGoals({ blueprintId, userId, color }: { blueprintId: s
         <h2 className="text-xl font-bold flex items-center gap-2">
             <Target size={20} className="text-indigo-500" /> {t('tracker.subGoals') || "Sub-goals"}
         </h2>
-        <Button onClick={() => setIsAdding(true)} variant="outline" size="sm" className="gap-1 rounded-xl">
+        <Button onClick={() => setIsAdding(true)} variant="outline" size="sm" className="gap-1 rounded-xl cursor-pointer">
             <Plus size={16} /> {t('tracker.addSubGoal') || "Add"}
         </Button>
       </div>

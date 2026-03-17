@@ -520,10 +520,10 @@ export function TrackerPage() {
     : null;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto px-4 py-8 pb-32">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8 pb-32">
       {/* Header */}
       <div className="mb-8 border-b border-gray-200 dark:border-zinc-800 pb-6">
-        <button onClick={() => navigate('/dashboard')} className="flex items-center text-sm font-bold text-gray-500 hover:text-black dark:hover:text-white transition-colors mb-6">
+        <button onClick={() => navigate('/dashboard')} className="flex items-center text-sm font-bold text-gray-500 hover:text-black dark:hover:text-white transition-colors mb-6 cursor-pointer">
           <ArrowLeft size={16} className="mr-1" /> {t('tracker.backToPlans')}
         </button>
         
@@ -542,7 +542,7 @@ export function TrackerPage() {
                         </span>
                     )}
                 </div>
-                <h1 className="text-3xl md:text-5xl font-black text-black dark:text-white leading-tight mt-2 flex items-center gap-3">
+                <h1 className="text-3xl md:text-5xl font-black text-black dark:text-white leading-tight mt-2 flex items-center gap-3 line-clamp-3 break-words">
                     {blueprint.title}
                 </h1>
             </div>
@@ -551,28 +551,28 @@ export function TrackerPage() {
                 {isInfinite && (
                     <button 
                       onClick={() => setIsSetbackModalOpen(true)}
-                      className="px-3 py-2.5 rounded-xl border border-red-200 dark:border-red-900/40 text-sm font-bold bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                      className="px-3 py-2.5 rounded-xl border border-red-200 dark:border-red-900/40 text-sm font-bold bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors cursor-pointer"
                     >
                       {t('tracker.logSetback') || "Log Setback"}
                     </button>
                 )}
                 <button 
                   onClick={handleShare}
-                  className="p-2.5 rounded-xl border border-blue-200 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                  className="p-2.5 rounded-xl border border-blue-200 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors cursor-pointer"
                   title={t('tracker.share.title') || "Share Plan"}
                 >
                   <Share2 size={20} />
                 </button>
                 <button 
                   onClick={() => setIsEditPanelOpen(true)}
-                  className="p-2.5 rounded-xl border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                  className="p-2.5 rounded-xl border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   <Settings size={20} />
                 </button>
                 <select 
                     value={dateRange} 
                     onChange={e => setDateRange(e.target.value as any)}
-                    className="bg-white dark:bg-zinc-800 border font-bold border-gray-200 dark:border-zinc-700 text-sm rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500"
+                    className="bg-white dark:bg-zinc-800 border font-bold border-gray-200 dark:border-zinc-700 text-sm rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                 >
                     <option value="all">{t('tracker.rangeAll') || "All Time"}</option>
                     <option value="7days">{t('tracker.range7Days') || "Last 7 Days"}</option>
@@ -582,7 +582,7 @@ export function TrackerPage() {
                 <select 
                     value={tracker?.status || 'active'} 
                     onChange={handleStatusChange}
-                    className="bg-white dark:bg-zinc-800 border font-bold border-gray-200 dark:border-zinc-700 text-sm rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500"
+                    className="bg-white dark:bg-zinc-800 border font-bold border-gray-200 dark:border-zinc-700 text-sm rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                 >
                     <option value="active">{t('tracker.status.active')}</option>
                     <option value="completed">{t('tracker.status.completed')}</option>

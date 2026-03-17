@@ -111,7 +111,7 @@ export function SharedPlanView() {
   const score = getScorePercentage(logs, tracker, steps.length, 7);
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto px-4 py-8 pb-32">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8 pb-32">
        {/* Header */}
       <div className="mb-8 border-b border-gray-200 dark:border-zinc-800 pb-6 relative">
         <button onClick={() => navigate('/')} className="flex items-center text-sm font-bold text-gray-500 hover:text-black dark:hover:text-white transition-colors mb-6">

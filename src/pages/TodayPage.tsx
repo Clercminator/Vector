@@ -186,7 +186,7 @@ export function TodayPage() {
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-32 px-4 max-w-4xl mx-auto">
+    <div className="min-h-screen pt-24 pb-32 px-4 md:px-6 lg:px-8 max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto">
       <div className="mb-10 text-center">
         <h1 className="text-4xl md:text-5xl font-black mb-3 tracking-tight text-black dark:text-white uppercase flex flex-col items-center gap-2">
             <CalendarHeart size={48} className="text-blue-500 mb-2" />
@@ -225,8 +225,8 @@ export function TodayPage() {
                           className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all cursor-pointer ${completedToday ? 'bg-gray-50 dark:bg-zinc-800/50 border-gray-200 dark:border-zinc-800' : 'bg-white dark:bg-zinc-900 border-blue-200 dark:border-blue-900 hover:border-blue-300 shadow-sm'}`}
                           onClick={() => navigate(`/track/${blueprint.id}`)}
                         >
-                          <div className="flex-1 pr-4">
-                            <h3 className={`text-lg md:text-xl font-bold mb-1 ${completedToday ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                          <div className="flex-1 min-w-0 pr-4">
+                            <h3 className={`text-lg md:text-xl font-bold mb-1 line-clamp-3 break-words ${completedToday ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
                               {blueprint.title}
                             </h3>
                             <p className="text-sm font-bold text-gray-500 flex items-center gap-2">
@@ -244,7 +244,7 @@ export function TodayPage() {
                                 type="button"
                                 aria-label={t('tracker.logToday') || 'Log today'}
                                 onClick={(e) => { e.stopPropagation(); handleQuickLog(blueprint.id); }}
-                                className="w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-white shadow-lg cursor-pointer flex-shrink-0"
+                                className="w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-white shadow-lg flex-shrink-0 cursor-pointer"
                               >
                                 <Plus size={32} />
                               </button>
@@ -264,27 +264,30 @@ export function TodayPage() {
                         className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all cursor-pointer ${allDone ? 'bg-gray-50 dark:bg-zinc-800/50 border-gray-200 dark:border-zinc-800' : 'bg-white dark:bg-zinc-900 border-amber-200 dark:border-amber-900/50 hover:border-amber-300 shadow-sm'}`}
                         onClick={() => navigate(`/track/${blueprint.id}`)}
                       >
-                        <div className="flex-1 pr-4">
-                          <h3 className={`text-lg md:text-xl font-bold mb-1 ${allDone ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                        <div className="flex-1 min-w-0 pr-4">
+                          <h3 className={`text-lg md:text-xl font-bold mb-1 line-clamp-3 break-words ${allDone ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
                             {blueprint.title}
                           </h3>
-                          <p className="text-sm font-bold text-gray-500 flex items-center gap-2">
+                          <p className="text-sm font-bold text-gray-500 flex items-center gap-2 mt-1">
                             <Target size={14} className={allDone ? 'text-gray-400' : 'text-amber-500'} />
-                            {completedSteps} / {totalSteps} {t('tracker.steps') || 'steps'}
+                            {completedSteps} / {totalSteps} {t('tracker.steps') || 'Steps'}
                           </p>
                         </div>
                         <div className="shrink-0 flex items-center gap-2">
-                          <div className="w-24 h-10 rounded-full bg-gray-200 dark:bg-zinc-700 overflow-hidden flex">
+                          <div className="relative w-24 h-10 rounded-full bg-gray-200 dark:bg-zinc-700 overflow-hidden flex items-center justify-center">
                             <div
-                              className="h-full bg-amber-500 dark:bg-amber-600 transition-all"
+                              className="absolute left-0 top-0 bottom-0 bg-amber-500 dark:bg-amber-600 transition-all rounded-full"
                               style={{ width: `${totalSteps ? (completedSteps / totalSteps) * 100 : 0}%` }}
                             />
+                            <span className="relative z-10 text-xs font-bold text-gray-600 dark:text-gray-300 tabular-nums">
+                              {completedSteps}/{totalSteps}
+                            </span>
                           </div>
                           <button
                             type="button"
                             aria-label={t('tracker.backToPlans') || 'Open tracker'}
                             onClick={(e) => { e.stopPropagation(); navigate(`/track/${blueprint.id}`); }}
-                            className="px-4 py-2 rounded-xl font-bold text-sm bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors"
+                            className="px-4 py-2 rounded-xl font-bold text-sm bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors cursor-pointer"
                           >
                             {allDone ? (t('tracker.status.completed') || 'Done') : (t('tracker.openTracker') || 'Open')}
                           </button>

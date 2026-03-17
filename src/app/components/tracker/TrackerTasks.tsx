@@ -117,7 +117,7 @@ export function TrackerTasks({ blueprintId, userId, color }: { blueprintId: stri
         <h2 className="text-xl font-bold flex items-center gap-2">
             <CheckSquare size={20} className="text-cyan-500" /> {t('tracker.relatedTasks') || "Related Tasks"}
         </h2>
-        <Button onClick={() => setIsAdding(true)} variant="outline" size="sm" className="gap-1 rounded-xl">
+        <Button onClick={() => setIsAdding(true)} variant="outline" size="sm" className="gap-1 rounded-xl cursor-pointer">
             <Plus size={16} /> {t('tracker.addTask') || "Add"}
         </Button>
       </div>
