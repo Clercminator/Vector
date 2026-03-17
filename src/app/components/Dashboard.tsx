@@ -437,7 +437,7 @@ export function Dashboard({
                         )}
                     </div>
 
-                    <div className="mt-8 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300">
+                    <div className="mt-8 flex justify-between items-center">
                         <span className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1">
                             Open <ArrowRight size={14} />
                         </span>

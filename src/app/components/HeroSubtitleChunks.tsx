@@ -19,8 +19,8 @@ export function HeroSubtitleChunks() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center min-h-[4rem] md:min-h-[5rem] overflow-hidden relative mb-8">
-      <div className="w-full flex justify-center items-center overflow-hidden relative min-h-[4rem] md:min-h-[5rem]">
+    <div className="flex flex-col items-center min-h-[6.5rem] md:min-h-[5rem] overflow-hidden relative mb-8">
+      <div className="w-full flex justify-center items-center overflow-hidden relative min-h-[6.5rem] md:min-h-[5rem]">
         <AnimatePresence mode="wait">
           <motion.p
             key={index}
@@ -28,7 +28,7 @@ export function HeroSubtitleChunks() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.4 }}
-            className="text-xl md:text-2xl text-gray-500 font-light max-w-4xl mx-auto leading-relaxed text-center absolute inset-x-0"
+            className="text-xl md:text-2xl text-gray-500 font-light max-w-4xl mx-auto leading-relaxed text-center absolute inset-x-0 px-2"
           >
             {chunks[index]}
           </motion.p>
