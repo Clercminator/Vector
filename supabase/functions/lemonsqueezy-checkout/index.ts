@@ -79,6 +79,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
       },
     };
 
+    // Helpful for debugging 4xx/5xx from Lemon Squeezy without leaking secrets.
+    console.log("lemonsqueezy-checkout request", {
+      tier,
+      hasApiKey: Boolean(apiKey?.trim()),
+      storeIdConfigured: Boolean(storeId?.trim()),
+      variantId: variantId ? String(variantId) : null,
+      userIdProvided: Boolean(userId),
+      userEmailProvided: Boolean(userEmail?.trim()),
+      redirectUrlHost: (() => {
+        try {
+          return new URL(redirectUrl).host;
+        } catch {
+          return null;
+        }
+      })(),
+    });
+
     const res = await fetch(`${LEMONSQUEEZY_API}/checkouts`, {
       method: "POST",
       headers: {
@@ -93,6 +110,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     if (!res.ok) {
       const errMsg = data?.errors?.[0]?.detail ?? data?.errors?.[0]?.title ?? "Lemon Squeezy API error";
+      console.error("lemonsqueezy-checkout Lemon Squeezy error", {
+        status: res.status,
+        title: data?.errors?.[0]?.title ?? null,
+        detail: data?.errors?.[0]?.detail ?? null,
+        // Keep response small; data might contain extra fields.
+        identifiers: {
+          storeId,
+          variantId,
+        },
+      });
       return new Response(
         JSON.stringify({ error: errMsg }),
         { status: res.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
