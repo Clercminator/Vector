@@ -288,7 +288,7 @@ export const translations = {
     "pricing.tier.enterprise.desc":
       "For teams and organizations requiring scale and control.",
     "pricing.cta.start": "Start Building",
-    "pricing.cta.standard": "Get Standard",
+    "pricing.cta.standard": "Get Builder",
     "pricing.cta.max": "Get Max",
     "pricing.cta.contact": "Contact Sales",
     "pricing.feature.architect.plans": "{0} plan",
