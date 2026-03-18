@@ -9,3 +9,7 @@ verify_jwt = false
 [functions.openrouter-proxy]
 # Allow requests with apikey only (agent runs for both logged-in and guest users).
 verify_jwt = false
+
+[functions.lemonsqueezy-checkout]
+# Allow unauthenticated invoke (pricing buttons). Auth is optional; user_id in body for post-purchase upgrade.
+verify_jwt = false

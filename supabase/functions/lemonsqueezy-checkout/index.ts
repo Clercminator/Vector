@@ -30,13 +30,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     });
   }
 
-  const apiKey = Deno.env.get("LEMONSQUEEZY_API_KEY");
-  const storeId = Deno.env.get("LEMONSQUEEZY_STORE_ID");
+  const apiKey = Deno.env.get("LEMONSQUEEZY_API_KEY")?.trim() ?? "";
+  const storeId = Deno.env.get("LEMONSQUEEZY_STORE_ID")?.trim() ?? "";
   const variantStandard =
-    Deno.env.get("LEMONSQUEEZY_VARIANT_STANDARD") ?? Deno.env.get("LEMONSQUEEZY_VARIANT_BUILDER");
-  const variantMax = Deno.env.get("LEMONSQUEEZY_VARIANT_MAX");
+    (Deno.env.get("LEMONSQUEEZY_VARIANT_STANDARD") ?? Deno.env.get("LEMONSQUEEZY_VARIANT_BUILDER"))?.trim() ?? "";
+  const variantMax = Deno.env.get("LEMONSQUEEZY_VARIANT_MAX")?.trim() ?? "";
 
-  if (!apiKey?.trim() || !storeId?.trim()) {
+  if (!apiKey || !storeId) {
     return new Response(
       JSON.stringify({ error: "LEMONSQUEEZY_API_KEY or LEMONSQUEEZY_STORE_ID not configured" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -51,7 +51,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const redirectUrl = body.redirect_url ?? "https://vectorplan.xyz/dashboard?payment=success";
 
     const variantId = tier === "max" ? variantMax : variantStandard;
-    if (!variantId?.trim()) {
+    if (!variantId) {
       return new Response(
         JSON.stringify({
           error: `Variant for tier "${tier}" not configured. Set LEMONSQUEEZY_VARIANT_STANDARD and LEMONSQUEEZY_VARIANT_MAX in Supabase Secrets.`,
