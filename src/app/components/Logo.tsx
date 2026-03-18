@@ -26,7 +26,7 @@ export function Logo({ className, imgClassName = "object-contain", size }: LogoP
       style={style}
     >
       <img 
-        src="/logo.png" 
+        src="/images/Logos/logo.png" 
         alt="Vector Logo" 
         className={cn("w-full h-full", imgClassName)}
       />
