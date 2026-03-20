@@ -122,6 +122,7 @@ export function TrackerPage({ effectiveUserId: effectiveUserIdProp, isImpersonat
       .from('blueprint_tracker')
       .select('*')
       .eq('blueprint_id', blueprintId)
+      .eq('user_id', effectiveUserForPage)
       .single();
 
     if (trkError && trkError.code === 'PGRST116' && !isImpersonating && user) {
@@ -146,6 +147,7 @@ export function TrackerPage({ effectiveUserId: effectiveUserIdProp, isImpersonat
       .from('goal_logs')
       .select('*')
       .eq('blueprint_id', blueprintId)
+      .eq('user_id', effectiveUserForPage)
       .order('created_at', { ascending: false })
       .limit(100);
     setLogs(gLogs || []);
@@ -177,6 +179,7 @@ export function TrackerPage({ effectiveUserId: effectiveUserIdProp, isImpersonat
 
   useEffect(() => {
     if (!supabase || !userId) return;
+    if (isImpersonating) return; // view-only: don't flush offline queues
     const runFlushThenReload = () => {
       flushPendingQueue(supabase, userId).then(({ flushed }) => {
         if (flushed > 0) loadData();
@@ -190,13 +193,14 @@ export function TrackerPage({ effectiveUserId: effectiveUserIdProp, isImpersonat
       unsub();
       window.removeEventListener('online', onOnline);
     };
-  }, [blueprintId, userId]);
+  }, [blueprintId, userId, isImpersonating]);
 
   const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (isImpersonating) {
       toast.error(t('tracker.viewOnly') || "View-only mode. Changes are disabled.");
       return;
     }
+    if (!tracker) return;
     const newStatus = e.target.value;
     const oldStatus = tracker.status;
     setTracker({ ...tracker, status: newStatus });
@@ -547,7 +551,9 @@ export function TrackerPage({ effectiveUserId: effectiveUserIdProp, isImpersonat
   const highlights = generateCalendarHighlights(filteredLogs);
   const bestStreaks = getBestStreaks(filteredLogs);
   const { streakStartedAt, count: currentStreak } = getCurrentStreakDetails(filteredLogs);
-  const score = getScorePercentage(filteredLogs, tracker, steps.length, 7); // 7-day trailing score
+  // When impersonating and the user has no tracker row yet, `tracker` may be null.
+  // Score/tracker-dependent UI should degrade gracefully instead of crashing.
+  const score = tracker ? getScorePercentage(filteredLogs, tracker, steps.length, 7) : 0; // 7-day trailing score
   const isDoneToday = highlights.has(toLocalDateKey(new Date()));
 
   const savingsAmount = tracker?.savings_enabled && tracker?.savings_baseline ? currentStreak * tracker.savings_baseline : null;
