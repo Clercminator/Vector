@@ -851,6 +851,7 @@ export function TrackerPage({ effectiveUserId: effectiveUserIdProp, isImpersonat
         </div>
       </div>
 
+      {tracker && (
       <TrackerEditPanel 
         isOpen={isEditPanelOpen} 
         onClose={() => setIsEditPanelOpen(false)} 
@@ -858,6 +859,7 @@ export function TrackerPage({ effectiveUserId: effectiveUserIdProp, isImpersonat
         tracker={tracker} 
         onSave={handleSaveSettings} 
       />
+      )}
 
       <TrackerPastEditModal 
         isOpen={isPastEditModalOpen} 

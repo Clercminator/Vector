@@ -57,7 +57,7 @@ export function BinancePaymentModal({
 
           <div className="flex flex-col items-center gap-3">
             <img
-              src="/QR.png"
+              src="/images/Payment/QR.png"
               alt="Binance Pay QR Code"
               className="w-64 h-64 min-w-[200px] min-h-[200px] max-w-[280px] max-h-[280px] object-contain rounded-lg border border-gray-200 dark:border-zinc-700"
             />
