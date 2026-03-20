@@ -60,3 +60,9 @@ Redeploy or wait for the next cold start so the functions pick up the new secret
 - **Get Builder** / **Get Max** (US/EU) → `lemonsqueezy-checkout` creates a checkout with `user_id` in custom data → user is sent to Lemon Squeezy payment.
 - After payment, Lemon Squeezy sends **order_created** to `lemonsqueezy-webhook` → handler verifies signature, updates `profiles.tier` and credits, inserts into `payments`, optionally sends email.
 - User can be redirected to `?payment=success` via the checkout’s `redirect_url` (set in the edge function).
+
+---
+
+## Webhook 401 errors
+
+The `lemonsqueezy-webhook` Edge Function is configured with `verify_jwt = false` in `supabase/config.toml` so it accepts unauthenticated POST requests from Lemon Squeezy. If webhooks return 401, ensure you have deployed with `supabase functions deploy lemonsqueezy-webhook` after the config change.

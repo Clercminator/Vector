@@ -326,6 +326,9 @@ export const translations = {
     "pricing.binance.manualNote": "Manual processing",
     "pricing.binance.manualDesc": "We process crypto payments manually. Please be patient — it may take some time. Make sure to notify us via chat after sending, or we won't know to upgrade your account.",
     "pricing.binance.openChat": "Open chat to notify us",
+    "pricing.paymentSuccess": "Payment successful! Your plan has been upgraded.",
+    "pricing.paymentFailed": "Payment failed or was cancelled.",
+    "pricing.paymentPending": "Payment is being processed. Your plan will be upgraded shortly—refresh in a moment.",
 
     // Pricing FAQ / How it works
     "pricing.faq.title": "Understanding plans & features",
@@ -1602,6 +1605,9 @@ export const translations = {
     "pricing.binance.manualNote": "Procesamiento manual",
     "pricing.binance.manualDesc": "Procesamos pagos en cripto manualmente. Por favor ten paciencia. Asegúrate de notificarnos por chat después de enviar, o no sabremos que debes recibir tu upgrade.",
     "pricing.binance.openChat": "Abrir chat para notificarnos",
+    "pricing.paymentSuccess": "¡Pago exitoso! Tu plan ha sido actualizado.",
+    "pricing.paymentFailed": "El pago falló o fue cancelado.",
+    "pricing.paymentPending": "El pago está en proceso. Tu plan se actualizará pronto—recarga en un momento.",
 
     // Pricing FAQ / How it works
     "pricing.faq.title": "Entender los planes y las funciones",
@@ -2533,6 +2539,9 @@ export const translations = {
     "pricing.cryptoComingSoon": "Pagamentos em cripto (Binance Pay) em breve. Entre em contato para ser avisado.",
     "pricing.redirectMercadoPago": "Redirecionando para pagamento...",
     "pricing.redirectLemonSqueezy": "Redirecionando para pagamento...",
+    "pricing.paymentSuccess": "Pagamento concluído! Seu plano foi atualizado.",
+    "pricing.paymentFailed": "Pagamento falhou ou foi cancelado.",
+    "pricing.paymentPending": "Pagamento em processamento. Seu plano será atualizado em breve—atualize em um momento.",
 
     // Community
     "community.title": "Modelos da Comunidade",
@@ -3064,6 +3073,9 @@ export const translations = {
     "pricing.cryptoComingSoon": "Paiements crypto (Binance Pay) bientôt disponibles. Contactez-nous pour être notifié.",
     "pricing.redirectMercadoPago": "Redirection vers le paiement...",
     "pricing.redirectLemonSqueezy": "Redirection vers le paiement...",
+    "pricing.paymentSuccess": "Paiement réussi ! Votre forfait a été mis à niveau.",
+    "pricing.paymentFailed": "Le paiement a échoué ou a été annulé.",
+    "pricing.paymentPending": "Paiement en cours. Votre forfait sera mis à niveau sous peu—actualisez dans un instant.",
 
     // Community
     "community.title": "Modèles de la Communauté",
@@ -3593,6 +3605,9 @@ export const translations = {
     "pricing.cryptoComingSoon": "Krypto-Zahlungen (Binance Pay) demnächst. Kontaktieren Sie uns für eine Benachrichtigung.",
     "pricing.redirectMercadoPago": "Weiterleitung zur Kasse...",
     "pricing.redirectLemonSqueezy": "Weiterleitung zur Kasse...",
+    "pricing.paymentSuccess": "Zahlung erfolgreich! Ihr Plan wurde aktualisiert.",
+    "pricing.paymentFailed": "Zahlung fehlgeschlagen oder abgebrochen.",
+    "pricing.paymentPending": "Zahlung wird bearbeitet. Ihr Plan wird in Kürze aktualisiert—laden Sie gleich neu.",
 
     // Community
     "community.title": "Community-Vorlagen",

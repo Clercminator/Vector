@@ -6,10 +6,18 @@
 # The frontend sends apikey via supabase.functions.invoke.
 verify_jwt = false
 
+[functions.mercado-pago-webhook]
+# MercadoPago sends webhooks without Supabase auth headers. Must accept unauthenticated POST.
+verify_jwt = false
+
 [functions.openrouter-proxy]
 # Allow requests with apikey only (agent runs for both logged-in and guest users).
 verify_jwt = false
 
 [functions.lemonsqueezy-checkout]
 # Allow unauthenticated invoke (pricing buttons). Auth is optional; user_id in body for post-purchase upgrade.
+verify_jwt = false
+
+[functions.lemonsqueezy-webhook]
+# Lemon Squeezy sends webhooks without Supabase auth headers. Must accept unauthenticated POST.
 verify_jwt = false

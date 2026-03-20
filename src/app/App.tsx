@@ -214,6 +214,15 @@ function App() {
       toast.error(
         t("pricing.paymentFailed") || "Payment failed or was cancelled.",
       );
+      window.history.replaceState({}, "", "/pricing");
+    } else if (paymentStatus === "pending") {
+      toast.info(
+        t("pricing.paymentPending") ||
+          "Payment is being processed. Your plan will be upgraded shortly—refresh in a moment.",
+      );
+      window.history.replaceState({}, "", "/dashboard");
+      refreshProfile();
+      setTimeout(refreshProfile, 5000);
     }
   }, [location.search, t]);
 

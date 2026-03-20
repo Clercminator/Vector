@@ -78,6 +78,21 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return okResponse();
     }
 
+    // Idempotency: skip if we already processed this payment (Lemon Squeezy can resend webhooks)
+    const providerPaymentId = String(body?.data?.id ?? attrs.identifier ?? "");
+    if (providerPaymentId) {
+      const { data: existing } = await supabase
+        .from("payments")
+        .select("id")
+        .eq("provider", "lemonsqueezy")
+        .eq("provider_payment_id", providerPaymentId)
+        .limit(1)
+        .maybeSingle();
+      if (existing) {
+        return okResponse();
+      }
+    }
+
     const userEmail = attrs.user_email;
     const userId = customData.user_id;
     const totalUsd = attrs.total_usd != null ? attrs.total_usd / 100 : 0;
@@ -122,7 +137,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       currency: attrs.currency || "USD",
       status: "approved",
       provider: "lemonsqueezy",
-      provider_payment_id: String(body?.data?.id ?? attrs.identifier ?? ""),
+      provider_payment_id: providerPaymentId,
       metadata: body,
     });
 
