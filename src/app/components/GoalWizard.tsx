@@ -150,7 +150,9 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
           language: language || 'en',
           userName: userName || undefined,
           messages: messages.map(m => ({ role: m.role, content: m.content })),
-        }).then(() => {}),
+        }).then(() => {
+          trackEvent('export_pdf', { framework: props.framework });
+        }),
         {
           loading: t('wizard.pdfGenerating') || 'Generating PDF…',
           success: t('wizard.pdfSuccess'),

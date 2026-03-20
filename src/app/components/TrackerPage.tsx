@@ -50,7 +50,12 @@ const FRAMEWORK_THEMES: Record<string, string> = {
   'default': 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
 };
 
-export function TrackerPage() {
+interface TrackerPageProps {
+  effectiveUserId?: string | null;
+  isImpersonating?: boolean;
+}
+
+export function TrackerPage({ effectiveUserId: effectiveUserIdProp, isImpersonating }: TrackerPageProps = {}) {
   const { blueprintId } = useParams<{ blueprintId: string }>();
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -82,12 +87,13 @@ export function TrackerPage() {
     }
     
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const effectiveUserForPage = isImpersonating && effectiveUserIdProp ? effectiveUserIdProp : user?.id;
+    if (!effectiveUserForPage) {
       setError('unauthorized');
       setLoading(false);
       return;
     }
-    setUserId(user.id);
+    setUserId(effectiveUserForPage);
 
     // Fetch blueprint
     const { data: bpData, error: bpError } = await supabase
@@ -103,7 +109,7 @@ export function TrackerPage() {
     }
 
     const bp = bpData as unknown as Blueprint;
-    if ((bpData as any).user_id !== user.id) {
+    if ((bpData as any).user_id !== effectiveUserForPage) {
       setError('unauthorized');
       setLoading(false);
       return;
@@ -111,14 +117,14 @@ export function TrackerPage() {
 
     setBlueprint(bp);
 
-    // Fetch or create tracker
+    // Fetch or create tracker (skip create when impersonating - view-only)
     let { data: trkData, error: trkError } = await supabase
       .from('blueprint_tracker')
       .select('*')
       .eq('blueprint_id', blueprintId)
       .single();
 
-    if (trkError && trkError.code === 'PGRST116') {
+    if (trkError && trkError.code === 'PGRST116' && !isImpersonating && user) {
       const kind = inferPlanKind(bp.result, bp.framework);
       const { data: newTrk } = await supabase
         .from('blueprint_tracker')
@@ -149,7 +155,7 @@ export function TrackerPage() {
 
   useEffect(() => {
     loadData();
-  }, [blueprintId]);
+  }, [blueprintId, effectiveUserIdProp, isImpersonating]);
 
   const filteredLogs = React.useMemo(() => {
     if (dateRange === 'all') return logs;
@@ -187,6 +193,10 @@ export function TrackerPage() {
   }, [blueprintId, userId]);
 
   const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (isImpersonating) {
+      toast.error(t('tracker.viewOnly') || "View-only mode. Changes are disabled.");
+      return;
+    }
     const newStatus = e.target.value;
     const oldStatus = tracker.status;
     setTracker({ ...tracker, status: newStatus });
@@ -204,6 +214,10 @@ export function TrackerPage() {
   };
 
   const handleToggleStep = async (stepId: string) => {
+    if (isImpersonating) {
+      toast.error(t('tracker.viewOnly') || "View-only mode. Changes are disabled.");
+      return;
+    }
     if (!tracker || !blueprintId) return;
     const isCompleted = tracker.completed_step_ids?.includes(stepId);
     const newCompleted = isCompleted
@@ -265,6 +279,10 @@ export function TrackerPage() {
   };
 
   const handleLogToday = async (note?: string) => {
+    if (isImpersonating) {
+      toast.error(t('tracker.viewOnly') || "View-only mode. Changes are disabled.");
+      return;
+    }
     if (!userId) return;
     const newLog = {
       blueprint_id: blueprintId,
@@ -298,6 +316,10 @@ export function TrackerPage() {
   };
 
   const handleAddJournal = async () => {
+    if (isImpersonating) {
+      toast.error(t('tracker.viewOnly') || "View-only mode. Changes are disabled.");
+      return;
+    }
     if (!userId || !journalContent.trim()) return;
     setIsSubmitting(true);
     const content = journalContent.trim();
@@ -332,6 +354,10 @@ export function TrackerPage() {
   };
 
   const handleLogSetback = async (reason: string) => {
+    if (isImpersonating) {
+      toast.error(t('tracker.viewOnly') || "View-only mode. Changes are disabled.");
+      return;
+    }
     if (!userId) return;
     const newLog = { blueprint_id: blueprintId, user_id: userId, kind: 'setback' as const, content: reason || null };
     if (!isOnline()) {
@@ -358,6 +384,10 @@ export function TrackerPage() {
   };
 
   const handleSaveSettings = async (bpUpdates: any, trUpdates: any) => {
+    if (isImpersonating) {
+      toast.error(t('tracker.viewOnly') || "View-only mode. Changes are disabled.");
+      return;
+    }
     if (!supabase) return;
     
     const p1 = supabase.from('blueprints').update(bpUpdates).eq('id', blueprintId);
@@ -372,6 +402,10 @@ export function TrackerPage() {
   };
 
   const handleSavePastEdit = async (date: Date, markActive: boolean) => {
+    if (isImpersonating) {
+      toast.error(t('tracker.viewOnly') || "View-only mode. Changes are disabled.");
+      return;
+    }
     if (!userId) return;
     const dateStr = toLocalDateKey(date);
     const existingLog = logs.find(
@@ -436,6 +470,10 @@ export function TrackerPage() {
   };
 
   const handleShare = async () => {
+    if (isImpersonating) {
+      toast.error(t('tracker.viewOnly') || "View-only mode. Changes are disabled.");
+      return;
+    }
     if (!supabase || !blueprintId) return;
     
     try {
@@ -549,7 +587,7 @@ export function TrackerPage() {
             
             <div className="shrink-0 flex flex-wrap items-center gap-2">
                 <div className="flex items-center gap-2">
-                    {isInfinite && (
+                    {isInfinite && !isImpersonating && (
                         <button 
                           onClick={() => setIsSetbackModalOpen(true)}
                           className="min-h-[44px] px-3 py-2.5 rounded-xl border border-red-200 dark:border-red-900/40 text-sm font-bold bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors cursor-pointer touch-manipulation"
@@ -557,6 +595,8 @@ export function TrackerPage() {
                           {t('tracker.logSetback') || "Log Setback"}
                         </button>
                     )}
+                    {!isImpersonating && (
+                    <>
                     <button 
                       onClick={handleShare}
                       className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2.5 rounded-xl border border-blue-200 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors cursor-pointer touch-manipulation"
@@ -572,6 +612,8 @@ export function TrackerPage() {
                     >
                       <Settings size={20} />
                     </button>
+                    </>
+                    )}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                     <select 
@@ -589,7 +631,8 @@ export function TrackerPage() {
                     <select 
                         value={tracker?.status || 'active'} 
                         onChange={handleStatusChange}
-                        className="min-h-[44px] bg-white dark:bg-zinc-800 border font-bold border-gray-200 dark:border-zinc-700 text-sm rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer touch-manipulation flex-1 sm:flex-none min-w-0"
+                        disabled={isImpersonating}
+                        className="min-h-[44px] bg-white dark:bg-zinc-800 border font-bold border-gray-200 dark:border-zinc-700 text-sm rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer touch-manipulation flex-1 sm:flex-none min-w-0 disabled:opacity-60 disabled:cursor-not-allowed"
                         aria-label={t('tracker.status.active') || 'Plan status'}
                         title={t('tracker.status.active') || 'Plan status'}
                     >

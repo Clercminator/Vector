@@ -37,6 +37,7 @@ interface ProfileProps {
   userEmail: string | null;
   onBack: () => void;
   onProfileUpdate?: () => void;
+  isReadOnly?: boolean;
 }
 
 interface ProfileData {
@@ -101,7 +102,7 @@ function getEffectiveCredits(data: ProfileData): { available: number; regularVal
 
 // ... interfaces
 
-export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileProps) {
+export function Profile({ userId, userEmail, onBack, onProfileUpdate, isReadOnly }: ProfileProps) {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -199,6 +200,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate }: ProfileP
   }, [userId]);
 
   const handleSave = async () => {
+    if (isReadOnly) return;
     if (!supabase) return;
     setSaving(true);
     try {
@@ -875,7 +877,7 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
             </div>
 
             <div className="pt-4 flex justify-end">
-              <Button onClick={handleSave} disabled={saving || loading} className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 cursor-pointer">
+              <Button onClick={handleSave} disabled={saving || loading || isReadOnly} className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-white/90 cursor-pointer">
                 {saving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

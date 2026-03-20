@@ -4,6 +4,7 @@ import { X, CheckSquare, Square, Download, Loader2 } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Blueprint } from '@/lib/blueprints';
 import { generatePdf, PdfBranding } from '@/lib/pdfExport';
+import { trackEvent } from '@/lib/analytics';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { toast } from 'sonner';
@@ -58,6 +59,7 @@ export function BulkExportModal({ blueprints, onClose, branding }: BulkExportMod
       const content = await zip.generateAsync({ type: "blob" });
       saveAs(content, "vector-blueprints.zip");
       
+      trackEvent('export_pdf', { bulk: true, count: selectedBlueprints.length });
       toast.success(`Exported ${selectedBlueprints.length} blueprints!`, { id: toastId });
       onClose();
     } catch (e) {

@@ -25,7 +25,7 @@ import { supabase } from "@/lib/supabase";
 import { createCheckout, isMercadoPagoConfigured } from "@/lib/mercadoPago";
 import { createLemonSqueezyCheckout, isLemonSqueezyConfigured } from "@/lib/lemonSqueezy";
 import { usePaymentRegion } from "@/hooks/usePaymentRegion";
-import { trackEvent, trackPageView, trackSessionEnd, trackWizardAbandoned } from "@/lib/analytics";
+import { trackEvent, trackPageView, trackSessionEnd, trackWizardAbandoned, getWizardContextForAbandon } from "@/lib/analytics";
 
 import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID } from "@/lib/tiers";
 import { checkAndAwardAchievements } from "@/lib/gamification";
@@ -170,7 +170,11 @@ function App() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [impersonating, setImpersonating] = useState<{ userId: string; email: string; tier: TierId } | null>(null);
   const { region: paymentRegion, setRegion: setPaymentRegion, isLoading: isPaymentRegionLoading } = usePaymentRegion();
+
+  const effectiveUserId = impersonating?.userId ?? userId;
+  const effectiveTier = impersonating?.tier ?? tier;
   const [binanceModal, setBinanceModal] = useState<{ open: boolean; tierId: string; tierName: string; amountUsd: number }>({
     open: false,
     tierId: "",
@@ -280,7 +284,10 @@ function App() {
     }
     const prev = prevPathRef.current;
     if (prev?.startsWith("/wizard") && !path.startsWith("/wizard") && userId) {
-      trackWizardAbandoned(undefined, undefined);
+      const ctx = getWizardContextForAbandon();
+      if (!ctx.completed) {
+        trackWizardAbandoned(ctx.step, ctx.framework);
+      }
     }
     prevPathRef.current = path;
   }, [location.pathname, location.search, userId]);
@@ -356,6 +363,7 @@ function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
+        trackEvent("login");
         setUserId(session.user.id);
         setUserEmail(session.user.email || null);
         setIsOffline(false);
@@ -526,6 +534,18 @@ function App() {
     }
   };
 
+  const handleStartImpersonating = (target: { userId: string; email: string; tier: TierId }) => {
+    setImpersonating(target);
+    navigate("/dashboard");
+    loadRemoteBlueprints(target.userId, 0);
+  };
+
+  const handleStopImpersonating = () => {
+    setImpersonating(null);
+    if (userId) loadRemoteBlueprints(userId, 0);
+    navigate("/dashboard");
+  };
+
   const handleSignOut = async () => {
     if (!supabase) return;
     try {
@@ -537,6 +557,7 @@ function App() {
     }
     setUserEmail(null);
     setUserId(null);
+    setImpersonating(null);
     setIsAdmin(false);
     setBlueprints(loadLocalBlueprints()); // revert to local
     navTo("/");
@@ -544,6 +565,10 @@ function App() {
   };
 
   const handleStartWizard = async (fwId?: Framework, context?: any) => {
+    if (impersonating) {
+      toast.error(t("admin.impersonation.viewOnly") || "View-only mode. Exit impersonation to create plans.");
+      return;
+    }
     if (!userId) {
       setAuthReason("signup_to_try");
       toast.info(
@@ -627,6 +652,10 @@ function App() {
   };
 
   const handleSaveBlueprint = async (bp: Blueprint) => {
+    if (impersonating) {
+      toast.error(t("admin.impersonation.viewOnly") || "View-only mode. Exit impersonation to make changes.");
+      return;
+    }
     // 1. Update local state
     const existingIndex = blueprints.findIndex((b) => b.id === bp.id);
     let updated = [...blueprints];
@@ -713,13 +742,17 @@ function App() {
   };
 
   const handleLoadMore = () => {
-    if (!userId) return;
+    if (!effectiveUserId) return;
     const nextPage = page + 1;
     setPage(nextPage);
-    loadRemoteBlueprints(userId, nextPage);
+    loadRemoteBlueprints(effectiveUserId, nextPage);
   };
 
   const handleDeleteBlueprint = async (id: string) => {
+    if (impersonating) {
+      toast.error(t("admin.impersonation.viewOnly") || "View-only mode. Exit impersonation to make changes.");
+      return;
+    }
     const updated = blueprints.filter((b) => b.id !== id);
     setBlueprints(updated);
     saveLocalBlueprints(updated);
@@ -979,7 +1012,7 @@ function App() {
         )}
         {showHelpChoose && (
           <HelpMeChooseModal
-            userId={userId}
+            userId={effectiveUserId}
             onClose={() => setShowHelpChoose(false)}
             onSelect={(fw, context) => {
               setShowHelpChoose(false);
@@ -989,6 +1022,19 @@ function App() {
           />
         )}
       </AnimatePresence>
+
+      {impersonating && (
+        <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center gap-4 px-4 py-2 bg-amber-500 text-white text-sm font-medium shadow-lg">
+          <span>Viewing as {impersonating.email}</span>
+          <button
+            type="button"
+            onClick={handleStopImpersonating}
+            className="px-3 py-1 rounded-lg bg-white/20 hover:bg-white/30 font-semibold"
+          >
+            {t("admin.impersonation.exit") || "Exit"}
+          </button>
+        </div>
+      )}
 
       <Header
         userEmail={userEmail}
@@ -1022,7 +1068,7 @@ function App() {
 
       <main
         id="main-content"
-        className="relative pt-20 flex-grow"
+        className={`relative flex-grow ${impersonating ? "pt-28" : "pt-20"}`}
         tabIndex={-1}
       >
         <ErrorBoundary
@@ -1062,8 +1108,8 @@ function App() {
                         }
                       }}
                       onViewFramework={setViewingFramework}
-                      tier={tier}
-                      userId={userId}
+                      tier={effectiveTier}
+                      userId={effectiveUserId}
                     />
                   }
                 />
@@ -1157,7 +1203,7 @@ function App() {
                       exit={{ opacity: 0, y: -20 }}
                     >
                       <Community
-                        userId={userId}
+                        userId={effectiveUserId}
                         onBack={() => navigate("/")}
                         onImport={handleImportTemplate}
                         onCreate={() => handleStartWizard()}
@@ -1257,10 +1303,11 @@ function App() {
                         exit={{ opacity: 0, y: -20 }}
                       >
                         <Profile
-                          userId={userId}
+                          userId={effectiveUserId}
                           userEmail={userEmail}
                           onBack={() => navigate("/")}
                           onProfileUpdate={refreshProfile}
+                          isReadOnly={!!impersonating}
                         />
                       </motion.div>
                     ) : (
@@ -1286,7 +1333,7 @@ function App() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                       >
-                        <TrackerPage />
+                        <TrackerPage effectiveUserId={effectiveUserId} isImpersonating={!!impersonating} />
                       </motion.div>
                     ) : (
                       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
@@ -1325,7 +1372,10 @@ function App() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                       >
-                        <AdminDashboard onBack={() => navigate("/")} />
+                        <AdminDashboard
+                          onBack={() => navigate("/")}
+                          onStartImpersonating={handleStartImpersonating}
+                        />
                       </motion.div>
                     ) : (
                       <div className="flex items-center justify-center h-screen text-xl font-medium">

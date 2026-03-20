@@ -562,6 +562,8 @@ export const translations = {
     "admin.templates.table.featured": "Featured",
     "admin.actions.save": "Save",
     "admin.actions.approve": "Approve",
+    "admin.impersonation.viewOnly": "View-only mode. Exit impersonation to make changes.",
+    "admin.impersonation.exit": "Exit",
     "admin.actions.reject": "Reject",
     "admin.actions.feature": "Feature",
     "admin.actions.unfeature": "Unfeature",

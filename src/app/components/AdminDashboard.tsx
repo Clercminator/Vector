@@ -43,9 +43,10 @@ import { toast } from 'sonner';
 
 interface AdminDashboardProps {
   onBack: () => void;
+  onStartImpersonating?: (target: { userId: string; email: string; tier: string }) => void;
 }
 
-export function AdminDashboard({ onBack }: AdminDashboardProps) {
+export function AdminDashboard({ onBack, onStartImpersonating }: AdminDashboardProps) {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('stats');
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
@@ -224,7 +225,11 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
       {/* ... Header ... */}
       
       {/* Add UserDetailModal */}
-      <UserDetailModal userId={selectedUser} onClose={() => setSelectedUser(null)} />
+      <UserDetailModal
+        userId={selectedUser}
+        onClose={() => setSelectedUser(null)}
+        onStartImpersonating={onStartImpersonating}
+      />
 
       <div className="flex items-center justify-between mb-8 gap-4">
         <div className="flex items-center gap-4">

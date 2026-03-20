@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { Blueprint, BlueprintResult, blueprintTitleFromAnswers, fetchBlueprintMessages, syncBlueprintMessages, filterRealAnswers } from '@/lib/blueprints';
 import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, canUseFramework, FrameworkId } from '@/lib/tiers';
 import { useLanguage } from '@/app/components/language-provider';
-import { trackEvent } from '@/lib/analytics';
+import { trackEvent, setWizardContext } from '@/lib/analytics';
 import { graph } from '@/agent/goalAgent';
 import { Command, isInterrupted, INTERRUPT } from '@langchain/langgraph';
 import { CONFIRM_PLAN_INTERRUPT_TYPE } from '@/agent/nodes/approvalGate';
@@ -115,6 +115,12 @@ export const useGoalWizard = ({
     const recognitionRef = useRef<any>(null);
     const lastAppendedContentRef = useRef<string | null>(null);
     const hasDeductedCreditThisRunRef = useRef(false);
+
+    // Keep wizard context updated for abandon tracking (step, framework)
+    useEffect(() => {
+        const stepStr = result ? 'result' : draftResult ? 'draft' : awaitingPlanConfirmation ? 'confirm' : messages.filter(m => m.role === 'user').length > 0 ? 'chat' : 'intake';
+        setWizardContext({ step: stepStr, framework, completed: false });
+    }, [result, draftResult, awaitingPlanConfirmation, messages.length, framework]);
     const seenDraftUpdateThisRunRef = useRef(false);
     const blueprintReceivedThisRunRef = useRef<BlueprintResult | null>(null);
     const hasAutoRunFromIntakeRef = useRef(false);
@@ -709,8 +715,8 @@ export const useGoalWizard = ({
                         LOG('blueprint from stream → setResult, decrement_credits');
                         
                         // Analytics: Wizard Completed
-                        // Only fire if it's a final blueprint (which is implied by !isTeaser logic above)
                         trackEvent('wizard_completed', { framework: framework || bp.framework });
+                        setWizardContext({ completed: true });
                     }
                 }
 
@@ -1021,6 +1027,7 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
                                 .catch(() => {});
                         }
                         trackEvent('wizard_completed', { framework: framework || bp.framework });
+                        setWizardContext({ completed: true });
                     }
                 }
 
@@ -1220,6 +1227,7 @@ const isLoadingPlaceholder = !textToShow || loadingPlaceholders.includes(textToS
                 .catch(() => {});
         }
         trackEvent('wizard_completed', { framework: framework || (draftResult as any).framework });
+        setWizardContext({ completed: true });
     };
 
     const handleSave = async () => {

@@ -56,3 +56,13 @@ export function trackWizardAbandoned(step?: string, framework?: string) {
 export function trackSessionEnd(path: string, extra: Record<string, any> = {}) {
   trackEvent('session_end', { path, ...extra });
 }
+
+/** Wizard context for abandon tracking: GoalWizard updates this; App reads it when user leaves /wizard */
+let _wizardContext: { step?: string; framework?: string; completed?: boolean } = {};
+export function setWizardContext(ctx: { step?: string; framework?: string; completed?: boolean }) {
+  _wizardContext = { ..._wizardContext, ...ctx };
+}
+export function getWizardContextForAbandon() {
+  const c = { ..._wizardContext };
+  return c;
+}

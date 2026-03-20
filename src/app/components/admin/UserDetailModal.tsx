@@ -3,16 +3,17 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
-import { Loader2, Calendar, Mail, Shield, Zap, History, DollarSign, Eye } from 'lucide-react';
+import { Loader2, Calendar, Mail, Shield, Zap, History, DollarSign, Eye, LogIn } from 'lucide-react';
 import { useLanguage } from '@/app/components/language-provider';
 import { AdminBlueprintViewer } from './AdminBlueprintViewer';
 
 interface UserDetailModalProps {
     userId: string | null;
     onClose: () => void;
+    onStartImpersonating?: (target: { userId: string; email: string; tier: string }) => void;
 }
 
-export function UserDetailModal({ userId, onClose }: UserDetailModalProps) {
+export function UserDetailModal({ userId, onClose, onStartImpersonating }: UserDetailModalProps) {
     const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<any>(null);
@@ -91,9 +92,27 @@ export function UserDetailModal({ userId, onClose }: UserDetailModalProps) {
                                         <span className="flex items-center gap-1"><Calendar size={14} /> Joined {new Date(profile.created_at).toLocaleDateString()}</span>
                                     </DialogDescription>
                                 </div>
-                                <div className="text-right">
-                                    <div className="text-sm text-gray-500">Tier</div>
-                                    <div className="font-bold text-lg capitalize">{profile.tier || 'Free'}</div>
+                                <div className="flex items-center gap-4">
+                                    <div className="text-right">
+                                        <div className="text-sm text-gray-500">Tier</div>
+                                        <div className="font-bold text-lg capitalize">{profile.tier || 'Free'}</div>
+                                    </div>
+                                    {onStartImpersonating && (
+                                        <Button
+                                            onClick={() => {
+                                                onStartImpersonating({
+                                                    userId: profile.user_id,
+                                                    email: profile.email || profile.display_name || 'User',
+                                                    tier: (profile.tier || 'architect') as string,
+                                                });
+                                                onClose();
+                                            }}
+                                            className="gap-2 shrink-0"
+                                        >
+                                            <LogIn size={16} />
+                                            View as user
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
                         </DialogHeader>
