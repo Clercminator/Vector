@@ -10,6 +10,8 @@ export function AdminAnalytics() {
     const [loading, setLoading] = useState(true);
     const [userGrowth, setUserGrowth] = useState<any[]>([]);
     const [frameworkUsage, setFrameworkUsage] = useState<any[]>([]);
+    const [funnel, setFunnel] = useState<{ landing: number; wizardStarted: number; wizardCompleted: number } | null>(null);
+    const [topExitPages, setTopExitPages] = useState<{ path: string; count: number }[]>([]);
 
     useEffect(() => {
         fetchAnalytics();
@@ -18,6 +20,46 @@ export function AdminAnalytics() {
     const fetchAnalytics = async () => {
         setLoading(true);
         try {
+            // 0. Funnel & exit tracking (from analytics_events)
+            try {
+                const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+                const { data: events } = await supabase
+                    .from('analytics_events')
+                    .select('user_id, event_type, data')
+                    .gte('created_at', since);
+                if (events) {
+                    const landing = new Set<string>();
+                    const wizardStarted = new Set<string>();
+                    const wizardCompleted = new Set<string>();
+                    events.forEach((e: any) => {
+                        const uid = e.user_id || '';
+                        if (e.event_type === 'view_landing' || (e.event_type === 'page_view' && e.data?.path === '/')) {
+                            landing.add(uid);
+                        } else if (e.event_type === 'wizard_started') {
+                            wizardStarted.add(uid);
+                        } else if (e.event_type === 'wizard_completed') {
+                            wizardCompleted.add(uid);
+                        }
+                    });
+                    setFunnel({
+                        landing: landing.size,
+                        wizardStarted: wizardStarted.size,
+                        wizardCompleted: wizardCompleted.size,
+                    });
+                    const exitCounts: Record<string, number> = {};
+                    events.filter((e: any) => e.event_type === 'session_end').forEach((e: any) => {
+                        const p = e.data?.path || '/';
+                        exitCounts[p] = (exitCounts[p] || 0) + 1;
+                    });
+                    setTopExitPages(
+                        Object.entries(exitCounts)
+                            .sort((a, b) => b[1] - a[1])
+                            .slice(0, 8)
+                            .map(([path, count]) => ({ path, count }))
+                    );
+                }
+            } catch (_) { /* analytics_events may not be available yet */ }
+
             // 1. User Growth (Last 30 days)
             const { data: profiles } = await supabase
                 .from('profiles')
@@ -90,6 +132,56 @@ export function AdminAnalytics() {
 
     return (
         <div className="space-y-6">
+            {/* Funnel & Exit Points */}
+            <div className="grid md:grid-cols-2 gap-6">
+                {funnel && (
+                    <Card className="dark:bg-zinc-900 border-none shadow-sm">
+                        <CardHeader>
+                            <CardTitle>Conversion Funnel (Last 14 Days)</CardTitle>
+                            <CardDescription>Landing → Wizard Started → Wizard Completed</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="flex-1 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-sm font-medium">
+                                    Landing: {funnel.landing}
+                                </div>
+                                <span className="text-gray-400">→</span>
+                                <div className="flex-1 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center text-sm font-medium">
+                                    Started: {funnel.wizardStarted}
+                                </div>
+                                <span className="text-gray-400">→</span>
+                                <div className="flex-1 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center text-sm font-medium">
+                                    Completed: {funnel.wizardCompleted}
+                                </div>
+                            </div>
+                            {funnel.landing > 0 && (
+                                <p className="text-xs text-gray-500">
+                                    Conversion: {((funnel.wizardCompleted / funnel.landing) * 100).toFixed(1)}% (landing→completed)
+                                </p>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+                {topExitPages.length > 0 && (
+                    <Card className="dark:bg-zinc-900 border-none shadow-sm">
+                        <CardHeader>
+                            <CardTitle>Top Exit Pages</CardTitle>
+                            <CardDescription>Where users leave (session_end events)</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ul className="space-y-2 text-sm">
+                                {topExitPages.map(({ path, count }) => (
+                                    <li key={path} className="flex justify-between font-mono">
+                                        <span className="truncate text-gray-300">{path || '/'}</span>
+                                        <span className="text-gray-500">{count}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
+
             <div className="grid md:grid-cols-2 gap-6">
                 <Card className="dark:bg-zinc-900 border-none shadow-sm">
                     <CardHeader>

@@ -25,12 +25,13 @@ import { supabase } from "@/lib/supabase";
 import { createCheckout, isMercadoPagoConfigured } from "@/lib/mercadoPago";
 import { createLemonSqueezyCheckout, isLemonSqueezyConfigured } from "@/lib/lemonSqueezy";
 import { usePaymentRegion } from "@/hooks/usePaymentRegion";
-import { trackEvent } from "@/lib/analytics"; // Imported trackEvent
+import { trackEvent, trackPageView, trackSessionEnd, trackWizardAbandoned } from "@/lib/analytics";
 
 import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID } from "@/lib/tiers";
 import { checkAndAwardAchievements } from "@/lib/gamification";
 
 import { useLanguage } from "@/app/components/language-provider";
+import { SeoHead } from "@/app/components/SeoHead";
 import { ShareButton } from "@/app/components/ShareButton";
 import { FrameworkDetail } from "@/app/components/FrameworkDetail";
 import { OnboardingModal } from "@/app/components/OnboardingModal";
@@ -268,6 +269,31 @@ function App() {
     document.body.dataset.hideAuxiliaryChat = location.pathname.startsWith("/wizard") ? "true" : "";
     return () => { document.body.dataset.hideAuxiliaryChat = ""; };
   }, [location.pathname]);
+
+  // Analytics: page views and exit tracking
+  const prevPathRef = React.useRef<string | null>(null);
+  useEffect(() => {
+    const path = location.pathname + location.search;
+    if (userId) {
+      trackPageView(path);
+      if (path === "/") trackEvent("view_landing");
+    }
+    const prev = prevPathRef.current;
+    if (prev?.startsWith("/wizard") && !path.startsWith("/wizard") && userId) {
+      trackWizardAbandoned(undefined, undefined);
+    }
+    prevPathRef.current = path;
+  }, [location.pathname, location.search, userId]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden" && userId) {
+        trackSessionEnd(location.pathname);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [location.pathname, userId]);
 
   useEffect(() => {
     // Check initial session
@@ -879,6 +905,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white transition-colors duration-300 font-sans selection:bg-purple-500/30 flex flex-col">
+      <SeoHead />
       {/* Loading Overlay for Checkout */}
       <AnimatePresence>
         {isCheckoutLoading && (

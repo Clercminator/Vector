@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/app/components/ui/badge';
-import { Loader2, Calendar, Mail, Shield, Zap, History, DollarSign } from 'lucide-react';
+import { Button } from '@/app/components/ui/button';
+import { Loader2, Calendar, Mail, Shield, Zap, History, DollarSign, Eye } from 'lucide-react';
 import { useLanguage } from '@/app/components/language-provider';
+import { AdminBlueprintViewer } from './AdminBlueprintViewer';
 
 interface UserDetailModalProps {
     userId: string | null;
@@ -17,6 +19,7 @@ export function UserDetailModal({ userId, onClose }: UserDetailModalProps) {
     const [blueprints, setBlueprints] = useState<any[]>([]);
     const [payments, setPayments] = useState<any[]>([]);
     const [stats, setStats] = useState({ loginCount: 0, lastLogin: '' });
+    const [viewingBlueprintId, setViewingBlueprintId] = useState<string | null>(null);
 
     useEffect(() => {
         if (userId) {
@@ -41,7 +44,7 @@ export function UserDetailModal({ userId, onClose }: UserDetailModalProps) {
                 .select('id, title, framework, created_at, is_public')
                 .eq('user_id', id)
                 .order('created_at', { ascending: false })
-                .limit(5);
+                .limit(20);
             setBlueprints(blueprints || []);
 
             // Fetch Payments
@@ -67,6 +70,7 @@ export function UserDetailModal({ userId, onClose }: UserDetailModalProps) {
     };
 
     return (
+        <>
         <Dialog open={!!userId} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="max-w-3xl dark:bg-zinc-900 dark:border-zinc-800 p-0 overflow-hidden">
                 {loading ? (
@@ -127,13 +131,24 @@ export function UserDetailModal({ userId, onClose }: UserDetailModalProps) {
                                 ) : (
                                     <div className="space-y-2">
                                         {blueprints.map(b => (
-                                            <div key={b.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors">
-                                                <div>
+                                            <div key={b.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors">
+                                                <div className="min-w-0 flex-1">
                                                     <div className="font-medium text-sm">{b.title}</div>
                                                     <div className="text-xs text-gray-500 capitalize">{b.framework}</div>
                                                 </div>
-                                                <div className="text-xs text-gray-400">
-                                                    {new Date(b.created_at).toLocaleDateString()}
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    <span className="text-xs text-gray-400">
+                                                        {new Date(b.created_at).toLocaleDateString()}
+                                                    </span>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-8 gap-1.5"
+                                                        onClick={() => setViewingBlueprintId(b.id)}
+                                                    >
+                                                        <Eye size={14} />
+                                                        View plan
+                                                    </Button>
                                                 </div>
                                             </div>
                                         ))}
@@ -173,6 +188,11 @@ export function UserDetailModal({ userId, onClose }: UserDetailModalProps) {
                 )}
             </DialogContent>
         </Dialog>
+        <AdminBlueprintViewer
+            blueprintId={viewingBlueprintId}
+            onClose={() => setViewingBlueprintId(null)}
+        />
+        </>
     );
 }
 

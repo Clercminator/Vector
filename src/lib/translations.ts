@@ -713,6 +713,11 @@ export const translations = {
       "Dr. Marcus Elliott pioneered the Misogi concept in modern performance training, using one impossibly hard challenge a year to build incredibly resilient mindsets in elite professional athletes.",
     "frameworks.helpMeChoose": "Help me find the right framework",
 
+    // SEO (meta title, description, keywords - used by SeoHead)
+    "seo.title": "Vector AI Goal Architect | First-Principles Planning & OKR Tool",
+    "seo.description": "Turn vague goals into precise architectural plans. Vector uses AI and frameworks like 80/20, OKRs, and First Principles to build your roadmap to success. Plan generator, goal analyzer, AI life coach.",
+    "seo.keywords": "AI Goal Planner, AI Life Architect, Plan generator, Goal analyzer, Objective analyzer, Life coach, AI life coach, First Principles Planning Tool, OKR Generator AI, goal setting app, action plan generator, personal development tool, career planner, life planner, roadmap, milestones, execution, mental models, strategy, task management, blueprint, framework-based productivity",
+
     // Framework Titles & Questions
     "fp.title": "Goal Planner Generator",
     "fp.q1":
@@ -1948,6 +1953,11 @@ export const translations = {
     "authors.marcusElliott.tagline": "Misogi",
     "frameworks.helpMeChoose": "Ayúdame a elegir el método adecuado",
 
+    // SEO
+    "seo.title": "Vector Arquitecto de Metas con IA | Planificación por Primeros Principios y OKR",
+    "seo.description": "Convierte metas vagas en planes precisos. Vector usa IA y frameworks como 80/20, OKRs y Primeros Principios para construir tu hoja de ruta. Generador de planes, analizador de objetivos, coach de vida con IA.",
+    "seo.keywords": "planificador de metas con IA, arquitecto de vida IA, generador de planes, analizador de metas, analizador de objetivos, coach de vida, coach de vida IA, herramienta de primeros principios, generador OKR IA, app de establecimiento de metas, generador de planes de acción, desarrollo personal, planificador de carrera, planificador de vida, hoja de ruta, hitos, ejecución, modelos mentales, estrategia, gestión de tareas, blueprint, productividad basada en frameworks",
+
     // Intake Modal
     "intake.title": "Encuentra tu Método",
     "intake.subtitle":
@@ -2356,6 +2366,12 @@ export const translations = {
     "frameworks.subtitle":
       "Toda ambição requer uma lente diferente. Selecione um modelo comprovado para iniciar seu processo.",
     "frameworks.helpMeChoose": "Ajude-me a escolher",
+
+    // SEO
+    "seo.title": "Vector Arquiteto de Metas com IA | Planejamento por Primeiros Princípios e OKR",
+    "seo.description": "Transforme metas vagas em planos precisos. Vector usa IA e frameworks como 80/20, OKRs e Primeiros Princípios para construir sua rota. Gerador de planos, analisador de objetivos, coach de vida com IA.",
+    "seo.keywords": "planejador de metas IA, arquiteto de vida IA, gerador de planos, analisador de metas, analisador de objetivos, coach de vida, coach de vida IA, ferramenta de primeiros princípios, gerador OKR IA, app de definição de metas, gerador de planos de ação, desenvolvimento pessoal, planejador de carreira, planejador de vida, roteiro, marcos, execução, modelos mentais, estratégia, gestão de tarefas, blueprint, produtividade baseada em frameworks",
+
     "landing.hero.helpMePlan": "Ajude-me a alcançar meus objetivos",
     "landing.hero.pathHint": "Encontre o framework certo para seu objetivo ou vá direto ao chat.",
 
@@ -2882,6 +2898,12 @@ export const translations = {
     "frameworks.subtitle":
       "Chaque ambition nécessite une lentille différente. Sélectionnez un cadre éprouvé pour commencer votre processus.",
     "frameworks.helpMeChoose": "Aidez-moi à choisir",
+
+    // SEO
+    "seo.title": "Vector Architecte de Objectifs IA | Planification First Principles et OKR",
+    "seo.description": "Transformez des objectifs vagues en plans précis. Vector utilise l'IA et des frameworks (80/20, OKR, First Principles) pour construire votre feuille de route. Générateur de plans, analyseur d'objectifs, coach de vie IA.",
+    "seo.keywords": "planificateur d'objectifs IA, architecte de vie IA, générateur de plans, analyseur d'objectifs, analyseur de buts, coach de vie, coach de vie IA, outil premiers principes, générateur OKR IA, app fixation d'objectifs, générateur de plans d'action, développement personnel, planificateur de carrière, planificateur de vie, feuille de route, jalons, exécution, modèles mentaux, stratégie, gestion des tâches, blueprint, productivité par frameworks",
+
     "landing.hero.helpMePlan": "Aidez-moi à atteindre mes objectifs",
     "landing.hero.pathHint": "Trouvez le bon cadre pour votre objectif, ou allez directement au chat.",
 
@@ -3408,6 +3430,12 @@ export const translations = {
     "frameworks.subtitle":
       "Jede Ambition erfordert eine andere Linse. Wählen Sie ein bewährtes Framework, um Ihren Prozess zu beginnen.",
     "frameworks.helpMeChoose": "Helfen Sie mir bei der Auswahl",
+
+    // SEO
+    "seo.title": "Vector KI-Ziel-Architekt | First-Principles-Planung & OKR-Tool",
+    "seo.description": "Vage Ziele in präzise Pläne verwandeln. Vector nutzt KI und Frameworks wie 80/20, OKRs und First Principles für Ihre Roadmap. Plan-Generator, Ziel-Analysator, KI-Life-Coach.",
+    "seo.keywords": "KI Zielplaner, KI Lebensarchitekt, Plan Generator, Ziel-Analysator, Ziel-Analyse, Life Coach, KI Life Coach, First-Principles-Tool, OKR Generator KI, Zielsetzungs-App, Aktionsplan-Generator, persönliche Entwicklung, Karriereplaner, Lebensplaner, Roadmap, Meilensteine, Umsetzung, Mentale Modelle, Strategie, Aufgabenmanagement, Blueprint, Framework-basierte Produktivität",
+
     "landing.hero.helpMePlan": "Helfen Sie mir, meine Ziele zu erreichen",
     "landing.hero.pathHint": "Finden Sie den richtigen Rahmen für Ihr Ziel oder gehen Sie direkt zum Chat.",
 

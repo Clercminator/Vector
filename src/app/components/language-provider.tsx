@@ -18,14 +18,30 @@ function getBrowserLanguage(): Language {
   return 'en';
 }
 
+function getLanguageFromUrl(): Language | null {
+  if (typeof window === 'undefined') return null;
+  const params = new URLSearchParams(window.location.search);
+  const lang = params.get('lang')?.toLowerCase();
+  if (lang && Object.keys(translations).includes(lang)) return lang as Language;
+  return null;
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(() => {
+    const urlLang = getLanguageFromUrl();
+    if (urlLang) return urlLang;
     const saved = localStorage.getItem('vector.language') as Language | null;
     if (saved && Object.keys(translations).includes(saved)) return saved;
     return getBrowserLanguage();
   });
 
   useEffect(() => {
+    const urlLang = getLanguageFromUrl();
+    if (urlLang) {
+      setLanguage(urlLang);
+      localStorage.setItem('vector.language', urlLang);
+      return;
+    }
     const saved = localStorage.getItem('vector.language') as Language;
     if (saved && Object.keys(translations).includes(saved)) {
       setLanguage(saved);

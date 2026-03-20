@@ -508,7 +508,21 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
                           </TableCell>
                           <TableCell className="text-muted-foreground text-sm font-mono">{row.page_context || '—'}</TableCell>
                           <TableCell className="max-w-xs truncate" title={row.message}>{row.message}</TableCell>
-                          <TableCell className="text-sm">{row.email || (row.user_id ? 'Signed in' : '—')}</TableCell>
+                          <TableCell className="text-sm">
+                            {row.email ? (
+                              <a href={`mailto:${row.email}`} className="text-blue-500 hover:underline">{row.email}</a>
+                            ) : row.user_id ? (
+                              <button
+                                type="button"
+                                onClick={() => { setSelectedUser(row.user_id); setActiveTab('users'); }}
+                                className="text-blue-500 hover:underline font-medium"
+                              >
+                                View user
+                              </button>
+                            ) : (
+                              '—'
+                            )}
+                          </TableCell>
                           <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
                             {row.created_at ? new Date(row.created_at).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : '—'}
                           </TableCell>

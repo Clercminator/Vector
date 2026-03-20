@@ -10,6 +10,7 @@ import { useLanguage } from '@/app/components/language-provider';
 import { frameworks, Framework } from '@/lib/frameworks';
 import { canUseFramework, DEFAULT_TIER_ID, TierId } from '@/lib/tiers';
 import { toast } from 'sonner';
+import { trackClick } from '@/lib/analytics';
 
 interface LandingPageProps {
     onStartWizard: (fwId?: Framework) => void;
@@ -88,7 +89,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </p>
                     <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
                         <motion.button
-                            onClick={onHeroGetStarted ?? onShowHelpChoose}
+                            onClick={() => { trackClick('hero_help_me_plan'); (onHeroGetStarted ?? onShowHelpChoose)(); }}
                             className="cursor-pointer group relative min-h-[48px] px-10 py-5 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-lg md:text-xl font-bold flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-2xl shadow-black/25 dark:shadow-white/10 border-2 border-transparent hover:border-gray-300 dark:hover:border-zinc-600 overflow-hidden touch-manipulation"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
@@ -109,7 +110,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         </motion.button>
                         {onGoToChat && (
                             <motion.button
-                                onClick={onGoToChat}
+                                onClick={() => { trackClick('hero_lets_plan'); onGoToChat(); }}
                                 className="cursor-pointer min-h-[48px] px-8 py-4 rounded-2xl text-base md:text-lg font-semibold border-2 border-gray-300 dark:border-zinc-600 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 hover:border-gray-400 dark:hover:border-zinc-500 transition-colors touch-manipulation"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
@@ -388,7 +389,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                             </p>
                         </div>
                         <motion.button
-                            onClick={onShowHelpChoose}
+                            onClick={() => { trackClick('frameworks_help_me_choose'); onShowHelpChoose(); }}
                             className="group flex items-center gap-3 px-8 py-5 rounded-2xl text-lg font-semibold border-2 border-purple-500/50 dark:border-purple-400/50 bg-purple-500/10 dark:bg-purple-400/10 text-gray-900 dark:text-white hover:bg-purple-500/20 dark:hover:bg-purple-400/20 hover:border-purple-500 dark:hover:border-purple-400 transition-colors shadow-lg hover:shadow-purple-500/20 cursor-pointer"
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.98 }}

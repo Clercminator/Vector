@@ -29,6 +29,20 @@ const markdownMap: Record<string, string> = {
   'ikigai': ikigaiMd,
 };
 
+// SEO-optimized titles for framework landing pages (long-tail + target keywords)
+const seoTitleMap: Record<string, string> = {
+  'first-principles': 'How to Use First Principles for Business Planning | Vector AI',
+  'pareto': 'Using the Pareto Principle (80/20) to Architect Your Life | Vector AI',
+  'okr': 'The Best AI OKR Generator for 2026 | Vector Goal Architect',
+  'eisenhower': 'Eisenhower Matrix for Prioritization | Vector AI Planner',
+  'rpm': 'Tony Robbins RPM Planning Method | Vector AI',
+  'gps': 'GPS Method: Goal, Plan, System | Vector AI',
+  'ikigai': 'Find Your Ikigai with AI | Vector Life Architect',
+  'misogi': 'The Misogi Challenge: One Defining Challenge | Vector AI',
+  'dsss': 'Tim Ferriss DSSS Meta-Learning | Vector AI',
+  'mandalas': 'Mandala Chart Goal Mapping | Vector AI',
+};
+
 // Start of component
 export function FrameworkPage() {
   const { id } = useParams<{ id: string }>();
@@ -78,11 +92,11 @@ export function FrameworkPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 transition-colors duration-300">
       <Helmet>
-        <title>{fw.title} - Vector Framework Guide</title>
-        <meta name="description" content={fw.longDescription || fw.description} />
-        <meta property="og:title" content={`${fw.title} | Vector`} />
-        <meta property="og:description" content={fw.longDescription || fw.description} />
-        <meta name="keywords" content={`productivity, framework, ${fw.title}, ${fw.author}, guide`} />
+        <title>{seoTitleMap[fw.id] || `${fw.title} | Vector AI Goal Architect`}</title>
+        <meta name="description" content={fw.description} />
+        <meta property="og:title" content={seoTitleMap[fw.id] || `${fw.title} | Vector`} />
+        <meta property="og:description" content={fw.description} />
+        <meta name="keywords" content={`Plan generator, Goal analyzer, Life coach, AI Goal Planner, productivity, framework, ${fw.title}, ${fw.author}, roadmap, milestones, execution, mental models, objective analyzer, life planner`} />
       </Helmet>
 
       {/* Header */}

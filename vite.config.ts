@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 import Sitemap from 'vite-plugin-sitemap'
 import { VitePWA } from 'vite-plugin-pwa'
 
-const frameworkIds = ['first-principles', 'pareto', 'rpm', 'eisenhower', 'okr'];
+const frameworkIds = ['first-principles', 'pareto', 'rpm', 'eisenhower', 'okr', 'dsss', 'mandalas', 'gps', 'misogi', 'ikigai'];
 const dynamicRoutes = frameworkIds.map(id => `/frameworks/${id}`);
 
 export default defineConfig(() => {
@@ -15,7 +15,7 @@ export default defineConfig(() => {
     react(),
     tailwindcss(),
     Sitemap({
-       hostname: 'https://vector.app', // Placeholder hostname
+       hostname: 'https://vectorplan.xyz',
        dynamicRoutes,
        readable: true,
     }),
