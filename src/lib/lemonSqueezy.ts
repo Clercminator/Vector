@@ -19,7 +19,7 @@ export function isLemonSqueezyConfigured(): boolean {
 }
 
 export interface CreateLemonSqueezyCheckoutOptions {
-  tier: "standard" | "max";
+  tier: "builder" | "max";
   userId: string;
   userEmail?: string;
 }

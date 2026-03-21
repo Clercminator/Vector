@@ -70,7 +70,12 @@ async function handleWebhook(req: Request): Promise<Response> {
     });
 
     if (!mpRes.ok) {
-      console.error("Failed to fetch payment", await mpRes.text());
+      const errText = await mpRes.text();
+      console.error("Failed to fetch payment", mpRes.status, errText);
+      // 404 = payment not found (simulation uses fake ID, or stale notification). Return 200 so MP stops retrying.
+      if (mpRes.status === 404) {
+        return okResponse();
+      }
       return new Response(JSON.stringify({ error: "Failed to verify payment" }), {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -115,7 +120,7 @@ async function handleWebhook(req: Request): Promise<Response> {
       return okResponse();
     }
 
-    // Align with TIER_CONFIGS: standard 5 credits / ~$6, max 20 credits / ~$13
+    // Align with TIER_CONFIGS: builder 5 credits / ~$6, max 20 credits / ~$13
     let creditsToAdd: number;
     let newTier: string;
     if (amount >= 10) {
@@ -123,15 +128,15 @@ async function handleWebhook(req: Request): Promise<Response> {
       newTier = "max";
     } else {
       creditsToAdd = 5;
-      newTier = "standard";
+      newTier = "builder";
     }
 
-    const { error: rpcError } = await supabase.rpc("increment_credits", {
+    const { data: creditsAfter, error: rpcError } = await supabase.rpc("increment_credits", {
       target_user_id: targetUserId,
       amount_to_add: creditsToAdd,
     });
-    if (rpcError) {
-      console.error("Failed to increment credits:", rpcError);
+    if (rpcError || creditsAfter == null) {
+      console.error("Failed to increment credits:", rpcError, "creditsAfter:", creditsAfter);
       return new Response(JSON.stringify({ error: "Failed to update credits" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -150,7 +155,7 @@ async function handleWebhook(req: Request): Promise<Response> {
       });
     }
 
-    await supabase.from("payments").insert({
+    const { error: payError } = await supabase.from("payments").insert({
       user_id: targetUserId,
       amount: amount,
       currency: paymentData.currency_id || "USD",
@@ -159,6 +164,13 @@ async function handleWebhook(req: Request): Promise<Response> {
       provider_payment_id: paymentIdStr,
       metadata: paymentData,
     });
+    if (payError) {
+      console.error("Failed to insert payment:", payError);
+      return new Response(JSON.stringify({ error: "Failed to record payment" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Check for Referrer
     const { data: profile } = await supabase.from("profiles").select("referrer_code").eq("user_id", targetUserId).single();

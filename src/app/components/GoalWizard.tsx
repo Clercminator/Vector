@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { Blueprint, blueprintTitleFromAnswers, filterRealAnswers } from '@/lib/blueprints';
 import { blueprintToEvents, downloadIcs, exportEventsToGoogleCalendar, getGoogleAccessToken, isBlueprintCalendarWorthy } from '@/lib/calendarExport';
 import { exportToPdf } from '@/lib/pdfExport';
-import { TIER_CONFIGS, TierId } from '@/lib/tiers';
+import { TIER_CONFIGS, TierId, normalizeTierId } from '@/lib/tiers';
 import { useLanguage } from '@/app/components/language-provider';
 import { trackEvent } from '@/lib/analytics';
 
@@ -349,7 +349,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
             result,
             createdAt: props.initialBlueprint?.createdAt ?? new Date().toISOString(),
           };
-          const showCalendarExport = TIER_CONFIGS[props.tier || 'architect'].canExportCalendar && isBlueprintCalendarWorthy(bp);
+          const showCalendarExport = TIER_CONFIGS[normalizeTierId(props.tier || 'architect')].canExportCalendar && isBlueprintCalendarWorthy(bp);
           const isTeaser = (result as any)?.isTeaser;
           const showCreditConsumed = !isTeaser;
           return (
@@ -401,14 +401,14 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
             <button
               type="button"
               onClick={handlePdfExport}
-              disabled={!TIER_CONFIGS[props.tier || 'architect'].canExportPdf}
+              disabled={!TIER_CONFIGS[normalizeTierId(props.tier || 'architect')].canExportPdf}
               className={`flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-full shadow-lg transition-all font-medium text-sm sm:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-950 shrink-0 ${
-                  !TIER_CONFIGS[props.tier || 'architect'].canExportPdf
+                  !TIER_CONFIGS[normalizeTierId(props.tier || 'architect')].canExportPdf
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed focus-visible:ring-gray-400'
                     : 'cursor-pointer bg-red-600 text-white hover:shadow-xl focus-visible:ring-red-500'
               }`}
             >
-               {TIER_CONFIGS[props.tier || 'architect'].canExportPdf ? <Download size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Lock size={16} />}
+               {TIER_CONFIGS[normalizeTierId(props.tier || 'architect')].canExportPdf ? <Download size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Lock size={16} />}
                PDF
             </button>
 

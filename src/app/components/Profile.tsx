@@ -13,6 +13,7 @@ import { createCheckout, isMercadoPagoConfigured } from '@/lib/mercadoPago';
 import { createLemonSqueezyCheckout, isLemonSqueezyConfigured } from '@/lib/lemonSqueezy';
 import { usePaymentRegion } from '@/hooks/usePaymentRegion';
 import { supabase } from '@/lib/supabase';
+import { ensureMyProfile } from '@/lib/ensureProfile';
 import { toast } from 'sonner';
 import { AchievementsList } from '@/app/components/AchievementsList';
 import { Flame } from 'lucide-react';
@@ -83,7 +84,7 @@ interface ProfileData {
   };
 }
 
-import { TIER_CONFIGS, TierId } from '@/lib/tiers';
+import { TIER_CONFIGS, TierId, normalizeTierId } from '@/lib/tiers';
 import { COUNTRIES, GENDERS, ZODIACS, ZODIAC_IMPORTANCE, PLAN_STYLES, QUESTION_FLOW, PREFERRED_TONES, TREATMENT_LEVELS } from '@/lib/constants';
 import { computePersonalInfoCompletion } from '@/lib/profileCompletion';
 import { Lock } from 'lucide-react';
@@ -166,11 +167,21 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate, isReadOnly
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           setIdentities(user.identities || []);
-          const { data: profile } = await supabase
+          let { data: profile, error: profileErr } = await supabase
             .from('profiles')
             .select('display_name, bio, avatar_url, level, credits, extra_credits, credits_expires_at, points, streak_count, branding_logo_url, branding_color, tier, metadata')
             .eq('user_id', user.id)
             .single();
+
+          if (profileErr?.code === 'PGRST116' || !profile) {
+            await ensureMyProfile(supabase);
+            const retry = await supabase
+              .from('profiles')
+              .select('display_name, bio, avatar_url, level, credits, extra_credits, credits_expires_at, points, streak_count, branding_logo_url, branding_color, tier, metadata')
+              .eq('user_id', user.id)
+              .single();
+            profile = retry.data ?? undefined;
+          }
 
           if (profile) {
             setData({
@@ -254,7 +265,7 @@ export function Profile({ userId, userEmail, onBack, onProfileUpdate, isReadOnly
     try {
       if (useLemonSqueezy) {
         await createLemonSqueezyCheckout(supabase, {
-          tier: tierId as "standard" | "max",
+          tier: tierId as "builder" | "max",
           userId,
           userEmail: userEmail ?? undefined,
         });
@@ -420,7 +431,7 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
         }
     };
 
-  const currentTierConfig = TIER_CONFIGS[data.tier as TierId] || TIER_CONFIGS['architect'];
+  const currentTierConfig = TIER_CONFIGS[normalizeTierId(data.tier)] || TIER_CONFIGS['architect'];
   const eff = getEffectiveCredits(data);
   const { filled: personalInfoFilled, total: personalInfoTotal, percent: personalInfoPercent, isLow: personalInfoLow } = computePersonalInfoCompletion(data);
 
@@ -497,8 +508,8 @@ const handleLinkAccount = async (provider: 'google' | 'github') => {
                 <div>
                    <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mb-1">{t('profile.currentPlan') || 'Current Plan'}</p>
                    <h3 className="text-2xl font-black capitalize tracking-tight flex items-center gap-2">
-                       {data.tier}
-                       {data.tier !== 'architect' && <Star size={20} className="text-yellow-400 fill-yellow-400" />}
+                       {t(`tier.${normalizeTierId(data.tier)}`)}
+                       {normalizeTierId(data.tier) !== 'architect' && <Star size={20} className="text-yellow-400 fill-yellow-400" />}
                    </h3>
                 </div>
                 <div className="bg-white/10 px-3 py-1 rounded-full text-xs font-bold backdrop-blur-md">

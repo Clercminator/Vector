@@ -45,16 +45,17 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   try {
     const body = (await req.json()) as Body;
-    const tier = body.tier ?? "standard";
+    // Default "builder"; legacy clients may still send "standard". Any non-max → Builder variant.
+    const tierRaw = (body.tier ?? "builder").toLowerCase();
     const userId = body.user_id;
     const userEmail = body.user_email ?? "";
     const redirectUrl = body.redirect_url ?? "https://vectorplan.xyz/dashboard?payment=success";
 
-    const variantId = tier === "max" ? variantMax : variantStandard;
+    const variantId = tierRaw === "max" ? variantMax : variantStandard;
     if (!variantId) {
       return new Response(
         JSON.stringify({
-          error: `Variant for tier "${tier}" not configured. Set LEMONSQUEEZY_VARIANT_STANDARD and LEMONSQUEEZY_VARIANT_MAX in Supabase Secrets.`,
+          error: `Variant for tier "${tierRaw}" not configured. Set LEMONSQUEEZY_VARIANT_STANDARD and LEMONSQUEEZY_VARIANT_MAX in Supabase Secrets.`,
         }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );

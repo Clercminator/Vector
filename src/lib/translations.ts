@@ -280,23 +280,23 @@ export const translations = {
     "pricing.tier.architect": "Architect",
     "pricing.tier.architect.desc":
       "One full plan: all frameworks, PDF & calendar export.",
-    "pricing.tier.standard": "Builder",
-    "pricing.tier.standard.desc": "5 plans with all frameworks and exports.",
+    "pricing.tier.builder": "Builder",
+    "pricing.tier.builder.desc": "5 plans with all frameworks and exports.",
     "pricing.tier.max": "Max",
     "pricing.tier.max.desc": "20 plans for power users and professionals.",
     "pricing.tier.enterprise": "Enterprise",
     "pricing.tier.enterprise.desc":
       "For teams and organizations requiring scale and control.",
     "pricing.cta.start": "Start Building",
-    "pricing.cta.standard": "Get Builder",
+    "pricing.cta.builder": "Get Builder",
     "pricing.cta.max": "Get Max",
     "pricing.cta.contact": "Contact Sales",
     "pricing.feature.architect.plans": "{0} plan",
     "pricing.feature.architect.frameworks": "All frameworks",
     "pricing.feature.architect.ai": "PDF & calendar export included",
-    "pricing.feature.standard.plans": "{0} plans",
-    "pricing.feature.standard.frameworks": "All frameworks",
-    "pricing.feature.standard.ai": "PDF & calendar export",
+    "pricing.feature.builder.plans": "{0} plans",
+    "pricing.feature.builder.frameworks": "All frameworks",
+    "pricing.feature.builder.ai": "PDF & calendar export",
     "pricing.feature.max.plans": "{0} plans",
     "pricing.feature.max.frameworks": "All frameworks",
     "pricing.feature.max.calendar": "Export to Calendar (Google / Outlook)",
@@ -587,7 +587,7 @@ export const translations = {
 
     // Tier Names
     "tier.architect": "Architect",
-    "tier.standard": "Builder",
+    "tier.builder": "Builder",
     "tier.max": "Max",
     "tier.enterprise": "Enterprise",
 
@@ -1556,8 +1556,8 @@ export const translations = {
     "pricing.tier.architect": "Arquitecto",
     "pricing.tier.architect.desc":
       "Un plano completo: todos los métodos, PDF y exportar a calendario.",
-    "pricing.tier.standard": "Constructor",
-    "pricing.tier.standard.desc":
+    "pricing.tier.builder": "Constructor",
+    "pricing.tier.builder.desc":
       "5 planos con todos los métodos y exportación.",
     "pricing.tier.max": "Max",
     "pricing.tier.max.desc":
@@ -1566,15 +1566,15 @@ export const translations = {
     "pricing.tier.enterprise.desc":
       "Para equipos y organizaciones que requieren escala y control.",
     "pricing.cta.start": "Empezar a Construir",
-    "pricing.cta.standard": "Obtener Standard",
+    "pricing.cta.builder": "Obtener Standard",
     "pricing.cta.max": "Obtener Max",
     "pricing.cta.contact": "Contactar Ventas",
     "pricing.feature.architect.plans": "{0} plano",
     "pricing.feature.architect.frameworks": "Todos los métodos",
     "pricing.feature.architect.ai": "Exportar a PDF y calendario incluido",
-    "pricing.feature.standard.plans": "{0} planos",
-    "pricing.feature.standard.frameworks": "Todos los métodos",
-    "pricing.feature.standard.ai": "Exportar a PDF y calendario",
+    "pricing.feature.builder.plans": "{0} planos",
+    "pricing.feature.builder.frameworks": "Todos los métodos",
+    "pricing.feature.builder.ai": "Exportar a PDF y calendario",
     "pricing.feature.max.plans": "{0} planos",
     "pricing.feature.max.frameworks": "Todos los métodos",
     "pricing.feature.max.calendar": "Exportar a Calendario (Google / Outlook)",
@@ -1848,7 +1848,7 @@ export const translations = {
 
     // Tier Names
     "tier.architect": "Arquitecto",
-    "tier.standard": "Constructor",
+    "tier.builder": "Constructor",
     "tier.max": "Max",
     "tier.enterprise": "Empresarial",
 
@@ -2398,7 +2398,7 @@ export const translations = {
 
     // Tier Names
     "tier.architect": "Arquiteto",
-    "tier.standard": "Construtor",
+    "tier.builder": "Construtor",
     "tier.max": "Max",
     "tier.enterprise": "Empresarial",
 
@@ -2496,8 +2496,8 @@ export const translations = {
     "pricing.tier.architect": "Arquiteto",
     "pricing.tier.architect.desc":
       "Um plano completo: todos os modelos, PDF e exportar para calendário.",
-    "pricing.tier.standard": "Construtor",
-    "pricing.tier.standard.desc": "5 planos com todos os modelos e exportação.",
+    "pricing.tier.builder": "Construtor",
+    "pricing.tier.builder.desc": "5 planos com todos os modelos e exportação.",
     "pricing.tier.max": "Max",
     "pricing.tier.max.desc":
       "20 planos para usuários avançados e profissionais.",
@@ -2505,7 +2505,7 @@ export const translations = {
     "pricing.tier.enterprise.desc":
       "Para equipes e organizações que requerem escala e controle.",
     "pricing.cta.start": "Começar a Construir",
-    "pricing.cta.standard": "Obter Padrão",
+    "pricing.cta.builder": "Obter Padrão",
     "pricing.cta.max": "Obter Max",
     "pricing.cta.contact": "Falar com Vendas",
     "pricing.feature.architect.frameworks": "Todos os modelos",
@@ -2513,10 +2513,10 @@ export const translations = {
       "{0} plano com experiência completa",
     "pricing.feature.architect.credits": "{0} geração de plano",
     "pricing.feature.architect.ai": "Exportar PDF e calendário incluído",
-    "pricing.feature.standard.credits": "{0} gerações de plano",
-    "pricing.feature.standard.frameworks": "Todos os modelos",
-    "pricing.feature.standard.blueprints": "Até {0} projetos",
-    "pricing.feature.standard.ai": "Exportar PDF e calendário",
+    "pricing.feature.builder.credits": "{0} gerações de plano",
+    "pricing.feature.builder.frameworks": "Todos os modelos",
+    "pricing.feature.builder.blueprints": "Até {0} projetos",
+    "pricing.feature.builder.ai": "Exportar PDF e calendário",
     "pricing.feature.max.credits": "{0} gerações de plano",
     "pricing.feature.max.frameworks": "Todos os modelos",
     "pricing.feature.max.calendar":
@@ -2933,7 +2933,7 @@ export const translations = {
 
     // Tier Names
     "tier.architect": "Architecte",
-    "tier.standard": "Constructeur",
+    "tier.builder": "Constructeur",
     "tier.max": "Max",
     "tier.enterprise": "Entreprise",
 
@@ -3032,8 +3032,8 @@ export const translations = {
     "pricing.tier.architect": "Architecte",
     "pricing.tier.architect.desc":
       "Un plan complet : tous les modèles, PDF et export calendrier.",
-    "pricing.tier.standard": "Constructeur",
-    "pricing.tier.standard.desc": "5 plans avec tous les modèles et export.",
+    "pricing.tier.builder": "Constructeur",
+    "pricing.tier.builder.desc": "5 plans avec tous les modèles et export.",
     "pricing.tier.max": "Max",
     "pricing.tier.max.desc":
       "20 plans pour utilisateurs avancés et professionnels.",
@@ -3041,17 +3041,17 @@ export const translations = {
     "pricing.tier.enterprise.desc":
       "Pour les équipes et organisations nécessitant échelle et contrôle.",
     "pricing.cta.start": "Commencer à Bâtir",
-    "pricing.cta.standard": "Obtenir Standard",
+    "pricing.cta.builder": "Obtenir Standard",
     "pricing.cta.max": "Obtenir Max",
     "pricing.cta.contact": "Contacter les Ventes",
     "pricing.feature.architect.frameworks": "Tous les modèles",
     "pricing.feature.architect.blueprints": "{0} plan avec expérience complète",
     "pricing.feature.architect.credits": "{0} génération de plan",
     "pricing.feature.architect.ai": "Export PDF et calendrier inclus",
-    "pricing.feature.standard.credits": "{0} générations de plan",
-    "pricing.feature.standard.frameworks": "Tous les modèles",
-    "pricing.feature.standard.blueprints": "Jusqu'à {0} plans",
-    "pricing.feature.standard.ai": "Export PDF et calendrier",
+    "pricing.feature.builder.credits": "{0} générations de plan",
+    "pricing.feature.builder.frameworks": "Tous les modèles",
+    "pricing.feature.builder.blueprints": "Jusqu'à {0} plans",
+    "pricing.feature.builder.ai": "Export PDF et calendrier",
     "pricing.feature.max.credits": "{0} générations de plan",
     "pricing.feature.max.frameworks": "Tous les modèles",
     "pricing.feature.max.calendar":
@@ -3468,7 +3468,7 @@ export const translations = {
 
     // Tier Names
     "tier.architect": "Architekt",
-    "tier.standard": "Builder",
+    "tier.builder": "Builder",
     "tier.max": "Max",
     "tier.enterprise": "Enterprise",
 
@@ -3567,25 +3567,25 @@ export const translations = {
     "pricing.tier.architect": "Architekt",
     "pricing.tier.architect.desc":
       "Ein voller Plan: alle Modelle, PDF- und Kalender-Export.",
-    "pricing.tier.standard": "Builder",
-    "pricing.tier.standard.desc": "5 Pläne mit allen Modellen und Export.",
+    "pricing.tier.builder": "Builder",
+    "pricing.tier.builder.desc": "5 Pläne mit allen Modellen und Export.",
     "pricing.tier.max": "Max",
     "pricing.tier.max.desc": "20 Pläne für Power-User und Profis.",
     "pricing.tier.enterprise": "Enterprise",
     "pricing.tier.enterprise.desc":
       "Für Teams und Organisationen, die Skalierung und Kontrolle benötigen.",
     "pricing.cta.start": "Jetzt Bauen",
-    "pricing.cta.standard": "Standard wählen",
+    "pricing.cta.builder": "Standard wählen",
     "pricing.cta.max": "Max wählen",
     "pricing.cta.contact": "Vertrieb kontaktieren",
     "pricing.feature.architect.frameworks": "Alle Modelle",
     "pricing.feature.architect.blueprints": "{0} Plan mit voller Erfahrung",
     "pricing.feature.architect.credits": "{0} Planerstellung",
     "pricing.feature.architect.ai": "PDF- und Kalender-Export inklusive",
-    "pricing.feature.standard.credits": "{0} Planerstellungen",
-    "pricing.feature.standard.frameworks": "Alle Modelle",
-    "pricing.feature.standard.blueprints": "Bis zu {0} Pläne",
-    "pricing.feature.standard.ai": "PDF- und Kalender-Export",
+    "pricing.feature.builder.credits": "{0} Planerstellungen",
+    "pricing.feature.builder.frameworks": "Alle Modelle",
+    "pricing.feature.builder.blueprints": "Bis zu {0} Pläne",
+    "pricing.feature.builder.ai": "PDF- und Kalender-Export",
     "pricing.feature.max.credits": "{0} Planerstellungen",
     "pricing.feature.max.frameworks": "Alle Modelle",
     "pricing.feature.max.calendar": "Export zu Kalender (Google / Outlook)",

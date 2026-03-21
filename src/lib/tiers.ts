@@ -1,7 +1,7 @@
 /**
  * Tier configuration: credits, allowed frameworks, and feature flags.
  * All tiers get all frameworks; free tier gets 1 full-experience plan (export, etc.).
- * IDs: architect (free, 1 plan), standard/builder (5 plans, $5.99), max (20 plans, $12.99), enterprise (contact).
+ * IDs: architect (free, 1 plan), builder (5 plans, $5.99), max (20 plans, $12.99), enterprise (contact).
  */
 
 export type FrameworkId = 'first-principles' | 'pareto' | 'rpm' | 'eisenhower' | 'okr' | 'dsss' | 'mandalas' | 'gps' | 'misogi' | 'ikigai' | 'general';
@@ -20,7 +20,7 @@ export const ALL_FRAMEWORKS: FrameworkId[] = [
   'general',
 ];
 
-export type TierId = 'architect' | 'standard' | 'max' | 'enterprise';
+export type TierId = 'architect' | 'builder' | 'max' | 'enterprise';
 
 export interface TierConfig {
   id: TierId;
@@ -48,8 +48,8 @@ export const TIER_CONFIGS: Record<TierId, TierConfig> = {
     priorityAi: false,
     priceUsd: 0,
   },
-  standard: {
-    id: 'standard',
+  builder: {
+    id: 'builder',
     credits: 5,
     maxBlueprints: 5,
     allowedFrameworks: ALL_FRAMEWORKS,
@@ -81,18 +81,34 @@ export const TIER_CONFIGS: Record<TierId, TierConfig> = {
 };
 
 /** Check if a framework is allowed for the given tier. All tiers currently have all frameworks. */
-export function canUseFramework(tierId: TierId | undefined, frameworkId: FrameworkId): boolean {
-  const tier = (tierId != null && TIER_CONFIGS[tierId]) ? TIER_CONFIGS[tierId] : TIER_CONFIGS[DEFAULT_TIER_ID];
+export function canUseFramework(tierId: TierId | string | undefined, frameworkId: FrameworkId): boolean {
+  const normalized = normalizeTierId(tierId as string | null | undefined);
+  const tier = TIER_CONFIGS[normalized] ?? TIER_CONFIGS[DEFAULT_TIER_ID];
   return tier.allowedFrameworks.includes(frameworkId);
 }
 
 /** Default tier for new or unauthenticated users. */
 export const DEFAULT_TIER_ID: TierId = 'architect';
 
-export function canExportCalendar(tierId: TierId): boolean {
-  return TIER_CONFIGS[tierId]?.canExportCalendar ?? false;
+/** Legacy DB / webhook values → canonical TierId */
+const TIER_ALIASES: Record<string, TierId> = {
+  standard: 'builder',
+  free: 'architect',
+};
+
+/** Normalize tier string from DB or external systems (handles legacy `standard`). */
+export function normalizeTierId(raw: string | null | undefined): TierId {
+  if (raw == null || raw === '') return DEFAULT_TIER_ID;
+  const key = raw.toLowerCase().trim();
+  if (key in TIER_ALIASES) return TIER_ALIASES[key];
+  if (key in TIER_CONFIGS) return key as TierId;
+  return DEFAULT_TIER_ID;
 }
 
-export function canExportPdf(tierId: TierId): boolean {
-  return TIER_CONFIGS[tierId]?.canExportPdf ?? false;
+export function canExportCalendar(tierId: TierId | string): boolean {
+  return TIER_CONFIGS[normalizeTierId(tierId)]?.canExportCalendar ?? false;
+}
+
+export function canExportPdf(tierId: TierId | string): boolean {
+  return TIER_CONFIGS[normalizeTierId(tierId)]?.canExportPdf ?? false;
 }

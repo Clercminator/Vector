@@ -113,25 +113,38 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     let creditsToAdd = 5;
-    let newTier = "standard";
+    let newTier = "builder";
 
     if (totalUsd >= 10 || (variantId && String(variantId) === Deno.env.get("LEMONSQUEEZY_VARIANT_MAX"))) {
       creditsToAdd = 20;
       newTier = "max";
     } else if (totalUsd >= 5 || variantId) {
       creditsToAdd = 5;
-      newTier = "standard";
+      newTier = "builder";
     }
 
-    const { error: rpcError } = await supabase.rpc("increment_credits", {
+    const { data: creditsAfter, error: rpcError } = await supabase.rpc("increment_credits", {
       target_user_id: targetUserId,
       amount_to_add: creditsToAdd,
     });
-    if (rpcError) console.error("Failed to increment credits:", rpcError);
+    if (rpcError || creditsAfter == null) {
+      console.error("Failed to increment credits:", rpcError, "creditsAfter:", creditsAfter);
+      return new Response(JSON.stringify({ error: "Failed to update credits" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    await supabase.from("profiles").update({ tier: newTier }).eq("user_id", targetUserId);
+    const { error: tierError } = await supabase.from("profiles").update({ tier: newTier }).eq("user_id", targetUserId);
+    if (tierError) {
+      console.error("Failed to update profile tier:", tierError);
+      return new Response(JSON.stringify({ error: "Failed to update plan" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    await supabase.from("payments").insert({
+    const { error: payError } = await supabase.from("payments").insert({
       user_id: targetUserId,
       amount: totalUsd,
       currency: attrs.currency || "USD",
@@ -140,6 +153,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
       provider_payment_id: providerPaymentId,
       metadata: body,
     });
+    if (payError) {
+      console.error("Failed to insert payment:", payError);
+      return new Response(JSON.stringify({ error: "Failed to record payment" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const { data: profile } = await supabase.from("profiles").select("referrer_code").eq("user_id", targetUserId).single();
     if (profile?.referrer_code) {

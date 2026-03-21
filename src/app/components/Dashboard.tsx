@@ -18,7 +18,7 @@ import { trackEvent } from '@/lib/analytics';
 import { BulkExportModal } from "@/app/components/BulkExportModal";
 import { PdfBranding } from "@/lib/pdfExport";
 import { supabase } from "@/lib/supabase";
-import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID } from '@/lib/tiers';
+import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, normalizeTierId } from '@/lib/tiers';
 
 import { useLanguage } from '@/app/components/language-provider';
 import { ErrorBoundary } from '@/app/components/ErrorBoundary';
@@ -168,7 +168,7 @@ export function Dashboard({
                             logoUrl: data.branding_logo_url,
                             primaryColor: data.branding_color || '#000000'
                         });
-                        const tier = (data.tier || DEFAULT_TIER_ID) as TierId;
+                        const tier = normalizeTierId(data.tier || DEFAULT_TIER_ID);
                         setCanBulkExport(TIER_CONFIGS[tier]?.canExportPdf ?? false);
                         if (data.metadata?.tracker_preferences) {
                             setTrackerPrefs(data.metadata.tracker_preferences);

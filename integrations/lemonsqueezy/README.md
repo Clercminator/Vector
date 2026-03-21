@@ -66,3 +66,7 @@ Redeploy or wait for the next cold start so the functions pick up the new secret
 ## Webhook 401 errors
 
 The `lemonsqueezy-webhook` Edge Function is configured with `verify_jwt = false` in `supabase/config.toml` so it accepts unauthenticated POST requests from Lemon Squeezy. If webhooks return 401, ensure you have deployed with `supabase functions deploy lemonsqueezy-webhook` after the config change.
+
+## Profiles + credits
+
+The `increment_credits` RPC (called by this webhook) ensures a `public.profiles` row exists for the paying user before adding credits—same as MercadoPago. Apply migration `20260320120000_ensure_profile_payment_safety.sql` on your Supabase project so this logic is live.

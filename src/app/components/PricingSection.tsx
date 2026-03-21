@@ -23,7 +23,7 @@ export const PricingSection: React.FC<{
     trackEvent('view_pricing');
   }, []);
 
-  const tierIds: TierId[] = ['architect', 'standard', 'max', 'enterprise'];
+  const tierIds: TierId[] = ['architect', 'builder', 'max', 'enterprise'];
   const tiers = tierIds.map((id) => {
     const config = TIER_CONFIGS[id];
     const isFree = config.priceUsd === 0;
@@ -46,11 +46,11 @@ export const PricingSection: React.FC<{
             t('pricing.feature.architect.frameworks'),
             t('pricing.feature.architect.ai'),
           ]
-        : id === 'standard'
+        : id === 'builder'
           ? [
-              t('pricing.feature.standard.plans').replace('{0}', String(config.credits)),
-              t('pricing.feature.standard.frameworks'),
-              t('pricing.feature.standard.ai'),
+              t('pricing.feature.builder.plans').replace('{0}', String(config.credits)),
+              t('pricing.feature.builder.frameworks'),
+              t('pricing.feature.builder.ai'),
             ]
           : id === 'max'
             ? [
@@ -74,7 +74,7 @@ export const PricingSection: React.FC<{
       features: features.filter(Boolean),
       cta: isCurrent ? (t('pricing.currentPlan') || 'Current Plan') : t(ctaKey),
       popular: id === 'max',
-      color: id === 'architect' ? '#4285F4' : id === 'standard' ? '#34A853' : id === 'max' ? '#EA4335' : '#FBBC05',
+      color: id === 'architect' ? '#4285F4' : id === 'builder' ? '#34A853' : id === 'max' ? '#EA4335' : '#FBBC05',
       oneTime: !isFree && !isCustom,
       isCurrent
     };
@@ -181,12 +181,12 @@ export const PricingSection: React.FC<{
                       : 'bg-gray-50 dark:bg-zinc-800 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700'
                 }`}
               >
-                {(tier.id === 'standard' || tier.id === 'max') && !tier.isCurrent && (
+                {(tier.id === 'builder' || tier.id === 'max') && !tier.isCurrent && (
                   <CreditCard size={18} />
                 )}
                 {tier.cta}
               </button>
-              {(tier.id === 'standard' || tier.id === 'max') && !tier.isCurrent && onSelectCryptoTier && (
+              {(tier.id === 'builder' || tier.id === 'max') && !tier.isCurrent && onSelectCryptoTier && (
                 <button
                   type="button"
                   onClick={() => {

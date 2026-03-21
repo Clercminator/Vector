@@ -326,7 +326,7 @@ export function AdminDashboard({ onBack, onStartImpersonating }: AdminDashboardP
                             className="bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer"
                           >
                             <option value="architect">{t('tier.architect')}</option>
-                            <option value="standard">{t('tier.standard')}</option>
+                            <option value="builder">{t('tier.builder')}</option>
                             <option value="max">{t('tier.max')}</option>
                             <option value="enterprise">{t('tier.enterprise')}</option>
                           </select>

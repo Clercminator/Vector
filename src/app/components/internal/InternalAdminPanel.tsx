@@ -305,7 +305,7 @@ export function InternalAdminPanel({ onBack }: { onBack: () => void }) {
                 className="w-full h-9 rounded-md border border-zinc-700 bg-zinc-800 px-3 text-white"
               >
                 <option value="architect">architect</option>
-                <option value="standard">standard</option>
+                <option value="builder">builder</option>
                 <option value="max">max</option>
                 <option value="enterprise">enterprise</option>
               </select>

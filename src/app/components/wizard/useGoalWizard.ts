@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/lib/supabase';
 import { Blueprint, BlueprintResult, blueprintTitleFromAnswers, fetchBlueprintMessages, syncBlueprintMessages, filterRealAnswers } from '@/lib/blueprints';
-import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, canUseFramework, FrameworkId } from '@/lib/tiers';
+import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, canUseFramework, FrameworkId, normalizeTierId } from '@/lib/tiers';
 import { useLanguage } from '@/app/components/language-provider';
 import { trackEvent, setWizardContext } from '@/lib/analytics';
 import { graph } from '@/agent/goalAgent';
@@ -353,7 +353,7 @@ export const useGoalWizard = ({
                         const expiresAt = data.credits_expires_at ? new Date(data.credits_expires_at) : null;
                         const validRegular = expiresAt && expiresAt.getTime() < Date.now() ? 0 : regular;
                         setCredits(validRegular + extra);
-                        if (data.tier) setTier(data.tier as TierId);
+                        if (data.tier) setTier(normalizeTierId(data.tier));
                         if (data.display_name) setUserName(data.display_name);
                         // Build profile summary for the agent (personality-aware plans)
                         const meta = data.metadata || {};

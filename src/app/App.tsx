@@ -22,12 +22,13 @@ import {
   processDeletedQueue,
 } from "@/lib/blueprints";
 import { supabase } from "@/lib/supabase";
+import { ensureMyProfile } from "@/lib/ensureProfile";
 import { createCheckout, isMercadoPagoConfigured } from "@/lib/mercadoPago";
 import { createLemonSqueezyCheckout, isLemonSqueezyConfigured } from "@/lib/lemonSqueezy";
 import { usePaymentRegion } from "@/hooks/usePaymentRegion";
 import { trackEvent, trackPageView, trackSessionEnd, trackWizardAbandoned, getWizardContextForAbandon } from "@/lib/analytics";
 
-import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID } from "@/lib/tiers";
+import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, normalizeTierId } from "@/lib/tiers";
 import { checkAndAwardAchievements } from "@/lib/gamification";
 
 import { useLanguage } from "@/app/components/language-provider";
@@ -313,10 +314,12 @@ function App() {
 
   useEffect(() => {
     // Check initial session
-    supabase?.auth.getSession().then(({ data: { session } }) => {
+    supabase?.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         setUserId(session.user.id);
         setUserEmail(session.user.email || null);
+
+        await ensureMyProfile(supabase);
 
         // Sync local blueprints if any
         syncLocalBlueprintsToRemote(supabase, session.user.id)
@@ -348,7 +351,7 @@ function App() {
           .eq("user_id", session.user.id)
           .single()
           .then(({ data }) => {
-            if (data?.tier) setTier(data.tier as TierId);
+            if (data?.tier) setTier(normalizeTierId(data.tier));
             if (data?.is_admin) setIsAdmin(true);
             if (data?.avatar_url) setAvatarUrl(data.avatar_url);
           });
@@ -379,19 +382,21 @@ function App() {
         setAuthOpen(false); // Close modal if open
         setPage(0);
         setHasMore(true);
-        loadRemoteBlueprints(session.user.id, 0);
+        void ensureMyProfile(supabase!).then(() => {
+          loadRemoteBlueprints(session.user.id, 0);
 
-        // Load profile data (tier + is_admin + avatar)
-        supabase!
-          .from("profiles")
-          .select("tier, is_admin, avatar_url")
-          .eq("user_id", session.user.id)
-          .single()
-          .then(({ data }) => {
-            if (data?.tier) setTier(data.tier as TierId);
-            if (data?.is_admin) setIsAdmin(true);
-            if (data?.avatar_url) setAvatarUrl(data.avatar_url);
-          });
+          // Load profile data (tier + is_admin + avatar)
+          supabase!
+            .from("profiles")
+            .select("tier, is_admin, avatar_url")
+            .eq("user_id", session.user.id)
+            .single()
+            .then(({ data }) => {
+              if (data?.tier) setTier(normalizeTierId(data.tier));
+              if (data?.is_admin) setIsAdmin(true);
+              if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+            });
+        });
       } else if (event === "SIGNED_OUT") {
         setUserId(null);
         setUserEmail(null);
@@ -415,9 +420,8 @@ function App() {
           Date.now() - parseInt(refTimestamp) > 30 * 24 * 60 * 60 * 1000;
 
         if (refCode && !isExpired) {
-          // We optimistically try to set it. If user already has one, it might fail or be ignored depending on RLS/Backend.
-          // But simpler here: check if profile already has one or just update.
-          // Ideally we only set it if it's null.
+          // Ensure profile row exists before reading/updating (same session as SIGNED_IN may race).
+          void ensureMyProfile(supabase!).then(() => {
           supabase!
             .from("profiles")
             .select("referrer_code")
@@ -443,6 +447,7 @@ function App() {
                 localStorage.removeItem("vector_ref_timestamp");
               }
             });
+          });
         }
       }
     });
@@ -529,18 +534,29 @@ function App() {
   };
 
   const refreshProfile = () => {
-    if (userId && supabase) {
-      supabase
-        .from("profiles")
-        .select("avatar_url, tier, credits, is_admin")
-        .eq("user_id", userId)
-        .single()
-        .then(({ data }) => {
-          if (data?.avatar_url) setAvatarUrl(data.avatar_url);
-          if (data?.tier) setTier(data.tier as TierId);
-          if (data?.is_admin) setIsAdmin(true);
-        });
-    }
+    if (!userId || !supabase) return;
+    supabase
+      .from("profiles")
+      .select("avatar_url, tier, credits, is_admin")
+      .eq("user_id", userId)
+      .single()
+      .then(async ({ data, error }) => {
+        if (error?.code === "PGRST116" || !data) {
+          await ensureMyProfile(supabase);
+          const { data: d2 } = await supabase
+            .from("profiles")
+            .select("avatar_url, tier, credits, is_admin")
+            .eq("user_id", userId)
+            .single();
+          if (d2?.avatar_url) setAvatarUrl(d2.avatar_url);
+          if (d2?.tier) setTier(normalizeTierId(d2.tier));
+          if (d2?.is_admin) setIsAdmin(true);
+          return;
+        }
+        if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+        if (data?.tier) setTier(normalizeTierId(data.tier));
+        if (data?.is_admin) setIsAdmin(true);
+      });
   };
 
   const handleStartImpersonating = (target: { userId: string; email: string; tier: TierId }) => {
@@ -863,7 +879,7 @@ function App() {
 
       if (useLemonSqueezy) {
         await createLemonSqueezyCheckout(supabase!, {
-          tier: tierId as "standard" | "max",
+          tier: tierId as "builder" | "max",
           userId,
           userEmail: userEmail ?? undefined,
         });

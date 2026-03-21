@@ -77,7 +77,7 @@ This document explains **what the app does**, **how it’s built**, **how the pi
   Users can publish blueprints as **templates**. On the Community page you see those templates (with "Load more" and sort by recent/top), can **vote** on them, **use** one (import it into your blueprints), or **gift points** to the author.
 
 - **Pricing**  
-  Four tiers: **Architect** (free), **Standard** (15 credits, all frameworks, one-time), **Max** (40 credits, calendar/PDF export, priority AI, one-time), **Enterprise** (contact). Standard and Max use MercadoPago checkout when configured; prices are one-time (no subscription yet).
+  Four tiers: **Architect** (free, 1 plan), **Builder** (5 plans, all frameworks + export, one-time), **Max** (20 plans, priority AI, one-time), **Enterprise** (contact). Builder and Max use MercadoPago (LATAM) or Lemon Squeezy (global) when configured; prices are one-time (no subscription yet).
 
 - **Languages & theme**  
   You can switch **language** (e.g. English / Español) and **theme** (light/dark) from the nav. All visible text and framework content can be translated.
@@ -627,7 +627,7 @@ Defined in `src/agent/state.ts` using LangGraph `Annotation`:
 | `messages` | `BaseMessage[]` | append | Full conversation (human + AI) |
 | `goal` | string | first non-empty | User’s stated goal |
 | `framework` | string \| null | last wins | Selected framework ID |
-| `tier` | string | last wins | User tier (architect/standard/max) |
+| `tier` | string | last wins | User tier (architect/builder/max) |
 | `validFrameworks` | string[] | last wins | Allowed frameworks for tier |
 | `blueprint` | any | last wins | Final JSON blueprint |
 | `steps` | number | sum | Message-step counter |
@@ -754,7 +754,7 @@ Vector uses a **frontend-first** architecture with **Supabase Edge Functions** f
 - **handle-new-user** — Triggered by Database Webhook (INSERT on `auth.users`). Sends welcome email via Resend. Requires `RESEND_API_KEY` and webhook configured in Supabase Dashboard.
 
 **Payment Flow (MercadoPago):**
-1. User clicks "Get Standard" or "Get Max" on Pricing page.
+1. User clicks "Get Builder" or "Get Max" on Pricing page.
 2. Frontend calls `mercado-pago-preference` Edge Function with tier/amount.
 3. Edge Function creates preference using `MERCADOPAGO_ACCESS_TOKEN` and returns `init_point`.
 4. Frontend redirects user to MercadoPago Checkout (`init_point`).
@@ -762,7 +762,7 @@ Vector uses a **frontend-first** architecture with **Supabase Edge Functions** f
 6. Webhook verifies payment, determines tier/credits from amount, updates `profiles` table.
 
 **Tier Enforcement:**
-- User tier is stored in `profiles.tier` (architect/standard/max/enterprise).
+- User tier is stored in `profiles.tier` (architect/builder/max/enterprise).
 - `src/lib/tiers.ts` defines tier config (credits, allowed frameworks, export permissions).
 - Frontend fetches tier on auth and uses `canUseFramework(tier, frameworkId)` to lock/unlock frameworks.
 - GoalWizard disables Calendar/PDF export buttons based on `canExportCalendar(tier)` and `canExportPdf(tier)`.
@@ -933,7 +933,7 @@ Vector/
 │   │       ├── Dashboard.tsx         # My Blueprints list + delete + bulk export
 │   │       ├── Profile.tsx           # Profile form + level + credits + achievements + streak
 │   │       ├── Community.tsx         # Templates list + vote + use + gift
-│   │       ├── PricingSection.tsx    # Four pricing tiers (Architect, Standard, Max, Enterprise)
+│   │       ├── PricingSection.tsx    # Four pricing tiers (Architect, Builder, Max, Enterprise)
 │   │       ├── HelpMeChooseModal.tsx # AI-suggested framework from goal description
 │   │       ├── BulkExportModal.tsx   # Multi-blueprint PDF export (Max tier)
 │   │       ├── AdminDashboard.tsx    # Admin: users, templates, analytics, payments (route /admin)
@@ -962,7 +962,7 @@ Vector/
 │       ├── frameworks.ts         # Framework list (id, title, description, author, pros, cons, example)
 │       ├── frameworkContent.ts   # Extended content for FrameworkPage (longDescription, history, steps)
 │       ├── leaderboard.ts        # fetchLeaderboard; get_leaderboard RPC
-│       ├── tiers.ts              # Tier config: credits, frameworks, features (Architect/Standard/Max/Enterprise)
+│       ├── tiers.ts              # Tier config: credits, frameworks, features (Architect/Builder/Max/Enterprise)
 │       ├── calendarExport.ts     # Turn blueprint into events; Google Calendar or .ics
 │       ├── pdfExport.ts          # Blueprint to PDF; branding from profile
 │       ├── mercadoPago.ts        # MercadoPago checkout LATAM (calls Edge Function, redirects)
