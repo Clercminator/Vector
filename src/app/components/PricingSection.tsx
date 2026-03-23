@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { useLanguage } from '@/app/components/language-provider';
 import { TIER_CONFIGS, type TierId } from '@/lib/tiers';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/app/components/ui/accordion';
-import { trackEvent } from '@/lib/analytics';
+import { trackEvent, trackClick } from '@/lib/analytics';
 import type { PaymentRegion } from '@/hooks/usePaymentRegion';
 
 export const PricingSection: React.FC<{ 
@@ -81,8 +81,7 @@ export const PricingSection: React.FC<{
   });
 
   const handleCta = (tierName: string, tierId: string) => {
-    // If it's already the current plan, maybe do nothing or show info?
-    // For now, let properties flow up, App.tsx will reject if needed, but visually we might want to disable
+    trackClick(`pricing_cta_${tierId}`, tierName);
     confetti({
       particleCount: 150,
       spread: 70,
@@ -190,6 +189,7 @@ export const PricingSection: React.FC<{
                 <button
                   type="button"
                   onClick={() => {
+                    trackClick(`pricing_cta_crypto_${tier.id}`, tier.name);
                     confetti({ particleCount: 80, spread: 50, origin: { y: 0.6 } });
                     const config = TIER_CONFIGS[tier.id as TierId];
                     onSelectCryptoTier(tier.id, tier.name, config?.priceUsd ?? 0);

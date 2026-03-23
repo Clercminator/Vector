@@ -423,9 +423,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                                         });
                                         return;
                                     }
+                                    trackClick(`landing_framework_start_${fw.id}`, fw.title);
                                     onStartWizard(fw.id);
                                 }}
-                                onLearnMore={() => onViewFramework(fw)}
+                                onLearnMore={() => {
+                                    trackClick(`landing_framework_learn_${fw.id}`, fw.title);
+                                    onViewFramework(fw);
+                                }}
                                 isLocked={!canUseFramework(tier, fw.id)}
                             />
                         ))}

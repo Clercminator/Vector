@@ -16,7 +16,7 @@ import { Button } from '@/app/components/ui/button';
 import { ArrowLeft, Brain, Layers, Target, Rocket, Check, X as XIcon, Quote, User } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLanguage } from '@/app/components/language-provider';
-import { trackEvent } from '@/lib/analytics';
+import { trackEvent, trackClick } from '@/lib/analytics';
 
 const markdownMap: Record<string, string> = {
   'first-principles': firstPrinciplesMd,
@@ -155,7 +155,10 @@ export function FrameworkPage() {
                     <Button 
                         size="lg" 
                         className="w-full font-bold h-12 text-md shadow-lg shadow-blue-500/20"
-                        onClick={() => navigate('/wizard', { state: { framework: fw.id } })} // Assuming wizard can take state or we update context
+                        onClick={() => {
+                          trackClick(`framework_start_blueprint_${fw.id}`, fw.title);
+                          navigate('/wizard', { state: { framework: fw.id } });
+                        }}
                     >
                         Start Blueprint <Rocket className="ml-2 w-4 h-4" />
                     </Button>

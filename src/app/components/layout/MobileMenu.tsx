@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { trackClick } from '@/lib/analytics';
 import { ThemeToggle } from '@/app/components/theme-toggle';
 import { LanguageToggle } from '@/app/components/language-toggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
@@ -72,6 +73,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             )}
             <button
                 onClick={() => {
+                    if (!userEmail) trackClick('nav_signin_mobile');
                     onClose();
                     userEmail ? onSignOut() : onSignIn();
                 }}
@@ -79,7 +81,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             >
                 {userEmail ? t('nav.signout') : t('nav.signin')}
             </button>
-            <button onClick={() => { onGetStarted(); onClose(); }} className="w-full min-h-[48px] py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-lg font-bold touch-manipulation">{t('nav.getStarted')}</button>
+            <button onClick={() => { trackClick('nav_get_started_mobile'); onGetStarted(); onClose(); }} className="w-full min-h-[48px] py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-lg font-bold touch-manipulation">{t('nav.getStarted')}</button>
         </motion.div>
     );
 };

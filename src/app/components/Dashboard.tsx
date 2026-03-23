@@ -14,7 +14,7 @@ import {
 } from "@/app/components/ui/alert-dialog";
 import { Trash2, ArrowRight, Rocket, Download, Plus, Search, Filter, Star, Zap, Target, Clock, Layers, Flame, Heart, Layout, WifiOff, LayoutGrid, List, BarChart } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { trackEvent } from '@/lib/analytics';
+import { trackEvent, trackClick } from '@/lib/analytics';
 import { BulkExportModal } from "@/app/components/BulkExportModal";
 import { PdfBranding } from "@/lib/pdfExport";
 import { supabase } from "@/lib/supabase";
@@ -241,7 +241,7 @@ export function Dashboard({
              </Button>
           )}
           {onStartWizard && (
-              <Button onClick={onStartWizard} className="gap-2 bg-black dark:bg-white text-white dark:text-black rounded-full hover:scale-105 transition-transform shadow-lg">
+              <Button onClick={() => { trackClick('dashboard_new_plan'); onStartWizard(); }} className="gap-2 bg-black dark:bg-white text-white dark:text-black rounded-full hover:scale-105 transition-transform shadow-lg">
                 <Plus size={18} />
                 {t('dashboard.new')}
               </Button>
@@ -336,7 +336,7 @@ export function Dashboard({
                 Retry
               </Button>
           ) : (!searchQuery && onStartWizard && (
-              <Button onClick={onStartWizard} size="lg" className="rounded-full px-8 bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-500/20 cursor-pointer">
+              <Button onClick={() => { trackClick('dashboard_create_first'); onStartWizard(); }} size="lg" className="rounded-full px-8 bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-500/20 cursor-pointer">
                 {t('dashboard.createFirst')}
               </Button>
           ))}

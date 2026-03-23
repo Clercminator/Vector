@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Logo } from '@/app/components/Logo';
+import { trackClick } from '@/lib/analytics';
 import { ThemeToggle } from '@/app/components/theme-toggle';
 import { LanguageToggle } from '@/app/components/language-toggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
@@ -76,13 +77,16 @@ export const Header: React.FC<HeaderProps> = ({
                     )}
 
                     <button
-                        onClick={() => (userEmail ? onSignOut() : onSignIn())}
+                        onClick={() => {
+                          if (!userEmail) trackClick('nav_signin');
+                          userEmail ? onSignOut() : onSignIn();
+                        }}
                         className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
                     >
                         {userEmail ? t('nav.signout') : t('nav.signin')}
                     </button>
                     <button
-                        onClick={onGetStarted}
+                        onClick={() => { trackClick('nav_get_started'); onGetStarted(); }}
                         className="px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer"
                     >
                         {t('nav.getStarted')}

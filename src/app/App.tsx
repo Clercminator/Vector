@@ -27,6 +27,7 @@ import { createCheckout, isMercadoPagoConfigured } from "@/lib/mercadoPago";
 import { createLemonSqueezyCheckout, isLemonSqueezyConfigured } from "@/lib/lemonSqueezy";
 import { usePaymentRegion } from "@/hooks/usePaymentRegion";
 import { trackEvent, trackPageView, trackSessionEnd, trackWizardAbandoned, getWizardContextForAbandon } from "@/lib/analytics";
+import { gtagEvent, gtagPageView } from "@/lib/gtag";
 
 import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, normalizeTierId } from "@/lib/tiers";
 import { checkAndAwardAchievements } from "@/lib/gamification";
@@ -288,6 +289,9 @@ function App() {
   const prevPathRef = React.useRef<string | null>(null);
   useEffect(() => {
     const path = location.pathname + location.search;
+    // GA4: page views for all visitors (SPA route change)
+    gtagPageView(path);
+    if (path === "/") gtagEvent("view_landing");
     if (userId) {
       trackPageView(path);
       if (path === "/") trackEvent("view_landing");

@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { gtagEvent } from './gtag';
 
 export type EventType = 
   | 'blueprint_created' 
@@ -20,11 +21,27 @@ export type EventType =
   | 'session_end';
 
 export async function trackEvent(eventType: EventType, meta: Record<string, any> = {}) {
-  if (!supabase) return;
+  // GA4: fire for all visitors (including anonymous), before any early returns
+  const ga4EventMap: Partial<Record<EventType, string>> = {
+    checkout_started: 'begin_checkout',
+    wizard_completed: 'wizard_completed',
+    wizard_started: 'wizard_started',
+    export_pdf: 'export_pdf',
+    login: 'login',
+    view_pricing: 'view_pricing',
+    view_landing: 'view_landing',
+    view_dashboard: 'view_dashboard',
+    framework_selected: 'framework_selected',
+  };
+  const ga4Name = ga4EventMap[eventType];
+  if (ga4Name) {
+    gtagEvent(ga4Name, meta as Record<string, string | number | boolean | undefined>);
+  }
 
+  if (!supabase) return;
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return; // Only track authenticated users for now
+    if (!user) return; // Only track authenticated users to Supabase
 
     await supabase.from('analytics_events').insert({
       user_id: user.id,
@@ -33,11 +50,10 @@ export async function trackEvent(eventType: EventType, meta: Record<string, any>
     });
   } catch (error) {
     console.error('Failed to track event:', error);
-    // Fail silently to not impact user experience
   }
 }
 
-/** Track page view (path, referrer). Call on route change. */
+/** Track page view (path, referrer). Call on route change. GA4 page views are sent from App for all visitors. */
 export function trackPageView(path: string, extra: Record<string, any> = {}) {
   trackEvent('page_view', { path, ...extra });
 }
@@ -45,6 +61,12 @@ export function trackPageView(path: string, extra: Record<string, any> = {}) {
 /** Track CTA/element click. */
 export function trackClick(elementId: string, label?: string, extra: Record<string, any> = {}) {
   trackEvent('click', { element_id: elementId, label: label || elementId, ...extra });
+  // GA4: CTA clicks for all visitors
+  gtagEvent('click_cta', {
+    cta_name: elementId,
+    cta_label: label ?? elementId,
+    ...(extra as Record<string, string | number | boolean | undefined>),
+  });
 }
 
 /** Track when user leaves wizard without completing. Call when navigating away from wizard. */
