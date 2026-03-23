@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '@/app/components/language-provider';
+import { useIsMobileSync } from '@/app/components/ui/use-mobile';
 
 const CHUNK_COUNT = 6;
 const INTERVAL_MS = 5000;
 
 export function HeroSubtitleChunks() {
   const { t } = useLanguage();
+  const isMobile = useIsMobileSync();
+  const crossMs = isMobile ? 0.22 : 0.4;
   const [index, setIndex] = useState(0);
 
   const chunks = [1, 2, 3, 4, 5, 6].map((i) => t(`landing.hero.subtitleChunk.${i}`));
@@ -24,10 +27,10 @@ export function HeroSubtitleChunks() {
         <AnimatePresence mode="wait">
           <motion.p
             key={index}
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: isMobile ? 10 : 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.4 }}
+            exit={{ opacity: 0, y: isMobile ? -10 : -16 }}
+            transition={{ duration: crossMs }}
             className="text-xl md:text-2xl text-gray-500 font-light max-w-4xl mx-auto leading-relaxed text-center absolute inset-x-0 px-2"
           >
             {chunks[index]}

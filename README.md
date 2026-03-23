@@ -13,6 +13,7 @@ This document explains **what the app does**, **how it’s built**, **how the pi
   - [What Vector Does (In Plain Language)](#what-vector-does-in-plain-language)
   - [What We Built \& Why](#what-we-built--why)
   - [How to Run the App](#how-to-run-the-app)
+  - [Image Optimization Workflow (Mobile Performance)](#image-optimization-workflow-mobile-performance)
   - [Deploying Vector: Open Router API Key (Beginner Guide)](#deploying-vector-open-router-api-key-beginner-guide)
   - [Frameworks: List and Explanation](#frameworks-list-and-explanation)
     - [1. First Principles (Elon Musk)](#1-first-principles-elon-musk)
@@ -152,6 +153,43 @@ This document explains **what the app does**, **how it’s built**, **how the pi
    **Already deployed:** Edge Functions, Supabase Secrets (`OPENROUTER_API_KEY_2` or `OPENROUTER_API_KEY` for the AI proxy, `MERCADOPAGO_ACCESS_TOKEN`), frontend env vars (`VITE_OPENROUTER_PROXY_URL`, `VITE_MERCADOPAGO_PUBLIC_KEY`), MercadoPago webhook configured. Ensure `profiles.tier` and the credit RPCs exist in your database. See **[Deploying Vector: Open Router API Key](#deploying-vector-open-router-api-key-beginner-guide)** for a step-by-step guide.
    
    **Stripe** (future US implementation): See **[integrations/pending/stripe/](integrations/pending/stripe/)**.
+
+---
+
+<a id="image-optimization-workflow-mobile-performance"></a>
+## Image Optimization Workflow (Mobile Performance)
+
+Vector includes high-quality source portraits and assets under `public/images/`. These are useful as masters, but can be too heavy for mobile if used directly.
+
+### Rule
+
+- Re-run `npm run optimize:images` whenever you replace a source image.
+
+### Why this is required
+
+- The optimization script (`scripts/optimize-author-images.mjs`) resizes large originals to mobile-safe dimensions and writes optimized WebP files.
+- This reduces transfer size and improves Lighthouse metrics, especially **LCP** and **Speed Index** on mobile.
+- If you replace a source image and skip this step, the app can regress by serving oversized files again.
+
+### What the script does
+
+- Reads selected source images in `public/images/authors/`
+- Resizes to a bounded resolution (without upscaling)
+- Encodes to WebP with high visual quality
+- Writes optimized files alongside source assets (original files are preserved)
+
+### Recommended workflow
+
+1. Replace source image(s) in `public/images/authors/`
+2. Run `npm run optimize:images`
+3. Confirm generated `.webp` files exist and are referenced in code
+4. Run `npm run build`
+5. Re-test Lighthouse on mobile
+
+### Notes
+
+- Keep originals only as editable masters; serve optimized WebP/AVIF in UI paths.
+- If you add a new author file, include it in `scripts/optimize-author-images.mjs` so future updates stay consistent.
 
 ---
 

@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { motion } from 'motion/react'; // Keeping consistent with App.tsx
 import { useNavigate } from 'react-router-dom';
+import { useIsMobileSync } from '@/app/components/ui/use-mobile';
 import { FrameworkCard } from '@/app/components/FrameworkCard';
 import { InspirationalQuote } from '@/app/components/InspirationalQuote';
 import { HeroSubtitleChunks } from '@/app/components/HeroSubtitleChunks';
@@ -37,6 +38,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     const tier = tierProp ?? DEFAULT_TIER_ID;
     const navigate = useNavigate();
     const howItWorksRef = useRef<HTMLElement>(null);
+    const isMobile = useIsMobileSync();
+    /** Shorter motion on small screens — improves LCP / first paint on mobile */
+    const heroEase = "easeOut" as const;
+    const pageEnter = isMobile ? 0.2 : 0.35;
+    const heroDuration = isMobile ? 0.38 : 0.8;
+    const heroY = isMobile ? 14 : 30;
+    const ctaDelay1 = isMobile ? 0.05 : 0.2;
+    const ctaDelay2 = isMobile ? 0.08 : 0.25;
+    const ctaDuration = isMobile ? 0.26 : 0.5;
 
     // Dynamic frameworks list with translation
     const frameworksList = frameworks.map(f => ({
@@ -59,6 +69,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: pageEnter }}
             className="relative z-10"
         >
             {/* Gift badge — corner of screen, only when not logged in */}
@@ -74,9 +85,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Hero Section */}
             <section className="px-6 pt-12 pb-16 md:pt-14 md:pb-20 text-center max-w-5xl md:max-w-6xl mx-auto">
                 <motion.div
-                    initial={{ opacity: 0, y: 30 }}
+                    initial={{ opacity: 0, y: heroY }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    transition={{ duration: heroDuration, ease: heroEase }}
                 >
                     <h1 className="text-6xl md:text-9xl font-bold tracking-tighter text-gray-900 mb-8 leading-[0.9]">
                         {t('landing.hero.architectYour')} <br />
@@ -95,7 +106,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                             whileTap={{ scale: 0.98 }}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2, duration: 0.5 }}
+                            transition={{ delay: ctaDelay1, duration: ctaDuration, ease: heroEase }}
                         >
                             <span className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-500/20 to-amber-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             <motion.span
@@ -116,7 +127,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                                 whileTap={{ scale: 0.98 }}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.25, duration: 0.5 }}
+                                transition={{ delay: ctaDelay2, duration: ctaDuration, ease: heroEase }}
                             >
                                 {t('nav.getStarted')}
                             </motion.button>
