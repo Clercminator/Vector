@@ -66,6 +66,10 @@ export function InspiredBySection() {
                     <img
                       src={src}
                       alt={author.name}
+                      width={96}
+                      height={96}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                       onError={() => handleImageError(author.slug)}
                     />
@@ -117,6 +121,9 @@ export function InspiredBySection() {
                     <img
                       src={getAuthorImageData(activeAuthor).src}
                       alt={activeAuthor.name}
+                      width={96}
+                      height={96}
+                      decoding="async"
                       className="w-full h-full object-cover"
                       onError={() => handleImageError(activeAuthor.slug)}
                     />

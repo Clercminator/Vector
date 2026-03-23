@@ -11,6 +11,7 @@
     "promptfoo:eval": "npx promptfoo eval --env-file=.env.backend",
     "promptfoo:view": "npx promptfoo view",
     "prerender": "node scripts/prerender.js",
+    "optimize:images": "node scripts/optimize-author-images.mjs",
     "deploy:openrouter-proxy": "npx supabase functions deploy openrouter-proxy"
   },
   "dependencies": {
@@ -99,6 +100,7 @@
     "@tailwindcss/vite": "4.1.12",
     "@vitejs/plugin-react": "4.7.0",
     "puppeteer": "^24.36.1",
+    "sharp": "^0.34.5",
     "tailwindcss": "4.1.12",
     "vite": "6.3.5",
     "vite-plugin-sitemap": "^0.8.2",

@@ -76,8 +76,12 @@ export function AboutPage() {
               <div className="w-52 h-52 sm:w-64 sm:h-64 rounded-2xl bg-gray-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                 {!founderImgError ? (
                   <img
-                    src="/images/authors/David%20Clerc%20empresarial%20traje.png"
+                    src="/images/authors/David%20Clerc%20empresarial%20traje.webp"
                     alt={t('about.founder.name')}
+                    width={512}
+                    height={512}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover object-top"
                     onError={() => setFounderImgError(true)}
                   />

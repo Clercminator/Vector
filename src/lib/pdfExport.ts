@@ -147,19 +147,19 @@ function getLabel(lang: string | undefined, key: string, fallback: string, ...ar
 
 /** Framework ID → author image path (from public/images/authors). Every framework has an entry so the cover always tries to show an image. */
 const FRAMEWORK_AUTHOR_IMAGES: Record<string, string> = {
-  "first-principles": "/images/authors/elon musk 1.jpg",
-  pareto: "/images/authors/Vilfredo_Pareto.jpg",
+  "first-principles": "/images/authors/elon musk 1.webp",
+  pareto: "/images/authors/Vilfredo_Pareto.webp",
   rpm: "/images/authors/tony robbins.avif",
-  eisenhower: "/images/authors/dwight-d-eisenhower.jpg",
+  eisenhower: "/images/authors/dwight-d-eisenhower.webp",
   okr: "/images/authors/John Doerr.webp",
-  dsss: "/images/authors/Tim-Ferriss.png",
-  mandalas: "/images/authors/Tim-Ferriss.png",
-  gps: "/images/authors/Tim-Ferriss.png",
-  misogi: "/images/authors/Jesse Itzler.jpg",
-  ikigai: "/images/authors/Mieko-Kamiya.jpg",
-  general: "/images/authors/elon musk 1.jpg",
+  dsss: "/images/authors/Tim-Ferriss.webp",
+  mandalas: "/images/authors/Tim-Ferriss.webp",
+  gps: "/images/authors/Tim-Ferriss.webp",
+  misogi: "/images/authors/Jesse Itzler.webp",
+  ikigai: "/images/authors/Mieko-Kamiya.webp",
+  general: "/images/authors/elon musk 1.webp",
 };
-const FALLBACK_AUTHOR_IMAGE = "/images/authors/Tim-Ferriss.png";
+const FALLBACK_AUTHOR_IMAGE = "/images/authors/Tim-Ferriss.webp";
 
 // Helper: parse hex to R,G,B for jsPDF
 function hexToRgb(hex: string): [number, number, number] {
