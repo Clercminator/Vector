@@ -24,12 +24,33 @@ import {
 import { supabase } from "@/lib/supabase";
 import { ensureMyProfile } from "@/lib/ensureProfile";
 import { createCheckout, isMercadoPagoConfigured } from "@/lib/mercadoPago";
-import { createLemonSqueezyCheckout, isLemonSqueezyConfigured } from "@/lib/lemonSqueezy";
+import {
+  createLemonSqueezyCheckout,
+  isLemonSqueezyConfigured,
+} from "@/lib/lemonSqueezy";
+import { buildCommunityProofArtifacts } from "@/lib/communityProof";
+import { loadBlueprintExecutionContext } from "@/lib/executionData";
+import {
+  getE2EUser,
+  isE2EMode,
+  persistE2ECommunityTemplate,
+} from "@/lib/e2eHarness";
 import { usePaymentRegion } from "@/hooks/usePaymentRegion";
-import { trackEvent, trackPageView, trackSessionEnd, trackWizardAbandoned, getWizardContextForAbandon } from "@/lib/analytics";
+import {
+  trackEvent,
+  trackPageView,
+  trackSessionEnd,
+  trackWizardAbandoned,
+  getWizardContextForAbandon,
+} from "@/lib/analytics";
 import { gtagEvent, gtagPageView } from "@/lib/gtag";
 
-import { TIER_CONFIGS, TierId, DEFAULT_TIER_ID, normalizeTierId } from "@/lib/tiers";
+import {
+  TIER_CONFIGS,
+  TierId,
+  DEFAULT_TIER_ID,
+  normalizeTierId,
+} from "@/lib/tiers";
 import { checkAndAwardAchievements } from "@/lib/gamification";
 
 import { useLanguage } from "@/app/components/language-provider";
@@ -81,6 +102,16 @@ const AdminDashboard = React.lazy(() =>
 const FrameworkPage = React.lazy(() =>
   import("@/pages/FrameworkPage").then((module) => ({
     default: module.FrameworkPage,
+  })),
+);
+const GuidesPage = React.lazy(() =>
+  import("@/pages/GuidesPage").then((module) => ({
+    default: module.GuidesPage,
+  })),
+);
+const ArticlePage = React.lazy(() =>
+  import("@/pages/ArticlePage").then((module) => ({
+    default: module.ArticlePage,
   })),
 );
 const AnalyticsPage = React.lazy(() =>
@@ -172,12 +203,25 @@ function App() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
-  const [impersonating, setImpersonating] = useState<{ userId: string; email: string; tier: TierId } | null>(null);
-  const { region: paymentRegion, setRegion: setPaymentRegion, isLoading: isPaymentRegionLoading } = usePaymentRegion();
+  const [impersonating, setImpersonating] = useState<{
+    userId: string;
+    email: string;
+    tier: TierId;
+  } | null>(null);
+  const {
+    region: paymentRegion,
+    setRegion: setPaymentRegion,
+    isLoading: isPaymentRegionLoading,
+  } = usePaymentRegion();
 
   const effectiveUserId = impersonating?.userId ?? userId;
   const effectiveTier = impersonating?.tier ?? tier;
-  const [binanceModal, setBinanceModal] = useState<{ open: boolean; tierId: string; tierName: string; amountUsd: number }>({
+  const [binanceModal, setBinanceModal] = useState<{
+    open: boolean;
+    tierId: string;
+    tierName: string;
+    amountUsd: number;
+  }>({
     open: false,
     tierId: "",
     tierName: "",
@@ -281,8 +325,14 @@ function App() {
   }, []);
 
   useEffect(() => {
-    document.body.dataset.hideAuxiliaryChat = location.pathname.startsWith("/wizard") ? "true" : "";
-    return () => { document.body.dataset.hideAuxiliaryChat = ""; };
+    document.body.dataset.hideAuxiliaryChat = location.pathname.startsWith(
+      "/wizard",
+    )
+      ? "true"
+      : "";
+    return () => {
+      document.body.dataset.hideAuxiliaryChat = "";
+    };
   }, [location.pathname]);
 
   // Analytics: page views and exit tracking
@@ -313,10 +363,22 @@ function App() {
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [location.pathname, userId]);
 
   useEffect(() => {
+    if (isE2EMode()) {
+      const e2eUser = getE2EUser();
+      setUserId(e2eUser.id);
+      setUserEmail(e2eUser.email);
+      setBlueprints(loadLocalBlueprints());
+      setTier(e2eUser.tier);
+      setHasMore(false);
+      setAuthReady(true);
+      return;
+    }
+
     // Check initial session
     supabase?.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
@@ -426,31 +488,33 @@ function App() {
         if (refCode && !isExpired) {
           // Ensure profile row exists before reading/updating (same session as SIGNED_IN may race).
           void ensureMyProfile(supabase!).then(() => {
-          supabase!
-            .from("profiles")
-            .select("referrer_code")
-            .eq("user_id", session.user.id)
-            .single()
-            .then(({ data }) => {
-              if (data && !data.referrer_code) {
-                supabase!
-                  .from("profiles")
-                  .update({ referrer_code: refCode })
-                  .eq("user_id", session.user.id)
-                  .then(({ error }) => {
-                    if (!error) {
-                      trackEvent("signup_referred", { referrer_code: refCode });
-                      // Clear it so we don't re-attribute (though check above handles it)
-                      localStorage.removeItem("vector_ref_code");
-                      localStorage.removeItem("vector_ref_timestamp");
-                    }
-                  });
-              } else {
-                // Already has referrer or error reading, clear local storage
-                localStorage.removeItem("vector_ref_code");
-                localStorage.removeItem("vector_ref_timestamp");
-              }
-            });
+            supabase!
+              .from("profiles")
+              .select("referrer_code")
+              .eq("user_id", session.user.id)
+              .single()
+              .then(({ data }) => {
+                if (data && !data.referrer_code) {
+                  supabase!
+                    .from("profiles")
+                    .update({ referrer_code: refCode })
+                    .eq("user_id", session.user.id)
+                    .then(({ error }) => {
+                      if (!error) {
+                        trackEvent("signup_referred", {
+                          referrer_code: refCode,
+                        });
+                        // Clear it so we don't re-attribute (though check above handles it)
+                        localStorage.removeItem("vector_ref_code");
+                        localStorage.removeItem("vector_ref_timestamp");
+                      }
+                    });
+                } else {
+                  // Already has referrer or error reading, clear local storage
+                  localStorage.removeItem("vector_ref_code");
+                  localStorage.removeItem("vector_ref_timestamp");
+                }
+              });
           });
         }
       }
@@ -563,7 +627,11 @@ function App() {
       });
   };
 
-  const handleStartImpersonating = (target: { userId: string; email: string; tier: TierId }) => {
+  const handleStartImpersonating = (target: {
+    userId: string;
+    email: string;
+    tier: TierId;
+  }) => {
     setImpersonating(target);
     navigate("/dashboard");
     loadRemoteBlueprints(target.userId, 0);
@@ -595,7 +663,10 @@ function App() {
 
   const handleStartWizard = async (fwId?: Framework, context?: any) => {
     if (impersonating) {
-      toast.error(t("admin.impersonation.viewOnly") || "View-only mode. Exit impersonation to create plans.");
+      toast.error(
+        t("admin.impersonation.viewOnly") ||
+          "View-only mode. Exit impersonation to create plans.",
+      );
       return;
     }
     if (!userId) {
@@ -675,6 +746,9 @@ function App() {
   const startHelpMeFindFrameworkFlow = () => handleStartWizard();
 
   const handleOpenBlueprint = (bp: Blueprint) => {
+    if (isE2EMode()) {
+      localStorage.setItem("vector.e2e.activeBlueprint", JSON.stringify(bp));
+    }
     setSelectedFramework(bp.framework as Framework);
     setActiveBlueprint(bp);
     navigate("/wizard");
@@ -682,7 +756,10 @@ function App() {
 
   const handleSaveBlueprint = async (bp: Blueprint) => {
     if (impersonating) {
-      toast.error(t("admin.impersonation.viewOnly") || "View-only mode. Exit impersonation to make changes.");
+      toast.error(
+        t("admin.impersonation.viewOnly") ||
+          "View-only mode. Exit impersonation to make changes.",
+      );
       return;
     }
     // 1. Update local state
@@ -695,6 +772,9 @@ function App() {
     }
     setBlueprints(updated);
     saveLocalBlueprints(updated);
+    if (isE2EMode()) {
+      localStorage.setItem("vector.e2e.activeBlueprint", JSON.stringify(bp));
+    }
 
     // 2. Persist to Supabase if logged in
     if (userId && supabase && !isOffline) {
@@ -760,7 +840,7 @@ function App() {
         toast.error(
           t("errors.syncFailed") ||
             "Couldn't save. Check your connection and try again.",
-          { duration: 15000 }
+          { duration: 15000 },
         );
         // Revert local optimistic update if needed?
         // For now we keep local state as "unsynced" effectively.
@@ -779,7 +859,10 @@ function App() {
 
   const handleDeleteBlueprint = async (id: string) => {
     if (impersonating) {
-      toast.error(t("admin.impersonation.viewOnly") || "View-only mode. Exit impersonation to make changes.");
+      toast.error(
+        t("admin.impersonation.viewOnly") ||
+          "View-only mode. Exit impersonation to make changes.",
+      );
       return;
     }
     const updated = blueprints.filter((b) => b.id !== id);
@@ -800,7 +883,7 @@ function App() {
         toast.error(
           t("errors.syncFailed") ||
             "Couldn't save. Check your connection and try again.",
-          { duration: 15000 }
+          { duration: 15000 },
         );
         // Revert optimistic update
         setBlueprints(loadLocalBlueprints());
@@ -848,11 +931,19 @@ function App() {
     const useMercadoPago = paymentRegion === "latam";
 
     if (useMercadoPago && !isMercadoPagoConfigured()) {
-      toast.error(t("errors.paymentsNotConfigured") || "Payments are not configured yet (Test Mode).", { duration: 15000 });
+      toast.error(
+        t("errors.paymentsNotConfigured") ||
+          "Payments are not configured yet (Test Mode).",
+        { duration: 15000 },
+      );
       return;
     }
     if (useLemonSqueezy && !isLemonSqueezyConfigured()) {
-      toast.error(t("errors.paymentsNotConfigured") || "Payments are not configured yet (Test Mode).", { duration: 15000 });
+      toast.error(
+        t("errors.paymentsNotConfigured") ||
+          "Payments are not configured yet (Test Mode).",
+        { duration: 15000 },
+      );
       return;
     }
 
@@ -919,7 +1010,7 @@ function App() {
   };
 
   const handlePublishBlueprint = async (bp: Blueprint) => {
-    if (!userId || !supabase) {
+    if (!userId) {
       setAuthOpen(true);
       return;
     }
@@ -930,15 +1021,81 @@ function App() {
     if (description === null) return;
 
     try {
-      const { error } = await supabase.from("community_templates").insert({
-        user_id: userId,
-        framework: bp.framework,
-        title: bp.title,
-        description: description,
-        answers: bp.answers,
-        result: bp.result,
+      const executionContext = await loadBlueprintExecutionContext(
+        bp,
+        userId,
+        false,
+      );
+      const proofArtifacts = buildCommunityProofArtifacts({
+        blueprint: bp,
+        tracker: executionContext.tracker,
+        logs: executionContext.logs,
+        subGoals: executionContext.subGoals,
+        tasks: executionContext.tasks,
+        taskCompletions: executionContext.taskCompletions,
       });
+      const publishResult = {
+        ...(bp.result as Record<string, unknown>),
+        communityProof: proofArtifacts.snapshot,
+        communityProofHistory: proofArtifacts.events,
+      } as any;
+
+      if (isE2EMode()) {
+        persistE2ECommunityTemplate({
+          id: crypto.randomUUID(),
+          user_id: userId,
+          framework: bp.framework,
+          title: bp.title,
+          description,
+          answers: bp.answers,
+          result: publishResult,
+          created_at: new Date().toISOString(),
+          author_name: "E2E User",
+        });
+        toast.success(t("app.template.published"));
+        navigate("/community");
+        return;
+      }
+
+      if (!supabase) {
+        throw new Error("Supabase is required to publish outside E2E mode.");
+      }
+
+      const { data: insertedTemplate, error } = await supabase
+        .from("community_templates")
+        .insert({
+          user_id: userId,
+          framework: bp.framework,
+          title: bp.title,
+          description: description,
+          answers: bp.answers,
+          result: publishResult,
+        })
+        .select("id")
+        .single();
       if (error) throw error;
+
+      if (insertedTemplate?.id && proofArtifacts.events.length > 0) {
+        const { error: proofError } = await supabase
+          .from("community_template_proof_events")
+          .insert(
+            proofArtifacts.events.map((event) => ({
+              template_id: insertedTemplate.id,
+              blueprint_id: bp.id,
+              user_id: userId,
+              event_type: event.eventType,
+              label: event.label,
+              detail: event.detail,
+              event_date: event.eventDate,
+              metric_value: event.metricValue ?? null,
+              metric_unit: event.metricUnit ?? null,
+            })),
+          );
+        if (proofError) {
+          console.error("Failed to persist proof history", proofError);
+        }
+      }
+
       toast.success(t("app.template.published"));
       navigate("/community");
     } catch (e) {
@@ -953,12 +1110,19 @@ function App() {
   }, [location.pathname]);
 
   const isInternalAdmin =
-    location.pathname === "/x7-internal" || location.pathname === "/x7-internal/";
+    location.pathname === "/x7-internal" ||
+    location.pathname === "/x7-internal/";
   if (isInternalAdmin) {
     return (
       <div className="min-h-screen bg-zinc-950 text-white">
         <Toaster />
-        <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" /></div>}>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
+            </div>
+          }
+        >
           <InternalAdminGate />
         </Suspense>
       </div>
@@ -981,8 +1145,10 @@ function App() {
               <div className="w-12 h-12 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin" />
               <p className="font-medium text-lg animate-pulse">
                 {paymentRegion === "latam"
-                  ? t("pricing.redirectMercadoPago") || "Redirecting to checkout..."
-                  : t("pricing.redirectLemonSqueezy") || "Redirecting to checkout..."}
+                  ? t("pricing.redirectMercadoPago") ||
+                    "Redirecting to checkout..."
+                  : t("pricing.redirectLemonSqueezy") ||
+                    "Redirecting to checkout..."}
               </p>
             </div>
           </motion.div>
@@ -1105,10 +1271,11 @@ function App() {
             <div className="flex justify-center pt-6">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50/90 dark:bg-amber-900/40 border border-amber-200/80 text-amber-800 dark:text-amber-100 text-sm shadow-sm">
                 <span className="font-medium">
-                  {t('errors.pageLoadTitle') || 'Oh sorry, something happened.'}
+                  {t("errors.pageLoadTitle") || "Oh sorry, something happened."}
                 </span>
                 <span className="opacity-80">
-                  {t('errors.pageLoadBody') || 'Could you please refresh the page?'}
+                  {t("errors.pageLoadBody") ||
+                    "Could you please refresh the page?"}
                 </span>
               </div>
             </div>
@@ -1136,7 +1303,6 @@ function App() {
                           setShowHelpChoose(true);
                         }
                       }}
-                      onViewFramework={setViewingFramework}
                       tier={effectiveTier}
                       userId={effectiveUserId}
                     />
@@ -1154,14 +1320,30 @@ function App() {
                     >
                       {(() => {
                         // Prefer explicit framework from navigation state.
-                        const fwFromState = (location.state as { framework?: Framework; isPreview?: boolean } | null)?.framework;
-                        const isPreviewFromState = (location.state as { framework?: Framework; isPreview?: boolean } | null)?.isPreview;
+                        const fwFromState = (
+                          location.state as {
+                            framework?: Framework;
+                            isPreview?: boolean;
+                          } | null
+                        )?.framework;
+                        const isPreviewFromState = (
+                          location.state as {
+                            framework?: Framework;
+                            isPreview?: boolean;
+                          } | null
+                        )?.isPreview;
                         // Fallback to framework persisted in App state.
                         const fwFromSelected = selectedFramework;
                         // Finally, allow ?framework=gps style URLs (for shared/fullscreen links).
                         const search = new URLSearchParams(location.search);
-                        const fwFromQuery = search.get("framework") as Framework | null;
-                        const effectiveFramework = fwFromState ?? fwFromSelected ?? fwFromQuery ?? undefined;
+                        const fwFromQuery = search.get(
+                          "framework",
+                        ) as Framework | null;
+                        const effectiveFramework =
+                          fwFromState ??
+                          fwFromSelected ??
+                          fwFromQuery ??
+                          undefined;
 
                         return (
                           <GoalWizard
@@ -1174,7 +1356,9 @@ function App() {
                               setSelectedFramework(fw);
                               // Soft update URL/location state so the wizard re-renders with the new framework,
                               // and keep query params (e.g. ?view=fullscreen&framework=gps) in sync for sharing.
-                              const params = new URLSearchParams(location.search);
+                              const params = new URLSearchParams(
+                                location.search,
+                              );
                               params.set("framework", fw);
                               navigate(`/wizard?${params.toString()}`, {
                                 state: { framework: fw, isPreview },
@@ -1253,7 +1437,12 @@ function App() {
                       <PricingSection
                         onSelectTier={handlePricingTier}
                         onSelectCryptoTier={(tierId, tierName, amountUsd) =>
-                          setBinanceModal({ open: true, tierId, tierName, amountUsd })
+                          setBinanceModal({
+                            open: true,
+                            tierId,
+                            tierName,
+                            amountUsd,
+                          })
                         }
                         currentTier={tier}
                         userEmail={userEmail}
@@ -1261,6 +1450,34 @@ function App() {
                         setPaymentRegion={setPaymentRegion}
                         isPaymentRegionLoading={isPaymentRegionLoading}
                       />
+                    </motion.div>
+                  }
+                />
+
+                <Route
+                  path="/guides"
+                  element={
+                    <motion.div
+                      key="guides"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                    >
+                      <GuidesPage />
+                    </motion.div>
+                  }
+                />
+
+                <Route
+                  path="/articles/:slug"
+                  element={
+                    <motion.div
+                      key="article"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                    >
+                      <ArticlePage />
                     </motion.div>
                   }
                 />
@@ -1362,7 +1579,10 @@ function App() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                       >
-                        <TrackerPage effectiveUserId={effectiveUserId} isImpersonating={!!impersonating} />
+                        <TrackerPage
+                          effectiveUserId={effectiveUserId}
+                          isImpersonating={!!impersonating}
+                        />
                       </motion.div>
                     ) : (
                       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">

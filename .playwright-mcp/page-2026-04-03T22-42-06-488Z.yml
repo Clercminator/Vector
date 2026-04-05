@@ -1,0 +1,61 @@
+- generic [ref=e3]:
+  - link "Skip to main content" [ref=e4] [cursor=pointer]:
+    - /url: "#main-content"
+  - region "Notifications alt+T"
+  - generic [ref=e8]:
+    - img "Vector Logo" [ref=e11]
+    - heading "Welcome to Vector" [level=2] [ref=e12]
+    - paragraph [ref=e13]: Vector is not a to-do list. It is an architectural engine for your life.
+    - generic [ref=e18]:
+      - button "Skip" [ref=e19]
+      - button "Next" [ref=e20]:
+        - text: Next
+        - img [ref=e21]
+  - navigation [ref=e23]:
+    - generic [ref=e24]:
+      - generic [ref=e25] [cursor=pointer]:
+        - img "Vector Logo" [ref=e27]
+        - generic [ref=e28]: VECTOR
+      - generic [ref=e29]:
+        - button "Frameworks" [ref=e30] [cursor=pointer]
+        - button "Community" [ref=e31] [cursor=pointer]
+        - button "Today" [ref=e32] [cursor=pointer]
+        - button "My Plans" [ref=e33] [cursor=pointer]
+        - button "Pricing" [ref=e34] [cursor=pointer]
+        - button "About" [ref=e35] [cursor=pointer]
+        - button "Toggle theme" [ref=e37] [cursor=pointer]:
+          - img
+          - img
+          - generic [ref=e38]: Toggle theme
+        - button "EN" [ref=e39] [cursor=pointer]:
+          - img [ref=e40]
+          - generic [ref=e43]: EN
+        - button "E" [ref=e44] [cursor=pointer]:
+          - generic [ref=e46]: E
+        - button "Sign out" [ref=e47] [cursor=pointer]
+        - button "Let's Plan!" [ref=e48] [cursor=pointer]
+  - main [ref=e49]:
+    - generic [ref=e51]:
+      - generic [ref=e53]:
+        - button "Exit Architect" [ref=e54] [cursor=pointer]:
+          - img [ref=e55]
+          - generic [ref=e57]: Exit Architect
+        - button "Enable Devil's Advocate Mode" [ref=e58] [cursor=pointer]:
+          - img [ref=e59]
+        - button "New Conversation" [ref=e61] [cursor=pointer]:
+          - img [ref=e62]
+          - generic [ref=e64]: New Conversation
+      - generic [ref=e67]:
+        - generic [ref=e72]:
+          - generic [ref=e73]:
+            - paragraph [ref=e74]: Share your goal and Vector will help you build a plan.
+            - paragraph [ref=e75]: "Examples: \"Run a 5K in 3 months\" · \"Launch my side project\" · \"Improve my Spanish\""
+          - generic [ref=e82]: Designing strategy...
+        - generic [ref=e85]:
+          - textbox "Agent is thinking..." [disabled] [ref=e87]
+          - button "Voice Input" [disabled] [ref=e88]:
+            - img [ref=e89]
+          - button "Expand" [ref=e92] [cursor=pointer]:
+            - img [ref=e93]
+          - button "Send message" [disabled] [ref=e98]:
+            - img [ref=e99]

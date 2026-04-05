@@ -10,6 +10,7 @@ export const translations = {
     "nav.signout": "Sign out",
     "nav.getStarted": "Let's Plan!",
     "nav.about": "About",
+    "nav.articles": "Articles",
     "nav.admin": "Admin",
 
     // Hero
@@ -24,6 +25,11 @@ export const translations = {
     "frameworks.title": "Choose Your Framework",
     "frameworks.subtitle":
       "Every ambition requires a different lens. Select a proven framework to begin your architectural process.",
+    "landing.guides.explore": "Read before you build",
+    "landing.guides.title": "Framework articles built for search and action.",
+    "landing.guides.subtitle":
+      "Explore the mental models behind Vector, understand when each one fits, and jump straight into the right blueprint.",
+    "landing.guides.cta": "Browse all articles",
 
     // Footer
     "footer.privacy": "Privacy",
@@ -129,8 +135,10 @@ export const translations = {
     "profile.vectorPrefs": "How you prefer to talk to Vector",
     "profile.questionFlow": "Question flow",
     "profile.questionFlowPlaceholder": "How should Vector ask you?",
-    "profile.questionFlow.list": "List all questions at once — I'll answer them in my own time",
-    "profile.questionFlow.one_at_a_time": "One question at a time — with suggestions to help me along",
+    "profile.questionFlow.list":
+      "List all questions at once — I'll answer them in my own time",
+    "profile.questionFlow.one_at_a_time":
+      "One question at a time — with suggestions to help me along",
     "profile.preferredTone": "Preferred tone",
     "profile.preferredTonePlaceholder": "How should Vector sound?",
     "profile.preferredTone.friendly": "Friendly and warm",
@@ -140,7 +148,8 @@ export const translations = {
     "profile.treatmentLevel": "How should Vector treat you?",
     "profile.treatmentLevelPlaceholder": "Select your level",
     "profile.treatmentLevel.expert": "As an expert — assume I know the basics",
-    "profile.treatmentLevel.beginner": "As a beginner — explain concepts and guide me step by step",
+    "profile.treatmentLevel.beginner":
+      "As a beginner — explain concepts and guide me step by step",
     "profile.treatmentLevel.mixed": "Mixed — adapt based on the topic",
     "profile.values": "Core Values",
     "profile.vision": "Long-term Vision",
@@ -233,19 +242,27 @@ export const translations = {
     "auth.signIn": "Sign In",
     "auth.sendMagicLink": "Send Magic Link",
     "auth.completeCaptcha": "Please complete the captcha.",
-    "auth.checkEmailConfirm": "Please check your email to confirm your account.",
-    "auth.checkEmailConfirmDesc": "We've sent a confirmation link to your email. Click it to activate your account.",
-    "auth.passwordRequirements": "At least 6 characters, with letters and numbers.",
+    "auth.checkEmailConfirm":
+      "Please check your email to confirm your account.",
+    "auth.checkEmailConfirmDesc":
+      "We've sent a confirmation link to your email. Click it to activate your account.",
+    "auth.passwordRequirements":
+      "At least 6 characters, with letters and numbers.",
     "auth.accountCreated": "Account created successfully!",
     "auth.resetLinkSent": "Password reset link sent to your email.",
-    "auth.resetLinkSentDesc": "We've sent a password reset link. Check your inbox and follow the instructions.",
-    "auth.magicLinkSentDesc": "We've sent a sign-in link to your email. Click it to sign in.",
+    "auth.resetLinkSentDesc":
+      "We've sent a password reset link. Check your inbox and follow the instructions.",
+    "auth.magicLinkSentDesc":
+      "We've sent a sign-in link to your email. Click it to sign in.",
     "auth.authenticationFailed": "Authentication failed",
     "profile.checkEmailConfirm": "Check your new email to confirm the change.",
-    "errors.storageFull": "Storage full: Cannot pin more items. Please unpin some first.",
-    "errors.paymentsNotConfigured": "Payments are not configured yet (Test Mode).",
+    "errors.storageFull":
+      "Storage full: Cannot pin more items. Please unpin some first.",
+    "errors.paymentsNotConfigured":
+      "Payments are not configured yet (Test Mode).",
     "errors.templateNoItems": "This template has no items.",
-    "feedback.analysisFailed": "Could not determine the best framework. Please try again or pick manually.",
+    "feedback.analysisFailed":
+      "Could not determine the best framework. Please try again or pick manually.",
     "feedback.analysisError": "Analysis failed.",
 
     // Dashboard
@@ -312,23 +329,31 @@ export const translations = {
     "pricing.switchToGlobal": "Paying from US/EU? Switch",
     "pricing.switchToLatam": "Paying from LATAM? Switch",
     "pricing.payWithCrypto": "Pay with crypto (Binance Pay)",
-    "pricing.cryptoComingSoon": "Crypto payments (Binance Pay) coming soon. Contact us to get notified.",
+    "pricing.cryptoComingSoon":
+      "Crypto payments (Binance Pay) coming soon. Contact us to get notified.",
     "pricing.redirectMercadoPago": "Redirecting to checkout...",
     "pricing.redirectLemonSqueezy": "Redirecting to checkout...",
     "pricing.binance.title": "Pay with Binance (Crypto)",
-    "pricing.binance.subtitle": "Manual payment — we'll process your upgrade as soon as we confirm it.",
+    "pricing.binance.subtitle":
+      "Manual payment — we'll process your upgrade as soon as we confirm it.",
     "pricing.binance.tier": "Plan",
-    "pricing.binance.amountNote": "Convert to USDT at checkout. Send the exact equivalent.",
+    "pricing.binance.amountNote":
+      "Convert to USDT at checkout. Send the exact equivalent.",
     "pricing.binance.steps": "Steps:",
     "pricing.binance.step1": "Scan the QR code with your Binance app",
-    "pricing.binance.step2": "Send the exact amount shown above (in USDT or equivalent)",
-    "pricing.binance.step3": "Message us via the chat widget to confirm your payment",
+    "pricing.binance.step2":
+      "Send the exact amount shown above (in USDT or equivalent)",
+    "pricing.binance.step3":
+      "Message us via the chat widget to confirm your payment",
     "pricing.binance.manualNote": "Manual processing",
-    "pricing.binance.manualDesc": "We process crypto payments manually. Please be patient — it may take some time. Make sure to notify us via chat after sending, or we won't know to upgrade your account.",
+    "pricing.binance.manualDesc":
+      "We process crypto payments manually. Please be patient — it may take some time. Make sure to notify us via chat after sending, or we won't know to upgrade your account.",
     "pricing.binance.openChat": "Open chat to notify us",
-    "pricing.paymentSuccess": "Payment successful! Your plan has been upgraded.",
+    "pricing.paymentSuccess":
+      "Payment successful! Your plan has been upgraded.",
     "pricing.paymentFailed": "Payment failed or was cancelled.",
-    "pricing.paymentPending": "Payment is being processed. Your plan will be upgraded shortly—refresh in a moment.",
+    "pricing.paymentPending":
+      "Payment is being processed. Your plan will be upgraded shortly—refresh in a moment.",
 
     // Pricing FAQ / How it works
     "pricing.faq.title": "Understanding plans & features",
@@ -497,17 +522,22 @@ export const translations = {
     "mandala.subTasksHelp":
       "Concrete actions you can do. Add as many as you need.",
     "mandala.whyThisPillar": "Why this pillar",
-    "mandala.desktopRecommended": "This visualization works best on desktop. Your plan is saved—open it on a laptop or desktop to explore the full Mandala chart.",
-    "wizard.visualizationDesktopRecommended": "This visualization works best on desktop. Your plan is saved—open it on a laptop or desktop to explore the full view.",
+    "mandala.desktopRecommended":
+      "This visualization works best on desktop. Your plan is saved—open it on a laptop or desktop to explore the full Mandala chart.",
+    "wizard.visualizationDesktopRecommended":
+      "This visualization works best on desktop. Your plan is saved—open it on a laptop or desktop to explore the full view.",
     "wizard.inputExpand": "Expand",
     "wizard.inputCollapse": "Collapse",
     "wizard.viewDraft": "View Draft",
     "wizard.closeDraft": "Close Draft",
     "wizard.generatePlan": "Generate my plan",
-    "wizard.notReadyGoDeeper": "Not ready yet, let's keep going deeper into the problem",
+    "wizard.notReadyGoDeeper":
+      "Not ready yet, let's keep going deeper into the problem",
     "wizard.goDeeperShort": "Go deeper",
-    "wizard.personalizedPlanReminder": "For a truly personalized plan, share any other details that may be important before generating.",
-    "wizard.planReminderShort": "Add any other details that matter, or click to generate.",
+    "wizard.personalizedPlanReminder":
+      "For a truly personalized plan, share any other details that may be important before generating.",
+    "wizard.planReminderShort":
+      "Add any other details that matter, or click to generate.",
     "wizard.approvalGateLabel": "Ready to generate plan. Choose an action.",
     "wizard.generatePlanAria": "Generate my plan",
     "wizard.goDeeperAria": "Not ready yet, keep exploring with more questions",
@@ -523,8 +553,10 @@ export const translations = {
       "1 plan was used from your balance for this conversation.",
     "wizard.pdfSuccess": "PDF Downloaded!",
     "wizard.pdfGenerating": "Generating PDF…",
-    "wizard.emptyStatePrompt": "Share your goal and Vector will help you build a plan.",
-    "wizard.emptyStateExamples": "Examples: \"Run a 5K in 3 months\" · \"Launch my side project\" · \"Improve my Spanish\"",
+    "wizard.emptyStatePrompt":
+      "Share your goal and Vector will help you build a plan.",
+    "wizard.emptyStateExamples":
+      'Examples: "Run a 5K in 3 months" · "Launch my side project" · "Improve my Spanish"',
     "wizard.ruleBased": " (Rule-based when out of plans)",
 
     // Difficulty badge
@@ -565,7 +597,8 @@ export const translations = {
     "admin.templates.table.featured": "Featured",
     "admin.actions.save": "Save",
     "admin.actions.approve": "Approve",
-    "admin.impersonation.viewOnly": "View-only mode. Exit impersonation to make changes.",
+    "admin.impersonation.viewOnly":
+      "View-only mode. Exit impersonation to make changes.",
     "admin.impersonation.exit": "Exit",
     "admin.actions.reject": "Reject",
     "admin.actions.feature": "Feature",
@@ -632,17 +665,23 @@ export const translations = {
     "feedback.admin.date": "Date",
     "landing.hero.architectYour": "Architect Your",
     "landing.hero.ambition": "Ambition.",
-    "landing.hero.subtitleChunk.1": "Vector uses first-principles thinking and frameworks to turn abstract goals into precise architectural plans.",
-    "landing.hero.subtitleChunk.2": "Stop getting average results with generic advice from standard chat models.",
-    "landing.hero.subtitleChunk.3": "Vector is the best tool to articulate your ideas into an executable step-by-step plan.",
+    "landing.hero.subtitleChunk.1":
+      "Vector uses first-principles thinking and frameworks to turn abstract goals into precise architectural plans.",
+    "landing.hero.subtitleChunk.2":
+      "Stop getting average results with generic advice from standard chat models.",
+    "landing.hero.subtitleChunk.3":
+      "Vector is the best tool to articulate your ideas into an executable step-by-step plan.",
     "landing.hero.subtitleChunk.4": "Start building your future today.",
-    "landing.hero.subtitleChunk.5": "Vector is a goal planner for everyone—not a chat app. Get a structured plan you can save and follow.",
-    "landing.hero.subtitleChunk.6": "Not sure which framework to pick? We'll find the best one for your goal—with minimal effort from you.",
+    "landing.hero.subtitleChunk.5":
+      "Vector is a goal planner for everyone—not a chat app. Get a structured plan you can save and follow.",
+    "landing.hero.subtitleChunk.6":
+      "Not sure which framework to pick? We'll find the best one for your goal—with minimal effort from you.",
     "landing.hero.giftBadge": "1 free plan for new users who register",
     "landing.hero.startBuilding": "Start Building Now",
     "landing.hero.viewPricing": "View Pricing",
     "landing.hero.helpMePlan": "Help me achieve my goals",
-    "landing.hero.pathHint": "Find the right framework for your goal, or go straight to the chat.",
+    "landing.hero.pathHint":
+      "Find the right framework for your goal, or go straight to the chat.",
     "landing.hero.newHere": "New here? See how it works",
     "landing.liftoff.vector": "Vector",
     "landing.howItWorks.title": "How Vector works",
@@ -661,32 +700,41 @@ export const translations = {
     "landing.howItWorks.step4.desc":
       "Download PDF, add to calendar, or save to your account.",
     "landing.whatIsVector.title": "What is Vector?",
-    "landing.whatIsVector.desc": "Vector is a goal planner. You answer simple questions, and it creates a step-by-step plan you can save and follow. It's not ChatGPT—no endless chat. Just a clear roadmap for your goals.",
+    "landing.whatIsVector.desc":
+      "Vector is a goal planner. You answer simple questions, and it creates a step-by-step plan you can save and follow. It's not ChatGPT—no endless chat. Just a clear roadmap for your goals.",
     "landing.howItWorks.vsLLM.title":
       "Why not just use ChatGPT, Gemini or Claude?",
-    "landing.howItWorks.vsLLM.desc": "Standard AI models are generalists that give you endless text on a flat 'piece of paper'. Vector is a dedicated goal architect. It guides you through a proven mental model step-by-step and synthesizes your answers into a highly visual blueprint, making it easy to see the whole picture. Plus, it gives you the built-in tracking tools to actively manage your progress over time, giving it a massive competitive advantage over standard chat bots.",
+    "landing.howItWorks.vsLLM.desc":
+      "Standard AI models are generalists that give you endless text on a flat 'piece of paper'. Vector is a dedicated goal architect. It guides you through a proven mental model step-by-step and synthesizes your answers into a highly visual blueprint, making it easy to see the whole picture. Plus, it gives you the built-in tracking tools to actively manage your progress over time, giving it a massive competitive advantage over standard chat bots.",
     "landing.howItWorks.examples.title": "From Vague to Actionable",
     "landing.howItWorks.examples.vague1": '"I want to get fit"',
     "landing.howItWorks.examples.actionable1":
       "A 12-week tracked blueprint with weekly milestones, workout phases, and diet habits using the Pareto principle.",
     "landing.howItWorks.examples.vague2": '"Start a new business"',
-    'landing.howItWorks.examples.actionable2': 'A prioritized First Principles roadmap from market research to MVP, with exact tasks and sub-tasks to execute.',
-    
-    // The Vector Advantage (Bento Box)
-    'landing.advantage.title': 'The Vector Advantage',
-    'landing.advantage.subtitle': 'Why true architects don\'t rely on standard chat models.',
-    'landing.advantage.livingPlan.title': 'A Living Blueprint',
-    'landing.advantage.livingPlan.desc': 'Your plan doesn\'t get buried in a chat thread. It lives on your dashboard to track, edit, and reference forever.',
-    'landing.advantage.execution.title': 'Built for Execution',
-    'landing.advantage.execution.desc': 'Export tasks directly to your Calendar or as a PDF. We bridge the gap from digital planning to real-world action.',
-    'landing.advantage.quality.title': 'Quality over Advice',
-    'landing.advantage.quality.desc': 'Instead of generic internet advice, vector forces you through proven mental models used by elite performers.',
-    'landing.advantage.community.title': 'Community Validated',
-    'landing.advantage.community.desc': 'Don\'t start from scratch. Clone and adapt successful blueprints that real humans have already proven.',
-    'landing.advantage.noPrompting.title': 'Zero Prompt Engineering',
-    'landing.advantage.noPrompting.desc': 'Just sit back and answer questions. Vector acts as the master interviewer to extract your best ideas effortlessly.',
+    "landing.howItWorks.examples.actionable2":
+      "A prioritized First Principles roadmap from market research to MVP, with exact tasks and sub-tasks to execute.",
 
-    'landing.inspiredBy.title': 'Inspired by great minds',
+    // The Vector Advantage (Bento Box)
+    "landing.advantage.title": "The Vector Advantage",
+    "landing.advantage.subtitle":
+      "Why true architects don't rely on standard chat models.",
+    "landing.advantage.livingPlan.title": "A Living Blueprint",
+    "landing.advantage.livingPlan.desc":
+      "Your plan doesn't get buried in a chat thread. It lives on your dashboard to track, edit, and reference forever.",
+    "landing.advantage.execution.title": "Built for Execution",
+    "landing.advantage.execution.desc":
+      "Export tasks directly to your Calendar or as a PDF. We bridge the gap from digital planning to real-world action.",
+    "landing.advantage.quality.title": "Quality over Advice",
+    "landing.advantage.quality.desc":
+      "Instead of generic internet advice, vector forces you through proven mental models used by elite performers.",
+    "landing.advantage.community.title": "Community Validated",
+    "landing.advantage.community.desc":
+      "Don't start from scratch. Clone and adapt successful blueprints that real humans have already proven.",
+    "landing.advantage.noPrompting.title": "Zero Prompt Engineering",
+    "landing.advantage.noPrompting.desc":
+      "Just sit back and answer questions. Vector acts as the master interviewer to extract your best ideas effortlessly.",
+
+    "landing.inspiredBy.title": "Inspired by great minds",
     "landing.inspiredBy.subtitle":
       "Vector applies frameworks and methods from thought leaders you already trust.",
     "authors.tonyRobbins.tagline": "RPM Method",
@@ -719,9 +767,11 @@ export const translations = {
     "frameworks.helpMeChoose": "Help me find the right framework",
 
     // SEO (meta title, description, keywords - used by SeoHead)
-    "seo.title": "Vector AI Goal Architect | First-Principles Planning & OKR Tool",
-    "seo.description": "Turn vague goals into precise architectural plans. Vector uses AI and frameworks like 80/20, OKRs, and First Principles to build your roadmap to success. Plan generator, goal analyzer, AI life coach.",
-    "seo.keywords": "AI Goal Planner, AI Life Architect, Plan generator, Goal analyzer, Objective analyzer, Life coach, AI life coach, First Principles Planning Tool, OKR Generator AI, goal setting app, action plan generator, personal development tool, career planner, life planner, roadmap, milestones, execution, mental models, strategy, task management, blueprint, framework-based productivity",
+    "seo.title": "Vector | AI Goal Planner, Action Plan Generator & OKR Tool",
+    "seo.description":
+      "Turn vague goals into structured action plans with AI. Vector uses First Principles, Pareto, OKRs, Eisenhower, and other frameworks to build roadmaps, milestones, and next steps.",
+    "seo.keywords":
+      "AI Goal Planner, AI Life Architect, Plan generator, Goal analyzer, Objective analyzer, Life coach, AI life coach, First Principles Planning Tool, OKR Generator AI, goal setting app, action plan generator, personal development tool, career planner, life planner, roadmap, milestones, execution, mental models, strategy, task management, blueprint, framework-based productivity",
 
     // Framework Titles & Questions
     "fp.title": "Goal Planner Generator",
@@ -843,8 +893,8 @@ export const translations = {
       "Categorize tasks by urgency and importance to master prioritization.",
     "fw.okr.title": "OKR Goal System",
     "fw.okr.desc":
-      "Establece Objetivos ambiciosos y define Resultados Clave medibles.",
-    "fw.dsss.title": "DSSS Skill Acquisition",
+      "Set ambitious Objectives and define measurable Key Results to track progress.",
+    "fw.dsss.title": "Tim Ferriss DSSS",
     "fw.dsss.desc":
       "A meta-learning framework to master any skill: Deconstruct, Selection, Sequencing, Stakes.",
     "fw.mandalas.title": "Mandala Chart",
@@ -1276,6 +1326,7 @@ export const translations = {
     "nav.signout": "Cerrar sesión",
     "nav.getStarted": "Planifiquemos",
     "nav.about": "Sobre nosotros",
+    "nav.articles": "Artículos",
     "nav.admin": "Admin",
 
     // Hero
@@ -1290,6 +1341,12 @@ export const translations = {
     "frameworks.title": "Elige tu Método",
     "frameworks.subtitle":
       "Cada ambición requiere una lente diferente. Selecciona un marco probado para comenzar tu proceso.",
+    "landing.guides.explore": "Lee antes de construir",
+    "landing.guides.title":
+      "Artículos sobre frameworks pensados para descubrir y actuar.",
+    "landing.guides.subtitle":
+      "Explora los modelos mentales detrás de Vector, entiende cuándo usar cada uno y entra directo al blueprint adecuado.",
+    "landing.guides.cta": "Ver todos los artículos",
 
     // Footer
     "footer.privacy": "Privacidad",
@@ -1396,8 +1453,10 @@ export const translations = {
     "profile.vectorPrefs": "Cómo prefieres hablar con Vector",
     "profile.questionFlow": "Flujo de preguntas",
     "profile.questionFlowPlaceholder": "¿Cómo debe preguntarte Vector?",
-    "profile.questionFlow.list": "Todas las preguntas a la vez — responderé a mi ritmo",
-    "profile.questionFlow.one_at_a_time": "Una pregunta a la vez — con sugerencias que me ayuden",
+    "profile.questionFlow.list":
+      "Todas las preguntas a la vez — responderé a mi ritmo",
+    "profile.questionFlow.one_at_a_time":
+      "Una pregunta a la vez — con sugerencias que me ayuden",
     "profile.preferredTone": "Tono preferido",
     "profile.preferredTonePlaceholder": "¿Cómo debe sonar Vector?",
     "profile.preferredTone.friendly": "Amigable y cercano",
@@ -1406,8 +1465,10 @@ export const translations = {
     "profile.preferredTone.encouraging": "Alentador y de apoyo",
     "profile.treatmentLevel": "¿Cómo debe tratarte Vector?",
     "profile.treatmentLevelPlaceholder": "Selecciona tu nivel",
-    "profile.treatmentLevel.expert": "Como experto — asume que conozco lo básico",
-    "profile.treatmentLevel.beginner": "Como principiante — explícame conceptos y guíame paso a paso",
+    "profile.treatmentLevel.expert":
+      "Como experto — asume que conozco lo básico",
+    "profile.treatmentLevel.beginner":
+      "Como principiante — explícame conceptos y guíame paso a paso",
     "profile.treatmentLevel.mixed": "Mixto — adaptarse según el tema",
     "profile.otherObservations": "Otras observaciones",
     "profile.otherObservationsPlaceholder":
@@ -1508,18 +1569,25 @@ export const translations = {
     "auth.sendMagicLink": "Enviar enlace mágico",
     "auth.completeCaptcha": "Completa el captcha, por favor.",
     "auth.checkEmailConfirm": "Revisa tu correo para confirmar tu cuenta.",
-    "auth.checkEmailConfirmDesc": "Hemos enviado un enlace de confirmación a tu correo. Haz clic para activar tu cuenta.",
+    "auth.checkEmailConfirmDesc":
+      "Hemos enviado un enlace de confirmación a tu correo. Haz clic para activar tu cuenta.",
     "auth.passwordRequirements": "Mínimo 6 caracteres, con letras y números.",
     "auth.accountCreated": "¡Cuenta creada correctamente!",
     "auth.resetLinkSent": "Enlace de restablecimiento enviado a tu correo.",
-    "auth.resetLinkSentDesc": "Hemos enviado un enlace para restablecer tu contraseña. Revisa tu correo y sigue las instrucciones.",
-    "auth.magicLinkSentDesc": "Hemos enviado un enlace de acceso a tu correo. Haz clic para iniciar sesión.",
+    "auth.resetLinkSentDesc":
+      "Hemos enviado un enlace para restablecer tu contraseña. Revisa tu correo y sigue las instrucciones.",
+    "auth.magicLinkSentDesc":
+      "Hemos enviado un enlace de acceso a tu correo. Haz clic para iniciar sesión.",
     "auth.authenticationFailed": "Error de autenticación",
-    "profile.checkEmailConfirm": "Revisa tu nuevo correo para confirmar el cambio.",
-    "errors.storageFull": "Almacenamiento lleno: No puedes anclar más elementos. Elimina algunos primero.",
-    "errors.paymentsNotConfigured": "Los pagos no están configurados (Modo de prueba).",
+    "profile.checkEmailConfirm":
+      "Revisa tu nuevo correo para confirmar el cambio.",
+    "errors.storageFull":
+      "Almacenamiento lleno: No puedes anclar más elementos. Elimina algunos primero.",
+    "errors.paymentsNotConfigured":
+      "Los pagos no están configurados (Modo de prueba).",
     "errors.templateNoItems": "Esta plantilla no tiene elementos.",
-    "feedback.analysisFailed": "No se pudo determinar el mejor marco. Intenta de nuevo o elige manualmente.",
+    "feedback.analysisFailed":
+      "No se pudo determinar el mejor marco. Intenta de nuevo o elige manualmente.",
     "feedback.analysisError": "Error en el análisis.",
 
     // Dashboard
@@ -1591,23 +1659,29 @@ export const translations = {
     "pricing.switchToGlobal": "¿Pagas desde US/EU? Cambiar",
     "pricing.switchToLatam": "¿Pagas desde LATAM? Cambiar",
     "pricing.payWithCrypto": "Pagar con cripto (Binance Pay)",
-    "pricing.cryptoComingSoon": "Pagos con cripto (Binance Pay) próximamente. Contáctanos para recibir aviso.",
+    "pricing.cryptoComingSoon":
+      "Pagos con cripto (Binance Pay) próximamente. Contáctanos para recibir aviso.",
     "pricing.redirectMercadoPago": "Redirigiendo al pago...",
     "pricing.redirectLemonSqueezy": "Redirigiendo al pago...",
     "pricing.binance.title": "Pagar con Binance (Cripto)",
-    "pricing.binance.subtitle": "Pago manual: procesaremos tu upgrade en cuanto lo confirmemos.",
+    "pricing.binance.subtitle":
+      "Pago manual: procesaremos tu upgrade en cuanto lo confirmemos.",
     "pricing.binance.tier": "Plan",
-    "pricing.binance.amountNote": "Convierte a USDT al pagar. Envía el monto exacto.",
+    "pricing.binance.amountNote":
+      "Convierte a USDT al pagar. Envía el monto exacto.",
     "pricing.binance.steps": "Pasos:",
     "pricing.binance.step1": "Escanea el código QR con tu app de Binance",
-    "pricing.binance.step2": "Envía el monto exacto indicado (en USDT o equivalente)",
+    "pricing.binance.step2":
+      "Envía el monto exacto indicado (en USDT o equivalente)",
     "pricing.binance.step3": "Escríbenos por el chat para confirmar tu pago",
     "pricing.binance.manualNote": "Procesamiento manual",
-    "pricing.binance.manualDesc": "Procesamos pagos en cripto manualmente. Por favor ten paciencia. Asegúrate de notificarnos por chat después de enviar, o no sabremos que debes recibir tu upgrade.",
+    "pricing.binance.manualDesc":
+      "Procesamos pagos en cripto manualmente. Por favor ten paciencia. Asegúrate de notificarnos por chat después de enviar, o no sabremos que debes recibir tu upgrade.",
     "pricing.binance.openChat": "Abrir chat para notificarnos",
     "pricing.paymentSuccess": "¡Pago exitoso! Tu plan ha sido actualizado.",
     "pricing.paymentFailed": "El pago falló o fue cancelado.",
-    "pricing.paymentPending": "El pago está en proceso. Tu plan se actualizará pronto—recarga en un momento.",
+    "pricing.paymentPending":
+      "El pago está en proceso. Tu plan se actualizará pronto—recarga en un momento.",
 
     // Pricing FAQ / How it works
     "pricing.faq.title": "Entender los planes y las funciones",
@@ -1760,8 +1834,10 @@ export const translations = {
     "mandala.subTasksHelp":
       "Acciones concretas que puedes hacer. Añade las que necesites.",
     "mandala.whyThisPillar": "Por qué este pilar",
-    "mandala.desktopRecommended": "Esta visualización se ve mejor en escritorio. Tu plan está guardado—ábrelo en un portátil o PC para explorar el gráfico Mandala completo.",
-    "wizard.visualizationDesktopRecommended": "Esta visualización se ve mejor en escritorio. Tu plan está guardado—ábrelo en un portátil o PC para explorar la vista completa.",
+    "mandala.desktopRecommended":
+      "Esta visualización se ve mejor en escritorio. Tu plan está guardado—ábrelo en un portátil o PC para explorar el gráfico Mandala completo.",
+    "wizard.visualizationDesktopRecommended":
+      "Esta visualización se ve mejor en escritorio. Tu plan está guardado—ábrelo en un portátil o PC para explorar la vista completa.",
     "wizard.inputExpand": "Expandir",
     "wizard.inputCollapse": "Contraer",
     "wizard.viewDraft": "Ver borrador",
@@ -1893,17 +1969,24 @@ export const translations = {
     "feedback.admin.date": "Fecha",
     "landing.hero.architectYour": "Planifica Tu",
     "landing.hero.ambition": "Ambición.",
-    "landing.hero.subtitleChunk.1": "Vector usa el pensamiento de primeros principios y marcos probados para convertir metas abstractas en planes precisos.",
-    "landing.hero.subtitleChunk.2": "Deja de obtener resultados mediocres con consejos genéricos de chats estándar.",
-    "landing.hero.subtitleChunk.3": "Vector es la mejor herramienta para articular tus ideas en un plan paso a paso ejecutable.",
+    "landing.hero.subtitleChunk.1":
+      "Vector usa el pensamiento de primeros principios y marcos probados para convertir metas abstractas en planes precisos.",
+    "landing.hero.subtitleChunk.2":
+      "Deja de obtener resultados mediocres con consejos genéricos de chats estándar.",
+    "landing.hero.subtitleChunk.3":
+      "Vector es la mejor herramienta para articular tus ideas en un plan paso a paso ejecutable.",
     "landing.hero.subtitleChunk.4": "Empieza a construir tu futuro hoy.",
-    "landing.hero.subtitleChunk.5": "Vector es un planificador de metas para todos—no es un chat. Obtén un plan claro que puedes guardar y seguir.",
-    "landing.hero.subtitleChunk.6": "¿No sabes qué método elegir? Encontraremos el mejor para tu meta—con el mínimo esfuerzo de tu parte.",
-    "landing.hero.giftBadge": "1 plan gratis para nuevos usuarios que se registren",
+    "landing.hero.subtitleChunk.5":
+      "Vector es un planificador de metas para todos—no es un chat. Obtén un plan claro que puedes guardar y seguir.",
+    "landing.hero.subtitleChunk.6":
+      "¿No sabes qué método elegir? Encontraremos el mejor para tu meta—con el mínimo esfuerzo de tu parte.",
+    "landing.hero.giftBadge":
+      "1 plan gratis para nuevos usuarios que se registren",
     "landing.hero.startBuilding": "Empieza gratis",
     "landing.hero.viewPricing": "Ver precios",
     "landing.hero.helpMePlan": "Ayúdame a lograr mis metas",
-    "landing.hero.pathHint": "Encuentra el marco adecuado para tu meta, o ve directo al chat.",
+    "landing.hero.pathHint":
+      "Encuentra el marco adecuado para tu meta, o ve directo al chat.",
     "landing.hero.newHere": "¿Primera vez? Mira cómo funciona",
     "landing.liftoff.vector": "Vector",
     "landing.howItWorks.title": "Cómo funciona Vector",
@@ -1922,32 +2005,41 @@ export const translations = {
     "landing.howItWorks.step4.desc":
       "Descarga PDF, añade al calendario o guarda en tu cuenta.",
     "landing.whatIsVector.title": "¿Qué es Vector?",
-    "landing.whatIsVector.desc": "Vector es un planificador de metas. Respondes preguntas sencillas y crea un plan paso a paso que puedes guardar y seguir. No es ChatGPT—sin chat interminable. Solo una hoja de ruta clara para tus metas.",
+    "landing.whatIsVector.desc":
+      "Vector es un planificador de metas. Respondes preguntas sencillas y crea un plan paso a paso que puedes guardar y seguir. No es ChatGPT—sin chat interminable. Solo una hoja de ruta clara para tus metas.",
     "landing.howItWorks.vsLLM.title":
       "¿Por qué no usar simplemente ChatGPT o Gemini?",
-    "landing.howItWorks.vsLLM.desc": "Los modelos de IA estándar son generalistas que te dan texto interminable en un simple 'trozo de papel'. Vector es un arquitecto de metas dedicado. Te guía a través de un modelo mental comprobado paso a paso y sintetiza tus respuestas en un plano altamente visual, facilitando ver la imagen completa. Además, te proporciona herramientas de seguimiento integradas para gestionar activamente tu progreso a lo largo del tiempo, dándole una enorme ventaja competitiva sobre los chatbots estándar.",
+    "landing.howItWorks.vsLLM.desc":
+      "Los modelos de IA estándar son generalistas que te dan texto interminable en un simple 'trozo de papel'. Vector es un arquitecto de metas dedicado. Te guía a través de un modelo mental comprobado paso a paso y sintetiza tus respuestas en un plano altamente visual, facilitando ver la imagen completa. Además, te proporciona herramientas de seguimiento integradas para gestionar activamente tu progreso a lo largo del tiempo, dándole una enorme ventaja competitiva sobre los chatbots estándar.",
     "landing.howItWorks.examples.title": "De lo vago a lo procesable",
     "landing.howItWorks.examples.vague1": '"Quiero ponerme en forma"',
     "landing.howItWorks.examples.actionable1":
       "Un plan de 12 semanas rastreado con hitos semanales, fases de entrenamiento y hábitos alimenticios usando Pareto.",
     "landing.howItWorks.examples.vague2": '"Empezar un negocio"',
-    'landing.howItWorks.examples.actionable2': 'Una hoja de ruta con Primeros Principios desde estudios de mercado hasta un MVP, con tareas exactas listadas.',
-    
-    // The Vector Advantage (Bento Box)
-    'landing.advantage.title': 'La Ventaja Vector',
-    'landing.advantage.subtitle': 'Por qué los verdaderos arquitectos no confían en chats estándar.',
-    'landing.advantage.livingPlan.title': 'Un Plano Vivo',
-    'landing.advantage.livingPlan.desc': 'Tu plan no se entierra en un chat. Vive en tu panel para rastrearlo, editarlo y consultarlo siempre.',
-    'landing.advantage.execution.title': 'Hecho para Ejecutar',
-    'landing.advantage.execution.desc': 'Exporta tareas directo a tu Calendario o PDF. Cerramos la brecha entre el plan digital y la acción real.',
-    'landing.advantage.quality.title': 'Calidad sobre Consejos',
-    'landing.advantage.quality.desc': 'En lugar de consejos genéricos de internet, te obligamos a usar modelos mentales de élite.',
-    'landing.advantage.community.title': 'Validado por la Comunidad',
-    'landing.advantage.community.desc': 'No empieces desde cero. Clona y adapta planos exitosos que personas reales ya han probado.',
-    'landing.advantage.noPrompting.title': 'Cero "Prompt Engineering"',
-    'landing.advantage.noPrompting.desc': 'Solo responde preguntas. Vector actúa como tu entrevistador experto para extraer tus mejores ideas sin esfuerzo.',
+    "landing.howItWorks.examples.actionable2":
+      "Una hoja de ruta con Primeros Principios desde estudios de mercado hasta un MVP, con tareas exactas listadas.",
 
-    'landing.inspiredBy.title': 'Inspirado por grandes mentes',
+    // The Vector Advantage (Bento Box)
+    "landing.advantage.title": "La Ventaja Vector",
+    "landing.advantage.subtitle":
+      "Por qué los verdaderos arquitectos no confían en chats estándar.",
+    "landing.advantage.livingPlan.title": "Un Plano Vivo",
+    "landing.advantage.livingPlan.desc":
+      "Tu plan no se entierra en un chat. Vive en tu panel para rastrearlo, editarlo y consultarlo siempre.",
+    "landing.advantage.execution.title": "Hecho para Ejecutar",
+    "landing.advantage.execution.desc":
+      "Exporta tareas directo a tu Calendario o PDF. Cerramos la brecha entre el plan digital y la acción real.",
+    "landing.advantage.quality.title": "Calidad sobre Consejos",
+    "landing.advantage.quality.desc":
+      "En lugar de consejos genéricos de internet, te obligamos a usar modelos mentales de élite.",
+    "landing.advantage.community.title": "Validado por la Comunidad",
+    "landing.advantage.community.desc":
+      "No empieces desde cero. Clona y adapta planos exitosos que personas reales ya han probado.",
+    "landing.advantage.noPrompting.title": 'Cero "Prompt Engineering"',
+    "landing.advantage.noPrompting.desc":
+      "Solo responde preguntas. Vector actúa como tu entrevistador experto para extraer tus mejores ideas sin esfuerzo.",
+
+    "landing.inspiredBy.title": "Inspirado por grandes mentes",
     "landing.inspiredBy.subtitle":
       "Vector aplica marcos y métodos de líderes de pensamiento en los que ya confías.",
     "authors.tonyRobbins.tagline": "Método RPM",
@@ -1962,9 +2054,12 @@ export const translations = {
     "frameworks.helpMeChoose": "Ayúdame a elegir el método adecuado",
 
     // SEO
-    "seo.title": "Vector Arquitecto de Metas con IA | Planificación por Primeros Principios y OKR",
-    "seo.description": "Convierte metas vagas en planes precisos. Vector usa IA y frameworks como 80/20, OKRs y Primeros Principios para construir tu hoja de ruta. Generador de planes, analizador de objetivos, coach de vida con IA.",
-    "seo.keywords": "planificador de metas con IA, arquitecto de vida IA, generador de planes, analizador de metas, analizador de objetivos, coach de vida, coach de vida IA, herramienta de primeros principios, generador OKR IA, app de establecimiento de metas, generador de planes de acción, desarrollo personal, planificador de carrera, planificador de vida, hoja de ruta, hitos, ejecución, modelos mentales, estrategia, gestión de tareas, blueprint, productividad basada en frameworks",
+    "seo.title":
+      "Vector | Planificador de metas con IA, generador de planes de acción y OKR",
+    "seo.description":
+      "Convierte metas vagas en planes de acción estructurados con IA. Vector usa Primeros Principios, Pareto, OKRs, Eisenhower y otros frameworks para crear hojas de ruta, hitos y próximos pasos.",
+    "seo.keywords":
+      "planificador de metas con IA, arquitecto de vida IA, generador de planes, analizador de metas, analizador de objetivos, coach de vida, coach de vida IA, herramienta de primeros principios, generador OKR IA, app de establecimiento de metas, generador de planes de acción, desarrollo personal, planificador de carrera, planificador de vida, hoja de ruta, hitos, ejecución, modelos mentales, estrategia, gestión de tareas, blueprint, productividad basada en frameworks",
 
     // Intake Modal
     "intake.title": "Encuentra tu Método",
@@ -2350,6 +2445,7 @@ export const translations = {
     "nav.signout": "Sair",
     "nav.getStarted": "Vamos planejar",
     "nav.about": "Sobre",
+    "nav.articles": "Artigos",
     "nav.admin": "Admin",
     "wizard.newConversation": "Nova Conversa",
     "dashboard.new": "Novo Modelo",
@@ -2361,27 +2457,43 @@ export const translations = {
       "O Vector usa o pensamento de princípios fundamentais para transformar objetivos abstratos em projetos arquitetônicos precisos.",
     "hero.start": "Comece a Construir",
     "hero.pricing": "Ver Preços",
-    "landing.hero.subtitleChunk.1": "O Vector usa pensamento de primeiros princípios e frameworks para transformar metas abstratas em planos precisos.",
-    "landing.hero.subtitleChunk.2": "Pare de obter resultados medianos com conselhos genéricos de chats padrão.",
-    "landing.hero.subtitleChunk.3": "Vector é a melhor ferramenta para articular suas ideias em um plano passo a passo executável.",
+    "landing.hero.subtitleChunk.1":
+      "O Vector usa pensamento de primeiros princípios e frameworks para transformar metas abstratas em planos precisos.",
+    "landing.hero.subtitleChunk.2":
+      "Pare de obter resultados medianos com conselhos genéricos de chats padrão.",
+    "landing.hero.subtitleChunk.3":
+      "Vector é a melhor ferramenta para articular suas ideias em um plano passo a passo executável.",
     "landing.hero.subtitleChunk.4": "Comece a construir seu futuro hoje.",
-    "landing.hero.subtitleChunk.5": "Vector é um planejador de metas para todos—não é um chat. Obtenha um plano estruturado que você pode salvar e seguir.",
-    "landing.hero.subtitleChunk.6": "Não sabe qual framework escolher? Encontraremos o melhor para sua meta—com o mínimo esforço da sua parte.",
-    "landing.hero.giftBadge": "1 plano grátis para novos usuários que se registrarem",
+    "landing.hero.subtitleChunk.5":
+      "Vector é um planejador de metas para todos—não é um chat. Obtenha um plano estruturado que você pode salvar e seguir.",
+    "landing.hero.subtitleChunk.6":
+      "Não sabe qual framework escolher? Encontraremos o melhor para sua meta—com o mínimo esforço da sua parte.",
+    "landing.hero.giftBadge":
+      "1 plano grátis para novos usuários que se registrarem",
 
     // Frameworks Section
     "frameworks.title": "Escolha Seu Modelo",
     "frameworks.subtitle":
       "Toda ambição requer uma lente diferente. Selecione um modelo comprovado para iniciar seu processo.",
+    "landing.guides.explore": "Leia antes de construir",
+    "landing.guides.title":
+      "Artigos sobre frameworks feitos para descoberta e execução.",
+    "landing.guides.subtitle":
+      "Explore os modelos mentais por trás do Vector, entenda quando usar cada um e entre direto no blueprint certo.",
+    "landing.guides.cta": "Ver todos os artigos",
     "frameworks.helpMeChoose": "Ajude-me a escolher",
 
     // SEO
-    "seo.title": "Vector Arquiteto de Metas com IA | Planejamento por Primeiros Princípios e OKR",
-    "seo.description": "Transforme metas vagas em planos precisos. Vector usa IA e frameworks como 80/20, OKRs e Primeiros Princípios para construir sua rota. Gerador de planos, analisador de objetivos, coach de vida com IA.",
-    "seo.keywords": "planejador de metas IA, arquiteto de vida IA, gerador de planos, analisador de metas, analisador de objetivos, coach de vida, coach de vida IA, ferramenta de primeiros princípios, gerador OKR IA, app de definição de metas, gerador de planos de ação, desenvolvimento pessoal, planejador de carreira, planejador de vida, roteiro, marcos, execução, modelos mentais, estratégia, gestão de tarefas, blueprint, produtividade baseada em frameworks",
+    "seo.title":
+      "Vector | Planejador de metas com IA, gerador de planos de ação e OKR",
+    "seo.description":
+      "Transforme metas vagas em planos de ação estruturados com IA. O Vector usa Primeiros Princípios, Pareto, OKRs, Eisenhower e outros frameworks para criar roteiros, marcos e próximos passos.",
+    "seo.keywords":
+      "planejador de metas IA, arquiteto de vida IA, gerador de planos, analisador de metas, analisador de objetivos, coach de vida, coach de vida IA, ferramenta de primeiros princípios, gerador OKR IA, app de definição de metas, gerador de planos de ação, desenvolvimento pessoal, planejador de carreira, planejador de vida, roteiro, marcos, execução, modelos mentais, estratégia, gestão de tarefas, blueprint, produtividade baseada em frameworks",
 
     "landing.hero.helpMePlan": "Ajude-me a alcançar meus objetivos",
-    "landing.hero.pathHint": "Encontre o framework certo para seu objetivo ou vá direto ao chat.",
+    "landing.hero.pathHint":
+      "Encontre o framework certo para seu objetivo ou vá direto ao chat.",
 
     // Footer
     "footer.privacy": "Privacidade",
@@ -2415,7 +2527,8 @@ export const translations = {
     "common.example": "Exemplo",
     "common.use": "Usar este modelo",
     "common.copiedToClipboard": "Copiado para a área de transferência",
-    "common.errorCopiedToClipboard": "Erro copiado para a área de transferência",
+    "common.errorCopiedToClipboard":
+      "Erro copiado para a área de transferência",
 
     // Onboarding
     "onboarding.welcome.title": "Bem-vindo ao Vector",
@@ -2536,12 +2649,14 @@ export const translations = {
     "pricing.switchToGlobal": "Paga dos EUA/Europa? Trocar",
     "pricing.switchToLatam": "Paga da LATAM? Trocar",
     "pricing.payWithCrypto": "Pagar com cripto (Binance Pay)",
-    "pricing.cryptoComingSoon": "Pagamentos em cripto (Binance Pay) em breve. Entre em contato para ser avisado.",
+    "pricing.cryptoComingSoon":
+      "Pagamentos em cripto (Binance Pay) em breve. Entre em contato para ser avisado.",
     "pricing.redirectMercadoPago": "Redirecionando para pagamento...",
     "pricing.redirectLemonSqueezy": "Redirecionando para pagamento...",
     "pricing.paymentSuccess": "Pagamento concluído! Seu plano foi atualizado.",
     "pricing.paymentFailed": "Pagamento falhou ou foi cancelado.",
-    "pricing.paymentPending": "Pagamento em processamento. Seu plano será atualizado em breve—atualize em um momento.",
+    "pricing.paymentPending":
+      "Pagamento em processamento. Seu plano será atualizado em breve—atualize em um momento.",
 
     // Community
     "community.title": "Modelos da Comunidade",
@@ -2644,8 +2759,10 @@ export const translations = {
     "mandala.subTasksHelp":
       "Ações concretas que você pode fazer. Adicione quantas precisar.",
     "mandala.whyThisPillar": "Por que este pilar",
-    "mandala.desktopRecommended": "Esta visualização funciona melhor no desktop. Seu plano foi salvo—abra em um laptop ou computador para explorar o gráfico Mandala completo.",
-    "wizard.visualizationDesktopRecommended": "Esta visualização funciona melhor no desktop. Seu plano foi salvo—abra em um laptop ou computador para explorar a visão completa.",
+    "mandala.desktopRecommended":
+      "Esta visualização funciona melhor no desktop. Seu plano foi salvo—abra em um laptop ou computador para explorar o gráfico Mandala completo.",
+    "wizard.visualizationDesktopRecommended":
+      "Esta visualização funciona melhor no desktop. Seu plano foi salvo—abra em um laptop ou computador para explorar a visão completa.",
     "wizard.inputExpand": "Expandir",
     "wizard.inputCollapse": "Recolher",
     "wizard.viewDraft": "Ver rascunho",
@@ -2885,6 +3002,7 @@ export const translations = {
     "nav.signout": "Déconnexion",
     "nav.getStarted": "C'est parti",
     "nav.about": "À propos",
+    "nav.articles": "Articles",
     "nav.admin": "Admin",
     "wizard.newConversation": "Nouvelle Conversation",
     "dashboard.new": "Nouveau Modèle",
@@ -2896,27 +3014,43 @@ export const translations = {
       "Vector utilise la pensée des premiers principes pour transformer des objectifs abstraits en plans architecturaux précis.",
     "hero.start": "Commencer à Bâtir",
     "hero.pricing": "Voir les Tarifs",
-    "landing.hero.subtitleChunk.1": "Vector utilise la pensée des premiers principes et des cadres éprouvés pour transformer vos objectifs abstraits en plans précis.",
-    "landing.hero.subtitleChunk.2": "Arrêtez les résultats médiocres et les conseils génériques des chatbots.",
-    "landing.hero.subtitleChunk.3": "Vector est le meilleur outil pour articuler vos idées en un plan exécutable étape par étape.",
+    "landing.hero.subtitleChunk.1":
+      "Vector utilise la pensée des premiers principes et des cadres éprouvés pour transformer vos objectifs abstraits en plans précis.",
+    "landing.hero.subtitleChunk.2":
+      "Arrêtez les résultats médiocres et les conseils génériques des chatbots.",
+    "landing.hero.subtitleChunk.3":
+      "Vector est le meilleur outil pour articuler vos idées en un plan exécutable étape par étape.",
     "landing.hero.subtitleChunk.4": "Construisez votre avenir dès aujourd'hui.",
-    "landing.hero.subtitleChunk.5": "Vector est un planificateur d'objectifs pour tous—pas une appli de chat. Obtenez un plan structuré à sauvegarder et suivre.",
-    "landing.hero.subtitleChunk.6": "Vous ne savez pas quel cadre choisir ? Nous trouvons le meilleur pour votre objectif—avec un minimum d'effort de votre part.",
-    "landing.hero.giftBadge": "1 plan offert aux nouveaux utilisateurs qui s'inscrivent",
+    "landing.hero.subtitleChunk.5":
+      "Vector est un planificateur d'objectifs pour tous—pas une appli de chat. Obtenez un plan structuré à sauvegarder et suivre.",
+    "landing.hero.subtitleChunk.6":
+      "Vous ne savez pas quel cadre choisir ? Nous trouvons le meilleur pour votre objectif—avec un minimum d'effort de votre part.",
+    "landing.hero.giftBadge":
+      "1 plan offert aux nouveaux utilisateurs qui s'inscrivent",
 
     // Frameworks Section
     "frameworks.title": "Choisissez Votre Modèle",
     "frameworks.subtitle":
       "Chaque ambition nécessite une lentille différente. Sélectionnez un cadre éprouvé pour commencer votre processus.",
+    "landing.guides.explore": "Lire avant de construire",
+    "landing.guides.title":
+      "Des articles sur les frameworks pensés pour la découverte et l'action.",
+    "landing.guides.subtitle":
+      "Explorez les modèles mentaux derrière Vector, comprenez quand utiliser chacun, puis passez directement au bon blueprint.",
+    "landing.guides.cta": "Voir tous les articles",
     "frameworks.helpMeChoose": "Aidez-moi à choisir",
 
     // SEO
-    "seo.title": "Vector Architecte de Objectifs IA | Planification First Principles et OKR",
-    "seo.description": "Transformez des objectifs vagues en plans précis. Vector utilise l'IA et des frameworks (80/20, OKR, First Principles) pour construire votre feuille de route. Générateur de plans, analyseur d'objectifs, coach de vie IA.",
-    "seo.keywords": "planificateur d'objectifs IA, architecte de vie IA, générateur de plans, analyseur d'objectifs, analyseur de buts, coach de vie, coach de vie IA, outil premiers principes, générateur OKR IA, app fixation d'objectifs, générateur de plans d'action, développement personnel, planificateur de carrière, planificateur de vie, feuille de route, jalons, exécution, modèles mentaux, stratégie, gestion des tâches, blueprint, productivité par frameworks",
+    "seo.title":
+      "Vector | Planificateur d'objectifs IA, générateur de plans d'action et OKR",
+    "seo.description":
+      "Transformez des objectifs vagues en plans d'action structurés avec l'IA. Vector utilise First Principles, Pareto, OKR, Eisenhower et d'autres frameworks pour créer une feuille de route, des jalons et les prochaines étapes.",
+    "seo.keywords":
+      "planificateur d'objectifs IA, architecte de vie IA, générateur de plans, analyseur d'objectifs, analyseur de buts, coach de vie, coach de vie IA, outil premiers principes, générateur OKR IA, app fixation d'objectifs, générateur de plans d'action, développement personnel, planificateur de carrière, planificateur de vie, feuille de route, jalons, exécution, modèles mentaux, stratégie, gestion des tâches, blueprint, productivité par frameworks",
 
     "landing.hero.helpMePlan": "Aidez-moi à atteindre mes objectifs",
-    "landing.hero.pathHint": "Trouvez le bon cadre pour votre objectif, ou allez directement au chat.",
+    "landing.hero.pathHint":
+      "Trouvez le bon cadre pour votre objectif, ou allez directement au chat.",
 
     // Footer
     "footer.privacy": "Confidentialité",
@@ -3070,12 +3204,15 @@ export const translations = {
     "pricing.switchToGlobal": "Vous payez depuis les US/UE ? Changer",
     "pricing.switchToLatam": "Vous payez depuis l'Amérique latine ? Changer",
     "pricing.payWithCrypto": "Payer en crypto (Binance Pay)",
-    "pricing.cryptoComingSoon": "Paiements crypto (Binance Pay) bientôt disponibles. Contactez-nous pour être notifié.",
+    "pricing.cryptoComingSoon":
+      "Paiements crypto (Binance Pay) bientôt disponibles. Contactez-nous pour être notifié.",
     "pricing.redirectMercadoPago": "Redirection vers le paiement...",
     "pricing.redirectLemonSqueezy": "Redirection vers le paiement...",
-    "pricing.paymentSuccess": "Paiement réussi ! Votre forfait a été mis à niveau.",
+    "pricing.paymentSuccess":
+      "Paiement réussi ! Votre forfait a été mis à niveau.",
     "pricing.paymentFailed": "Le paiement a échoué ou a été annulé.",
-    "pricing.paymentPending": "Paiement en cours. Votre forfait sera mis à niveau sous peu—actualisez dans un instant.",
+    "pricing.paymentPending":
+      "Paiement en cours. Votre forfait sera mis à niveau sous peu—actualisez dans un instant.",
 
     // Community
     "community.title": "Modèles de la Communauté",
@@ -3422,6 +3559,7 @@ export const translations = {
     "nav.signout": "Abmelden",
     "nav.getStarted": "Los geht's",
     "nav.about": "Über uns",
+    "nav.articles": "Artikel",
     "nav.admin": "Admin",
 
     // Hero
@@ -3431,27 +3569,40 @@ export const translations = {
       "Vector nutzt First-Principles-Thinking, um abstrakte Ziele in präzise architektonische Baupläne zu verwandeln.",
     "hero.start": "Jetzt Bauen",
     "hero.pricing": "Preise ansehen",
-    "landing.hero.subtitleChunk.1": "Vector nutzt First-Principles-Denken und bewährte Frameworks, um abstrakte Ziele in präzise Pläne zu verwandeln.",
-    "landing.hero.subtitleChunk.2": "Schluss mit mittelmäßigen Ergebnissen und generischem Chat-Rat.",
-    "landing.hero.subtitleChunk.3": "Vector ist das beste Tool, um Ihre Ideen in einen umsetzbaren Schritt-für-Schritt-Plan zu verwandeln.",
+    "landing.hero.subtitleChunk.1":
+      "Vector nutzt First-Principles-Denken und bewährte Frameworks, um abstrakte Ziele in präzise Pläne zu verwandeln.",
+    "landing.hero.subtitleChunk.2":
+      "Schluss mit mittelmäßigen Ergebnissen und generischem Chat-Rat.",
+    "landing.hero.subtitleChunk.3":
+      "Vector ist das beste Tool, um Ihre Ideen in einen umsetzbaren Schritt-für-Schritt-Plan zu verwandeln.",
     "landing.hero.subtitleChunk.4": "Bauen Sie Ihre Zukunft ab heute.",
-    "landing.hero.subtitleChunk.5": "Vector ist ein Zielplaner für alle—kein Chat. Erhalten Sie einen strukturierten Plan zum Speichern und Ausführen.",
-    "landing.hero.subtitleChunk.6": "Unklar, welches Framework zu wählen? Wir finden das beste für Ihr Ziel—mit minimalem Aufwand von Ihrer Seite.",
+    "landing.hero.subtitleChunk.5":
+      "Vector ist ein Zielplaner für alle—kein Chat. Erhalten Sie einen strukturierten Plan zum Speichern und Ausführen.",
+    "landing.hero.subtitleChunk.6":
+      "Unklar, welches Framework zu wählen? Wir finden das beste für Ihr Ziel—mit minimalem Aufwand von Ihrer Seite.",
     "landing.hero.giftBadge": "1 Gratis-Plan für neue Nutzer bei Registrierung",
 
     // Frameworks Section
     "frameworks.title": "Wählen Sie Ihren Rahmen",
     "frameworks.subtitle":
       "Jede Ambition erfordert eine andere Linse. Wählen Sie ein bewährtes Framework, um Ihren Prozess zu beginnen.",
+    "landing.guides.explore": "Erst lesen, dann bauen",
+    "landing.guides.title": "Framework-Artikel für Sichtbarkeit und Umsetzung.",
+    "landing.guides.subtitle":
+      "Erkunde die mentalen Modelle hinter Vector, verstehe den Einsatz jedes Frameworks und springe direkt in den passenden Blueprint.",
+    "landing.guides.cta": "Alle Artikel ansehen",
     "frameworks.helpMeChoose": "Helfen Sie mir bei der Auswahl",
 
     // SEO
-    "seo.title": "Vector KI-Ziel-Architekt | First-Principles-Planung & OKR-Tool",
-    "seo.description": "Vage Ziele in präzise Pläne verwandeln. Vector nutzt KI und Frameworks wie 80/20, OKRs und First Principles für Ihre Roadmap. Plan-Generator, Ziel-Analysator, KI-Life-Coach.",
-    "seo.keywords": "KI Zielplaner, KI Lebensarchitekt, Plan Generator, Ziel-Analysator, Ziel-Analyse, Life Coach, KI Life Coach, First-Principles-Tool, OKR Generator KI, Zielsetzungs-App, Aktionsplan-Generator, persönliche Entwicklung, Karriereplaner, Lebensplaner, Roadmap, Meilensteine, Umsetzung, Mentale Modelle, Strategie, Aufgabenmanagement, Blueprint, Framework-basierte Produktivität",
+    "seo.title": "Vector | KI-Zielplaner, Aktionsplan-Generator und OKR-Tool",
+    "seo.description":
+      "Verwandeln Sie vage Ziele mit KI in strukturierte Aktionspläne. Vector nutzt First Principles, Pareto, OKRs, Eisenhower und weitere Frameworks für Roadmaps, Meilensteine und nächste Schritte.",
+    "seo.keywords":
+      "KI Zielplaner, KI Lebensarchitekt, Plan Generator, Ziel-Analysator, Ziel-Analyse, Life Coach, KI Life Coach, First-Principles-Tool, OKR Generator KI, Zielsetzungs-App, Aktionsplan-Generator, persönliche Entwicklung, Karriereplaner, Lebensplaner, Roadmap, Meilensteine, Umsetzung, Mentale Modelle, Strategie, Aufgabenmanagement, Blueprint, Framework-basierte Produktivität",
 
     "landing.hero.helpMePlan": "Helfen Sie mir, meine Ziele zu erreichen",
-    "landing.hero.pathHint": "Finden Sie den richtigen Rahmen für Ihr Ziel oder gehen Sie direkt zum Chat.",
+    "landing.hero.pathHint":
+      "Finden Sie den richtigen Rahmen für Ihr Ziel oder gehen Sie direkt zum Chat.",
 
     // Footer
     "footer.privacy": "Datenschutz",
@@ -3602,12 +3753,15 @@ export const translations = {
     "pricing.switchToGlobal": "Aus US/EU zahlend? Wechseln",
     "pricing.switchToLatam": "Aus LATAM zahlend? Wechseln",
     "pricing.payWithCrypto": "Mit Krypto zahlen (Binance Pay)",
-    "pricing.cryptoComingSoon": "Krypto-Zahlungen (Binance Pay) demnächst. Kontaktieren Sie uns für eine Benachrichtigung.",
+    "pricing.cryptoComingSoon":
+      "Krypto-Zahlungen (Binance Pay) demnächst. Kontaktieren Sie uns für eine Benachrichtigung.",
     "pricing.redirectMercadoPago": "Weiterleitung zur Kasse...",
     "pricing.redirectLemonSqueezy": "Weiterleitung zur Kasse...",
-    "pricing.paymentSuccess": "Zahlung erfolgreich! Ihr Plan wurde aktualisiert.",
+    "pricing.paymentSuccess":
+      "Zahlung erfolgreich! Ihr Plan wurde aktualisiert.",
     "pricing.paymentFailed": "Zahlung fehlgeschlagen oder abgebrochen.",
-    "pricing.paymentPending": "Zahlung wird bearbeitet. Ihr Plan wird in Kürze aktualisiert—laden Sie gleich neu.",
+    "pricing.paymentPending":
+      "Zahlung wird bearbeitet. Ihr Plan wird in Kürze aktualisiert—laden Sie gleich neu.",
 
     // Community
     "community.title": "Community-Vorlagen",

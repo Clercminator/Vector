@@ -1,18 +1,92 @@
-export type FrameworkId = "first-principles" | "pareto" | "rpm" | "eisenhower" | "okr" | "dsss" | "mandalas" | "gps" | "misogi" | "ikigai" | "general";
+import type {
+  CanonicalPlanFields,
+  CommunityProofSnapshot,
+  PlanScheduleHint,
+} from "./planContract";
+
+export type FrameworkId =
+  | "first-principles"
+  | "pareto"
+  | "rpm"
+  | "eisenhower"
+  | "okr"
+  | "dsss"
+  | "mandalas"
+  | "gps"
+  | "misogi"
+  | "ikigai"
+  | "general";
+
+export type BlueprintResultShared = CanonicalPlanFields & {
+  scheduleHints: PlanScheduleHint[];
+  communityProof?: CommunityProofSnapshot;
+};
 
 export type BlueprintResult =
-  | { type: "first-principles"; truths: string[]; newApproach: string }
-  | { type: "pareto"; vital: string[]; trivial: string[] }
-  | { type: "rpm"; result: string; purpose: string; plan: string[] }
-  | { type: "eisenhower"; q1: string[]; q2: string[]; q3: string[]; q4: string[] }
-  | { type: "okr"; objective: string; keyResults: string[]; initiative: string }
-  | { type: "mandalas"; centralGoal: string; categories: Array<{ name: string; steps: string[] }> }
-  | { type: "ikigai"; love: string; goodAt: string; worldNeeds: string; paidFor: string; purpose: string }
-  | { type: "dsss"; deconstruct: string[]; selection: string[]; sequence: string[]; stakes: string }
-  | { type: "gps"; goal: string; plan: string[]; system: string[]; anti_goals?: string[] }
-  | { type: "misogi"; challenge: string | string[]; gap: string | string[]; purification: string | string[] }
-  | { type: "general"; steps: string[] }
-  | Record<string, unknown>;
+  | (BlueprintResultShared & {
+      type: "first-principles";
+      truths: string[];
+      newApproach: string;
+    })
+  | (BlueprintResultShared & {
+      type: "pareto";
+      vital: string[];
+      trivial: string[];
+    })
+  | (BlueprintResultShared & {
+      type: "rpm";
+      result: string;
+      purpose: string;
+      plan: string[];
+    })
+  | (BlueprintResultShared & {
+      type: "eisenhower";
+      q1: string[];
+      q2: string[];
+      q3: string[];
+      q4: string[];
+    })
+  | (BlueprintResultShared & {
+      type: "okr";
+      objective: string;
+      keyResults: string[];
+      initiative: string;
+    })
+  | (BlueprintResultShared & {
+      type: "mandalas";
+      centralGoal: string;
+      categories: Array<{ name: string; steps: string[] }>;
+    })
+  | (BlueprintResultShared & {
+      type: "ikigai";
+      love: string;
+      goodAt: string;
+      worldNeeds: string;
+      paidFor: string;
+      purpose: string;
+    })
+  | (BlueprintResultShared & {
+      type: "dsss";
+      deconstruct: string[];
+      selection: string[];
+      sequence: string[];
+      stakes: string;
+    })
+  | (BlueprintResultShared & {
+      type: "gps";
+      goal: string;
+      plan: string[];
+      system: string[];
+      anti_goals?: string[];
+    })
+  | (BlueprintResultShared & {
+      type: "misogi";
+      challenge: string | string[];
+      gap: string | string[];
+      purification: string | string[];
+    })
+  | (BlueprintResultShared & { type: "general"; steps: string[] })
+  | (BlueprintResultShared & Record<string, unknown>);
 
 export interface Blueprint {
   id: string;
@@ -26,8 +100,8 @@ export interface Blueprint {
 export interface BlueprintTracker {
   blueprint_id: string;
   user_id: string;
-  plan_kind: 'finite' | 'infinite';
-  status: 'active' | 'completed' | 'paused' | 'abandoned';
+  plan_kind: "finite" | "infinite";
+  status: "active" | "completed" | "paused" | "abandoned";
   progress_pct: number;
   completed_step_ids: string[];
   last_activity_at: string;
@@ -38,7 +112,7 @@ export interface BlueprintTracker {
   reminder_time?: string | null;
   reminder_days?: string[];
   reminder_enabled?: boolean;
-  frequency?: 'daily' | 'weekly' | 'custom';
+  frequency?: "daily" | "weekly" | "custom";
   savings_baseline?: number | null;
   savings_unit?: string | null;
   savings_enabled?: boolean;
@@ -49,7 +123,7 @@ export interface GoalLog {
   id: string;
   blueprint_id: string;
   user_id: string;
-  kind: 'journal' | 'check_in' | 'step_done' | 'setback';
+  kind: "journal" | "check_in" | "step_done" | "setback";
   content?: string | null;
   payload?: Record<string, any>;
   created_at: string;
@@ -61,7 +135,7 @@ export interface BlueprintSubGoal {
   user_id: string;
   title: string;
   target_date: string; // YYYY-MM-DD
-  status: 'active' | 'completed' | 'missed';
+  status: "active" | "completed" | "missed";
   created_at: string;
 }
 
@@ -83,7 +157,7 @@ export interface BlueprintTaskCompletion {
 
 export interface MotivationalContent {
   id: string;
-  content_type: 'quote' | 'affirmation';
+  content_type: "quote" | "affirmation";
   text: string;
   author?: string | null;
   sort_order: number;
@@ -106,7 +180,7 @@ export interface SupportResource {
   description?: string;
   url?: string;
   phone?: string;
-  type: 'emergency' | 'general' | 'internal';
+  type: "emergency" | "general" | "internal";
   enabled: boolean;
   sort_order: number;
 }
@@ -115,7 +189,7 @@ export interface GoalTemplate {
   id: string;
   title: string;
   description?: string;
-  framework: FrameworkId | 'general';
+  framework: FrameworkId | "general";
   is_active: boolean;
   sort_order?: number;
 }
@@ -123,7 +197,7 @@ export interface GoalTemplate {
 export interface GoalTemplateItem {
   id: string;
   template_id: string;
-  item_type: 'sub_goal' | 'task';
+  item_type: "sub_goal" | "task";
   title: string;
   description?: string;
   target_count?: number; // for tasks
@@ -135,7 +209,7 @@ export interface BlueprintShare {
   blueprint_id: string;
   user_id: string;
   share_token: string;
-  permission: 'view' | 'edit';
+  permission: "view" | "edit";
   expires_at?: string | null;
   created_at: string;
 }
@@ -158,8 +232,7 @@ export function saveLocalBlueprints(blueprints: Blueprint[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(blueprints));
 }
 
-
-import { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from "@supabase/supabase-js";
 
 // ... (existing exports)
 
@@ -175,7 +248,11 @@ import { SupabaseClient } from '@supabase/supabase-js';
  */
 
 export function upsertBlueprint(list: Blueprint[], bp: Blueprint): Blueprint[];
-export function upsertBlueprint(client: SupabaseClient, bp: Blueprint, userId: string): Promise<any>;
+export function upsertBlueprint(
+  client: SupabaseClient,
+  bp: Blueprint,
+  userId: string,
+): Promise<any>;
 export function upsertBlueprint(arg1: any, bp: Blueprint, arg3?: string): any {
   // Local Usage
   if (Array.isArray(arg1)) {
@@ -186,89 +263,118 @@ export function upsertBlueprint(arg1: any, bp: Blueprint, arg3?: string): any {
     next[idx] = bp;
     return next;
   }
-  
+
   // Remote Usage
   const supabase = arg1 as SupabaseClient;
   const userId = arg3 as string;
-  return supabase.from('blueprints').upsert({
+  return supabase
+    .from("blueprints")
+    .upsert({
       id: bp.id,
       user_id: userId,
       framework: bp.framework,
       title: bp.title,
       answers: bp.answers,
       result: bp.result,
-      updated_at: new Date().toISOString()
-  }).then(({ error }) => {
+      updated_at: new Date().toISOString(),
+    })
+    .then(({ error }) => {
       if (error) throw error;
       return null;
-  });
+    });
 }
 
 // Same for removeBlueprint
 export function removeBlueprint(list: Blueprint[], id: string): Blueprint[];
-export function removeBlueprint(client: SupabaseClient, id: string): Promise<any>;
+export function removeBlueprint(
+  client: SupabaseClient,
+  id: string,
+): Promise<any>;
 export function removeBlueprint(arg1: any, id: string): any {
   if (Array.isArray(arg1)) {
     return (arg1 as Blueprint[]).filter((x) => x.id !== id);
   }
-  return (arg1 as SupabaseClient).from('blueprints').delete().eq('id', id).then(({ error }) => {
+  return (arg1 as SupabaseClient)
+    .from("blueprints")
+    .delete()
+    .eq("id", id)
+    .then(({ error }) => {
       if (error) throw error;
       return null;
-  });
+    });
 }
 
 // Chat Persistence
-export async function fetchBlueprintMessages(supabase: SupabaseClient, blueprintId: string) {
-    const { data, error } = await supabase
-        .from('blueprint_messages')
-        .select('*')
-        .eq('blueprint_id', blueprintId)
-        .order('created_at', { ascending: true });
-    
-    if (error) throw error;
-    return data as { role: 'user' | 'ai'; content: string }[];
+export async function fetchBlueprintMessages(
+  supabase: SupabaseClient,
+  blueprintId: string,
+) {
+  const { data, error } = await supabase
+    .from("blueprint_messages")
+    .select("*")
+    .eq("blueprint_id", blueprintId)
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+  return data as { role: "user" | "ai"; content: string }[];
 }
 
-export async function saveBlueprintMessage(supabase: SupabaseClient, blueprintId: string, role: 'user' | 'ai', content: string) {
-    return supabase.from('blueprint_messages').insert({
-        blueprint_id: blueprintId,
-        role,
-        content
-    }).then(({ error }) => {
-        if (error) throw error;
-        return null; 
+export async function saveBlueprintMessage(
+  supabase: SupabaseClient,
+  blueprintId: string,
+  role: "user" | "ai",
+  content: string,
+) {
+  return supabase
+    .from("blueprint_messages")
+    .insert({
+      blueprint_id: blueprintId,
+      role,
+      content,
+    })
+    .then(({ error }) => {
+      if (error) throw error;
+      return null;
     });
 }
 
-
-export async function saveBlueprintMessages(supabase: SupabaseClient, blueprintId: string, messages: { role: 'user' | 'ai'; content: string }[]) {
-    const toInsert = messages.map(m => ({
-        blueprint_id: blueprintId,
-        role: m.role,
-        content: m.content
-    }));
-    return supabase.from('blueprint_messages').insert(toInsert).then(({ error }) => {
-        if (error) throw error;
-        return null;
+export async function saveBlueprintMessages(
+  supabase: SupabaseClient,
+  blueprintId: string,
+  messages: { role: "user" | "ai"; content: string }[],
+) {
+  const toInsert = messages.map((m) => ({
+    blueprint_id: blueprintId,
+    role: m.role,
+    content: m.content,
+  }));
+  return supabase
+    .from("blueprint_messages")
+    .insert(toInsert)
+    .then(({ error }) => {
+      if (error) throw error;
+      return null;
     });
 }
 
-export async function syncBlueprintMessages(supabase: SupabaseClient, blueprintId: string, messages: { role: 'user' | 'ai'; content: string }[]) {
-    // 1. Delete existing messages for this blueprint
-    const { error: deleteError } = await supabase
-        .from('blueprint_messages')
-        .delete()
-        .eq('blueprint_id', blueprintId);
-    
-    if (deleteError) throw deleteError;
+export async function syncBlueprintMessages(
+  supabase: SupabaseClient,
+  blueprintId: string,
+  messages: { role: "user" | "ai"; content: string }[],
+) {
+  // 1. Delete existing messages for this blueprint
+  const { error: deleteError } = await supabase
+    .from("blueprint_messages")
+    .delete()
+    .eq("blueprint_id", blueprintId);
 
-    // 2. Insert new messages
-    if (messages.length > 0) {
-        return saveBlueprintMessages(supabase, blueprintId, messages);
-    }
+  if (deleteError) throw deleteError;
+
+  // 2. Insert new messages
+  if (messages.length > 0) {
+    return saveBlueprintMessages(supabase, blueprintId, messages);
+  }
 }
-
-
 
 /** Exclude system-injected userReview feedback (fake "Answer 6") from answers. */
 export function filterRealAnswers(answers: string[]): string[] {
@@ -276,59 +382,64 @@ export function filterRealAnswers(answers: string[]): string[] {
   return (answers || []).filter((a) => !(a || "").trim().startsWith(prefix));
 }
 
-export function blueprintTitleFromAnswers(answers: string[], fallback = "Untitled blueprint") {
+export function blueprintTitleFromAnswers(
+  answers: string[],
+  fallback = "Untitled blueprint",
+) {
   const first = (answers[0] ?? "").trim();
   if (!first) return fallback;
   // Keep titles short for UI.
   return first.length > 60 ? `${first.slice(0, 57)}...` : first;
 }
 
+export async function syncLocalBlueprintsToRemote(
+  supabase: SupabaseClient,
+  userId: string,
+) {
+  const local = loadLocalBlueprints();
+  if (local.length === 0) return 0;
 
-export async function syncLocalBlueprintsToRemote(supabase: SupabaseClient, userId: string) {
-    const local = loadLocalBlueprints();
-    if (local.length === 0) return 0;
+  for (const bp of local) {
+    // Ensure user_id is set to the current user
+    await upsertBlueprint(supabase, bp, userId);
+  }
 
-    for (const bp of local) {
-        // Ensure user_id is set to the current user
-        await upsertBlueprint(supabase, bp, userId);
-    }
-    
-    // Clear local blueprints after sync
-    localStorage.removeItem(STORAGE_KEY);
-    return local.length;
+  // Clear local blueprints after sync
+  localStorage.removeItem(STORAGE_KEY);
+  return local.length;
 }
 
 const DELETED_QUEUE_KEY = "vector.deleted_queue";
 
 export function queueDeletedBlueprint(id: string) {
-    try {
-        const raw = localStorage.getItem(DELETED_QUEUE_KEY);
-        const queue = raw ? JSON.parse(raw) : [];
-        if (!queue.includes(id)) {
-            queue.push(id);
-            localStorage.setItem(DELETED_QUEUE_KEY, JSON.stringify(queue));
-        }
-    } catch (e) {
-        console.error("Failed to queue deleted blueprint", e);
+  try {
+    const raw = localStorage.getItem(DELETED_QUEUE_KEY);
+    const queue = raw ? JSON.parse(raw) : [];
+    if (!queue.includes(id)) {
+      queue.push(id);
+      localStorage.setItem(DELETED_QUEUE_KEY, JSON.stringify(queue));
     }
+  } catch (e) {
+    console.error("Failed to queue deleted blueprint", e);
+  }
 }
 
 export async function processDeletedQueue(supabase: SupabaseClient) {
-    try {
-        const raw = localStorage.getItem(DELETED_QUEUE_KEY);
-        if (!raw) return;
-        const queue = JSON.parse(raw) as string[];
-        
-        if (queue.length === 0) return;
+  try {
+    const raw = localStorage.getItem(DELETED_QUEUE_KEY);
+    if (!raw) return;
+    const queue = JSON.parse(raw) as string[];
 
-        console.log("Processing deleted queue:", queue);
+    if (queue.length === 0) return;
 
-        for (const id of queue) {
-            await removeBlueprint(supabase, id);
-        }
-        
-        localStorage.removeItem(DELETED_QUEUE_KEY);
-    } catch (e) {
-        console.error("Failed to process deleted queue", e);
+    console.log("Processing deleted queue:", queue);
+
+    for (const id of queue) {
+      await removeBlueprint(supabase, id);
     }
+
+    localStorage.removeItem(DELETED_QUEUE_KEY);
+  } catch (e) {
+    console.error("Failed to process deleted queue", e);
+  }
 }
