@@ -54,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden lg:flex items-center gap-6">
           <button
             onClick={() => navigate("/")}
             className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === "/" ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"}`}
@@ -169,7 +169,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile Menu Toggle - 44px min touch target */}
         <button
-          className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2 -m-2 text-gray-900 dark:text-white touch-manipulation"
+          className="min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center p-2 -m-2 text-gray-900 dark:text-white touch-manipulation lg:hidden"
           onClick={onMenuToggle}
           aria-label={isMenuOpen ? t("common.close") : "Menu"}
         >

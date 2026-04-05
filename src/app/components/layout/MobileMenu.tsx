@@ -53,7 +53,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           navigate("/");
           onClose();
         }}
-        className={`min-h-[48px] flex items-center text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left w-full ${location.pathname === "/" ? "text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2" : "text-gray-600 dark:text-gray-400"}`}
+        className={`min-h-[48px] flex w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold dark:border-zinc-800 ${location.pathname === "/" ? "rounded px-2 text-black ring-2 ring-inset ring-gray-400 dark:text-white dark:ring-gray-500" : "text-gray-600 dark:text-gray-400"}`}
       >
         {t("nav.frameworks")}
       </button>
@@ -62,7 +62,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           navigate("/guides");
           onClose();
         }}
-        className={`min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${isArticlesRoute ? "text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2" : "text-gray-600 dark:text-gray-400"}`}
+        className={`min-h-[48px] flex w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold dark:border-zinc-800 ${isArticlesRoute ? "rounded px-2 text-black ring-2 ring-inset ring-gray-400 dark:text-white dark:ring-gray-500" : "text-gray-600 dark:text-gray-400"}`}
       >
         {t("nav.articles")}
       </button>
@@ -71,7 +71,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           navigate("/community");
           onClose();
         }}
-        className={`min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === "/community" ? "text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2" : "text-gray-600 dark:text-gray-400"}`}
+        className={`min-h-[48px] flex w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold dark:border-zinc-800 ${location.pathname === "/community" ? "rounded px-2 text-black ring-2 ring-inset ring-gray-400 dark:text-white dark:ring-gray-500" : "text-gray-600 dark:text-gray-400"}`}
       >
         {t("nav.community")}
       </button>
@@ -81,7 +81,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             navigate("/today");
             onClose();
           }}
-          className={`min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === "/today" ? "text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2" : "text-gray-600 dark:text-gray-400"}`}
+          className={`min-h-[48px] flex w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold dark:border-zinc-800 ${location.pathname === "/today" ? "rounded px-2 text-black ring-2 ring-inset ring-gray-400 dark:text-white dark:ring-gray-500" : "text-gray-600 dark:text-gray-400"}`}
         >
           {t("tracker.today") || "Today"}
         </button>
@@ -92,7 +92,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             navigate("/dashboard");
             onClose();
           }}
-          className={`min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === "/dashboard" ? "text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2" : "text-gray-600 dark:text-gray-400"}`}
+          className={`min-h-[48px] flex w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold dark:border-zinc-800 ${location.pathname === "/dashboard" ? "rounded px-2 text-black ring-2 ring-inset ring-gray-400 dark:text-white dark:ring-gray-500" : "text-gray-600 dark:text-gray-400"}`}
         >
           {t("nav.blueprints")}
         </button>
@@ -102,7 +102,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           navigate("/pricing");
           onClose();
         }}
-        className={`min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === "/pricing" ? "text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2" : "text-gray-600 dark:text-gray-400"}`}
+        className={`min-h-[48px] flex w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold dark:border-zinc-800 ${location.pathname === "/pricing" ? "rounded px-2 text-black ring-2 ring-inset ring-gray-400 dark:text-white dark:ring-gray-500" : "text-gray-600 dark:text-gray-400"}`}
       >
         {t("nav.pricing")}
       </button>
@@ -111,7 +111,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           navigate("/about");
           onClose();
         }}
-        className={`min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left ${location.pathname === "/about" ? "text-black dark:text-white ring-2 ring-inset ring-gray-400 dark:ring-gray-500 rounded px-2" : "text-gray-600 dark:text-gray-400"}`}
+        className={`min-h-[48px] flex w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold dark:border-zinc-800 ${location.pathname === "/about" ? "rounded px-2 text-black ring-2 ring-inset ring-gray-400 dark:text-white dark:ring-gray-500" : "text-gray-600 dark:text-gray-400"}`}
       >
         {t("nav.about")}
       </button>
@@ -127,7 +127,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             navigate("/profile");
             onClose();
           }}
-          className="min-h-[48px] text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white flex items-center gap-3 w-full"
+          className="flex min-h-[48px] w-full cursor-pointer items-center gap-3 border-b border-gray-100 pb-4 text-left text-2xl font-bold text-black dark:border-zinc-800 dark:text-white"
         >
           <Avatar className="w-8 h-8">
             <AvatarImage src={avatarUrl || ""} />
@@ -144,7 +144,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             navigate("/admin");
             onClose();
           }}
-          className="min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white"
+          className="flex min-h-[48px] w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold text-black dark:border-zinc-800 dark:text-white"
         >
           {t("nav.admin")}
         </button>
@@ -155,7 +155,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           onClose();
           userEmail ? onSignOut() : onSignIn();
         }}
-        className="min-h-[48px] flex items-center w-full text-2xl font-bold border-b border-gray-100 dark:border-zinc-800 pb-4 text-left text-black dark:text-white"
+        className="flex min-h-[48px] w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold text-black dark:border-zinc-800 dark:text-white"
       >
         {userEmail ? t("nav.signout") : t("nav.signin")}
       </button>
@@ -165,7 +165,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           onGetStarted();
           onClose();
         }}
-        className="w-full min-h-[48px] py-4 bg-black dark:bg-white text-white dark:text-black rounded-2xl text-lg font-bold touch-manipulation"
+        className="min-h-[48px] w-full cursor-pointer rounded-2xl bg-black py-4 text-lg font-bold text-white touch-manipulation dark:bg-white dark:text-black"
       >
         {t("nav.getStarted")}
       </button>

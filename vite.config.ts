@@ -98,6 +98,7 @@ export default defineConfig(() => {
       },
     },
     build: {
+      modulePreload: false,
       sourcemap: false,
       chunkSizeWarningLimit: 800,
       rollupOptions: {

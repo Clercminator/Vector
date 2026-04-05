@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   ArrowRight,
-  BookOpen,
   Compass,
   Filter,
   Rocket,
@@ -113,11 +112,31 @@ export function GuidesPage() {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [activeFilter, setActiveFilter] = React.useState<GuidesFilter>("all");
+  const formatGuidesText = React.useCallback(
+    (key: string, ...values: Array<string | number>) =>
+      values.reduce(
+        (message, value, index) =>
+          message.replace(`{${index}}`, String(value)),
+        t(key),
+      ),
+    [t],
+  );
+  const localizedCategoryLabels: Record<EditorialArticleCategory, string> = {
+    selection: t("guides.filter.selection"),
+    "use-case": t("guides.filter.useCase"),
+    comparison: t("guides.filter.comparison"),
+    application: t("guides.filter.application"),
+    problem: t("guides.filter.problem"),
+    system: t("guides.filter.system"),
+    tool: t("guides.filter.tool"),
+    example: t("guides.filter.example"),
+    synonym: t("guides.filter.synonym"),
+    commercial: t("guides.filter.commercial"),
+  };
   const canonicalUrl = buildLocalizedUrl("/guides", language);
   const alternates = buildLanguageAlternates("/guides");
-  const seoTitle = "Framework Articles for Goal Planning | Vector AI";
-  const seoDescription =
-    "Read practical framework articles on First Principles, OKRs, Ikigai, Pareto, and more. Use Vector to turn each model into an execution-ready plan.";
+  const seoTitle = t("guides.seoTitle");
+  const seoDescription = t("guides.seoDescription");
   const featuredGuide = frameworkGuides[0];
   const articleBySlug = new Map(
     editorialArticles.map((article) => [article.slug, article]),
@@ -129,17 +148,17 @@ export function GuidesPage() {
   }> = [
     {
       id: "all",
-      label: "All content",
+      label: t("guides.filter.all"),
       count: frameworkGuides.length + editorialArticles.length,
     },
     {
       id: "frameworks",
-      label: "Framework guides",
+      label: t("guides.filter.frameworks"),
       count: frameworkGuides.length,
     },
-    ...Object.entries(editorialCategoryLabels).map(([category, label]) => ({
+    ...Object.keys(editorialCategoryLabels).map((category) => ({
       id: category as EditorialArticleCategory,
-      label,
+      label: localizedCategoryLabels[category as EditorialArticleCategory],
       count: editorialArticles.filter(
         (article) => article.category === category,
       ).length,
@@ -203,25 +222,20 @@ export function GuidesPage() {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "ItemList",
-            name: "Vector framework and planning guides",
+            name: t("guides.structuredListName"),
             itemListElement: collectionItemList,
           })}
         </script>
       </Helmet>
 
       <section className="relative overflow-hidden border-b border-zinc-200/70 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.14),transparent_32%),radial-gradient(circle_at_top_right,rgba(244,63,94,0.14),transparent_28%),linear-gradient(180deg,#fafafa_0%,#ffffff_56%)] dark:border-zinc-800 dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.18),transparent_28%),radial-gradient(circle_at_top_right,rgba(244,63,94,0.14),transparent_24%),linear-gradient(180deg,#111827_0%,#09090b_58%)]">
-        <div className="mx-auto max-w-6xl px-6 pb-18 pt-28 md:pb-24 md:pt-36">
+        <div className="mx-auto max-w-6xl px-6 pb-16 pt-10 md:pb-24 md:pt-14">
           <div className="max-w-4xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white/80 px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-200">
-              <BookOpen className="h-4 w-4" /> Framework articles
-            </div>
-            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-zinc-950 dark:text-white md:text-6xl md:leading-[1.02]">
-              Editorial guides for the frameworks behind Vector.
+            <h1 className="text-4xl font-semibold tracking-tight text-zinc-950 dark:text-white md:text-6xl md:leading-[1.02]">
+              {t("guides.hero.title")}
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-zinc-600 dark:text-zinc-300 md:text-xl">
-              Study how each planning model works, when to use it, and where it
-              breaks down. Then turn the one that fits your goal into a working
-              blueprint.
+              {t("guides.hero.subtitle")}
             </p>
           </div>
 
@@ -230,7 +244,7 @@ export function GuidesPage() {
               className={`rounded-[2rem] border p-8 shadow-sm ${featuredGuide.theme.surface} ${featuredGuide.theme.border}`}
             >
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
-                Featured article
+                {t("guides.hero.featured")}
               </p>
               <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 dark:text-white">
                 {t(`fw.${featuredGuide.id}.title`) ||
@@ -260,7 +274,8 @@ export function GuidesPage() {
                     navigate(`/frameworks/${featuredGuide.id}`);
                   }}
                 >
-                  Read featured guide <ArrowRight className="ml-2 h-4 w-4" />
+                  {t("guides.hero.readFeatured")}
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <Button
                   variant="outline"
@@ -270,7 +285,8 @@ export function GuidesPage() {
                     })
                   }
                 >
-                  Start with this framework <Rocket className="ml-2 h-4 w-4" />
+                  {t("guides.hero.startWithFramework")}
+                  <Rocket className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -279,34 +295,29 @@ export function GuidesPage() {
               <div className="flex items-center gap-3 text-zinc-950 dark:text-white">
                 <Compass className="h-5 w-5" />
                 <p className="text-sm font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
-                  What you will find here
+                  {t("guides.hero.summaryTitle")}
                 </p>
               </div>
               <div className="mt-6 space-y-4 text-base leading-8 text-zinc-700 dark:text-zinc-300">
                 <div className="flex items-start gap-3">
                   <Sparkles className="mt-1 h-4 w-4 shrink-0 text-zinc-500" />
-                  <span>
-                    Practical explanations instead of abstract summaries.
-                  </span>
+                  <span>{t("guides.hero.summary.0")}</span>
                 </div>
                 <div className="flex items-start gap-3">
                   <Sparkles className="mt-1 h-4 w-4 shrink-0 text-zinc-500" />
-                  <span>
-                    Audience fit, tradeoffs, and application guidance for every
-                    framework.
-                  </span>
+                  <span>{t("guides.hero.summary.1")}</span>
                 </div>
                 <div className="flex items-start gap-3">
                   <Sparkles className="mt-1 h-4 w-4 shrink-0 text-zinc-500" />
-                  <span>
-                    Direct paths from reading to building a plan inside Vector.
-                  </span>
+                  <span>{t("guides.hero.summary.2")}</span>
                 </div>
               </div>
               <div className="mt-8 rounded-2xl border border-zinc-200/80 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-zinc-950/70">
                 <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
-                  {frameworkGuides.length} framework articles are currently
-                  available, covering the core mental models inside the product.
+                  {formatGuidesText(
+                    "guides.hero.availableCount",
+                    frameworkGuides.length,
+                  )}
                 </p>
               </div>
             </div>
@@ -319,16 +330,14 @@ export function GuidesPage() {
           <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
-                Topic clusters
+                {t("guides.topicClusters.eyebrow")}
               </p>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950 dark:text-white md:text-4xl">
-                Entry points built around real search intent.
+                {t("guides.topicClusters.title")}
               </h2>
             </div>
             <p className="max-w-2xl text-base leading-7 text-zinc-600 dark:text-zinc-300">
-              These cluster pages group the library by the actual problems
-              people search for: choosing a framework, fixing overwhelm,
-              improving study systems, and comparing adjacent models.
+              {t("guides.topicClusters.description")}
             </p>
           </div>
 
@@ -347,11 +356,13 @@ export function GuidesPage() {
                 >
                   <div className="flex items-center justify-between gap-4">
                     <div className="inline-flex rounded-full border border-zinc-200/80 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-                      {clusterArticles.length + cluster.frameworkIds.length}{" "}
-                      linked resources
+                      {formatGuidesText(
+                        "guides.cluster.resourceCount",
+                        clusterArticles.length + cluster.frameworkIds.length,
+                      )}
                     </div>
                     <span className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-                      Cluster
+                      {t("guides.cluster.label")}
                     </span>
                   </div>
 
@@ -375,7 +386,7 @@ export function GuidesPage() {
                         <button
                           key={frameworkId}
                           type="button"
-                          className="rounded-full border border-zinc-200/80 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 transition hover:border-zinc-950 hover:text-zinc-950 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-200 dark:hover:text-zinc-200"
+                          className="cursor-pointer rounded-full border border-zinc-200/80 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 transition hover:border-zinc-950 hover:text-zinc-950 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-200 dark:hover:text-zinc-200"
                           onClick={() => navigate(`/frameworks/${frameworkId}`)}
                         >
                           {label}
@@ -389,7 +400,7 @@ export function GuidesPage() {
                       <button
                         key={article.slug}
                         type="button"
-                        className="flex w-full items-center justify-between gap-4 text-left text-sm font-medium text-zinc-700 transition hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white"
+                        className="flex w-full cursor-pointer items-center justify-between gap-4 text-left text-sm font-medium text-zinc-700 transition hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white"
                         onClick={() => {
                           trackClick(
                             `guides_cluster_${cluster.id}_${article.slug}`,
@@ -413,44 +424,44 @@ export function GuidesPage() {
           <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
-                Browse the library
+                {t("guides.library.eyebrow")}
               </p>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950 dark:text-white md:text-4xl">
-                Filter the public content hub by framework type or search
-                intent.
+                {t("guides.library.title")}
               </h2>
             </div>
             <p className="max-w-2xl text-base leading-7 text-zinc-600 dark:text-zinc-300">
-              The filters separate evergreen framework explainers from use-case
-              pages, comparisons, application guides, and problem-led articles.
+              {t("guides.library.description")}
             </p>
           </div>
 
-          <div className="mb-8 flex flex-wrap gap-3">
-            {filterOptions.map((filterOption) => {
-              const isActive = activeFilter === filterOption.id;
+          <div className="-mx-6 mb-8 overflow-x-auto px-6 pb-2 sm:mx-0 sm:overflow-visible sm:px-0 sm:pb-0">
+            <div className="flex w-max min-w-full gap-2 sm:flex-wrap sm:gap-3">
+              {filterOptions.map((filterOption) => {
+                const isActive = activeFilter === filterOption.id;
 
-              return (
-                <button
-                  key={filterOption.id}
-                  type="button"
-                  className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
-                    isActive
-                      ? "border-zinc-950 bg-zinc-950 text-white dark:border-white dark:bg-white dark:text-zinc-950"
-                      : "border-zinc-200/80 bg-white text-zinc-600 hover:border-zinc-950 hover:text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-200 dark:hover:text-white"
-                  }`}
-                  onClick={() => setActiveFilter(filterOption.id)}
-                >
-                  <Filter className="h-4 w-4" />
-                  {filterOption.label}
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs ${isActive ? "bg-white/15 dark:bg-zinc-950/10" : "bg-zinc-100 dark:bg-zinc-800"}`}
+                return (
+                  <button
+                    key={filterOption.id}
+                    type="button"
+                    className={`inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition sm:px-4 ${
+                      isActive
+                        ? "border-zinc-950 bg-zinc-950 text-white dark:border-white dark:bg-white dark:text-zinc-950"
+                        : "border-zinc-200/80 bg-white text-zinc-600 hover:border-zinc-950 hover:text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-200 dark:hover:text-white"
+                    }`}
+                    onClick={() => setActiveFilter(filterOption.id)}
                   >
-                    {filterOption.count}
-                  </span>
-                </button>
-              );
-            })}
+                    <Filter className="h-4 w-4" />
+                    {filterOption.label}
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs ${isActive ? "bg-white/15 dark:bg-zinc-950/10" : "bg-zinc-100 dark:bg-zinc-800"}`}
+                    >
+                      {filterOption.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {filteredEditorialArticles.length > 0 && (
@@ -458,16 +469,14 @@ export function GuidesPage() {
               <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
-                    Editorial articles
+                    {t("guides.editorial.eyebrow")}
                   </p>
                   <h3 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white md:text-3xl">
-                    Search-intent articles that help users choose, compare, and
-                    apply frameworks.
+                    {t("guides.editorial.title")}
                   </h3>
                 </div>
                 <p className="max-w-2xl text-base leading-7 text-zinc-600 dark:text-zinc-300">
-                  Each article is written around a real planning problem instead
-                  of generic productivity advice.
+                  {t("guides.editorial.description")}
                 </p>
               </div>
 
@@ -481,7 +490,7 @@ export function GuidesPage() {
                       <div
                         className={`inline-flex rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] ${article.theme.chip}`}
                       >
-                        {editorialCategoryLabels[article.category]}
+                        {localizedCategoryLabels[article.category]}
                       </div>
                       <span className="rounded-full border border-zinc-200/80 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
                         {article.readingTime}
@@ -507,7 +516,7 @@ export function GuidesPage() {
                       className={`mt-6 rounded-2xl border p-5 ${article.theme.surface} ${article.theme.border}`}
                     >
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
-                        Why this exists
+                        {t("guides.editorial.whyThisExists")}
                       </p>
                       <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
                         {article.takeaways[0]}
@@ -525,7 +534,7 @@ export function GuidesPage() {
                           <button
                             key={slug}
                             type="button"
-                            className="rounded-full border border-zinc-200/80 px-3 py-1.5 text-xs font-medium text-zinc-600 transition hover:border-zinc-950 hover:text-zinc-950 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-200 dark:hover:text-white"
+                            className="cursor-pointer rounded-full border border-zinc-200/80 px-3 py-1.5 text-xs font-medium text-zinc-600 transition hover:border-zinc-950 hover:text-zinc-950 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-200 dark:hover:text-white"
                             onClick={() =>
                               navigate(`/articles/${relatedArticle.slug}`)
                             }
@@ -546,7 +555,8 @@ export function GuidesPage() {
                           navigate(`/articles/${article.slug}`);
                         }}
                       >
-                        Read article <ArrowRight className="ml-2 h-4 w-4" />
+                        {t("guides.editorial.readArticle")}
+                        <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
@@ -555,7 +565,7 @@ export function GuidesPage() {
                           navigate(`/frameworks/${article.primaryFramework}`)
                         }
                       >
-                        Read framework guide
+                        {t("guides.editorial.readFrameworkGuide")}
                       </Button>
                     </div>
                   </article>
@@ -570,16 +580,14 @@ export function GuidesPage() {
             <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
-                  Framework guides
+                  {t("guides.frameworks.eyebrow")}
                 </p>
                 <h2 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950 dark:text-white md:text-4xl">
-                  Deep explainers for the planning models Vector turns into
-                  blueprints.
+                  {t("guides.frameworks.title")}
                 </h2>
               </div>
               <p className="max-w-2xl text-base leading-7 text-zinc-600 dark:text-zinc-300">
-                These are the foundational framework pages that define each
-                method, its audience fit, and the tradeoffs behind using it.
+                {t("guides.frameworks.description")}
               </p>
             </div>
 
@@ -629,7 +637,7 @@ export function GuidesPage() {
                       className={`mt-6 rounded-2xl border p-5 ${guide.theme.surface} ${guide.theme.border}`}
                     >
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
-                        Best for
+                        {t("guides.frameworks.bestFor")}
                       </p>
                       <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
                         {guide.audience}
@@ -659,7 +667,8 @@ export function GuidesPage() {
                           navigate(`/frameworks/${guide.id}`);
                         }}
                       >
-                        Read article <ArrowRight className="ml-2 h-4 w-4" />
+                        {t("guides.frameworks.readArticle")}
+                        <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
@@ -670,7 +679,7 @@ export function GuidesPage() {
                           })
                         }
                       >
-                        Start blueprint
+                        {t("guides.frameworks.startBlueprint")}
                       </Button>
                     </div>
                   </article>

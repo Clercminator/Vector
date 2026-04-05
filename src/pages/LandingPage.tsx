@@ -83,7 +83,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       className="relative z-10"
     >
       {/* Gift badge — corner of screen, only when not logged in */}
-      {!userId && (
+      {!userId && !isMobile && (
         <div className="fixed top-24 right-4 md:top-20 md:right-6 z-30">
           <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/90 dark:bg-emerald-500/80 text-white shadow-lg border border-emerald-400/30 backdrop-blur-sm">
             <Gift size={18} className="shrink-0" />
@@ -101,6 +101,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: heroDuration, ease: heroEase }}
         >
+          {!userId && isMobile && (
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-lg">
+              <Gift size={16} className="shrink-0" />
+              <span>{t("landing.hero.giftBadge")}</span>
+            </div>
+          )}
+
           <h1 className="text-6xl md:text-9xl font-bold tracking-tighter text-gray-900 mb-8 leading-[0.9]">
             {t("landing.hero.architectYour")} <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-red-500 to-yellow-500">

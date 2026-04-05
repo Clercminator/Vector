@@ -75,6 +75,8 @@ async function prerender() {
   });
 
   let baseUrl = "";
+  let exitCode = 0;
+  const failedRoutes = [];
 
   try {
     await new Promise((resolve, reject) => {
@@ -120,12 +122,18 @@ async function prerender() {
       console.log(`Prerendering ${route}...`);
       try {
         await page.goto(`${baseUrl}${route}`, {
-          waitUntil: "networkidle0",
+          waitUntil: "domcontentloaded",
           timeout: 30000,
         });
 
-        // Allow some time for animations/mounting
-        await new Promise((r) => setTimeout(r, 1000));
+        await page.waitForSelector("#root", { timeout: 15000 });
+        await page.waitForFunction(
+          () => Boolean(document.querySelector("main")),
+          { timeout: 15000 },
+        );
+
+        // Allow some time for route content and head tags to settle.
+        await new Promise((r) => setTimeout(r, 500));
 
         const html = await page.content();
 
@@ -141,13 +149,22 @@ async function prerender() {
         fs.writeFileSync(fullPath, html);
         console.log(`Saved ${fullPath}`);
       } catch (e) {
+        failedRoutes.push(route);
         console.error(`Failed to prerender ${route}:`, e);
       }
     }
 
     await browser.close();
-    console.log("Prerender complete.");
+    if (failedRoutes.length > 0) {
+      exitCode = 1;
+      console.error(
+        `Prerender completed with ${failedRoutes.length} failed route(s): ${failedRoutes.join(", ")}`,
+      );
+    } else {
+      console.log("Prerender complete.");
+    }
   } catch (e) {
+    exitCode = 1;
     console.error("Prerender failed:", e);
   } finally {
     if (preview) {
@@ -159,7 +176,7 @@ async function prerender() {
       }
     }
   }
-  process.exit(0);
+  process.exit(exitCode);
 }
 
 prerender();

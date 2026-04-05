@@ -14,19 +14,46 @@ const STORAGE_KEY = "vector_payment_region";
 export type PaymentRegion = "latam" | "global";
 
 const LATAM_COUNTRY_CODES = new Set([
-  "AR", "BO", "BR", "CL", "CO", "CR", "CU", "DO", "EC", "SV",
-  "GT", "HN", "MX", "NI", "PA", "PY", "PE", "UY", "VE",
+  "AR",
+  "BO",
+  "BR",
+  "CL",
+  "CO",
+  "CR",
+  "CU",
+  "DO",
+  "EC",
+  "SV",
+  "GT",
+  "HN",
+  "MX",
+  "NI",
+  "PA",
+  "PY",
+  "PE",
+  "UY",
+  "VE",
 ]);
 
 export function usePaymentRegion(): {
   region: PaymentRegion;
   setRegion: (r: PaymentRegion) => void;
   isLoading: boolean;
+};
+export function usePaymentRegion(enabled = true): {
+  region: PaymentRegion;
+  setRegion: (r: PaymentRegion) => void;
+  isLoading: boolean;
 } {
   const [region, setRegionState] = React.useState<PaymentRegion>("global");
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [isLoading, setIsLoading] = React.useState(enabled);
 
   React.useEffect(() => {
+    if (!enabled) {
+      setIsLoading(false);
+      return;
+    }
+
     const stored = localStorage.getItem(STORAGE_KEY) as PaymentRegion | null;
     if (stored === "latam" || stored === "global") {
       setRegionState(stored);
@@ -38,12 +65,13 @@ export function usePaymentRegion(): {
       .then((r) => r.json())
       .then((data: { country_code?: string }) => {
         const code = data?.country_code?.toUpperCase();
-        const detected: PaymentRegion = code && LATAM_COUNTRY_CODES.has(code) ? "latam" : "global";
+        const detected: PaymentRegion =
+          code && LATAM_COUNTRY_CODES.has(code) ? "latam" : "global";
         setRegionState(detected);
       })
       .catch(() => setRegionState("global"))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [enabled]);
 
   const setRegion = React.useCallback((r: PaymentRegion) => {
     setRegionState(r);

@@ -67,6 +67,7 @@ import { ChatwootWidget, openChatwoot } from "@/app/components/ChatwootWidget";
 import { LandingPage } from "@/pages/LandingPage";
 import { Header } from "@/app/components/layout/Header";
 import { MobileMenu } from "@/app/components/layout/MobileMenu";
+import { useIsMobileSync } from "@/app/components/ui/use-mobile";
 
 // Lazy load screens
 const GoalWizard = React.lazy(() =>
@@ -208,11 +209,14 @@ function App() {
     email: string;
     tier: TierId;
   } | null>(null);
+  const isMobile = useIsMobileSync();
+  const shouldDetectPaymentRegion =
+    location.pathname === "/pricing" || isCheckoutLoading;
   const {
     region: paymentRegion,
     setRegion: setPaymentRegion,
     isLoading: isPaymentRegionLoading,
-  } = usePaymentRegion();
+  } = usePaymentRegion(shouldDetectPaymentRegion);
 
   const effectiveUserId = impersonating?.userId ?? userId;
   const effectiveTier = impersonating?.tier ?? tier;
@@ -1160,7 +1164,7 @@ function App() {
       >
         {t("app.skipToMain")}
       </a>
-      <ParticleBackground />
+      {location.pathname === "/" && !isMobile ? <ParticleBackground /> : null}
       <Toaster />
       <ChatwootWidget />
       <BinancePaymentModal

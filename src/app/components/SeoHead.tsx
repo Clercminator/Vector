@@ -31,12 +31,15 @@ export function SeoHead() {
 
   const pathname = normalizePathname(location.pathname);
   const isFrameworkPage = pathname.startsWith("/frameworks/");
+  const isArticlePage = pathname.startsWith("/articles/");
   const isKnownPublicPage =
     pathname === "/" ||
+    pathname === "/guides" ||
     pathname === "/pricing" ||
     pathname === "/community" ||
     pathname === "/about" ||
-    isFrameworkPage;
+    isFrameworkPage ||
+    isArticlePage;
   const shouldIndex = isKnownPublicPage;
 
   const routeMeta = (() => {

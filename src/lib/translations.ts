@@ -30,6 +30,65 @@ export const translations = {
     "landing.guides.subtitle":
       "Explore the mental models behind Vector, understand when each one fits, and jump straight into the right blueprint.",
     "landing.guides.cta": "Browse all articles",
+    "guides.seoTitle": "Framework Articles for Goal Planning | Vector AI",
+    "guides.seoDescription":
+      "Read practical framework articles on First Principles, OKRs, Ikigai, Pareto, and more. Use Vector to turn each model into an execution-ready plan.",
+    "guides.structuredListName": "Vector framework and planning guides",
+    "guides.hero.title": "Editorial guides for the frameworks behind Vector.",
+    "guides.hero.subtitle":
+      "Study how each planning model works, when to use it, and where it breaks down. Then turn the one that fits your goal into a working blueprint.",
+    "guides.hero.featured": "Featured article",
+    "guides.hero.readFeatured": "Read featured guide",
+    "guides.hero.startWithFramework": "Start with this framework",
+    "guides.hero.summaryTitle": "What you will find here",
+    "guides.hero.summary.0":
+      "Practical explanations instead of abstract summaries.",
+    "guides.hero.summary.1":
+      "Audience fit, tradeoffs, and application guidance for every framework.",
+    "guides.hero.summary.2":
+      "Direct paths from reading to building a plan inside Vector.",
+    "guides.hero.availableCount":
+      "{0} framework guides are currently available, covering the core mental models inside the product.",
+    "guides.topicClusters.eyebrow": "Topic clusters",
+    "guides.topicClusters.title":
+      "Entry points built around real search intent.",
+    "guides.topicClusters.description":
+      "These cluster pages group the library by the actual problems people search for: choosing a framework, fixing overwhelm, improving study systems, and comparing adjacent models.",
+    "guides.cluster.resourceCount": "{0} linked resources",
+    "guides.cluster.label": "Cluster",
+    "guides.library.eyebrow": "Browse the library",
+    "guides.library.title":
+      "Filter the public content hub by framework type or search intent.",
+    "guides.library.description":
+      "The filters separate evergreen framework explainers from use-case pages, comparisons, application guides, and problem-led articles.",
+    "guides.filter.all": "All content",
+    "guides.filter.frameworks": "Framework guides",
+    "guides.filter.selection": "Framework selection",
+    "guides.filter.useCase": "Use cases",
+    "guides.filter.comparison": "Comparisons",
+    "guides.filter.application": "Framework applications",
+    "guides.filter.problem": "Problem-led guides",
+    "guides.filter.system": "Outcome systems",
+    "guides.filter.tool": "Tools and templates",
+    "guides.filter.example": "Blueprint examples",
+    "guides.filter.synonym": "Adjacent intent",
+    "guides.filter.commercial": "Product comparisons",
+    "guides.editorial.eyebrow": "Editorial articles",
+    "guides.editorial.title":
+      "Search-intent articles that help users choose, compare, and apply frameworks.",
+    "guides.editorial.description":
+      "Each article is written around a real planning problem instead of generic productivity advice.",
+    "guides.editorial.whyThisExists": "Why this exists",
+    "guides.editorial.readArticle": "Read article",
+    "guides.editorial.readFrameworkGuide": "Read framework guide",
+    "guides.frameworks.eyebrow": "Framework guides",
+    "guides.frameworks.title":
+      "Deep explainers for the planning models Vector turns into blueprints.",
+    "guides.frameworks.description":
+      "These are the foundational framework pages that define each method, its audience fit, and the tradeoffs behind using it.",
+    "guides.frameworks.bestFor": "Best for",
+    "guides.frameworks.readArticle": "Read article",
+    "guides.frameworks.startBlueprint": "Start blueprint",
 
     // Footer
     "footer.privacy": "Privacy",
@@ -1347,6 +1406,67 @@ export const translations = {
     "landing.guides.subtitle":
       "Explora los modelos mentales detrás de Vector, entiende cuándo usar cada uno y entra directo al blueprint adecuado.",
     "landing.guides.cta": "Ver todos los artículos",
+    "guides.seoTitle": "Artículos de frameworks para planificar metas | Vector AI",
+    "guides.seoDescription":
+      "Lee artículos prácticos sobre First Principles, OKRs, Ikigai, Pareto y más. Usa Vector para convertir cada modelo en un plan listo para ejecutar.",
+    "guides.structuredListName":
+      "Frameworks y guías de planificación de Vector",
+    "guides.hero.title":
+      "Guías editoriales sobre los frameworks detrás de Vector.",
+    "guides.hero.subtitle":
+      "Estudia cómo funciona cada modelo de planificación, cuándo usarlo y dónde se rompe. Luego convierte el que mejor encaje con tu objetivo en un blueprint accionable.",
+    "guides.hero.featured": "Artículo destacado",
+    "guides.hero.readFeatured": "Leer guía destacada",
+    "guides.hero.startWithFramework": "Empezar con este framework",
+    "guides.hero.summaryTitle": "Qué encontrarás aquí",
+    "guides.hero.summary.0":
+      "Explicaciones prácticas en vez de resúmenes abstractos.",
+    "guides.hero.summary.1":
+      "Audiencia ideal, tradeoffs y guía de aplicación para cada framework.",
+    "guides.hero.summary.2":
+      "Caminos directos desde la lectura hasta construir un plan dentro de Vector.",
+    "guides.hero.availableCount":
+      "Ahora mismo hay {0} guías de frameworks disponibles que cubren los modelos mentales centrales del producto.",
+    "guides.topicClusters.eyebrow": "Clústeres temáticos",
+    "guides.topicClusters.title":
+      "Puntos de entrada construidos alrededor de la intención de búsqueda real.",
+    "guides.topicClusters.description":
+      "Estos clústeres agrupan la biblioteca según los problemas que la gente realmente busca resolver: elegir un framework, salir del agobio, mejorar sistemas de estudio y comparar modelos cercanos.",
+    "guides.cluster.resourceCount": "{0} recursos conectados",
+    "guides.cluster.label": "Clúster",
+    "guides.library.eyebrow": "Explora la biblioteca",
+    "guides.library.title":
+      "Filtra el hub público de contenido por tipo de framework o intención de búsqueda.",
+    "guides.library.description":
+      "Los filtros separan los explainers evergreen de frameworks de las páginas de casos de uso, comparaciones, guías de aplicación y artículos centrados en problemas.",
+    "guides.filter.all": "Todo el contenido",
+    "guides.filter.frameworks": "Guías de frameworks",
+    "guides.filter.selection": "Selección de frameworks",
+    "guides.filter.useCase": "Casos de uso",
+    "guides.filter.comparison": "Comparaciones",
+    "guides.filter.application": "Aplicaciones de frameworks",
+    "guides.filter.problem": "Guías basadas en problemas",
+    "guides.filter.system": "Sistemas de resultados",
+    "guides.filter.tool": "Herramientas y plantillas",
+    "guides.filter.example": "Ejemplos de blueprints",
+    "guides.filter.synonym": "Intención relacionada",
+    "guides.filter.commercial": "Comparativas de productos",
+    "guides.editorial.eyebrow": "Artículos editoriales",
+    "guides.editorial.title":
+      "Artículos orientados a la intención de búsqueda para ayudar a elegir, comparar y aplicar frameworks.",
+    "guides.editorial.description":
+      "Cada artículo está escrito alrededor de un problema real de planificación y no de consejos genéricos de productividad.",
+    "guides.editorial.whyThisExists": "Por qué existe",
+    "guides.editorial.readArticle": "Leer artículo",
+    "guides.editorial.readFrameworkGuide": "Leer guía del framework",
+    "guides.frameworks.eyebrow": "Guías de frameworks",
+    "guides.frameworks.title":
+      "Explicaciones profundas de los modelos de planificación que Vector convierte en blueprints.",
+    "guides.frameworks.description":
+      "Estas son las páginas base que definen cada método, para quién encaja y qué tradeoffs implica usarlo.",
+    "guides.frameworks.bestFor": "Ideal para",
+    "guides.frameworks.readArticle": "Leer artículo",
+    "guides.frameworks.startBlueprint": "Empezar blueprint",
 
     // Footer
     "footer.privacy": "Privacidad",
@@ -2481,6 +2601,67 @@ export const translations = {
     "landing.guides.subtitle":
       "Explore os modelos mentais por trás do Vector, entenda quando usar cada um e entre direto no blueprint certo.",
     "landing.guides.cta": "Ver todos os artigos",
+    "guides.seoTitle": "Artigos de frameworks para planejar metas | Vector AI",
+    "guides.seoDescription":
+      "Leia artigos práticos sobre First Principles, OKRs, Ikigai, Pareto e mais. Use o Vector para transformar cada modelo em um plano pronto para execução.",
+    "guides.structuredListName":
+      "Frameworks e guias de planejamento do Vector",
+    "guides.hero.title":
+      "Guias editoriais sobre os frameworks por trás do Vector.",
+    "guides.hero.subtitle":
+      "Estude como cada modelo de planejamento funciona, quando usá-lo e onde ele falha. Depois transforme o que melhor se encaixa no seu objetivo em um blueprint acionável.",
+    "guides.hero.featured": "Artigo em destaque",
+    "guides.hero.readFeatured": "Ler guia em destaque",
+    "guides.hero.startWithFramework": "Começar com este framework",
+    "guides.hero.summaryTitle": "O que você vai encontrar aqui",
+    "guides.hero.summary.0":
+      "Explicações práticas em vez de resumos abstratos.",
+    "guides.hero.summary.1":
+      "Adequação de público, trade-offs e orientação de aplicação para cada framework.",
+    "guides.hero.summary.2":
+      "Caminhos diretos da leitura para a construção de um plano dentro do Vector.",
+    "guides.hero.availableCount":
+      "{0} guias de frameworks estão disponíveis agora, cobrindo os modelos mentais centrais do produto.",
+    "guides.topicClusters.eyebrow": "Clusters temáticos",
+    "guides.topicClusters.title":
+      "Pontos de entrada construídos em torno da intenção de busca real.",
+    "guides.topicClusters.description":
+      "Esses clusters organizam a biblioteca pelos problemas que as pessoas realmente pesquisam: escolher um framework, sair da sobrecarga, melhorar sistemas de estudo e comparar modelos próximos.",
+    "guides.cluster.resourceCount": "{0} recursos conectados",
+    "guides.cluster.label": "Cluster",
+    "guides.library.eyebrow": "Explore a biblioteca",
+    "guides.library.title":
+      "Filtre o hub público de conteúdo por tipo de framework ou intenção de busca.",
+    "guides.library.description":
+      "Os filtros separam explainers evergreen de frameworks de páginas de caso de uso, comparações, guias de aplicação e artigos orientados por problema.",
+    "guides.filter.all": "Todo o conteúdo",
+    "guides.filter.frameworks": "Guias de frameworks",
+    "guides.filter.selection": "Seleção de frameworks",
+    "guides.filter.useCase": "Casos de uso",
+    "guides.filter.comparison": "Comparações",
+    "guides.filter.application": "Aplicações de frameworks",
+    "guides.filter.problem": "Guias orientados por problemas",
+    "guides.filter.system": "Sistemas de resultado",
+    "guides.filter.tool": "Ferramentas e modelos",
+    "guides.filter.example": "Exemplos de blueprints",
+    "guides.filter.synonym": "Intenção adjacente",
+    "guides.filter.commercial": "Comparações de produto",
+    "guides.editorial.eyebrow": "Artigos editoriais",
+    "guides.editorial.title":
+      "Artigos orientados por intenção de busca que ajudam as pessoas a escolher, comparar e aplicar frameworks.",
+    "guides.editorial.description":
+      "Cada artigo é escrito a partir de um problema real de planejamento, e não de conselhos genéricos de produtividade.",
+    "guides.editorial.whyThisExists": "Por que isso existe",
+    "guides.editorial.readArticle": "Ler artigo",
+    "guides.editorial.readFrameworkGuide": "Ler guia do framework",
+    "guides.frameworks.eyebrow": "Guias de frameworks",
+    "guides.frameworks.title":
+      "Explicações profundas dos modelos de planejamento que o Vector transforma em blueprints.",
+    "guides.frameworks.description":
+      "Estas são as páginas fundamentais que definem cada método, para quem ele serve e quais trade-offs existem ao usá-lo.",
+    "guides.frameworks.bestFor": "Melhor para",
+    "guides.frameworks.readArticle": "Ler artigo",
+    "guides.frameworks.startBlueprint": "Começar blueprint",
     "frameworks.helpMeChoose": "Ajude-me a escolher",
 
     // SEO
@@ -3038,6 +3219,68 @@ export const translations = {
     "landing.guides.subtitle":
       "Explorez les modèles mentaux derrière Vector, comprenez quand utiliser chacun, puis passez directement au bon blueprint.",
     "landing.guides.cta": "Voir tous les articles",
+    "guides.seoTitle":
+      "Articles sur les frameworks pour planifier vos objectifs | Vector AI",
+    "guides.seoDescription":
+      "Lisez des articles pratiques sur First Principles, les OKR, l'Ikigai, Pareto et plus encore. Utilisez Vector pour transformer chaque modèle en plan exécutable.",
+    "guides.structuredListName":
+      "Frameworks et guides de planification de Vector",
+    "guides.hero.title":
+      "Guides éditoriaux sur les frameworks derrière Vector.",
+    "guides.hero.subtitle":
+      "Étudiez comment fonctionne chaque modèle de planification, quand l'utiliser et où il casse. Transformez ensuite celui qui correspond à votre objectif en blueprint exploitable.",
+    "guides.hero.featured": "Article mis en avant",
+    "guides.hero.readFeatured": "Lire le guide mis en avant",
+    "guides.hero.startWithFramework": "Commencer avec ce framework",
+    "guides.hero.summaryTitle": "Ce que vous trouverez ici",
+    "guides.hero.summary.0":
+      "Des explications pratiques plutôt que des résumés abstraits.",
+    "guides.hero.summary.1":
+      "Le bon public, les compromis et des conseils d'application pour chaque framework.",
+    "guides.hero.summary.2":
+      "Des chemins directs entre la lecture et la construction d'un plan dans Vector.",
+    "guides.hero.availableCount":
+      "{0} guides de frameworks sont actuellement disponibles et couvrent les modèles mentaux clés du produit.",
+    "guides.topicClusters.eyebrow": "Clusters thématiques",
+    "guides.topicClusters.title":
+      "Des points d'entrée construits autour de la vraie intention de recherche.",
+    "guides.topicClusters.description":
+      "Ces clusters organisent la bibliothèque autour des vrais problèmes recherchés : choisir un framework, sortir de la surcharge, améliorer un système d'étude et comparer des modèles proches.",
+    "guides.cluster.resourceCount": "{0} ressources liées",
+    "guides.cluster.label": "Cluster",
+    "guides.library.eyebrow": "Parcourir la bibliothèque",
+    "guides.library.title":
+      "Filtrez le hub de contenu public par type de framework ou intention de recherche.",
+    "guides.library.description":
+      "Les filtres séparent les explications evergreen sur les frameworks des pages de cas d'usage, comparaisons, guides d'application et articles centrés sur les problèmes.",
+    "guides.filter.all": "Tout le contenu",
+    "guides.filter.frameworks": "Guides de frameworks",
+    "guides.filter.selection": "Choix du framework",
+    "guides.filter.useCase": "Cas d'usage",
+    "guides.filter.comparison": "Comparaisons",
+    "guides.filter.application": "Applications des frameworks",
+    "guides.filter.problem": "Guides orientés problème",
+    "guides.filter.system": "Systèmes de résultat",
+    "guides.filter.tool": "Outils et modèles",
+    "guides.filter.example": "Exemples de blueprints",
+    "guides.filter.synonym": "Intention voisine",
+    "guides.filter.commercial": "Comparatifs produits",
+    "guides.editorial.eyebrow": "Articles éditoriaux",
+    "guides.editorial.title":
+      "Des articles pensés pour l'intention de recherche afin d'aider à choisir, comparer et appliquer les frameworks.",
+    "guides.editorial.description":
+      "Chaque article part d'un vrai problème de planification plutôt que de conseils de productivité génériques.",
+    "guides.editorial.whyThisExists": "Pourquoi cet article existe",
+    "guides.editorial.readArticle": "Lire l'article",
+    "guides.editorial.readFrameworkGuide": "Lire le guide du framework",
+    "guides.frameworks.eyebrow": "Guides de frameworks",
+    "guides.frameworks.title":
+      "Des explications approfondies sur les modèles de planification que Vector transforme en blueprints.",
+    "guides.frameworks.description":
+      "Ce sont les pages fondamentales qui définissent chaque méthode, son public idéal et les compromis liés à son usage.",
+    "guides.frameworks.bestFor": "Idéal pour",
+    "guides.frameworks.readArticle": "Lire l'article",
+    "guides.frameworks.startBlueprint": "Commencer le blueprint",
     "frameworks.helpMeChoose": "Aidez-moi à choisir",
 
     // SEO
@@ -3591,6 +3834,67 @@ export const translations = {
     "landing.guides.subtitle":
       "Erkunde die mentalen Modelle hinter Vector, verstehe den Einsatz jedes Frameworks und springe direkt in den passenden Blueprint.",
     "landing.guides.cta": "Alle Artikel ansehen",
+    "guides.seoTitle": "Framework-Artikel für die Zielplanung | Vector AI",
+    "guides.seoDescription":
+      "Lies praxisnahe Artikel über First Principles, OKRs, Ikigai, Pareto und mehr. Nutze Vector, um jedes Modell in einen umsetzbaren Plan zu verwandeln.",
+    "guides.structuredListName":
+      "Frameworks und Planungsleitfäden von Vector",
+    "guides.hero.title":
+      "Redaktionelle Leitfäden zu den Frameworks hinter Vector.",
+    "guides.hero.subtitle":
+      "Erfahre, wie jedes Planungsmodell funktioniert, wann du es einsetzen solltest und wo seine Grenzen liegen. Verwandle dann das passende Modell in einen umsetzbaren Blueprint.",
+    "guides.hero.featured": "Empfohlener Artikel",
+    "guides.hero.readFeatured": "Empfohlenen Leitfaden lesen",
+    "guides.hero.startWithFramework": "Mit diesem Framework starten",
+    "guides.hero.summaryTitle": "Was du hier findest",
+    "guides.hero.summary.0":
+      "Praktische Erklärungen statt abstrakter Zusammenfassungen.",
+    "guides.hero.summary.1":
+      "Passende Zielgruppen, Trade-offs und Anwendungshinweise für jedes Framework.",
+    "guides.hero.summary.2":
+      "Direkte Wege vom Lesen zum Aufbau eines Plans in Vector.",
+    "guides.hero.availableCount":
+      "Aktuell sind {0} Framework-Leitfäden verfügbar, die die zentralen Denkmodelle im Produkt abdecken.",
+    "guides.topicClusters.eyebrow": "Thematische Cluster",
+    "guides.topicClusters.title":
+      "Einstiegspunkte rund um echte Suchintentionen.",
+    "guides.topicClusters.description":
+      "Diese Cluster ordnen die Bibliothek nach den tatsächlichen Problemen, nach denen Menschen suchen: ein Framework wählen, Überforderung beseitigen, Lernsysteme verbessern und ähnliche Modelle vergleichen.",
+    "guides.cluster.resourceCount": "{0} verknüpfte Ressourcen",
+    "guides.cluster.label": "Cluster",
+    "guides.library.eyebrow": "Bibliothek durchsuchen",
+    "guides.library.title":
+      "Filtere den öffentlichen Content-Hub nach Framework-Typ oder Suchintention.",
+    "guides.library.description":
+      "Die Filter trennen dauerhafte Framework-Erklärungen von Use-Case-Seiten, Vergleichen, Anwendungsleitfäden und problemorientierten Artikeln.",
+    "guides.filter.all": "Alle Inhalte",
+    "guides.filter.frameworks": "Framework-Leitfäden",
+    "guides.filter.selection": "Framework-Auswahl",
+    "guides.filter.useCase": "Anwendungsfälle",
+    "guides.filter.comparison": "Vergleiche",
+    "guides.filter.application": "Framework-Anwendungen",
+    "guides.filter.problem": "Problemorientierte Leitfäden",
+    "guides.filter.system": "Ergebnissysteme",
+    "guides.filter.tool": "Tools und Vorlagen",
+    "guides.filter.example": "Blueprint-Beispiele",
+    "guides.filter.synonym": "Angrenzende Intention",
+    "guides.filter.commercial": "Produktvergleiche",
+    "guides.editorial.eyebrow": "Redaktionelle Artikel",
+    "guides.editorial.title":
+      "Suchintention-orientierte Artikel, die Nutzern helfen, Frameworks zu wählen, zu vergleichen und anzuwenden.",
+    "guides.editorial.description":
+      "Jeder Artikel basiert auf einem echten Planungsproblem statt auf generischen Produktivitätstipps.",
+    "guides.editorial.whyThisExists": "Warum es diesen Artikel gibt",
+    "guides.editorial.readArticle": "Artikel lesen",
+    "guides.editorial.readFrameworkGuide": "Framework-Leitfaden lesen",
+    "guides.frameworks.eyebrow": "Framework-Leitfäden",
+    "guides.frameworks.title":
+      "Tiefgehende Erklärungen zu den Planungsmodellen, die Vector in Blueprints verwandelt.",
+    "guides.frameworks.description":
+      "Das sind die grundlegenden Framework-Seiten, die jede Methode, ihre passende Zielgruppe und die Trade-offs bei ihrer Nutzung definieren.",
+    "guides.frameworks.bestFor": "Am besten geeignet für",
+    "guides.frameworks.readArticle": "Artikel lesen",
+    "guides.frameworks.startBlueprint": "Blueprint starten",
     "frameworks.helpMeChoose": "Helfen Sie mir bei der Auswahl",
 
     // SEO
