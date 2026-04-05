@@ -1406,7 +1406,8 @@ export const translations = {
     "landing.guides.subtitle":
       "Explora los modelos mentales detrás de Vector, entiende cuándo usar cada uno y entra directo al blueprint adecuado.",
     "landing.guides.cta": "Ver todos los artículos",
-    "guides.seoTitle": "Artículos de frameworks para planificar metas | Vector AI",
+    "guides.seoTitle":
+      "Artículos de frameworks para planificar metas | Vector AI",
     "guides.seoDescription":
       "Lee artículos prácticos sobre First Principles, OKRs, Ikigai, Pareto y más. Usa Vector para convertir cada modelo en un plan listo para ejecutar.",
     "guides.structuredListName":
@@ -2604,8 +2605,7 @@ export const translations = {
     "guides.seoTitle": "Artigos de frameworks para planejar metas | Vector AI",
     "guides.seoDescription":
       "Leia artigos práticos sobre First Principles, OKRs, Ikigai, Pareto e mais. Use o Vector para transformar cada modelo em um plano pronto para execução.",
-    "guides.structuredListName":
-      "Frameworks e guias de planejamento do Vector",
+    "guides.structuredListName": "Frameworks e guias de planejamento do Vector",
     "guides.hero.title":
       "Guias editoriais sobre os frameworks por trás do Vector.",
     "guides.hero.subtitle":
@@ -3837,8 +3837,7 @@ export const translations = {
     "guides.seoTitle": "Framework-Artikel für die Zielplanung | Vector AI",
     "guides.seoDescription":
       "Lies praxisnahe Artikel über First Principles, OKRs, Ikigai, Pareto und mehr. Nutze Vector, um jedes Modell in einen umsetzbaren Plan zu verwandeln.",
-    "guides.structuredListName":
-      "Frameworks und Planungsleitfäden von Vector",
+    "guides.structuredListName": "Frameworks und Planungsleitfäden von Vector",
     "guides.hero.title":
       "Redaktionelle Leitfäden zu den Frameworks hinter Vector.",
     "guides.hero.subtitle":

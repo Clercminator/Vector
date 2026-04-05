@@ -1,13 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import {
-  ArrowRight,
-  Compass,
-  Filter,
-  Rocket,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Compass, Filter, Rocket, Sparkles } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { useLanguage } from "@/app/components/language-provider";
 import { trackClick } from "@/lib/analytics";
@@ -115,8 +109,7 @@ export function GuidesPage() {
   const formatGuidesText = React.useCallback(
     (key: string, ...values: Array<string | number>) =>
       values.reduce(
-        (message, value, index) =>
-          message.replace(`{${index}}`, String(value)),
+        (message, value, index) => message.replace(`{${index}}`, String(value)),
         t(key),
       ),
     [t],
