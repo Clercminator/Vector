@@ -7,6 +7,14 @@ import { spawn } from "child_process";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.resolve(__dirname, "../dist");
 
+function isMissingBrowserError(error) {
+  const message = error instanceof Error ? error.message : String(error);
+
+  return /Could not find Chrome|Could not find Chromium|Browser was not found at the configured executablePath|spawn .* ENOENT/i.test(
+    message,
+  );
+}
+
 const routes = [
   "/",
   "/about",
@@ -109,9 +117,31 @@ async function prerender() {
     });
 
     console.log(`Prerendering against ${baseUrl}`);
-    const browser = await puppeteer.launch({
+    const launchOptions = {
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+      ...(process.env.PUPPETEER_EXECUTABLE_PATH
+        ? { executablePath: process.env.PUPPETEER_EXECUTABLE_PATH }
+        : {}),
+    };
+
+    let browser;
+
+    try {
+      browser = await puppeteer.launch(launchOptions);
+    } catch (error) {
+      if (isMissingBrowserError(error)) {
+        console.warn(
+          "Skipping prerender because no Chrome/Chromium binary is available in this environment.",
+        );
+        console.warn(
+          "Install a browser or set PUPPETEER_EXECUTABLE_PATH if prerendered output is required during deployment.",
+        );
+        return;
+      }
+
+      throw error;
+    }
+
     const page = await browser.newPage();
 
     await page.evaluateOnNewDocument(() => {
