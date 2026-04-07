@@ -1,6 +1,12 @@
 import React, { useEffect, useState, Suspense } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import { Button } from "@/app/components/ui/button";
 import { ParticleBackground } from "@/app/components/ParticleBackground";
 import { Toaster } from "@/app/components/ui/sonner";
@@ -146,6 +152,11 @@ const InternalAdminGate = React.lazy(() =>
 );
 
 import { frameworks, Framework } from "@/lib/frameworks";
+import {
+  SUPPORTED_SEO_LANGUAGES,
+  buildLocalizedPath,
+  normalizePathname,
+} from "@/lib/seo";
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-[50vh]">
@@ -171,9 +182,10 @@ async function retryOperation<T>(
 }
 
 function App() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const pathname = normalizePathname(location.pathname);
   const [searchParams] = useState(new URLSearchParams(window.location.search));
   const [selectedFramework, setSelectedFramework] = useState<
     Framework | undefined
@@ -211,7 +223,7 @@ function App() {
   } | null>(null);
   const isMobile = useIsMobileSync();
   const shouldDetectPaymentRegion =
-    location.pathname === "/pricing" || isCheckoutLoading;
+    pathname === "/pricing" || isCheckoutLoading;
   const {
     region: paymentRegion,
     setRegion: setPaymentRegion,
@@ -243,19 +255,27 @@ function App() {
     "/track",
     "/today",
   ];
+  const localizedPublicLanguages = SUPPORTED_SEO_LANGUAGES.filter(
+    (entry) => entry !== "en",
+  );
 
   useEffect(() => {
     // Check if user has returned from payment
     const params = new URLSearchParams(location.search);
     const paymentStatus = params.get("payment");
+    const purchaseType = params.get("purchase");
+    const successPath =
+      purchaseType === "extra_credits" ? "/profile" : "/dashboard";
+    const failurePath =
+      purchaseType === "extra_credits" ? "/profile" : "/pricing";
     if (paymentStatus === "success") {
       toast.success(
         t("pricing.paymentSuccess") ||
-          "Payment successful! Your plan has been upgraded.",
+          "Payment successful! Your account will update shortly.",
       );
       confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
       // Clean URL
-      window.history.replaceState({}, "", "/dashboard");
+      window.history.replaceState({}, "", successPath);
       // Refresh profile so credits and tier update (webhook may have already run)
       refreshProfile();
       // Refresh again in case webhook was slightly delayed
@@ -264,13 +284,13 @@ function App() {
       toast.error(
         t("pricing.paymentFailed") || "Payment failed or was cancelled.",
       );
-      window.history.replaceState({}, "", "/pricing");
+      window.history.replaceState({}, "", failurePath);
     } else if (paymentStatus === "pending") {
       toast.info(
         t("pricing.paymentPending") ||
-          "Payment is being processed. Your plan will be upgraded shortly—refresh in a moment.",
+          "Payment is being processed. Your account will update shortly—refresh in a moment.",
       );
-      window.history.replaceState({}, "", "/dashboard");
+      window.history.replaceState({}, "", successPath);
       refreshProfile();
       setTimeout(refreshProfile, 5000);
     }
@@ -329,15 +349,13 @@ function App() {
   }, []);
 
   useEffect(() => {
-    document.body.dataset.hideAuxiliaryChat = location.pathname.startsWith(
-      "/wizard",
-    )
+    document.body.dataset.hideAuxiliaryChat = pathname.startsWith("/wizard")
       ? "true"
       : "";
     return () => {
       document.body.dataset.hideAuxiliaryChat = "";
     };
-  }, [location.pathname]);
+  }, [pathname]);
 
   // Analytics: page views and exit tracking
   const prevPathRef = React.useRef<string | null>(null);
@@ -530,7 +548,7 @@ function App() {
   // Require account for protected routes: redirect to landing and ask to create account
   useEffect(() => {
     if (!authReady || userId) return;
-    const path = location.pathname;
+    const path = pathname;
     const isProtected = PROTECTED_PATHS.some(
       (p) => path === p || path.startsWith(p + "/"),
     );
@@ -539,7 +557,7 @@ function App() {
       setAuthReason("signup_to_try");
       setAuthOpen(true);
     }
-  }, [authReady, userId, location.pathname, navigate]);
+  }, [authReady, userId, pathname, navigate]);
 
   const handleOnboardingComplete = () => {
     localStorage.setItem("vector.onboarding_done", "true");
@@ -930,7 +948,7 @@ function App() {
       return;
     }
 
-    // 3. Handle Paid Tiers (Standard/Max) - route by region
+    // 3. Handle Paid subscription tiers - route by region
     const useLemonSqueezy = paymentRegion === "global";
     const useMercadoPago = paymentRegion === "latam";
 
@@ -989,6 +1007,10 @@ function App() {
           amount: config.priceUsd,
           currency: "USD",
           userId: userId,
+          userEmail: userEmail ?? undefined,
+          billingMode:
+            config.billingMode === "subscription" ? "subscription" : "one_time",
+          billingInterval: config.billingInterval ?? undefined,
         });
       }
       // Checkout opens in new tab; clear overlay so this tab is usable
@@ -1257,7 +1279,7 @@ function App() {
         onGetStarted={startHelpMeFindFrameworkFlow}
       />
 
-      {!location.pathname.startsWith("/wizard") && (
+      {!pathname.startsWith("/wizard") && (
         <FeedbackButton
           pageContext={location.pathname}
           userEmail={userEmail}
@@ -1312,6 +1334,33 @@ function App() {
                     />
                   }
                 />
+                {localizedPublicLanguages.map((locale) => (
+                  <Route
+                    key={`${locale}-landing`}
+                    path={`/${locale}`}
+                    element={
+                      <LandingPage
+                        onStartWizard={handleStartWizard}
+                        onShowHelpChoose={() => setShowHelpChoose(true)}
+                        onGoToChat={startHelpMeFindFrameworkFlow}
+                        onHeroGetStarted={() => {
+                          if (!userId) {
+                            setAuthReason("signup_to_try");
+                            toast.info(
+                              t("app.auth.createAccountToTry") ||
+                                "Create an account to try the service.",
+                            );
+                            setAuthOpen(true);
+                          } else {
+                            setShowHelpChoose(true);
+                          }
+                        }}
+                        tier={effectiveTier}
+                        userId={effectiveUserId}
+                      />
+                    }
+                  />
+                ))}
 
                 <Route
                   path="/wizard"
@@ -1457,6 +1506,37 @@ function App() {
                     </motion.div>
                   }
                 />
+                {localizedPublicLanguages.map((locale) => (
+                  <Route
+                    key={`${locale}-pricing`}
+                    path={`/${locale}/pricing`}
+                    element={
+                      <motion.div
+                        key={`pricing-${locale}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                      >
+                        <PricingSection
+                          onSelectTier={handlePricingTier}
+                          onSelectCryptoTier={(tierId, tierName, amountUsd) =>
+                            setBinanceModal({
+                              open: true,
+                              tierId,
+                              tierName,
+                              amountUsd,
+                            })
+                          }
+                          currentTier={tier}
+                          userEmail={userEmail}
+                          paymentRegion={paymentRegion}
+                          setPaymentRegion={setPaymentRegion}
+                          isPaymentRegionLoading={isPaymentRegionLoading}
+                        />
+                      </motion.div>
+                    }
+                  />
+                ))}
 
                 <Route
                   path="/guides"
@@ -1471,6 +1551,22 @@ function App() {
                     </motion.div>
                   }
                 />
+                {localizedPublicLanguages.map((locale) => (
+                  <Route
+                    key={`${locale}-guides`}
+                    path={`/${locale}/guides`}
+                    element={
+                      <motion.div
+                        key={`guides-${locale}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                      >
+                        <GuidesPage />
+                      </motion.div>
+                    }
+                  />
+                ))}
 
                 <Route
                   path="/articles/:slug"
@@ -1485,6 +1581,22 @@ function App() {
                     </motion.div>
                   }
                 />
+                {localizedPublicLanguages.map((locale) => (
+                  <Route
+                    key={`${locale}-article`}
+                    path={`/${locale}/articles/:slug`}
+                    element={
+                      <motion.div
+                        key={`article-${locale}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                      >
+                        <ArticlePage />
+                      </motion.div>
+                    }
+                  />
+                ))}
 
                 <Route
                   path="/frameworks/:id"
@@ -1499,6 +1611,22 @@ function App() {
                     </motion.div>
                   }
                 />
+                {localizedPublicLanguages.map((locale) => (
+                  <Route
+                    key={`${locale}-framework`}
+                    path={`/${locale}/frameworks/:id`}
+                    element={
+                      <motion.div
+                        key={`framework-detail-${locale}`}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                      >
+                        <FrameworkPage />
+                      </motion.div>
+                    }
+                  />
+                ))}
 
                 <Route
                   path="/analytics"
@@ -1527,6 +1655,22 @@ function App() {
                     </motion.div>
                   }
                 />
+                {localizedPublicLanguages.map((locale) => (
+                  <Route
+                    key={`${locale}-about`}
+                    path={`/${locale}/about`}
+                    element={
+                      <motion.div
+                        key={`about-${locale}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                      >
+                        <AboutPage />
+                      </motion.div>
+                    }
+                  />
+                ))}
 
                 <Route
                   path="/legal"
@@ -1648,37 +1792,37 @@ function App() {
       </main>
 
       {/* Footer */}
-      {location.pathname !== "/wizard" && (
+      {pathname !== "/wizard" && (
         <footer className="relative z-10 px-6 py-12 border-t border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 transition-colors">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-            <div
+            <Link
+              to={buildLocalizedPath("/", language)}
               className="flex items-center gap-2 cursor-pointer"
-              onClick={() => navigate("/")}
             >
               <Logo className="w-6 h-6 rounded" />
               <span className="font-bold tracking-tight text-black dark:text-white">
                 VECTOR
               </span>
-            </div>
+            </Link>
             <div className="flex flex-wrap items-center gap-6 md:gap-8 text-sm text-gray-500 dark:text-gray-400">
-              <button
-                onClick={() => navigate("/legal?section=privacy")}
+              <Link
+                to="/legal?section=privacy"
                 className="hover:text-black dark:hover:text-white transition-colors font-medium cursor-pointer"
               >
                 {t("footer.privacy")}
-              </button>
-              <button
-                onClick={() => navigate("/legal?section=terms")}
+              </Link>
+              <Link
+                to="/legal?section=terms"
                 className="hover:text-black dark:hover:text-white transition-colors font-medium cursor-pointer"
               >
                 {t("footer.terms")}
-              </button>
-              <button
-                onClick={() => navigate("/legal?section=security")}
+              </Link>
+              <Link
+                to="/legal?section=security"
                 className="hover:text-black dark:hover:text-white transition-colors font-medium cursor-pointer"
               >
                 {t("footer.security")}
-              </button>
+              </Link>
               <a
                 href="mailto:vectorgoal.contact@gmail.com"
                 className="hover:text-black dark:hover:text-white transition-colors font-medium cursor-pointer"
@@ -1691,12 +1835,12 @@ function App() {
             </div>
             <div className="flex flex-col items-center md:items-end gap-1">
               <p className="text-sm text-gray-400">{t("footer.copyright")}</p>
-              <button
-                onClick={() => navigate("/about")}
+              <Link
+                to={buildLocalizedPath("/about", language)}
                 className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
               >
                 {t("footer.builtBy")}
-              </button>
+              </Link>
             </div>
           </div>
         </footer>

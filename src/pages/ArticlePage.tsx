@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import ReactMarkdown, { type Components } from "react-markdown";
 import {
@@ -25,6 +25,7 @@ import {
 import { frameworkGuides } from "@/lib/frameworkGuides";
 import {
   buildLanguageAlternates,
+  buildLocalizedPath,
   buildLocalizedUrl,
   DEFAULT_OG_IMAGE,
   SITE_NAME,
@@ -42,7 +43,11 @@ export function ArticlePage() {
       <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-zinc-950">
         <div className="text-center">
           <h1 className="mb-4 text-4xl font-bold">Article Not Found</h1>
-          <Button onClick={() => navigate("/guides")}>Browse articles</Button>
+          <Button asChild>
+            <Link to={buildLocalizedPath("/guides", language)}>
+              Browse articles
+            </Link>
+          </Button>
         </div>
       </div>
     );
@@ -102,12 +107,12 @@ export function ArticlePage() {
 
       return (
         <a
-          href={href}
+          href={isInternal ? buildLocalizedPath(href, language) : href}
           className="font-medium text-zinc-950 underline decoration-zinc-300 underline-offset-4 transition hover:decoration-zinc-950 dark:text-white dark:decoration-zinc-600 dark:hover:decoration-white"
           onClick={(event) => {
             if (isInternal) {
               event.preventDefault();
-              navigate(href);
+              navigate(buildLocalizedPath(href, language));
             }
           }}
           target={isInternal ? undefined : "_blank"}
@@ -249,9 +254,11 @@ export function ArticlePage() {
           <Button
             variant="ghost"
             className="mb-10 -ml-4 text-white hover:bg-white/15 hover:text-white"
-            onClick={() => navigate("/guides")}
+            asChild
           >
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to articles
+            <Link to={buildLocalizedPath("/guides", language)}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to articles
+            </Link>
           </Button>
 
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(280px,0.7fr)] lg:items-end">
@@ -471,17 +478,17 @@ export function ArticlePage() {
                   <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
                     <Quote className="h-4 w-4" /> Framework to read next
                   </p>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      navigate(`/frameworks/${primaryFrameworkGuide.id}`)
-                    }
+                  <Link
+                    to={buildLocalizedPath(
+                      `/frameworks/${primaryFrameworkGuide.id}`,
+                      language,
+                    )}
                     className="mt-3 text-left text-sm leading-7 text-zinc-700 transition hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white"
                   >
                     {primaryFrameworkTitle}:{" "}
                     {t(`fw.${primaryFrameworkGuide.id}.desc`) ||
                       primaryFrameworkGuide.framework.description}
-                  </button>
+                  </Link>
                 </div>
               )}
             </div>
@@ -504,12 +511,10 @@ export function ArticlePage() {
                   </div>
                 ))}
               </div>
-              <Button
-                variant="outline"
-                className="mt-6 w-full"
-                onClick={() => navigate("/about")}
-              >
-                About Vector editorial standards
+              <Button variant="outline" className="mt-6 w-full" asChild>
+                <Link to={buildLocalizedPath("/about", language)}>
+                  About Vector editorial standards
+                </Link>
               </Button>
             </div>
 
@@ -525,10 +530,12 @@ export function ArticlePage() {
                     t(`fw.${guide.id}.desc`) || guide.framework.description;
 
                   return (
-                    <button
+                    <Link
                       key={guide.id}
-                      type="button"
-                      onClick={() => navigate(`/frameworks/${guide.id}`)}
+                      to={buildLocalizedPath(
+                        `/frameworks/${guide.id}`,
+                        language,
+                      )}
                       className={`w-full rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 ${guide.theme.surface} ${guide.theme.border}`}
                     >
                       <p className="text-sm font-semibold text-zinc-950 dark:text-white">
@@ -542,7 +549,7 @@ export function ArticlePage() {
                       >
                         Read framework guide <ArrowRight className="h-4 w-4" />
                       </span>
-                    </button>
+                    </Link>
                   );
                 })}
               </div>
@@ -555,10 +562,12 @@ export function ArticlePage() {
                 </p>
                 <div className="mt-5 space-y-4">
                   {relatedArticles.map((entry) => (
-                    <button
+                    <Link
                       key={entry.slug}
-                      type="button"
-                      onClick={() => navigate(`/articles/${entry.slug}`)}
+                      to={buildLocalizedPath(
+                        `/articles/${entry.slug}`,
+                        language,
+                      )}
                       className={`w-full rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 ${entry.theme.surface} ${entry.theme.border}`}
                     >
                       <p className="text-sm font-semibold text-zinc-950 dark:text-white">
@@ -572,7 +581,7 @@ export function ArticlePage() {
                       >
                         Read article <ArrowRight className="h-4 w-4" />
                       </span>
-                    </button>
+                    </Link>
                   ))}
                 </div>
               </div>

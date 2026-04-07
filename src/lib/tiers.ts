@@ -4,23 +4,36 @@
  * IDs: architect (free, 1 plan), builder (5 plans, $5.99), max (20 plans, $12.99), enterprise (contact).
  */
 
-export type FrameworkId = 'first-principles' | 'pareto' | 'rpm' | 'eisenhower' | 'okr' | 'dsss' | 'mandalas' | 'gps' | 'misogi' | 'ikigai' | 'general';
+export type FrameworkId =
+  | "first-principles"
+  | "pareto"
+  | "rpm"
+  | "eisenhower"
+  | "okr"
+  | "dsss"
+  | "mandalas"
+  | "gps"
+  | "misogi"
+  | "ikigai"
+  | "general";
+export type BillingMode = "free" | "subscription" | "custom";
+export type BillingInterval = "month" | null;
 
 export const ALL_FRAMEWORKS: FrameworkId[] = [
-  'first-principles',
-  'pareto',
-  'rpm',
-  'eisenhower',
-  'okr',
-  'dsss',
-  'mandalas',
-  'gps',
-  'misogi',
-  'ikigai',
-  'general',
+  "first-principles",
+  "pareto",
+  "rpm",
+  "eisenhower",
+  "okr",
+  "dsss",
+  "mandalas",
+  "gps",
+  "misogi",
+  "ikigai",
+  "general",
 ];
 
-export type TierId = 'architect' | 'builder' | 'max' | 'enterprise';
+export type TierId = "architect" | "builder" | "max" | "enterprise";
 
 export interface TierConfig {
   id: TierId;
@@ -33,72 +46,86 @@ export interface TierConfig {
   canExportCalendar: boolean;
   canExportPdf: boolean;
   priorityAi: boolean;
-  /** One-time price in USD (0 = free, -1 = custom/contact). */
+  /** Billing mode for checkout and entitlement logic. */
+  billingMode: BillingMode;
+  billingInterval: BillingInterval;
+  /** Subscription price in USD (0 = free, -1 = custom/contact). */
   priceUsd: number;
 }
 
 export const TIER_CONFIGS: Record<TierId, TierConfig> = {
   architect: {
-    id: 'architect',
+    id: "architect",
     credits: 1,
     maxBlueprints: 1,
     allowedFrameworks: ALL_FRAMEWORKS,
     canExportCalendar: true,
     canExportPdf: true,
     priorityAi: false,
+    billingMode: "free",
+    billingInterval: null,
     priceUsd: 0,
   },
   builder: {
-    id: 'builder',
+    id: "builder",
     credits: 5,
     maxBlueprints: 5,
     allowedFrameworks: ALL_FRAMEWORKS,
     canExportCalendar: true,
     canExportPdf: true,
     priorityAi: false,
+    billingMode: "subscription",
+    billingInterval: "month",
     priceUsd: 5.99,
   },
   max: {
-    id: 'max',
+    id: "max",
     credits: 20,
     maxBlueprints: 20,
     allowedFrameworks: ALL_FRAMEWORKS,
     canExportCalendar: true,
     canExportPdf: true,
     priorityAi: true,
-    priceUsd: 12.99,
+    billingMode: "subscription",
+    billingInterval: "month",
+    priceUsd: 15.99,
   },
   enterprise: {
-    id: 'enterprise',
+    id: "enterprise",
     credits: -1,
     maxBlueprints: -1,
     allowedFrameworks: ALL_FRAMEWORKS,
     canExportCalendar: true,
     canExportPdf: true,
     priorityAi: true,
+    billingMode: "custom",
+    billingInterval: null,
     priceUsd: -1,
   },
 };
 
 /** Check if a framework is allowed for the given tier. All tiers currently have all frameworks. */
-export function canUseFramework(tierId: TierId | string | undefined, frameworkId: FrameworkId): boolean {
+export function canUseFramework(
+  tierId: TierId | string | undefined,
+  frameworkId: FrameworkId,
+): boolean {
   const normalized = normalizeTierId(tierId as string | null | undefined);
   const tier = TIER_CONFIGS[normalized] ?? TIER_CONFIGS[DEFAULT_TIER_ID];
   return tier.allowedFrameworks.includes(frameworkId);
 }
 
 /** Default tier for new or unauthenticated users. */
-export const DEFAULT_TIER_ID: TierId = 'architect';
+export const DEFAULT_TIER_ID: TierId = "architect";
 
 /** Legacy DB / webhook values → canonical TierId */
 const TIER_ALIASES: Record<string, TierId> = {
-  standard: 'builder',
-  free: 'architect',
+  standard: "builder",
+  free: "architect",
 };
 
 /** Normalize tier string from DB or external systems (handles legacy `standard`). */
 export function normalizeTierId(raw: string | null | undefined): TierId {
-  if (raw == null || raw === '') return DEFAULT_TIER_ID;
+  if (raw == null || raw === "") return DEFAULT_TIER_ID;
   const key = raw.toLowerCase().trim();
   if (key in TIER_ALIASES) return TIER_ALIASES[key];
   if (key in TIER_CONFIGS) return key as TierId;

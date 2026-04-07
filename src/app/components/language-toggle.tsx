@@ -1,16 +1,46 @@
-import React from 'react';
-import { useLanguage } from '@/app/components/language-provider';
-import { SUPPORTED_LANGUAGES } from '@/lib/translations';
-import { Globe, Check } from 'lucide-react';
+import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useLanguage } from "@/app/components/language-provider";
+import { SUPPORTED_LANGUAGES } from "@/lib/translations";
+import { Globe, Check } from "lucide-react";
+import {
+  buildLocalizedPath,
+  isLocalizedPublicPath,
+  normalizePathname,
+} from "@/lib/seo";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/app/components/ui/dropdown-menu';
+} from "@/app/components/ui/dropdown-menu";
 
 export function LanguageToggle() {
   const { language, setLanguage } = useLanguage();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleSelectLanguage = (
+    nextLanguage: (typeof SUPPORTED_LANGUAGES)[number]["code"],
+  ) => {
+    setLanguage(nextLanguage);
+
+    const normalizedPath = normalizePathname(location.pathname);
+    if (!isLocalizedPublicPath(normalizedPath)) {
+      return;
+    }
+
+    const params = new URLSearchParams(location.search);
+    params.delete("lang");
+
+    const nextPath = buildLocalizedPath(normalizedPath, nextLanguage);
+    const search = params.toString();
+    const nextUrl = `${nextPath}${search ? `?${search}` : ""}${location.hash}`;
+
+    if (nextUrl !== `${location.pathname}${location.search}${location.hash}`) {
+      navigate(nextUrl);
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -27,7 +57,7 @@ export function LanguageToggle() {
         {SUPPORTED_LANGUAGES.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
-            onClick={() => setLanguage(lang.code)}
+            onClick={() => handleSelectLanguage(lang.code)}
             className="flex items-center justify-between gap-2"
           >
             <span>{lang.label}</span>

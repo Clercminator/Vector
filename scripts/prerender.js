@@ -15,11 +15,12 @@ function isMissingBrowserError(error) {
   );
 }
 
-const routes = [
+const localizedLanguages = ["es", "pt", "fr", "de"];
+
+const baseRoutes = [
   "/",
   "/about",
   "/pricing",
-  "/community",
   "/guides",
   "/articles/how-to-choose-the-right-goal-framework",
   "/articles/best-framework-for-career-change",
@@ -70,6 +71,15 @@ const routes = [
   "/frameworks/gps",
   "/frameworks/misogi",
   "/frameworks/ikigai",
+];
+
+const routes = [
+  ...baseRoutes,
+  ...localizedLanguages.flatMap((language) =>
+    baseRoutes.map((route) =>
+      route === "/" ? `/${language}` : `/${language}${route}`,
+    ),
+  ),
 ];
 
 async function prerender() {

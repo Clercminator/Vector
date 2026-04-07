@@ -113,6 +113,20 @@ function article(
   };
 }
 
+function applyArticleDefaults(
+  articleEntry: EditorialArticle,
+): EditorialArticle {
+  return {
+    ...articleEntry,
+    authorName: articleEntry.authorName ?? DEFAULT_AUTHOR_NAME,
+    authorRole: articleEntry.authorRole ?? DEFAULT_AUTHOR_ROLE,
+    reviewedAt: articleEntry.reviewedAt ?? DEFAULT_REVIEWED_AT,
+    trustStatement: articleEntry.trustStatement ?? DEFAULT_TRUST_STATEMENT,
+    editorialStandards:
+      articleEntry.editorialStandards ?? DEFAULT_EDITORIAL_STANDARDS,
+  };
+}
+
 export const editorialArticles: EditorialArticle[] = [
   article({
     slug: "how-to-choose-the-right-goal-framework",
@@ -1141,7 +1155,7 @@ export const editorialArticles: EditorialArticle[] = [
     primaryFramework: "first-principles",
     seoTitle: "How to Turn a Vague Goal Into a Real Plan | Vector AI",
   }),
-  ...editorialArticleExtensions,
+  ...editorialArticleExtensions.map(applyArticleDefaults),
 ];
 
 export function getEditorialArticle(slug: string) {

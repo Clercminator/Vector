@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { trackClick } from "@/lib/analytics";
 import { ThemeToggle } from "@/app/components/theme-toggle";
 import { LanguageToggle } from "@/app/components/language-toggle";
@@ -10,6 +10,7 @@ import {
   AvatarImage,
 } from "@/app/components/ui/avatar";
 import { useLanguage } from "@/app/components/language-provider";
+import { buildLocalizedPath, normalizePathname } from "@/lib/seo";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -32,12 +33,14 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   onSignIn,
   onGetStarted,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const pathname = normalizePathname(location.pathname);
   const isArticlesRoute =
-    location.pathname === "/guides" ||
-    location.pathname.startsWith("/frameworks/");
+    pathname === "/guides" ||
+    pathname.startsWith("/frameworks/") ||
+    pathname.startsWith("/articles/");
 
   if (!isOpen) return null;
 
@@ -48,24 +51,20 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       exit={{ opacity: 0, y: -20 }}
       className="fixed inset-0 z-40 bg-white dark:bg-zinc-950 pt-24 px-6 pb-8 flex flex-col gap-6 overflow-y-auto overflow-x-hidden"
     >
-      <button
-        onClick={() => {
-          navigate("/");
-          onClose();
-        }}
-        className={`min-h-[48px] flex w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold dark:border-zinc-800 ${location.pathname === "/" ? "rounded px-2 text-black ring-2 ring-inset ring-gray-400 dark:text-white dark:ring-gray-500" : "text-gray-600 dark:text-gray-400"}`}
+      <Link
+        to={buildLocalizedPath("/", language)}
+        onClick={onClose}
+        className={`min-h-[48px] flex w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold dark:border-zinc-800 ${pathname === "/" ? "rounded px-2 text-black ring-2 ring-inset ring-gray-400 dark:text-white dark:ring-gray-500" : "text-gray-600 dark:text-gray-400"}`}
       >
         {t("nav.frameworks")}
-      </button>
-      <button
-        onClick={() => {
-          navigate("/guides");
-          onClose();
-        }}
+      </Link>
+      <Link
+        to={buildLocalizedPath("/guides", language)}
+        onClick={onClose}
         className={`min-h-[48px] flex w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold dark:border-zinc-800 ${isArticlesRoute ? "rounded px-2 text-black ring-2 ring-inset ring-gray-400 dark:text-white dark:ring-gray-500" : "text-gray-600 dark:text-gray-400"}`}
       >
         {t("nav.articles")}
-      </button>
+      </Link>
       <button
         onClick={() => {
           navigate("/community");
@@ -97,24 +96,20 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           {t("nav.blueprints")}
         </button>
       )}
-      <button
-        onClick={() => {
-          navigate("/pricing");
-          onClose();
-        }}
-        className={`min-h-[48px] flex w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold dark:border-zinc-800 ${location.pathname === "/pricing" ? "rounded px-2 text-black ring-2 ring-inset ring-gray-400 dark:text-white dark:ring-gray-500" : "text-gray-600 dark:text-gray-400"}`}
+      <Link
+        to={buildLocalizedPath("/pricing", language)}
+        onClick={onClose}
+        className={`min-h-[48px] flex w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold dark:border-zinc-800 ${pathname === "/pricing" ? "rounded px-2 text-black ring-2 ring-inset ring-gray-400 dark:text-white dark:ring-gray-500" : "text-gray-600 dark:text-gray-400"}`}
       >
         {t("nav.pricing")}
-      </button>
-      <button
-        onClick={() => {
-          navigate("/about");
-          onClose();
-        }}
-        className={`min-h-[48px] flex w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold dark:border-zinc-800 ${location.pathname === "/about" ? "rounded px-2 text-black ring-2 ring-inset ring-gray-400 dark:text-white dark:ring-gray-500" : "text-gray-600 dark:text-gray-400"}`}
+      </Link>
+      <Link
+        to={buildLocalizedPath("/about", language)}
+        onClick={onClose}
+        className={`min-h-[48px] flex w-full cursor-pointer items-center border-b border-gray-100 pb-4 text-left text-2xl font-bold dark:border-zinc-800 ${pathname === "/about" ? "rounded px-2 text-black ring-2 ring-inset ring-gray-400 dark:text-white dark:ring-gray-500" : "text-gray-600 dark:text-gray-400"}`}
       >
         {t("nav.about")}
-      </button>
+      </Link>
 
       <div className="flex items-center gap-4 py-4">
         <ThemeToggle />

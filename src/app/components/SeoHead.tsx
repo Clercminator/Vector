@@ -8,6 +8,7 @@ import {
   DEFAULT_OG_IMAGE,
   SITE_NAME,
   SITE_URL,
+  isLocalizedPublicPath,
   normalizePathname,
 } from "@/lib/seo";
 
@@ -32,14 +33,7 @@ export function SeoHead() {
   const pathname = normalizePathname(location.pathname);
   const isFrameworkPage = pathname.startsWith("/frameworks/");
   const isArticlePage = pathname.startsWith("/articles/");
-  const isKnownPublicPage =
-    pathname === "/" ||
-    pathname === "/guides" ||
-    pathname === "/pricing" ||
-    pathname === "/community" ||
-    pathname === "/about" ||
-    isFrameworkPage ||
-    isArticlePage;
+  const isKnownPublicPage = isLocalizedPublicPath(pathname);
   const shouldIndex = isKnownPublicPage;
 
   const routeMeta = (() => {
@@ -47,13 +41,6 @@ export function SeoHead() {
       return {
         title: `${t("pricing.title")} | ${SITE_NAME}`,
         description: t("pricing.subtitle"),
-      };
-    }
-
-    if (pathname === "/community") {
-      return {
-        title: `${t("community.title")} | ${SITE_NAME}`,
-        description: t("community.subtitle"),
       };
     }
 
@@ -75,13 +62,6 @@ export function SeoHead() {
       return {
         title: `Goal Planner Wizard | ${SITE_NAME}`,
         description: "Build a framework-based action plan with Vector.",
-      };
-    }
-
-    if (pathname === "/community") {
-      return {
-        title: `${t("community.title")} | ${SITE_NAME}`,
-        description: t("community.subtitle"),
       };
     }
 

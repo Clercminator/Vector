@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Github, Linkedin, User } from "lucide-react";
@@ -10,6 +10,7 @@ import {
   DEFAULT_OG_IMAGE,
   SITE_NAME,
   SITE_URL,
+  buildLocalizedPath,
   buildLocalizedUrl,
 } from "@/lib/seo";
 
@@ -17,7 +18,6 @@ const FOUNDER_LINKEDIN = "https://www.linkedin.com/in/david-clerc";
 const FOUNDER_GITHUB = "https://github.com/Clercminator";
 
 export function AboutPage() {
-  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [founderImgError, setFounderImgError] = React.useState(false);
   const aboutUrl = buildLocalizedUrl("/about", language);
@@ -55,11 +55,13 @@ export function AboutPage() {
       <div className="max-w-3xl mx-auto relative z-10">
         <Button
           variant="ghost"
-          onClick={() => navigate("/")}
           className="mb-8 gap-2 pl-0 hover:bg-transparent hover:text-gray-600 dark:hover:text-gray-300"
+          asChild
         >
-          <ArrowLeft size={20} />
-          {t("common.back")}
+          <Link to={buildLocalizedPath("/", language)}>
+            <ArrowLeft size={20} />
+            {t("common.back")}
+          </Link>
         </Button>
 
         <motion.div

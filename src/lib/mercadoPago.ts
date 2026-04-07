@@ -23,6 +23,15 @@ export interface CreateCheckoutOptions {
   amount?: number;
   currency?: string;
   userId?: string;
+  userEmail?: string;
+  billingMode?: "one_time" | "subscription";
+  billingInterval?: "month" | "year";
+  purchaseType?: "tier" | "extra_credits";
+  creditsAmount?: number;
+  creditPackId?: "credits_5" | "credits_20";
+  backUrlSuccess?: string;
+  backUrlFailure?: string;
+  backUrlPending?: string;
 }
 
 /**
@@ -32,19 +41,37 @@ export interface CreateCheckoutOptions {
 import { SupabaseClient } from "@supabase/supabase-js";
 import { trackEvent } from "./analytics";
 
-export async function createCheckout(supabase: SupabaseClient, options: CreateCheckoutOptions = {}): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('mercado-pago-preference', {
-    body: {
-      tier: options.tier ?? "Master Builder",
-      title: options.title,
-      amount: options.amount,
-      currency: options.currency,
-      user_id: options.userId,
-      back_url_success: window.location.origin + "/dashboard?payment=success",
-      back_url_failure: window.location.origin + "/pricing?payment=failure",
-      back_url_pending: window.location.origin + "/dashboard?payment=pending",
-    }
-  });
+export async function createCheckout(
+  supabase: SupabaseClient,
+  options: CreateCheckoutOptions = {},
+): Promise<void> {
+  const { data, error } = await supabase.functions.invoke(
+    "mercado-pago-preference",
+    {
+      body: {
+        tier: options.tier ?? "Master Builder",
+        title: options.title,
+        amount: options.amount,
+        currency: options.currency,
+        user_id: options.userId,
+        user_email: options.userEmail,
+        billing_mode: options.billingMode,
+        billing_interval: options.billingInterval,
+        purchase_type: options.purchaseType,
+        credits_amount: options.creditsAmount,
+        credit_pack_id: options.creditPackId,
+        back_url_success:
+          options.backUrlSuccess ??
+          window.location.origin + "/dashboard?payment=success",
+        back_url_failure:
+          options.backUrlFailure ??
+          window.location.origin + "/pricing?payment=failure",
+        back_url_pending:
+          options.backUrlPending ??
+          window.location.origin + "/dashboard?payment=pending",
+      },
+    },
+  );
 
   if (error) {
     throw new Error(error.message || "Function invocation failed");
@@ -62,10 +89,15 @@ export async function createCheckout(supabase: SupabaseClient, options: CreateCh
 
   // Track checkout started
   // We don't await this to avoid delaying redirect, and we catch errors silently (implied by trackEvent)
-  trackEvent('checkout_started', { 
-    tier: options.tier 
+  trackEvent("checkout_started", {
+    tier: options.tier,
+    provider: "mercadopago",
+    billing_mode: options.billingMode ?? "one_time",
+    purchase_type: options.purchaseType ?? "tier",
+    credits_amount: options.creditsAmount,
+    credit_pack_id: options.creditPackId,
   });
 
   // Open in new tab so the app tab stays open; back button and return URL work correctly
-  window.open(init_point, '_blank', 'noopener,noreferrer');
+  window.open(init_point, "_blank", "noopener,noreferrer");
 }

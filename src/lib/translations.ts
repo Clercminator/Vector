@@ -144,6 +144,9 @@ export const translations = {
     "profile.streak": "Streak",
     "profile.creditsRemaining": "Plans remaining",
     "profile.buyMore": "Get more plans",
+    "profile.creditPackCta":
+      "Buy one-time credit packs with MercadoPago Checkout Pro",
+    "profile.creditPackButton": "Buy {0} for {1}",
     "profile.achievements": "Achievements",
     "profile.personalInfo": "Personal Information",
     "profile.personalInfoHint":
@@ -156,6 +159,20 @@ export const translations = {
       "e.g. What you're building (up to 500 characters)",
     "profile.includedInPlan": "Included in your plan:",
     "profile.pdfExport": "PDF Export",
+    "profile.subscriptionLoading": "Loading subscription...",
+    "profile.subscriptionStatus": "Subscription",
+    "profile.subscriptionRenewsOn": "Renews on",
+    "profile.subscriptionEndsOn": "Access until",
+    "profile.cancelSubscription": "Cancel subscription",
+    "profile.cancelSubscriptionTitle": "Cancel your subscription?",
+    "profile.cancelSubscriptionDescription":
+      "Your subscription will be cancelled at the provider and your paid access will remain active until the current billing period ends.",
+    "profile.confirmCancelSubscription": "Yes, cancel it",
+    "profile.cancellingSubscription": "Cancelling...",
+    "profile.subscriptionCancelScheduled":
+      "Cancellation requested. Your paid access stays active until the end of the current billing period.",
+    "profile.subscriptionCancelSuccess": "Subscription cancelled successfully.",
+    "profile.subscriptionCancelError": "Failed to cancel subscription.",
     "profile.avatarUrl": "Avatar URL",
     "profile.save": "Save Changes",
     "profile.saving": "Saving...",
@@ -351,15 +368,18 @@ export const translations = {
       "Choose the level of architectural precision your ambition demands.",
     "pricing.mostPopular": "Most Popular",
     "pricing.oneTime": "One-time",
+    "pricing.perMonth": "/month",
     "pricing.custom": "Custom",
     "pricing.currentPlan": "Current Plan",
     "pricing.tier.architect": "Architect",
     "pricing.tier.architect.desc":
       "One full plan: all frameworks, PDF & calendar export.",
     "pricing.tier.builder": "Builder",
-    "pricing.tier.builder.desc": "5 plans with all frameworks and exports.",
+    "pricing.tier.builder.desc":
+      "5 plans with full tracker access, exports, and direct support.",
     "pricing.tier.max": "Max",
-    "pricing.tier.max.desc": "20 plans for power users and professionals.",
+    "pricing.tier.max.desc":
+      "20 plans, every tracker capability, priority handling, and Leyendo Max included.",
     "pricing.tier.enterprise": "Enterprise",
     "pricing.tier.enterprise.desc":
       "For teams and organizations requiring scale and control.",
@@ -373,11 +393,17 @@ export const translations = {
     "pricing.feature.builder.plans": "{0} plans",
     "pricing.feature.builder.frameworks": "All frameworks",
     "pricing.feature.builder.ai": "PDF & calendar export",
+    "pricing.feature.builder.tracker": "All tracker capabilities",
+    "pricing.feature.builder.support": "Special support 24/7",
     "pricing.feature.max.plans": "{0} plans",
     "pricing.feature.max.frameworks": "All frameworks",
     "pricing.feature.max.calendar": "Export to Calendar (Google / Outlook)",
     "pricing.feature.max.pdf": "Export to PDF and download",
     "pricing.feature.max.priority": "Priority AI reasoning",
+    "pricing.feature.max.tracker": "All tracker capabilities",
+    "pricing.feature.max.support": "Special support 24/7",
+    "pricing.feature.max.leyendo":
+      "Leyendo Max included while your Vector Max subscription is active",
     "pricing.feature.enterprise.workspaces": "Team shared workspaces",
     "pricing.feature.enterprise.admin": "Admin dashboard & analytics",
     "pricing.feature.enterprise.integration": "Custom framework integration",
@@ -409,10 +435,10 @@ export const translations = {
       "We process crypto payments manually. Please be patient — it may take some time. Make sure to notify us via chat after sending, or we won't know to upgrade your account.",
     "pricing.binance.openChat": "Open chat to notify us",
     "pricing.paymentSuccess":
-      "Payment successful! Your plan has been upgraded.",
+      "Payment successful! Your account will update shortly.",
     "pricing.paymentFailed": "Payment failed or was cancelled.",
     "pricing.paymentPending":
-      "Payment is being processed. Your plan will be upgraded shortly—refresh in a moment.",
+      "Payment is being processed. Your account will update shortly—refresh in a moment.",
 
     // Pricing FAQ / How it works
     "pricing.faq.title": "Understanding plans & features",
@@ -430,7 +456,7 @@ export const translations = {
       "A framework is a mental model we use to deconstruct your goal—e.g. first-principles thinking, Pareto (80/20), or other structured approaches. You choose one per plan; all frameworks are included in every tier. The difference between tiers is how many plans you can create, not which frameworks you can use.",
     "pricing.faq.refunds.q": "How do refunds work?",
     "pricing.faq.refunds.a":
-      "Paid tiers are one-time payments. If you are not satisfied, contact us with your purchase details and we will handle refund requests on a case-by-case basis in line with our terms of service.",
+      "Builder and Max are recurring monthly subscriptions. If you need a refund or cancellation review, contact us with your billing details and we will handle it case by case in line with our terms of service and processor rules.",
     "pricing.faq.exporting.q": "How does exporting work?",
     "pricing.faq.exporting.a":
       "You can export your blueprint as a PDF for offline use, and (on supported tiers) add action items to Google Calendar or Outlook via .ics. Export is available for every plan you create within your tier.",
@@ -1526,6 +1552,9 @@ export const translations = {
     "profile.streak": "Racha",
     "profile.creditsRemaining": "Planes restantes",
     "profile.buyMore": "Obtener más planes",
+    "profile.creditPackCta":
+      "Compra paquetes de planes con MercadoPago Checkout Pro",
+    "profile.creditPackButton": "Comprar {0} por {1}",
     "profile.achievements": "Logros",
     "profile.personalInfo": "Información Personal",
     "profile.personalInfoHint":
@@ -1747,10 +1776,10 @@ export const translations = {
       "Un plano completo: todos los métodos, PDF y exportar a calendario.",
     "pricing.tier.builder": "Constructor",
     "pricing.tier.builder.desc":
-      "5 planos con todos los métodos y exportación.",
+      "5 planos con acceso completo al tracker, exportación y soporte directo.",
     "pricing.tier.max": "Max",
     "pricing.tier.max.desc":
-      "20 planos para usuarios avanzados y profesionales.",
+      "20 planos, todas las capacidades del tracker, atención prioritaria y Leyendo Max incluido.",
     "pricing.tier.enterprise": "Empresarial",
     "pricing.tier.enterprise.desc":
       "Para equipos y organizaciones que requieren escala y control.",
@@ -1764,11 +1793,17 @@ export const translations = {
     "pricing.feature.builder.plans": "{0} planos",
     "pricing.feature.builder.frameworks": "Todos los métodos",
     "pricing.feature.builder.ai": "Exportar a PDF y calendario",
+    "pricing.feature.builder.tracker": "Todas las capacidades del tracker",
+    "pricing.feature.builder.support": "Soporte especial 24/7",
     "pricing.feature.max.plans": "{0} planos",
     "pricing.feature.max.frameworks": "Todos los métodos",
     "pricing.feature.max.calendar": "Exportar a Calendario (Google / Outlook)",
     "pricing.feature.max.pdf": "Exportar a PDF y descargar",
     "pricing.feature.max.priority": "Razonamiento de IA prioritario",
+    "pricing.feature.max.tracker": "Todas las capacidades del tracker",
+    "pricing.feature.max.support": "Soporte especial 24/7",
+    "pricing.feature.max.leyendo":
+      "Leyendo Max incluido mientras tu suscripción Vector Max siga activa",
     "pricing.feature.enterprise.workspaces": "Espacios de trabajo compartidos",
     "pricing.feature.enterprise.admin": "Panel de administración y analíticas",
     "pricing.feature.enterprise.integration":
@@ -1799,10 +1834,11 @@ export const translations = {
     "pricing.binance.manualDesc":
       "Procesamos pagos en cripto manualmente. Por favor ten paciencia. Asegúrate de notificarnos por chat después de enviar, o no sabremos que debes recibir tu upgrade.",
     "pricing.binance.openChat": "Abrir chat para notificarnos",
-    "pricing.paymentSuccess": "¡Pago exitoso! Tu plan ha sido actualizado.",
+    "pricing.paymentSuccess":
+      "¡Pago exitoso! Tu cuenta se actualizará en breve.",
     "pricing.paymentFailed": "El pago falló o fue cancelado.",
     "pricing.paymentPending":
-      "El pago está en proceso. Tu plan se actualizará pronto—recarga en un momento.",
+      "El pago está en proceso. Tu cuenta se actualizará pronto—recarga en un momento.",
 
     // Pricing FAQ / How it works
     "pricing.faq.title": "Entender los planes y las funciones",
@@ -2735,6 +2771,9 @@ export const translations = {
     "profile.extraCredits": "Planos bônus",
     "profile.creditsRemaining": "Planos restantes",
     "profile.buyMore": "Obter mais planos",
+    "profile.creditPackCta":
+      "Compre pacotes avulsos de planos com MercadoPago Checkout Pro",
+    "profile.creditPackButton": "Comprar {0} por {1}",
     "profile.personalInfo": "Informações Pessoais",
     "profile.personalInfoHint":
       "Estas informações são usadas para gerar um plano personalizado para você. Quanto mais você compartilhar, mais adaptado será seu plano.",
@@ -2834,10 +2873,11 @@ export const translations = {
       "Pagamentos em cripto (Binance Pay) em breve. Entre em contato para ser avisado.",
     "pricing.redirectMercadoPago": "Redirecionando para pagamento...",
     "pricing.redirectLemonSqueezy": "Redirecionando para pagamento...",
-    "pricing.paymentSuccess": "Pagamento concluído! Seu plano foi atualizado.",
+    "pricing.paymentSuccess":
+      "Pagamento concluído! Sua conta será atualizada em breve.",
     "pricing.paymentFailed": "Pagamento falhou ou foi cancelado.",
     "pricing.paymentPending":
-      "Pagamento em processamento. Seu plano será atualizado em breve—atualize em um momento.",
+      "Pagamento em processamento. Sua conta será atualizada em breve—atualize em um momento.",
 
     // Community
     "community.title": "Modelos da Comunidade",
@@ -3354,6 +3394,9 @@ export const translations = {
     "profile.extraCredits": "Plans bonus",
     "profile.creditsRemaining": "Plans restants",
     "profile.buyMore": "Obtenir plus de plans",
+    "profile.creditPackCta":
+      "Achetez des packs de plans ponctuels avec MercadoPago Checkout Pro",
+    "profile.creditPackButton": "Acheter {0} pour {1}",
     "profile.personalInfo": "Informations Personnelles",
     "profile.personalInfoHint":
       "Ces informations servent à générer un plan personnalisé pour vous. Plus vous en partagez, plus votre plan sera adapté.",
@@ -3452,10 +3495,10 @@ export const translations = {
     "pricing.redirectMercadoPago": "Redirection vers le paiement...",
     "pricing.redirectLemonSqueezy": "Redirection vers le paiement...",
     "pricing.paymentSuccess":
-      "Paiement réussi ! Votre forfait a été mis à niveau.",
+      "Paiement réussi ! Votre compte sera mis à jour sous peu.",
     "pricing.paymentFailed": "Le paiement a échoué ou a été annulé.",
     "pricing.paymentPending":
-      "Paiement en cours. Votre forfait sera mis à niveau sous peu—actualisez dans un instant.",
+      "Paiement en cours. Votre compte sera mis à jour sous peu—actualisez dans un instant.",
 
     // Community
     "community.title": "Modèles de la Communauté",
@@ -3965,6 +4008,9 @@ export const translations = {
     "profile.extraCredits": "Bonus-Pläne",
     "profile.creditsRemaining": "Pläne übrig",
     "profile.buyMore": "Mehr Pläne",
+    "profile.creditPackCta":
+      "Kaufen Sie einmalige Planpakete mit MercadoPago Checkout Pro",
+    "profile.creditPackButton": "{0} für {1} kaufen",
     "profile.personalInfo": "Persönliche Informationen",
     "profile.personalInfoHint":
       "Diese Angaben werden genutzt, um einen personalisierten Plan für Sie zu erstellen. Je mehr Sie angeben, desto besser wird der Plan auf Sie zugeschnitten.",
@@ -4061,10 +4107,10 @@ export const translations = {
     "pricing.redirectMercadoPago": "Weiterleitung zur Kasse...",
     "pricing.redirectLemonSqueezy": "Weiterleitung zur Kasse...",
     "pricing.paymentSuccess":
-      "Zahlung erfolgreich! Ihr Plan wurde aktualisiert.",
+      "Zahlung erfolgreich! Ihr Konto wird in Kürze aktualisiert.",
     "pricing.paymentFailed": "Zahlung fehlgeschlagen oder abgebrochen.",
     "pricing.paymentPending":
-      "Zahlung wird bearbeitet. Ihr Plan wird in Kürze aktualisiert—laden Sie gleich neu.",
+      "Zahlung wird bearbeitet. Ihr Konto wird in Kürze aktualisiert—laden Sie gleich neu.",
 
     // Community
     "community.title": "Community-Vorlagen",

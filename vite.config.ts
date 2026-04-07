@@ -5,7 +5,8 @@ import react from "@vitejs/plugin-react";
 import Sitemap from "vite-plugin-sitemap";
 import { VitePWA } from "vite-plugin-pwa";
 
-const staticRoutes = ["/about", "/pricing", "/community", "/guides"];
+const publicStaticRoutes = ["/", "/about", "/pricing", "/guides"];
+const localizedLanguages = ["es", "pt", "fr", "de"];
 const frameworkIds = [
   "first-principles",
   "pareto",
@@ -60,9 +61,17 @@ const articleSlugs = [
   "how-to-turn-a-vague-goal-into-a-plan",
 ];
 const dynamicRoutes = [
-  ...staticRoutes,
+  ...publicStaticRoutes,
   ...frameworkIds.map((id) => `/frameworks/${id}`),
   ...articleSlugs.map((slug) => `/articles/${slug}`),
+  ...localizedLanguages.flatMap((language) => [
+    `/${language}`,
+    `/${language}/about`,
+    `/${language}/pricing`,
+    `/${language}/guides`,
+    ...frameworkIds.map((id) => `/${language}/frameworks/${id}`),
+    ...articleSlugs.map((slug) => `/${language}/articles/${slug}`),
+  ]),
 ];
 
 export default defineConfig(() => {

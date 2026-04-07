@@ -8,7 +8,8 @@ const LEMONSQUEEZY_API = "https://api.lemonsqueezy.com/v1";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "apikey, X-Client-Info, Content-Type, Authorization, Accept",
+  "Access-Control-Allow-Headers":
+    "apikey, X-Client-Info, Content-Type, Authorization, Accept",
 };
 
 interface Body {
@@ -33,13 +34,21 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const apiKey = Deno.env.get("LEMONSQUEEZY_API_KEY")?.trim() ?? "";
   const storeId = Deno.env.get("LEMONSQUEEZY_STORE_ID")?.trim() ?? "";
   const variantStandard =
-    (Deno.env.get("LEMONSQUEEZY_VARIANT_STANDARD") ?? Deno.env.get("LEMONSQUEEZY_VARIANT_BUILDER"))?.trim() ?? "";
+    (
+      Deno.env.get("LEMONSQUEEZY_VARIANT_STANDARD") ??
+      Deno.env.get("LEMONSQUEEZY_VARIANT_BUILDER")
+    )?.trim() ?? "";
   const variantMax = Deno.env.get("LEMONSQUEEZY_VARIANT_MAX")?.trim() ?? "";
 
   if (!apiKey || !storeId) {
     return new Response(
-      JSON.stringify({ error: "LEMONSQUEEZY_API_KEY or LEMONSQUEEZY_STORE_ID not configured" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        error: "LEMONSQUEEZY_API_KEY or LEMONSQUEEZY_STORE_ID not configured",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 
@@ -49,7 +58,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const tierRaw = (body.tier ?? "builder").toLowerCase();
     const userId = body.user_id;
     const userEmail = body.user_email ?? "";
-    const redirectUrl = body.redirect_url ?? "https://vectorplan.xyz/dashboard?payment=success";
+    const redirectUrl =
+      body.redirect_url ?? "https://vectorplan.xyz/dashboard?payment=success";
 
     const variantId = tierRaw === "max" ? variantMax : variantStandard;
     if (!variantId) {
@@ -57,7 +67,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
         JSON.stringify({
           error: `Variant for tier "${tierRaw}" not configured. Set LEMONSQUEEZY_VARIANT_STANDARD and LEMONSQUEEZY_VARIANT_MAX in Supabase Secrets.`,
         }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -82,7 +95,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     // Helpful for debugging 4xx/5xx from Lemon Squeezy without leaking secrets.
     console.log("lemonsqueezy-checkout request", {
-      tier,
+      tier: tierRaw,
       hasApiKey: Boolean(apiKey?.trim()),
       storeIdConfigured: Boolean(storeId?.trim()),
       variantId: variantId ? String(variantId) : null,
@@ -110,7 +123,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const data = await res.json();
 
     if (!res.ok) {
-      const errMsg = data?.errors?.[0]?.detail ?? data?.errors?.[0]?.title ?? "Lemon Squeezy API error";
+      const errMsg =
+        data?.errors?.[0]?.detail ??
+        data?.errors?.[0]?.title ??
+        "Lemon Squeezy API error";
       console.error("lemonsqueezy-checkout Lemon Squeezy error", {
         status: res.status,
         title: data?.errors?.[0]?.title ?? null,
@@ -121,28 +137,31 @@ Deno.serve(async (req: Request): Promise<Response> => {
           variantId,
         },
       });
-      return new Response(
-        JSON.stringify({ error: errMsg }),
-        { status: res.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: errMsg }), {
+        status: res.status,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const checkoutUrl = data?.data?.attributes?.url;
     if (!checkoutUrl) {
       return new Response(
         JSON.stringify({ error: "No checkout URL in response" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
-    return new Response(
-      JSON.stringify({ checkout_url: checkoutUrl }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ checkout_url: checkoutUrl }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (e) {
-    return new Response(
-      JSON.stringify({ error: String(e) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: String(e) }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

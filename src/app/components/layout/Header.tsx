@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Logo } from "@/app/components/Logo";
 import { trackClick } from "@/lib/analytics";
 import { ThemeToggle } from "@/app/components/theme-toggle";
@@ -11,6 +11,7 @@ import {
 } from "@/app/components/ui/avatar";
 import { Menu, X } from "lucide-react";
 import { useLanguage } from "@/app/components/language-provider";
+import { buildLocalizedPath, normalizePathname } from "@/lib/seo";
 
 interface HeaderProps {
   userEmail: string | null;
@@ -33,42 +34,44 @@ export const Header: React.FC<HeaderProps> = ({
   onSignIn,
   onGetStarted,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const pathname = normalizePathname(location.pathname);
   const isArticlesRoute =
-    location.pathname === "/guides" ||
-    location.pathname.startsWith("/frameworks/");
+    pathname === "/guides" ||
+    pathname.startsWith("/frameworks/") ||
+    pathname.startsWith("/articles/");
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-gray-100 dark:border-zinc-800 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <div
+        <Link
+          to={buildLocalizedPath("/", language)}
           className="flex items-center gap-2 cursor-pointer"
-          onClick={() => navigate("/")}
         >
           <Logo className="w-8 h-8 rounded-lg" />
           <span className="text-xl font-bold tracking-tight text-black dark:text-white">
             VECTOR
           </span>
-        </div>
+        </Link>
 
         {/* Desktop Nav */}
         <div className="hidden lg:flex items-center gap-6">
-          <button
-            onClick={() => navigate("/")}
-            className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === "/" ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"}`}
-            aria-current={location.pathname === "/" ? "page" : undefined}
+          <Link
+            to={buildLocalizedPath("/", language)}
+            className={`text-sm font-medium transition-colors cursor-pointer ${pathname === "/" ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"}`}
+            aria-current={pathname === "/" ? "page" : undefined}
           >
             {t("nav.frameworks")}
-          </button>
-          <button
-            onClick={() => navigate("/guides")}
+          </Link>
+          <Link
+            to={buildLocalizedPath("/guides", language)}
             className={`text-sm font-medium transition-colors cursor-pointer ${isArticlesRoute ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"}`}
             aria-current={isArticlesRoute ? "page" : undefined}
           >
             {t("nav.articles")}
-          </button>
+          </Link>
           <button
             onClick={() => navigate("/community")}
             className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === "/community" ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"}`}
@@ -100,20 +103,20 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             </>
           )}
-          <button
-            onClick={() => navigate("/pricing")}
-            className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === "/pricing" ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"}`}
-            aria-current={location.pathname === "/pricing" ? "page" : undefined}
+          <Link
+            to={buildLocalizedPath("/pricing", language)}
+            className={`text-sm font-medium transition-colors cursor-pointer ${pathname === "/pricing" ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"}`}
+            aria-current={pathname === "/pricing" ? "page" : undefined}
           >
             {t("nav.pricing")}
-          </button>
-          <button
-            onClick={() => navigate("/about")}
-            className={`text-sm font-medium transition-colors cursor-pointer ${location.pathname === "/about" ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"}`}
-            aria-current={location.pathname === "/about" ? "page" : undefined}
+          </Link>
+          <Link
+            to={buildLocalizedPath("/about", language)}
+            className={`text-sm font-medium transition-colors cursor-pointer ${pathname === "/about" ? "text-black dark:text-white font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"}`}
+            aria-current={pathname === "/about" ? "page" : undefined}
           >
             {t("nav.about")}
-          </button>
+          </Link>
 
           <div className="w-px h-4 bg-gray-200 dark:bg-gray-800 mx-2" />
 

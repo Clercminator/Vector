@@ -1,0 +1,120 @@
+[      39ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ chrome-error://chromewebdata/:0
+[   84325ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:21608
+[  100592ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:21608
+[  115339ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:21608
+[  118634ms] [ERROR] Framing 'https://chatwoot.dsdtech.ai/' violates the following Content Security Policy directive: "frame-ancestors vectorplan.xyz". The request has been blocked.
+ @ :0
+[  166397ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:21608
+[  214718ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:21608
+[  216044ms] [ERROR] Framing 'https://chatwoot.dsdtech.ai/' violates the following Content Security Policy directive: "frame-ancestors vectorplan.xyz". The request has been blocked.
+ @ :0
+[  216153ms] [ERROR] Warning: Function components cannot be given refs. Attempts to access this ref will fail. Did you mean to use React.forwardRef()?%s%s 
+
+Check the render method of `SlotClone`. 
+    at DialogOverlay (http://localhost:5173/src/app/components/ui/dialog.tsx:62:3)
+    at http://localhost:5173/node_modules/.vite/deps/chunk-PMKCJ5HH.js?v=3c8b6345:73:11
+    at http://localhost:5173/node_modules/.vite/deps/chunk-PMKCJ5HH.js?v=3c8b6345:54:11
+    at http://localhost:5173/node_modules/.vite/deps/chunk-6AIQPAGD.js?v=3c8b6345:41:13
+    at http://localhost:5173/node_modules/.vite/deps/chunk-3PJBTZ5H.js?v=3c8b6345:258:22
+    at Presence (http://localhost:5173/node_modules/.vite/deps/chunk-MFJCR2BM.js?v=3c8b6345:24:11)
+    at Provider (http://localhost:5173/node_modules/.vite/deps/chunk-6YXLEVMN.js?v=3c8b6345:38:15)
+    at DialogPortal (http://localhost:5173/node_modules/.vite/deps/chunk-RDAK5CFC.js?v=3c8b6345:111:11)
+    at DialogPortal (http://localhost:5173/src/app/components/ui/dialog.tsx:42:6)
+    at DialogContent (http://localhost:5173/src/app/components/ui/dialog.tsx:87:3)
+    at Provider (http://localhost:5173/node_modules/.vite/deps/chunk-6YXLEVMN.js?v=3c8b6345:38:15)
+    at Dialog (http://localhost:5173/node_modules/.vite/deps/chunk-RDAK5CFC.js?v=3c8b6345:52:5)
+    at Dialog (http://localhost:5173/src/app/components/ui/dialog.tsx:22:6)
+    at AuthModal (http://localhost:5173/src/app/components/AuthModal.tsx:56:3)
+    at div
+    at App (http://localhost:5173/src/app/App.tsx:196:17)
+    at ErrorBoundary (http://localhost:5173/src/app/components/ErrorBoundary.tsx:10:5)
+    at LanguageProvider (http://localhost:5173/src/app/components/language-provider.tsx:36:36)
+    at V (http://localhost:5173/node_modules/.vite/deps/next-themes.js?v=ebfd9312:44:25)
+    at J (http://localhost:5173/node_modules/.vite/deps/next-themes.js?v=ebfd9312:42:18)
+    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=10fc0bdf:7091:13)
+    at BrowserRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=10fc0bdf:10287:3)
+    at _a (http://localhost:5173/node_modules/.vite/deps/react-helmet-async.js?v=0f768def:624:5) @ http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:520
+[  216264ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/:0
+[  218090ms] [ERROR] Warning: localhost detected. Please use a valid host. @ https://newassets.hcaptcha.com/captcha/v1/189aeab628a0b8d957d713d81bfa72f83e1a494f/static/hcaptcha.html:13
+[  242210ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:21608
+[  243138ms] [ERROR] Warning: Function components cannot be given refs. Attempts to access this ref will fail. Did you mean to use React.forwardRef()?%s%s 
+
+Check the render method of `SlotClone`. 
+    at DialogOverlay (http://localhost:5173/src/app/components/ui/dialog.tsx:62:3)
+    at http://localhost:5173/node_modules/.vite/deps/chunk-PMKCJ5HH.js?v=3c8b6345:73:11
+    at http://localhost:5173/node_modules/.vite/deps/chunk-PMKCJ5HH.js?v=3c8b6345:54:11
+    at http://localhost:5173/node_modules/.vite/deps/chunk-6AIQPAGD.js?v=3c8b6345:41:13
+    at http://localhost:5173/node_modules/.vite/deps/chunk-3PJBTZ5H.js?v=3c8b6345:258:22
+    at Presence (http://localhost:5173/node_modules/.vite/deps/chunk-MFJCR2BM.js?v=3c8b6345:24:11)
+    at Provider (http://localhost:5173/node_modules/.vite/deps/chunk-6YXLEVMN.js?v=3c8b6345:38:15)
+    at DialogPortal (http://localhost:5173/node_modules/.vite/deps/chunk-RDAK5CFC.js?v=3c8b6345:111:11)
+    at DialogPortal (http://localhost:5173/src/app/components/ui/dialog.tsx:42:6)
+    at DialogContent (http://localhost:5173/src/app/components/ui/dialog.tsx:87:3)
+    at Provider (http://localhost:5173/node_modules/.vite/deps/chunk-6YXLEVMN.js?v=3c8b6345:38:15)
+    at Dialog (http://localhost:5173/node_modules/.vite/deps/chunk-RDAK5CFC.js?v=3c8b6345:52:5)
+    at Dialog (http://localhost:5173/src/app/components/ui/dialog.tsx:22:6)
+    at AuthModal (http://localhost:5173/src/app/components/AuthModal.tsx:56:3)
+    at div
+    at App (http://localhost:5173/src/app/App.tsx:196:17)
+    at ErrorBoundary (http://localhost:5173/src/app/components/ErrorBoundary.tsx:10:5)
+    at LanguageProvider (http://localhost:5173/src/app/components/language-provider.tsx:36:36)
+    at V (http://localhost:5173/node_modules/.vite/deps/next-themes.js?v=ebfd9312:44:25)
+    at J (http://localhost:5173/node_modules/.vite/deps/next-themes.js?v=ebfd9312:42:18)
+    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=10fc0bdf:7091:13)
+    at BrowserRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=10fc0bdf:10287:3)
+    at _a (http://localhost:5173/node_modules/.vite/deps/react-helmet-async.js?v=0f768def:624:5) @ http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:520
+[  243273ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5173/:0
+[  243358ms] [ERROR] Framing 'https://chatwoot.dsdtech.ai/' violates the following Content Security Policy directive: "frame-ancestors vectorplan.xyz". The request has been blocked.
+ @ :0
+[  243555ms] [ERROR] Warning: localhost detected. Please use a valid host. @ https://newassets.hcaptcha.com/captcha/v1/189aeab628a0b8d957d713d81bfa72f83e1a494f/static/hcaptcha.html:13
+[  260785ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:21608
+[  280693ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:21608
+[  297270ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:21608
+[  298353ms] [ERROR] Framing 'https://chatwoot.dsdtech.ai/' violates the following Content Security Policy directive: "frame-ancestors vectorplan.xyz". The request has been blocked.
+ @ :0
+[ 3123243ms] Error: useLanguage must be used within a LanguageProvider
+    at useLanguage (http://localhost:5173/src/app/components/language-provider.tsx:80:11)
+    at App (http://localhost:5173/src/app/App.tsx:196:17)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:11596:26)
+    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:14974:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:15962:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:3680:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:3705:24)
+    at invokeGuardedCallback (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:3739:39)
+    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:19818:15)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:19251:20)
+[ 3123250ms] Error: useLanguage must be used within a LanguageProvider
+    at useLanguage (http://localhost:5173/src/app/components/language-provider.tsx:80:11)
+    at App (http://localhost:5173/src/app/App.tsx:196:17)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:11596:26)
+    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:14974:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:15962:22)
+    at HTMLUnknownElement.callCallback2 (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:3680:22)
+    at Object.invokeGuardedCallbackDev (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:3705:24)
+    at invokeGuardedCallback (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:3739:39)
+    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:19818:15)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:19251:20)
+[ 3123281ms] [ERROR] The above error occurred in the <App> component:
+
+    at App (http://localhost:5173/src/app/App.tsx:196:17)
+    at ErrorBoundary (http://localhost:5173/src/app/components/ErrorBoundary.tsx:10:5)
+    at LanguageProvider (http://localhost:5173/src/app/components/language-provider.tsx?t=1775438534020:36:36)
+    at V (http://localhost:5173/node_modules/.vite/deps/next-themes.js?v=ebfd9312:44:25)
+    at J (http://localhost:5173/node_modules/.vite/deps/next-themes.js?v=ebfd9312:42:18)
+    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=10fc0bdf:7091:13)
+    at BrowserRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=10fc0bdf:10287:3)
+    at _a (http://localhost:5173/node_modules/.vite/deps/react-helmet-async.js?v=0f768def:624:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary. @ http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:14079
+[ 3123282ms] [ERROR] Uncaught error in Component: Error: useLanguage must be used within a LanguageProvider
+    at useLanguage (http://localhost:5173/src/app/components/language-provider.tsx:80:11)
+    at App (http://localhost:5173/src/app/App.tsx:196:17)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:11596:26)
+    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:14974:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:15962:22)
+    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:19806:22)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:19251:20)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:19190:13)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:19169:15)
+    at recoverFromConcurrentError (http://localhost:5173/node_modules/.vite/deps/chunk-KPD4VVXB.js?v=3c8b6345:18786:28) {componentStack: 
+    at App (http://localhost:5173/src/app/App.tsx…vite/deps/react-helmet-async.js?v=0f768def:624:5)} @ http://localhost:5173/src/app/components/ErrorBoundary.tsx:19

@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { motion } from "motion/react"; // Keeping consistent with App.tsx
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useIsMobileSync } from "@/app/components/ui/use-mobile";
 import { Button } from "@/app/components/ui/button";
 import { FrameworkCard } from "@/app/components/FrameworkCard";
@@ -21,6 +21,7 @@ import { frameworkGuides } from "@/lib/frameworkGuides";
 import { canUseFramework, DEFAULT_TIER_ID, TierId } from "@/lib/tiers";
 import { toast } from "sonner";
 import { trackClick } from "@/lib/analytics";
+import { buildLocalizedPath } from "@/lib/seo";
 
 interface LandingPageProps {
   onStartWizard: (fwId?: Framework) => void;
@@ -41,7 +42,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   tier: tierProp,
   userId,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const tier = tierProp ?? DEFAULT_TIER_ID;
   const navigate = useNavigate();
   const howItWorksRef = useRef<HTMLElement>(null);
@@ -573,7 +574,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     toast.info(t("wizard.lockedError"), {
                       action: {
                         label: t("nav.pricing"),
-                        onClick: () => navigate("/pricing"),
+                        onClick: () =>
+                          navigate(buildLocalizedPath("/pricing", language)),
                       },
                       duration: 15000,
                     });
@@ -584,13 +586,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 }}
                 onLearnMore={() => {
                   trackClick(`landing_framework_learn_${fw.id}`, fw.title);
-                  navigate(`/frameworks/${fw.id}`);
                 }}
+                learnMoreHref={buildLocalizedPath(
+                  `/frameworks/${fw.id}`,
+                  language,
+                )}
                 isLocked={!canUseFramework(tier, fw.id)}
               />
             ))}
           </div>
-
           <div className="mt-12 grid gap-6 rounded-[2rem] border border-zinc-200/80 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.9fr)]">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
@@ -605,22 +609,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <Button
                 variant="outline"
                 className="mt-6 rounded-2xl px-6 py-6 text-base font-semibold"
-                onClick={() => {
-                  trackClick("landing_open_guides_index");
-                  navigate("/guides");
-                }}
+                asChild
               >
-                {t("landing.guides.cta")}{" "}
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <Link
+                  to={buildLocalizedPath("/guides", language)}
+                  onClick={() => trackClick("landing_open_guides_index")}
+                >
+                  {t("landing.guides.cta")}{" "}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
               </Button>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
               {featuredGuides.map((guide) => (
-                <button
+                <Link
                   key={guide.id}
-                  type="button"
-                  onClick={() => navigate(`/frameworks/${guide.id}`)}
+                  to={buildLocalizedPath(`/frameworks/${guide.id}`, language)}
                   className={`rounded-[1.5rem] border p-5 text-left transition hover:-translate-y-0.5 ${guide.theme.surface} ${guide.theme.border}`}
                 >
                   <p className="text-sm font-semibold text-zinc-950 dark:text-white">
@@ -634,7 +639,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   >
                     Read article <ArrowRight className="h-4 w-4" />
                   </span>
-                </button>
+                </Link>
               ))}
             </div>
           </div>

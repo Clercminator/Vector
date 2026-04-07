@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowRight, Compass, Filter, Rocket, Sparkles } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
@@ -14,6 +14,7 @@ import { frameworkGuides } from "@/lib/frameworkGuides";
 import type { Framework } from "@/lib/frameworks";
 import {
   buildLanguageAlternates,
+  buildLocalizedPath,
   buildLocalizedUrl,
   DEFAULT_OG_IMAGE,
   SITE_NAME,
@@ -257,18 +258,22 @@ export function GuidesPage() {
                 ))}
               </div>
               <div className="mt-8 flex flex-wrap gap-4">
-                <Button
-                  className={featuredGuide.theme.button}
-                  onClick={() => {
-                    trackClick(
-                      `guides_featured_read_${featuredGuide.id}`,
-                      featuredGuide.framework.title,
-                    );
-                    navigate(`/frameworks/${featuredGuide.id}`);
-                  }}
-                >
-                  {t("guides.hero.readFeatured")}
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                <Button className={featuredGuide.theme.button} asChild>
+                  <Link
+                    to={buildLocalizedPath(
+                      `/frameworks/${featuredGuide.id}`,
+                      language,
+                    )}
+                    onClick={() => {
+                      trackClick(
+                        `guides_featured_read_${featuredGuide.id}`,
+                        featuredGuide.framework.title,
+                      );
+                    }}
+                  >
+                    {t("guides.hero.readFeatured")}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
                 </Button>
                 <Button
                   variant="outline"
@@ -376,35 +381,39 @@ export function GuidesPage() {
                         : frameworkId;
 
                       return (
-                        <button
+                        <Link
                           key={frameworkId}
-                          type="button"
+                          to={buildLocalizedPath(
+                            `/frameworks/${frameworkId}`,
+                            language,
+                          )}
                           className="cursor-pointer rounded-full border border-zinc-200/80 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 transition hover:border-zinc-950 hover:text-zinc-950 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-200 dark:hover:text-zinc-200"
-                          onClick={() => navigate(`/frameworks/${frameworkId}`)}
                         >
                           {label}
-                        </button>
+                        </Link>
                       );
                     })}
                   </div>
 
                   <div className="mt-6 space-y-3 rounded-2xl border border-zinc-200/80 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-zinc-950/70">
                     {clusterArticles.map((article) => (
-                      <button
+                      <Link
                         key={article.slug}
-                        type="button"
+                        to={buildLocalizedPath(
+                          `/articles/${article.slug}`,
+                          language,
+                        )}
                         className="flex w-full cursor-pointer items-center justify-between gap-4 text-left text-sm font-medium text-zinc-700 transition hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white"
                         onClick={() => {
                           trackClick(
                             `guides_cluster_${cluster.id}_${article.slug}`,
                             article.title,
                           );
-                          navigate(`/articles/${article.slug}`);
                         }}
                       >
                         <span>{article.title}</span>
                         <ArrowRight className="h-4 w-4 shrink-0" />
-                      </button>
+                      </Link>
                     ))}
                   </div>
                 </article>
@@ -428,8 +437,8 @@ export function GuidesPage() {
             </p>
           </div>
 
-          <div className="-mx-6 mb-8 overflow-x-auto px-6 pb-2 sm:mx-0 sm:overflow-visible sm:px-0 sm:pb-0">
-            <div className="flex w-max min-w-full gap-2 sm:flex-wrap sm:gap-3">
+          <div className="-mx-6 mb-8 overflow-x-auto px-6 pb-2 md:mx-0 md:overflow-visible md:px-0 md:pb-0">
+            <div className="flex w-max min-w-full gap-2 md:w-full md:min-w-0 md:flex-wrap md:gap-3">
               {filterOptions.map((filterOption) => {
                 const isActive = activeFilter === filterOption.id;
 
@@ -524,41 +533,49 @@ export function GuidesPage() {
                         }
 
                         return (
-                          <button
+                          <Link
                             key={slug}
-                            type="button"
+                            to={buildLocalizedPath(
+                              `/articles/${relatedArticle.slug}`,
+                              language,
+                            )}
                             className="cursor-pointer rounded-full border border-zinc-200/80 px-3 py-1.5 text-xs font-medium text-zinc-600 transition hover:border-zinc-950 hover:text-zinc-950 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-200 dark:hover:text-white"
-                            onClick={() =>
-                              navigate(`/articles/${relatedArticle.slug}`)
-                            }
                           >
                             {relatedArticle.title}
-                          </button>
+                          </Link>
                         );
                       })}
                     </div>
                     <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                       <Button
                         className={`sm:flex-1 ${article.theme.button}`}
-                        onClick={() => {
-                          trackClick(
-                            `guides_editorial_read_${article.slug}`,
-                            article.title,
-                          );
-                          navigate(`/articles/${article.slug}`);
-                        }}
+                        asChild
                       >
-                        {t("guides.editorial.readArticle")}
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                        <Link
+                          to={buildLocalizedPath(
+                            `/articles/${article.slug}`,
+                            language,
+                          )}
+                          onClick={() => {
+                            trackClick(
+                              `guides_editorial_read_${article.slug}`,
+                              article.title,
+                            );
+                          }}
+                        >
+                          {t("guides.editorial.readArticle")}
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
                       </Button>
-                      <Button
-                        variant="outline"
-                        className="sm:flex-1"
-                        onClick={() =>
-                          navigate(`/frameworks/${article.primaryFramework}`)
-                        }
-                      >
-                        {t("guides.editorial.readFrameworkGuide")}
+                      <Button variant="outline" className="sm:flex-1" asChild>
+                        <Link
+                          to={buildLocalizedPath(
+                            `/frameworks/${article.primaryFramework}`,
+                            language,
+                          )}
+                        >
+                          {t("guides.editorial.readFrameworkGuide")}
+                        </Link>
                       </Button>
                     </div>
                   </article>
@@ -652,16 +669,23 @@ export function GuidesPage() {
                     <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                       <Button
                         className={`sm:flex-1 ${guide.theme.button}`}
-                        onClick={() => {
-                          trackClick(
-                            `guides_read_${guide.id}`,
-                            guide.framework.title,
-                          );
-                          navigate(`/frameworks/${guide.id}`);
-                        }}
+                        asChild
                       >
-                        {t("guides.frameworks.readArticle")}
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                        <Link
+                          to={buildLocalizedPath(
+                            `/frameworks/${guide.id}`,
+                            language,
+                          )}
+                          onClick={() => {
+                            trackClick(
+                              `guides_read_${guide.id}`,
+                              guide.framework.title,
+                            );
+                          }}
+                        >
+                          {t("guides.frameworks.readArticle")}
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
                       </Button>
                       <Button
                         variant="outline"
