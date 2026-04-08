@@ -29,7 +29,13 @@ import {
 } from "@/lib/blueprints";
 import { supabase } from "@/lib/supabase";
 import { ensureMyProfile } from "@/lib/ensureProfile";
-import { createCheckout, isMercadoPagoConfigured } from "@/lib/mercadoPago";
+import {
+  buildPaymentReturnUrls,
+  createCheckout,
+  createSubscription,
+  isMercadoPagoConfigured,
+  isMercadoPagoSubscriptionConfigured,
+} from "@/lib/mercadoPago";
 import {
   createLemonSqueezyCheckout,
   isLemonSqueezyConfigured,
@@ -68,6 +74,10 @@ import { HelpMeChooseModal } from "@/app/components/HelpMeChooseModal";
 import { FeedbackButton } from "@/app/components/FeedbackButton";
 import { Logo } from "@/app/components/Logo";
 import { BinancePaymentModal } from "@/app/components/BinancePaymentModal";
+import {
+  MercadoPagoSubscriptionDialog,
+  type MercadoPagoSubscriptionSubmitData,
+} from "@/app/components/MercadoPagoSubscriptionDialog";
 import { ChatwootWidget, openChatwoot } from "@/app/components/ChatwootWidget";
 
 import { LandingPage } from "@/pages/LandingPage";
@@ -243,6 +253,13 @@ function App() {
     tierName: "",
     amountUsd: 0,
   });
+  const [mercadoPagoSubscriptionCheckout, setMercadoPagoSubscriptionCheckout] =
+    useState<{
+      tierId: "builder" | "max";
+      tierName: string;
+      amountUsd: number;
+      billingInterval?: "month" | "year";
+    } | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [authReason, setAuthReason] = useState<"signup_to_try" | null>(null);
 
@@ -258,6 +275,13 @@ function App() {
   const localizedPublicLanguages = SUPPORTED_SEO_LANGUAGES.filter(
     (entry) => entry !== "en",
   );
+
+  const scheduleProfileRefreshes = (delays: number[]) => {
+    refreshProfile();
+    for (const delay of delays) {
+      window.setTimeout(refreshProfile, delay);
+    }
+  };
 
   useEffect(() => {
     // Check if user has returned from payment
@@ -276,10 +300,7 @@ function App() {
       confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
       // Clean URL
       window.history.replaceState({}, "", successPath);
-      // Refresh profile so credits and tier update (webhook may have already run)
-      refreshProfile();
-      // Refresh again in case webhook was slightly delayed
-      setTimeout(refreshProfile, 2000);
+      scheduleProfileRefreshes([1500, 3500, 7000]);
     } else if (paymentStatus === "failure") {
       toast.error(
         t("pricing.paymentFailed") || "Payment failed or was cancelled.",
@@ -291,8 +312,7 @@ function App() {
           "Payment is being processed. Your account will update shortly—refresh in a moment.",
       );
       window.history.replaceState({}, "", successPath);
-      refreshProfile();
-      setTimeout(refreshProfile, 5000);
+      scheduleProfileRefreshes([2000, 5000, 9000, 14000]);
     }
   }, [location.search, t]);
 
@@ -917,6 +937,7 @@ function App() {
 
   const handlePricingTier = async (tierName: string, tierId?: string) => {
     if (!tierId) return;
+    const config = TIER_CONFIGS[tierId as TierId];
 
     // Enforce Auth for ALL plans
     if (!userId) {
@@ -952,6 +973,18 @@ function App() {
     const useLemonSqueezy = paymentRegion === "global";
     const useMercadoPago = paymentRegion === "latam";
 
+    if (
+      useMercadoPago &&
+      config.billingMode === "subscription" &&
+      !isMercadoPagoSubscriptionConfigured()
+    ) {
+      toast.error(
+        t("errors.paymentsNotConfigured") ||
+          "Payments are not configured yet (Test Mode).",
+        { duration: 15000 },
+      );
+      return;
+    }
     if (useMercadoPago && !isMercadoPagoConfigured()) {
       toast.error(
         t("errors.paymentsNotConfigured") ||
@@ -989,7 +1022,6 @@ function App() {
         );
       }
 
-      const config = TIER_CONFIGS[tierId as TierId];
       if (!config || config.priceUsd <= 0) {
         throw new Error("Invalid tier configuration");
       }
@@ -1001,23 +1033,58 @@ function App() {
           userEmail: userEmail ?? undefined,
         });
       } else {
-        await createCheckout(supabase!, {
-          tier: config.id,
-          title: `Vector - ${tierName}`,
-          amount: config.priceUsd,
-          currency: "USD",
-          userId: userId,
-          userEmail: userEmail ?? undefined,
-          billingMode:
-            config.billingMode === "subscription" ? "subscription" : "one_time",
+        setIsCheckoutLoading(false);
+        setMercadoPagoSubscriptionCheckout({
+          tierId: config.id as "builder" | "max",
+          tierName,
+          amountUsd: config.priceUsd,
           billingInterval: config.billingInterval ?? undefined,
         });
+        return;
       }
       // Checkout opens in new tab; clear overlay so this tab is usable
       setIsCheckoutLoading(false);
     } catch (e: any) {
       console.error("Checkout error", e);
       toast.error(e.message || "Failed to start checkout");
+      setIsCheckoutLoading(false);
+    }
+  };
+
+  const handleMercadoPagoSubscriptionConfirm = async (
+    payload: MercadoPagoSubscriptionSubmitData,
+  ) => {
+    if (!supabase || !mercadoPagoSubscriptionCheckout || !userId) {
+      throw new Error("Authentication session missing. Please sign in again.");
+    }
+
+    const returnUrls = buildPaymentReturnUrls({
+      purchaseType: "tier",
+      provider: "mercadopago",
+      tier: mercadoPagoSubscriptionCheckout.tierId,
+    });
+
+    try {
+      setIsCheckoutLoading(true);
+      await createSubscription(supabase, {
+        tier: mercadoPagoSubscriptionCheckout.tierId,
+        title: `Vector - ${mercadoPagoSubscriptionCheckout.tierName}`,
+        amount: mercadoPagoSubscriptionCheckout.amountUsd,
+        currency: "USD",
+        userId,
+        userEmail: payload.payerEmail,
+        billingInterval: mercadoPagoSubscriptionCheckout.billingInterval,
+        cardTokenId: payload.cardTokenId,
+        deviceId: payload.deviceId,
+        backUrlSuccess: returnUrls.success,
+        backUrlFailure: returnUrls.failure,
+        backUrlPending: returnUrls.pending,
+      });
+
+      setMercadoPagoSubscriptionCheckout(null);
+      const pendingUrl = new URL(returnUrls.pending);
+      navigate(`${pendingUrl.pathname}${pendingUrl.search}`);
+    } finally {
       setIsCheckoutLoading(false);
     }
   };
@@ -1196,6 +1263,20 @@ function App() {
         tierName={binanceModal.tierName}
         amountUsd={binanceModal.amountUsd}
         onOpenChat={openChatwoot}
+      />
+      <MercadoPagoSubscriptionDialog
+        open={Boolean(mercadoPagoSubscriptionCheckout)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setMercadoPagoSubscriptionCheckout(null);
+          }
+        }}
+        tierId={mercadoPagoSubscriptionCheckout?.tierId ?? "builder"}
+        tierName={mercadoPagoSubscriptionCheckout?.tierName ?? "Builder"}
+        amountUsd={mercadoPagoSubscriptionCheckout?.amountUsd ?? 0}
+        billingInterval={mercadoPagoSubscriptionCheckout?.billingInterval}
+        userEmail={userEmail}
+        onConfirm={handleMercadoPagoSubscriptionConfirm}
       />
       <AuthModal
         open={authOpen}

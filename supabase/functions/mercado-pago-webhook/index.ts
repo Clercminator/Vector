@@ -563,6 +563,62 @@ async function syncMercadoPagoSubscription(params: {
   return tier;
 }
 
+async function hasRecordedSubscriptionInvoice(
+  subscriptionId: string,
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("payments")
+    .select("id")
+    .eq("provider", "mercadopago")
+    .eq("provider_subscription_id", subscriptionId)
+    .eq("payment_type", "subscription_invoice")
+    .limit(1)
+    .maybeSingle();
+
+  return Boolean(data?.id);
+}
+
+async function provisionAuthorizedSubscriptionIfNeeded(params: {
+  userId: string;
+  subscription: Record<string, unknown>;
+  tier: PaidTierId;
+}): Promise<void> {
+  const subscriptionId = asString(params.subscription.id);
+  if (!subscriptionId) {
+    return;
+  }
+
+  const normalizedStatus = normalizeMercadoPagoSubscriptionStatus(
+    pickString(params.subscription.status, params.subscription.status_detail),
+  );
+  if (normalizedStatus !== "active") {
+    return;
+  }
+
+  if (await hasRecordedSubscriptionInvoice(subscriptionId)) {
+    return;
+  }
+
+  const cycleEndsAt =
+    asIsoString(params.subscription.next_payment_date) ??
+    asIsoString(params.subscription.date_of_end) ??
+    asIsoString(params.subscription.date_created);
+
+  const { error } = await supabase.rpc("apply_subscription_credits", {
+    target_user_id: params.userId,
+    amount_to_add: creditsForTier(params.tier),
+    cycle_ends_at: cycleEndsAt,
+  });
+
+  if (error) {
+    console.error(
+      "Failed to provision MercadoPago subscription credits after authorization:",
+      error,
+    );
+    throw new Error("Failed to provision subscription credits");
+  }
+}
+
 async function handleLegacyPaymentNotification(
   paymentId: string,
 ): Promise<Response> {
@@ -694,7 +750,15 @@ async function handleSubscriptionPreapprovalNotification(
     return okResponse();
   }
 
-  await syncMercadoPagoSubscription({ userId: targetUserId, subscription });
+  const tier = await syncMercadoPagoSubscription({
+    userId: targetUserId,
+    subscription,
+  });
+  await provisionAuthorizedSubscriptionIfNeeded({
+    userId: targetUserId,
+    subscription,
+    tier,
+  });
   return okResponse();
 }
 

@@ -17,6 +17,8 @@ const corsHeaders = {
 interface PreferenceBody {
   tier?: string;
   title?: string;
+  description?: string;
+  item_id?: string;
   amount?: number;
   currency?: string;
   billing_mode?: "one_time" | "subscription";
@@ -28,6 +30,9 @@ interface PreferenceBody {
   back_url_success?: string;
   back_url_failure?: string;
   back_url_pending?: string;
+  card_token_id?: string;
+  device_id?: string;
+  environment?: "test" | "live";
   user_id?: string;
 }
 
@@ -46,6 +51,48 @@ const EXTRA_CREDIT_PACKS = {
   },
 } as const;
 
+function buildWebhookUrl(requestUrl: string): string {
+  const url = new URL(requestUrl);
+  url.pathname = "/functions/v1/mercado-pago-webhook";
+  url.search = "";
+  return url.toString();
+}
+
+function buildMercadoPagoHeaders(
+  accessToken: string,
+  deviceId?: string,
+): HeadersInit {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${accessToken}`,
+    "Content-Type": "application/json",
+    "X-Idempotency-Key": crypto.randomUUID(),
+  };
+
+  if (deviceId?.trim()) {
+    headers["X-meli-session-id"] = deviceId.trim();
+  }
+
+  return headers;
+}
+
+function shouldUseTestCredentials(
+  origin: string,
+  environment?: string,
+): boolean {
+  if (environment === "test") {
+    return true;
+  }
+
+  try {
+    const hostname = new URL(origin).hostname;
+    return (
+      hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1"
+    );
+  } catch {
+    return false;
+  }
+}
+
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -58,19 +105,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     });
   }
 
-  const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
+  const liveAccessToken =
+    Deno.env.get("MERCADOPAGO_ACCESS_TOKEN")?.trim() ?? "";
+  const testAccessToken =
+    Deno.env.get("MERCADOPAGO_ACCESS_TOKEN_PRUEBA")?.trim() ?? "";
   const planBuilderId =
     Deno.env.get("MERCADOPAGO_PLAN_BUILDER_ID")?.trim() ?? "";
   const planMaxId = Deno.env.get("MERCADOPAGO_PLAN_MAX_ID")?.trim() ?? "";
-  if (!accessToken?.trim()) {
-    return new Response(
-      JSON.stringify({ error: "MERCADOPAGO_ACCESS_TOKEN not configured" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
-    );
-  }
 
   try {
     const body = (await req.json()) as PreferenceBody;
@@ -90,6 +131,31 @@ Deno.serve(async (req: Request): Promise<Response> => {
       body.back_url_pending ?? `${origin}/dashboard?payment=pending`;
     const userId = body.user_id;
     const userEmail = body.user_email?.trim() || undefined;
+    const description = body.description?.trim() || `${title} on Vector`;
+    const itemId = body.item_id?.trim() || undefined;
+    const cardTokenId = body.card_token_id?.trim() || undefined;
+    const deviceId = body.device_id?.trim() || undefined;
+    const webhookUrl = buildWebhookUrl(req.url);
+    const useTestCredentials = shouldUseTestCredentials(
+      origin,
+      body.environment,
+    );
+    const accessToken =
+      useTestCredentials && testAccessToken ? testAccessToken : liveAccessToken;
+
+    if (!accessToken) {
+      return new Response(
+        JSON.stringify({
+          error: useTestCredentials
+            ? "MercadoPago test access token not configured"
+            : "MERCADOPAGO_ACCESS_TOKEN not configured",
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
 
     if (billingMode === "subscription") {
       const normalizedTier = tier.toLowerCase();
@@ -107,19 +173,41 @@ Deno.serve(async (req: Request): Promise<Response> => {
         );
       }
 
+      if (!userEmail) {
+        return new Response(
+          JSON.stringify({
+            error: "payer_email is required for MercadoPago subscriptions.",
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      if (!cardTokenId) {
+        return new Response(
+          JSON.stringify({
+            error: "card_token_id is required for MercadoPago subscriptions.",
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
       const subscriptionRes = await fetch(MERCADOPAGO_PREAPPROVAL_URL, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
+        headers: buildMercadoPagoHeaders(accessToken, deviceId),
         body: JSON.stringify({
           preapproval_plan_id: preapprovalPlanId,
           reason: title,
           external_reference: userId,
           payer_email: userEmail,
+          card_token_id: cardTokenId,
           back_url: backUrlSuccess,
-          status: "pending",
+          status: "authorized",
         }),
       });
 
@@ -141,10 +229,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
       const initPoint = (subscriptionData as { init_point?: string })
         .init_point;
-      if (!initPoint) {
+      const subscriptionId = (subscriptionData as { id?: string }).id;
+      if (!initPoint && !subscriptionId) {
         return new Response(
           JSON.stringify({
-            error: "No init_point in MercadoPago subscription response",
+            error: "No subscription confirmation in MercadoPago response",
           }),
           {
             status: 500,
@@ -156,7 +245,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return new Response(
         JSON.stringify({
           init_point: initPoint,
-          subscription_id: (subscriptionData as { id?: string }).id,
+          subscription_id: subscriptionId,
+          status: (subscriptionData as { status?: string }).status,
           checkout_mode: "subscription",
         }),
         {
@@ -194,7 +284,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const preference = {
       items: [
         {
+          id:
+            itemId ??
+            body.credit_pack_id ??
+            `vector-${(body.tier ?? purchaseType).toString().toLowerCase()}`,
           title: validatedOneTimePack?.title ?? title,
+          description,
           quantity: 1,
           unit_price: validatedOneTimePack?.amount ?? amount,
           currency_id: validatedOneTimePack?.currency ?? currency,
@@ -206,22 +301,26 @@ Deno.serve(async (req: Request): Promise<Response> => {
         pending: backUrlPending,
       },
       auto_return: "approved" as const,
+      notification_url: webhookUrl,
       external_reference: userId,
+      payer: userEmail
+        ? {
+            email: userEmail,
+          }
+        : undefined,
       metadata: {
         purchase_type: purchaseType,
         credits_amount:
           validatedOneTimePack?.credits ?? body.credits_amount ?? null,
         credit_pack_id: body.credit_pack_id ?? null,
         vector_tier: body.tier ?? null,
+        user_email: userEmail ?? null,
       },
     };
 
     const res = await fetch(MERCADOPAGO_PREFERENCES_URL, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
+      headers: buildMercadoPagoHeaders(accessToken, deviceId),
       body: JSON.stringify(preference),
     });
 

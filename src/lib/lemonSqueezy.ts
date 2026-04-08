@@ -5,6 +5,7 @@
 
 import { SupabaseClient } from "@supabase/supabase-js";
 import { trackEvent } from "./analytics";
+import { buildPaymentReturnUrls } from "./mercadoPago";
 
 const getSupabaseUrl = (): string => {
   const url =
@@ -26,16 +27,25 @@ export interface CreateLemonSqueezyCheckoutOptions {
 
 export async function createLemonSqueezyCheckout(
   supabase: SupabaseClient,
-  options: CreateLemonSqueezyCheckoutOptions
+  options: CreateLemonSqueezyCheckoutOptions,
 ): Promise<void> {
-  const { data, error } = await supabase.functions.invoke("lemonsqueezy-checkout", {
-    body: {
-      tier: options.tier,
-      user_id: options.userId,
-      user_email: options.userEmail,
-      redirect_url: `${window.location.origin}/dashboard?payment=success`,
-    },
+  const returnUrls = buildPaymentReturnUrls({
+    purchaseType: "tier",
+    provider: "lemonsqueezy",
+    tier: options.tier,
   });
+
+  const { data, error } = await supabase.functions.invoke(
+    "lemonsqueezy-checkout",
+    {
+      body: {
+        tier: options.tier,
+        user_id: options.userId,
+        user_email: options.userEmail,
+        redirect_url: returnUrls.success,
+      },
+    },
+  );
 
   if (error) {
     throw new Error(error.message || "Failed to create checkout");
@@ -51,7 +61,10 @@ export async function createLemonSqueezyCheckout(
     throw new Error("No checkout URL returned");
   }
 
-  trackEvent("checkout_started", { tier: options.tier, provider: "lemonsqueezy" });
+  trackEvent("checkout_started", {
+    tier: options.tier,
+    provider: "lemonsqueezy",
+  });
 
   window.open(checkout_url, "_blank", "noopener,noreferrer");
 }
