@@ -9,6 +9,7 @@ import {
 import { SupabaseClient } from "@supabase/supabase-js";
 
 interface CheckpointRow {
+  owner_user_id?: string | null;
   thread_id: string;
   checkpoint_id: string;
   parent_checkpoint_id: string | undefined;
@@ -26,6 +27,14 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
   constructor(client: SupabaseClient) {
     super();
     this.client = client;
+  }
+
+  private async getCurrentUserId(): Promise<string | null> {
+    const {
+      data: { session },
+    } = await this.client.auth.getSession();
+
+    return session?.user?.id ?? null;
   }
 
   async getTuple(config: {
@@ -135,11 +144,13 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
   ): Promise<{ configurable: { thread_id: string; checkpoint_id: string } }> {
     const thread_id = config.configurable?.thread_id;
     const checkpoint_id = checkpoint.id; // Checkpoint ID comes from the checkpoint object itself usually
+    const owner_user_id = await this.getCurrentUserId();
 
     if (!thread_id) throw new Error("Missing thread_id");
 
     try {
       const { error } = await this.client.from("checkpoints").upsert({
+        owner_user_id,
         thread_id,
         checkpoint_id,
         parent_checkpoint_id: config.configurable?.checkpoint_id, // The ID we branched FROM
@@ -172,9 +183,11 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
     // Optional for basic persistence, but good for completeness
     const thread_id = config.configurable?.thread_id;
     const checkpoint_id = config.configurable?.checkpoint_id;
+    const owner_user_id = await this.getCurrentUserId();
     if (!thread_id || !checkpoint_id) return;
 
     const rows = writes.map((w, idx) => ({
+      owner_user_id,
       thread_id,
       checkpoint_id,
       task_id: taskId,

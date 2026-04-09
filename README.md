@@ -1524,10 +1524,10 @@ In `useGoalWizard.ts`:
 
 When using Supabase persistence:
 
-- **`checkpoints`**: `thread_id`, `checkpoint_id`, `parent_checkpoint_id`, `type`, `checkpoint` (jsonb)
-- **`checkpoint_writes`**: `thread_id`, `checkpoint_id`, `task_id`, `idx`, `channel`, `type`, `value`
+- **`checkpoints`**: `owner_user_id`, `thread_id`, `checkpoint_id`, `parent_checkpoint_id`, `type`, `checkpoint` (jsonb), `metadata` (jsonb)
+- **`checkpoint_writes`**: `owner_user_id`, `thread_id`, `checkpoint_id`, `task_id`, `idx`, `channel`, `type`, `value`
 
-Migration: `supabase/migrations/20260201_create_checkpoints.sql` (and RLS in `supabase_checkpoints_rls.sql`).
+Migrations: `supabase/migrations/20260201010000_create_checkpoints.sql` and `supabase/migrations/20260409110000_checkpoint_ownership_rls.sql`.
 
 ---
 
