@@ -275,6 +275,9 @@ function App() {
   const localizedPublicLanguages = SUPPORTED_SEO_LANGUAGES.filter(
     (entry) => entry !== "en",
   );
+  const isLandingRoute =
+    pathname === "/" ||
+    localizedPublicLanguages.some((locale) => pathname === `/${locale}`);
 
   const scheduleProfileRefreshes = (delays: number[]) => {
     refreshProfile();
@@ -1253,7 +1256,7 @@ function App() {
       >
         {t("app.skipToMain")}
       </a>
-      {location.pathname === "/" && !isMobile ? <ParticleBackground /> : null}
+      {isLandingRoute && !isMobile ? <ParticleBackground /> : null}
       <Toaster />
       <ChatwootWidget />
       <BinancePaymentModal
