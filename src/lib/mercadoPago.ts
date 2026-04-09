@@ -12,6 +12,27 @@ const MERCADOPAGO_SECURITY_SCRIPT_ID = "mercadopago-security-sdk";
 const MERCADOPAGO_SECURITY_SCRIPT_URL =
   "https://www.mercadopago.com/v2/security.js";
 
+const getBrowserHostname = (): string => {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  return window.location.hostname.toLowerCase();
+};
+
+export function shouldUseMercadoPagoTestEnvironment(): boolean {
+  const forcedEnvironment =
+    (import.meta.env.VITE_MERCADOPAGO_ENVIRONMENT as string | undefined) ?? "";
+  if (forcedEnvironment.trim().toLowerCase() === "test") {
+    return true;
+  }
+
+  const hostname = getBrowserHostname();
+  return (
+    hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1"
+  );
+}
+
 const getSupabaseUrl = (): string => {
   const url =
     (import.meta.env.VITE_SUPABASE_URL as string | undefined) ??
@@ -26,13 +47,24 @@ export function isMercadoPagoConfigured(): boolean {
 }
 
 export function getMercadoPagoPublicKey(): string {
-  return (
+  const testKey = (
+    (import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY_PRUEBA as
+      | string
+      | undefined) ?? ""
+  ).trim();
+  const liveKey = (
     (import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY as string | undefined) ??
     (import.meta.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY as
       | string
       | undefined) ??
     ""
   ).trim();
+
+  if (shouldUseMercadoPagoTestEnvironment() && testKey) {
+    return testKey;
+  }
+
+  return liveKey || testKey;
 }
 
 export function isMercadoPagoSubscriptionConfigured(): boolean {
@@ -277,6 +309,7 @@ export async function createCheckout(
         purchase_type: options.purchaseType,
         credits_amount: options.creditsAmount,
         credit_pack_id: options.creditPackId,
+        environment: shouldUseMercadoPagoTestEnvironment() ? "test" : undefined,
         device_id: options.deviceId ?? getMercadoPagoDeviceId(),
         back_url_success: options.backUrlSuccess ?? returnUrls.success,
         back_url_failure: options.backUrlFailure ?? returnUrls.failure,
@@ -340,6 +373,7 @@ export async function createSubscription(
         billing_interval: options.billingInterval,
         purchase_type: "tier",
         card_token_id: options.cardTokenId,
+        environment: shouldUseMercadoPagoTestEnvironment() ? "test" : undefined,
         device_id: options.deviceId ?? getMercadoPagoDeviceId(),
         back_url_success: options.backUrlSuccess ?? returnUrls.success,
         back_url_failure: options.backUrlFailure ?? returnUrls.failure,

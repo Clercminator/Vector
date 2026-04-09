@@ -6,6 +6,10 @@
 const MERCADOPAGO_PREFERENCES_URL =
   "https://api.mercadopago.com/checkout/preferences";
 const MERCADOPAGO_PREAPPROVAL_URL = "https://api.mercadopago.com/preapproval";
+const EXCHANGE_RATE_FALLBACK_URLS = [
+  "https://open.er-api.com/v6/latest/USD",
+  "https://api.exchangerate.host/latest?base=USD&symbols=ARS",
+];
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -34,6 +38,14 @@ interface PreferenceBody {
   device_id?: string;
   environment?: "test" | "live";
   user_id?: string;
+}
+
+interface MercadoPagoPricing {
+  sourceAmount: number;
+  sourceCurrency: string;
+  processingAmount: number;
+  processingCurrency: string;
+  usdToArsRate: number | null;
 }
 
 const EXTRA_CREDIT_PACKS = {
@@ -93,6 +105,85 @@ function shouldUseTestCredentials(
   }
 }
 
+function getBillingFrequency(interval?: "month" | "year") {
+  if (interval === "year") {
+    return { frequency: 12, frequency_type: "months" as const };
+  }
+
+  return { frequency: 1, frequency_type: "months" as const };
+}
+
+async function fetchUsdToArsRate(): Promise<number> {
+  const override =
+    Deno.env.get("MERCADOPAGO_USD_TO_ARS_RATE_OVERRIDE")?.trim() ?? "";
+  if (override) {
+    const parsed = Number(override);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+
+  for (const url of EXCHANGE_RATE_FALLBACK_URLS) {
+    try {
+      const response = await fetch(url, {
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) {
+        continue;
+      }
+
+      const data = (await response.json()) as Record<string, unknown>;
+      const rates =
+        typeof data.rates === "object" && data.rates !== null
+          ? (data.rates as Record<string, unknown>)
+          : null;
+      const rate = rates?.ARS;
+      const parsed = typeof rate === "number" ? rate : Number(rate);
+
+      if (Number.isFinite(parsed) && parsed > 0) {
+        return parsed;
+      }
+    } catch {
+      // Try the next source.
+    }
+  }
+
+  throw new Error(
+    "Unable to fetch the USD to ARS exchange rate for MercadoPago pricing.",
+  );
+}
+
+async function resolveMercadoPagoPricing(params: {
+  amount: number;
+  currency: string;
+}): Promise<MercadoPagoPricing> {
+  const sourceCurrency = params.currency.toUpperCase();
+  if (sourceCurrency === "ARS") {
+    return {
+      sourceAmount: params.amount,
+      sourceCurrency,
+      processingAmount: params.amount,
+      processingCurrency: "ARS",
+      usdToArsRate: null,
+    };
+  }
+
+  if (sourceCurrency !== "USD") {
+    throw new Error(
+      `Unsupported MercadoPago display currency: ${sourceCurrency}. Only USD display pricing is supported for ARS conversion.`,
+    );
+  }
+
+  const rate = await fetchUsdToArsRate();
+  return {
+    sourceAmount: params.amount,
+    sourceCurrency,
+    processingAmount: Number((params.amount * rate).toFixed(2)),
+    processingCurrency: "ARS",
+    usdToArsRate: rate,
+  };
+}
+
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -109,10 +200,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     Deno.env.get("MERCADOPAGO_ACCESS_TOKEN")?.trim() ?? "";
   const testAccessToken =
     Deno.env.get("MERCADOPAGO_ACCESS_TOKEN_PRUEBA")?.trim() ?? "";
-  const planBuilderId =
-    Deno.env.get("MERCADOPAGO_PLAN_BUILDER_ID")?.trim() ?? "";
-  const planMaxId = Deno.env.get("MERCADOPAGO_PLAN_MAX_ID")?.trim() ?? "";
-
   try {
     const body = (await req.json()) as PreferenceBody;
     const tier = body.tier ?? "Master Builder";
@@ -142,6 +229,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     );
     const accessToken =
       useTestCredentials && testAccessToken ? testAccessToken : liveAccessToken;
+    const pricing = await resolveMercadoPagoPricing({ amount, currency });
 
     if (!accessToken) {
       return new Response(
@@ -158,21 +246,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     if (billingMode === "subscription") {
-      const normalizedTier = tier.toLowerCase();
-      const preapprovalPlanId =
-        normalizedTier === "max" ? planMaxId : planBuilderId;
-      if (!preapprovalPlanId) {
-        return new Response(
-          JSON.stringify({
-            error: `MercadoPago plan ID for tier "${tier}" is not configured. Set MERCADOPAGO_PLAN_BUILDER_ID and MERCADOPAGO_PLAN_MAX_ID in Supabase secrets.`,
-          }),
-          {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
-        );
-      }
-
       if (!userEmail) {
         return new Response(
           JSON.stringify({
@@ -201,11 +274,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
         method: "POST",
         headers: buildMercadoPagoHeaders(accessToken, deviceId),
         body: JSON.stringify({
-          preapproval_plan_id: preapprovalPlanId,
           reason: title,
           external_reference: userId,
           payer_email: userEmail,
           card_token_id: cardTokenId,
+          auto_recurring: {
+            ...getBillingFrequency(body.billing_interval),
+            transaction_amount: pricing.processingAmount,
+            currency_id: pricing.processingCurrency,
+          },
           back_url: backUrlSuccess,
           status: "authorized",
         }),
@@ -291,8 +368,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
           title: validatedOneTimePack?.title ?? title,
           description,
           quantity: 1,
-          unit_price: validatedOneTimePack?.amount ?? amount,
-          currency_id: validatedOneTimePack?.currency ?? currency,
+          unit_price: pricing.processingAmount,
+          currency_id: pricing.processingCurrency,
         },
       ],
       back_urls: {
@@ -315,6 +392,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
         credit_pack_id: body.credit_pack_id ?? null,
         vector_tier: body.tier ?? null,
         user_email: userEmail ?? null,
+        display_amount_usd: pricing.sourceAmount,
+        display_currency: pricing.sourceCurrency,
+        mercado_pago_amount: pricing.processingAmount,
+        mercado_pago_currency: pricing.processingCurrency,
+        usd_to_ars_rate: pricing.usdToArsRate,
       },
     };
 
