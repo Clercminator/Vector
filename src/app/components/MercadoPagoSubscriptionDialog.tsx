@@ -1,5 +1,5 @@
 import React from "react";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Loader2, Lock, ShieldCheck } from "lucide-react";
 
 import {
   Dialog,
@@ -15,6 +15,7 @@ import {
   getMercadoPagoPublicKey,
   isMercadoPagoSubscriptionConfigured,
 } from "@/lib/mercadoPago";
+import { useLanguage } from "@/app/components/language-provider";
 
 declare global {
   interface Window {
@@ -86,6 +87,11 @@ interface MercadoPagoDialogCopy {
   dialogTitle: string;
   dialogDescription: (tierName: string) => string;
   recurringNote: string;
+  cardPaymentTitle: string;
+  cardPaymentDescription: string;
+  summaryTitle: string;
+  securityCaption: string;
+  submitCaption: string;
   cardNumber: string;
   expirationDate: string;
   securityCode: string;
@@ -113,7 +119,65 @@ interface MercadoPagoDialogCopy {
 }
 
 const SECURE_FIELD_CLASS_NAME =
-  "h-14 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-zinc-700 dark:bg-zinc-950 [&_iframe]:h-full [&_iframe]:min-h-0 [&_iframe]:w-full";
+  "flex h-12 min-h-12 items-center overflow-hidden rounded-xl border border-zinc-300 bg-white px-4 shadow-sm [&_iframe]:block [&_iframe]:h-full [&_iframe]:min-h-0 [&_iframe]:w-full";
+
+const FORM_FIELD_CLASS_NAME =
+  "flex h-12 w-full rounded-xl border border-zinc-300 bg-white px-4 text-[15px] text-zinc-900 shadow-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10";
+
+const SUMMARY_PANEL_CLASS_NAME =
+  "bg-[radial-gradient(circle_at_top,_rgba(23,104,99,0.85),_rgba(10,22,24,1)_62%)] px-6 py-7 text-white sm:px-8 sm:py-9";
+
+function dedupeSelectOptions(field: HTMLSelectElement) {
+  const seen = new Set<string>();
+  const uniqueOptions = Array.from(field.options).filter((option) => {
+    const key = `${option.value}::${option.textContent?.trim() ?? ""}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+
+  if (uniqueOptions.length === field.options.length) {
+    return;
+  }
+
+  const selectedValue = field.value;
+  field.replaceChildren(...uniqueOptions);
+
+  if (selectedValue) {
+    field.value = selectedValue;
+  }
+}
+
+function observeUniqueSelectOptions(ids: string[]) {
+  if (typeof document === "undefined") {
+    return () => undefined;
+  }
+
+  const observers: MutationObserver[] = [];
+
+  ids.forEach((id) => {
+    const field = document.getElementById(id);
+    if (!(field instanceof HTMLSelectElement)) {
+      return;
+    }
+
+    const normalize = () => dedupeSelectOptions(field);
+    normalize();
+
+    const observer = new MutationObserver(() => {
+      normalize();
+    });
+
+    observer.observe(field, { childList: true, subtree: true });
+    observers.push(observer);
+  });
+
+  return () => {
+    observers.forEach((observer) => observer.disconnect());
+  };
+}
 
 function getSupportedLanguage(value?: string): SupportedLanguage {
   const normalized = value?.trim().toLowerCase() ?? "";
@@ -134,28 +198,6 @@ function getSupportedLanguage(value?: string): SupportedLanguage {
   return "en";
 }
 
-function getPreferredLanguage(): SupportedLanguage {
-  if (typeof window !== "undefined") {
-    const [firstSegment] = window.location.pathname.split("/").filter(Boolean);
-    if (firstSegment) {
-      return getSupportedLanguage(firstSegment);
-    }
-  }
-
-  if (typeof document !== "undefined") {
-    const documentLanguage = document.documentElement.lang;
-    if (documentLanguage) {
-      return getSupportedLanguage(documentLanguage);
-    }
-  }
-
-  if (typeof navigator !== "undefined") {
-    return getSupportedLanguage(navigator.language);
-  }
-
-  return "en";
-}
-
 function getMercadoPagoCopy(
   language: SupportedLanguage,
 ): MercadoPagoDialogCopy {
@@ -167,6 +209,14 @@ function getMercadoPagoCopy(
           `Finaliza tu suscripcion ${tierName} con una tarjeta autorizada por Mercado Pago. Los datos de tu tarjeta se tokenizan en Mercado Pago y Vector nunca los almacena.`,
         recurringNote:
           "Este flujo sigue el modelo de suscripciones recurrentes de Mercado Pago con una tarjeta tokenizada y una suscripcion autorizada.",
+        cardPaymentTitle: "Pago con tarjeta",
+        cardPaymentDescription:
+          "Completa los datos exactamente como aparecen en tu tarjeta. Mercado Pago tokeniza el medio de pago y Vector no guarda esos datos.",
+        summaryTitle: "Resumen del plan",
+        securityCaption:
+          "Cobro recurrente seguro con tokenizacion nativa de Mercado Pago.",
+        submitCaption:
+          "Al activar la suscripcion, autorizas cobros recurrentes segun la periodicidad elegida.",
         cardNumber: "Numero de tarjeta",
         expirationDate: "Fecha de vencimiento",
         securityCode: "Codigo de seguridad",
@@ -202,6 +252,14 @@ function getMercadoPagoCopy(
           `Conclua sua assinatura ${tierName} com um cartao autorizado pelo Mercado Pago. Os dados do cartao sao tokenizados pelo Mercado Pago e nunca ficam armazenados na Vector.`,
         recurringNote:
           "Este fluxo segue o modelo de assinaturas recorrentes do Mercado Pago com cartao tokenizado e assinatura autorizada.",
+        cardPaymentTitle: "Pagamento com cartao",
+        cardPaymentDescription:
+          "Preencha os dados exatamente como aparecem no cartao. O Mercado Pago tokeniza o meio de pagamento e a Vector nao armazena esses dados.",
+        summaryTitle: "Resumo do plano",
+        securityCaption:
+          "Cobranca recorrente segura com tokenizacao nativa do Mercado Pago.",
+        submitCaption:
+          "Ao ativar a assinatura, voce autoriza cobrancas recorrentes conforme a periodicidade escolhida.",
         cardNumber: "Numero do cartao",
         expirationDate: "Validade",
         securityCode: "Codigo de seguranca",
@@ -236,6 +294,14 @@ function getMercadoPagoCopy(
           `Finalisez votre abonnement ${tierName} avec une carte autorisee par Mercado Pago. Les donnees de carte sont tokenisees par Mercado Pago et ne sont jamais stockees par Vector.`,
         recurringNote:
           "Ce flux suit le modele d'abonnement recurrent de Mercado Pago avec une carte tokenisee et un statut d'abonnement autorise.",
+        cardPaymentTitle: "Paiement par carte",
+        cardPaymentDescription:
+          "Renseignez les informations exactement comme elles apparaissent sur votre carte. Mercado Pago tokenise le moyen de paiement et Vector ne stocke jamais ces donnees.",
+        summaryTitle: "Resume du plan",
+        securityCaption:
+          "Facturation recurrente securisee avec la tokenisation native de Mercado Pago.",
+        submitCaption:
+          "En activant l'abonnement, vous autorisez des paiements recurrents selon la periodicite choisie.",
         cardNumber: "Numero de carte",
         expirationDate: "Date d'expiration",
         securityCode: "Code de securite",
@@ -269,6 +335,14 @@ function getMercadoPagoCopy(
           `Schliesse dein ${tierName}-Abonnement mit einer von Mercado Pago autorisierten Karte ab. Deine Kartendaten werden bei Mercado Pago tokenisiert und nie von Vector gespeichert.`,
         recurringNote:
           "Dieser Ablauf folgt dem wiederkehrenden Abomodell von Mercado Pago mit tokenisierter Karte und autorisiertem Abonnementstatus.",
+        cardPaymentTitle: "Kartenzahlung",
+        cardPaymentDescription:
+          "Trage die Daten genau so ein, wie sie auf deiner Karte stehen. Mercado Pago tokenisiert das Zahlungsmittel und Vector speichert diese Daten nie.",
+        summaryTitle: "Tarifubersicht",
+        securityCaption:
+          "Sichere wiederkehrende Abbuchung mit nativer Mercado-Pago-Tokenisierung.",
+        submitCaption:
+          "Mit dem Start des Abonnements autorisierst du wiederkehrende Abbuchungen gemaess dem gewahlten Intervall.",
         cardNumber: "Kartennummer",
         expirationDate: "Ablaufdatum",
         securityCode: "Sicherheitscode",
@@ -304,6 +378,14 @@ function getMercadoPagoCopy(
           `Finish your ${tierName} subscription with a card authorized through MercadoPago. Your card details are tokenized by MercadoPago and are never stored by Vector.`,
         recurringNote:
           "This follows MercadoPago's recurring subscription flow with a tokenized card and authorized subscription status.",
+        cardPaymentTitle: "Pay by card",
+        cardPaymentDescription:
+          "Enter the details exactly as they appear on the card. MercadoPago tokenizes the payment method and Vector never stores that data.",
+        summaryTitle: "Plan summary",
+        securityCaption:
+          "Secure recurring billing with MercadoPago's native tokenization flow.",
+        submitCaption:
+          "By starting the subscription, you authorize recurring charges based on the selected billing interval.",
         cardNumber: "Card number",
         expirationDate: "Expiration date",
         securityCode: "Security code",
@@ -358,10 +440,7 @@ function resetSecureField(id: string) {
   }
 }
 
-function resetMercadoPagoFormFields(
-  ids: MercadoPagoFormIds,
-  copy: MercadoPagoDialogCopy,
-) {
+function resetMercadoPagoFormFields(ids: MercadoPagoFormIds) {
   resetSecureField(ids.cardNumberId);
   resetSecureField(ids.expirationDateId);
   resetSecureField(ids.securityCodeId);
@@ -442,6 +521,7 @@ export const MercadoPagoSubscriptionDialog: React.FC<
   userEmail,
   onConfirm,
 }) => {
+  const { language, t } = useLanguage();
   const [isLoadingSdk, setIsLoadingSdk] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isFormReady, setIsFormReady] = React.useState(false);
@@ -465,14 +545,39 @@ export const MercadoPagoSubscriptionDialog: React.FC<
     onConfirmRef.current = onConfirm;
   }, [onConfirm]);
 
-  const language = React.useMemo(() => getPreferredLanguage(), []);
-  const copy = React.useMemo(() => getMercadoPagoCopy(language), [language]);
+  const copy = React.useMemo(
+    () => getMercadoPagoCopy(getSupportedLanguage(language)),
+    [language],
+  );
+
+  const tierDescription =
+    tierId === "builder"
+      ? t("pricing.tier.builder.desc")
+      : t("pricing.tier.max.desc");
+
+  const summaryFeatures = React.useMemo(() => {
+    if (tierId === "builder") {
+      return [
+        t("pricing.feature.builder.plans").replace("{0}", "5"),
+        t("pricing.feature.builder.ai"),
+        t("pricing.feature.builder.tracker"),
+        t("pricing.feature.builder.support"),
+      ];
+    }
+
+    return [
+      t("pricing.feature.max.plans").replace("{0}", "20"),
+      t("pricing.feature.max.calendar"),
+      t("pricing.feature.max.priority"),
+      t("pricing.feature.max.leyendo"),
+    ];
+  }, [t, tierId]);
 
   React.useEffect(() => {
     if (!open) {
       cardFormRef.current?.unmount?.();
       cardFormRef.current = null;
-      resetMercadoPagoFormFields(idsRef.current, copy);
+      resetMercadoPagoFormFields(idsRef.current);
       setIsSubmitting(false);
       setIsFormReady(false);
       setFormError(null);
@@ -485,14 +590,37 @@ export const MercadoPagoSubscriptionDialog: React.FC<
     }
 
     let cancelled = false;
+    const ids = idsRef.current;
+    const stopObservingSelects = observeUniqueSelectOptions([
+      ids.issuerId,
+      ids.installmentsId,
+      ids.identificationTypeId,
+    ]);
+    const normalizeSelects = () => {
+      const issuerField = document.getElementById(ids.issuerId);
+      const installmentsField = document.getElementById(ids.installmentsId);
+      const identificationField = document.getElementById(
+        ids.identificationTypeId,
+      );
+
+      if (issuerField instanceof HTMLSelectElement) {
+        dedupeSelectOptions(issuerField);
+      }
+      if (installmentsField instanceof HTMLSelectElement) {
+        dedupeSelectOptions(installmentsField);
+      }
+      if (identificationField instanceof HTMLSelectElement) {
+        dedupeSelectOptions(identificationField);
+      }
+    };
+    const selectNormalizationTimer = window.setInterval(normalizeSelects, 250);
 
     const mountCardForm = async () => {
       setIsLoadingSdk(true);
       setIsFormReady(false);
       setFormError(null);
 
-      const ids = idsRef.current;
-      resetMercadoPagoFormFields(ids, copy);
+      resetMercadoPagoFormFields(ids);
 
       try {
         await Promise.all([
@@ -512,10 +640,10 @@ export const MercadoPagoSubscriptionDialog: React.FC<
         }
 
         cardFormRef.current?.unmount?.();
-        resetMercadoPagoFormFields(ids, copy);
+        resetMercadoPagoFormFields(ids);
 
         const mp = new MercadoPagoCtor(publicKey, {
-          locale: getLocale(document.documentElement.lang || "en"),
+          locale: getLocale(language),
         });
 
         cardFormRef.current = mp.cardForm({
@@ -571,6 +699,21 @@ export const MercadoPagoSubscriptionDialog: React.FC<
                 return;
               }
               setIsFormReady(true);
+            },
+            onFetching: (resource) => {
+              if (
+                /issuers|installments|payment_methods|identification/i.test(
+                  resource,
+                )
+              ) {
+                window.requestAnimationFrame(() => {
+                  normalizeSelects();
+                });
+              }
+
+              return () => {
+                normalizeSelects();
+              };
             },
             onSubmit: async (event) => {
               event.preventDefault();
@@ -630,168 +773,232 @@ export const MercadoPagoSubscriptionDialog: React.FC<
 
     return () => {
       cancelled = true;
+      window.clearInterval(selectNormalizationTimer);
+      stopObservingSelects();
       cardFormRef.current?.unmount?.();
       cardFormRef.current = null;
-      resetMercadoPagoFormFields(idsRef.current, copy);
+      resetMercadoPagoFormFields(idsRef.current);
     };
-  }, [amountUsd, copy, open, tierId, userEmail]);
+  }, [amountUsd, copy, language, open, tierId, userEmail]);
 
   const ids = idsRef.current;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{copy.dialogTitle}</DialogTitle>
-          <DialogDescription>
-            {copy.dialogDescription(tierName)}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="overflow-hidden border-zinc-900 bg-zinc-950 p-0 text-white sm:max-w-5xl">
+        <div className="grid lg:grid-cols-[0.95fr_1.05fr]">
+          <div className={SUMMARY_PANEL_CLASS_NAME}>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/60">
+              {copy.summaryTitle}
+            </p>
+            <div className="mt-4">
+              <h2 className="text-3xl font-semibold tracking-tight">
+                {tierName}
+              </h2>
+              <div className="mt-3 flex items-end gap-2">
+                <span className="text-4xl font-semibold">
+                  ${amountUsd.toFixed(2)}
+                </span>
+                <span className="pb-1 text-sm text-white/70">
+                  / {copy.intervals[billingInterval]}
+                </span>
+              </div>
+              <p className="mt-4 max-w-md text-sm leading-6 text-white/72">
+                {tierDescription}
+              </p>
+            </div>
 
-        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-200">
-          <div className="flex items-center gap-2 font-medium">
-            <ShieldCheck className="h-4 w-4" />
-            {tierName} · ${amountUsd.toFixed(2)} /{" "}
-            {copy.intervals[billingInterval]}
-          </div>
-          <p className="mt-1 text-xs text-emerald-800/80 dark:text-emerald-200/80">
-            {copy.recurringNote}
-          </p>
-        </div>
+            <div className="mt-6 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-emerald-100">
+                <ShieldCheck className="h-4 w-4" />
+                {copy.securityCaption}
+              </div>
+              <p className="mt-2 text-xs leading-5 text-emerald-50/75">
+                {copy.recurringNote}
+              </p>
+            </div>
 
-        <form id={ids.formId} className="space-y-5">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-1.5 md:col-span-2">
-              <label className="text-sm font-medium">{copy.cardNumber}</label>
-              <div id={ids.cardNumberId} className={SECURE_FIELD_CLASS_NAME} />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">
-                {copy.expirationDate}
-              </label>
-              <div
-                id={ids.expirationDateId}
-                className={SECURE_FIELD_CLASS_NAME}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{copy.securityCode}</label>
-              <div
-                id={ids.securityCodeId}
-                className={SECURE_FIELD_CLASS_NAME}
-              />
-            </div>
-            <div className="space-y-1.5 md:col-span-2">
-              <label
-                htmlFor={ids.cardholderNameId}
-                className="text-sm font-medium"
-              >
-                {copy.cardholderName}
-              </label>
-              <input
-                id={ids.cardholderNameId}
-                type="text"
-                autoComplete="cc-name"
-                placeholder={copy.cardholderName}
-                className="flex h-11 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-700 dark:bg-zinc-950"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label htmlFor={ids.issuerId} className="text-sm font-medium">
-                {copy.issuer}
-              </label>
-              <select
-                id={ids.issuerId}
-                className="flex h-11 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-700 dark:bg-zinc-950"
-                defaultValue=""
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label
-                htmlFor={ids.installmentsId}
-                className="text-sm font-medium"
-              >
-                {copy.installments}
-              </label>
-              <select
-                id={ids.installmentsId}
-                className="flex h-11 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-700 dark:bg-zinc-950"
-                defaultValue=""
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label
-                htmlFor={ids.identificationTypeId}
-                className="text-sm font-medium"
-              >
-                {copy.documentType}
-              </label>
-              <select
-                id={ids.identificationTypeId}
-                className="flex h-11 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-700 dark:bg-zinc-950"
-                defaultValue=""
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label
-                htmlFor={ids.identificationNumberId}
-                className="text-sm font-medium"
-              >
-                {copy.documentNumber}
-              </label>
-              <input
-                id={ids.identificationNumberId}
-                type="text"
-                autoComplete="off"
-                placeholder={copy.documentNumber}
-                className="flex h-11 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-700 dark:bg-zinc-950"
-              />
-            </div>
-            <div className="space-y-1.5 md:col-span-2">
-              <label htmlFor={ids.emailId} className="text-sm font-medium">
-                {copy.email}
-              </label>
-              <input
-                id={ids.emailId}
-                type="email"
-                defaultValue={userEmail ?? ""}
-                autoComplete="email"
-                placeholder={copy.email}
-                className="flex h-11 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-700 dark:bg-zinc-950"
-              />
+            <div className="mt-7 space-y-3">
+              {summaryFeatures.map((feature) => (
+                <div
+                  key={feature}
+                  className="flex items-start gap-3 text-sm text-white/84"
+                >
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 flex-none text-emerald-300" />
+                  <span>{feature}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {formError && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300">
-              {formError}
-            </div>
-          )}
+          <div className="bg-[#f5f1e8] px-6 py-7 text-zinc-900 sm:px-8 sm:py-9">
+            <DialogHeader className="space-y-3 text-left">
+              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-zinc-300 bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">
+                <Lock className="h-3.5 w-3.5" />
+                {copy.dialogTitle}
+              </div>
+              <DialogTitle className="text-2xl font-semibold tracking-tight text-zinc-950">
+                {copy.cardPaymentTitle}
+              </DialogTitle>
+              <DialogDescription className="max-w-2xl text-sm leading-6 text-zinc-600">
+                {copy.cardPaymentDescription}
+              </DialogDescription>
+            </DialogHeader>
 
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              {copy.cancel}
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoadingSdk || !isFormReady || isSubmitting}
-            >
-              {isLoadingSdk || isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isSubmitting ? copy.authorizing : copy.loading}
-                </>
-              ) : (
-                copy.startTier(tierName)
+            <form id={ids.formId} className="mt-7 space-y-5">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="text-sm font-semibold text-zinc-800">
+                    {copy.cardNumber}
+                  </label>
+                  <div
+                    id={ids.cardNumberId}
+                    className={SECURE_FIELD_CLASS_NAME}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-semibold text-zinc-800">
+                    {copy.expirationDate}
+                  </label>
+                  <div
+                    id={ids.expirationDateId}
+                    className={SECURE_FIELD_CLASS_NAME}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-semibold text-zinc-800">
+                    {copy.securityCode}
+                  </label>
+                  <div
+                    id={ids.securityCodeId}
+                    className={SECURE_FIELD_CLASS_NAME}
+                  />
+                </div>
+                <div className="space-y-1.5 md:col-span-2">
+                  <label
+                    htmlFor={ids.cardholderNameId}
+                    className="text-sm font-semibold text-zinc-800"
+                  >
+                    {copy.cardholderName}
+                  </label>
+                  <input
+                    id={ids.cardholderNameId}
+                    type="text"
+                    autoComplete="cc-name"
+                    placeholder={copy.cardholderName}
+                    className={FORM_FIELD_CLASS_NAME}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor={ids.issuerId}
+                    className="text-sm font-semibold text-zinc-800"
+                  >
+                    {copy.issuer}
+                  </label>
+                  <select
+                    id={ids.issuerId}
+                    className={FORM_FIELD_CLASS_NAME}
+                    defaultValue=""
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor={ids.installmentsId}
+                    className="text-sm font-semibold text-zinc-800"
+                  >
+                    {copy.installments}
+                  </label>
+                  <select
+                    id={ids.installmentsId}
+                    className={FORM_FIELD_CLASS_NAME}
+                    defaultValue=""
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor={ids.identificationTypeId}
+                    className="text-sm font-semibold text-zinc-800"
+                  >
+                    {copy.documentType}
+                  </label>
+                  <select
+                    id={ids.identificationTypeId}
+                    className={FORM_FIELD_CLASS_NAME}
+                    defaultValue=""
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor={ids.identificationNumberId}
+                    className="text-sm font-semibold text-zinc-800"
+                  >
+                    {copy.documentNumber}
+                  </label>
+                  <input
+                    id={ids.identificationNumberId}
+                    type="text"
+                    autoComplete="off"
+                    placeholder={copy.documentNumber}
+                    className={FORM_FIELD_CLASS_NAME}
+                  />
+                </div>
+                <div className="space-y-1.5 md:col-span-2">
+                  <label
+                    htmlFor={ids.emailId}
+                    className="text-sm font-semibold text-zinc-800"
+                  >
+                    {copy.email}
+                  </label>
+                  <input
+                    id={ids.emailId}
+                    type="email"
+                    defaultValue={userEmail ?? ""}
+                    autoComplete="email"
+                    placeholder={copy.email}
+                    className={FORM_FIELD_CLASS_NAME}
+                  />
+                </div>
+              </div>
+
+              {formError && (
+                <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {formError}
+                </div>
               )}
-            </Button>
+
+              <p className="text-sm leading-6 text-zinc-600">
+                {copy.submitCaption}
+              </p>
+
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={isSubmitting}
+                  className="h-12 rounded-xl border-zinc-300 bg-white px-5 text-zinc-800 hover:bg-zinc-50"
+                >
+                  {copy.cancel}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isLoadingSdk || !isFormReady || isSubmitting}
+                  className="h-12 rounded-xl bg-zinc-950 px-5 text-white hover:bg-zinc-800 disabled:bg-zinc-300 disabled:text-zinc-500"
+                >
+                  {isLoadingSdk || isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {isSubmitting ? copy.authorizing : copy.loading}
+                    </>
+                  ) : (
+                    copy.startTier(tierName)
+                  )}
+                </Button>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
