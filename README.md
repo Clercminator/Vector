@@ -96,7 +96,7 @@ This document explains **what the app does**, **how it’s built**, **how the pi
   Users can publish blueprints as **templates**. On the Community page you see those templates (with "Load more" and sort by recent/top), can **vote** on them, **use** one (import it into your blueprints), or **gift points** to the author. Published templates also include a community-proof snapshot and verified history derived from tracker activity.
 
 - **Pricing**  
-  Four tiers: **Architect** (free, 1 plan), **Builder** (5 plans, all frameworks + export, one-time), **Max** (20 plans, priority AI, one-time), **Enterprise** (contact). Builder and Max use MercadoPago (LATAM) or Lemon Squeezy (global) when configured; prices are one-time (no subscription yet).
+  Four tiers: **Architect** (free, 1 plan), **Builder** (5 plans), **Max** (20 plans, priority AI), **Enterprise** (contact). Builder and Max are recurring paid tiers. Global users are routed through Lemon Squeezy, while LATAM users go through a custom MercadoPago card-token subscription flow. One-time MercadoPago Checkout Pro is still used for extra credit packs.
 
 - **Languages & theme**  
   You can switch **language** (e.g. English / Español) and **theme** (light/dark) from the nav. All visible text and framework content can be translated.
@@ -141,10 +141,10 @@ This document explains **what the app does**, **how it’s built**, **how the pi
    `npm install`
 
 2. **Configure environment**  
-   Create a `.env` file in the **project root** with at least:
+    Create a `.env` file in the **project root** with at least:
    - `VITE_SUPABASE_URL` (or `VITE_supabase_url`) — your Supabase project URL
    - `VITE_ANON_PUBLIC_KEY` — Supabase anon (public) key  
-     Optional: `VITE_OPENROUTER_PROXY_URL` (recommended for production) or `VITE_OPENROUTER_API_KEY` for AI; `VITE_GOOGLE_OAUTH_CLIENT_ID` for Google Calendar export; `VITE_MERCADOPAGO_PUBLIC_KEY` for pricing checkout. Backend-only keys (e.g. MercadoPago Access Token, Open Router API key) go in Supabase Secrets or `.env.backend`.
+     Optional: `VITE_OPENROUTER_PROXY_URL` (recommended for production) or `VITE_OPENROUTER_API_KEY` for AI; `VITE_GOOGLE_OAUTH_CLIENT_ID` for Google Calendar export; `VITE_MERCADOPAGO_PUBLIC_KEY` for live MercadoPago checkout; `VITE_MERCADOPAGO_PUBLIC_KEY_PRUEBA` for MercadoPago test-card validation; `VITE_MERCADOPAGO_ENVIRONMENT` to hard-force `test` or `live`. Backend-only keys (for example MercadoPago access tokens and Open Router API keys) go in Supabase Secrets or `.env.backend`.
 
 3. **Start the app**  
    Run:  
@@ -165,14 +165,16 @@ This document explains **what the app does**, **how it’s built**, **how the pi
 5. **Backend (payments, secure AI, credits/levels)**  
    The app uses **Supabase Edge Functions** for backend logic:
    - **openrouter-proxy** — Proxies AI requests; API key stays server-side.
-   - **mercado-pago-preference** — Creates MercadoPago checkout; returns `init_point` URL.
-   - **mercado-pago-webhook** — Handles payment notifications; updates `profiles.credits` and `profiles.tier` via `increment_credits` RPC; calls **send-email** for receipt.
-   - **send-email** — Sends transactional emails (receipt after purchase). Called by mercado-pago-webhook. Uses Resend (or similar); requires `RESEND_API_KEY` or equivalent in Supabase Secrets.
-   - **handle-new-user** — Triggered by Supabase Database Webhook (INSERT on `auth.users`). Sends welcome email via Resend. Requires `RESEND_API_KEY` and a Database Webhook configured in Supabase Dashboard.
 
-   **Already deployed:** Edge Functions, Supabase Secrets (`OPENROUTER_API_KEY_2` or `OPENROUTER_API_KEY` for the AI proxy, `MERCADOPAGO_ACCESS_TOKEN`), frontend env vars (`VITE_OPENROUTER_PROXY_URL`, `VITE_MERCADOPAGO_PUBLIC_KEY`), MercadoPago webhook configured. Ensure `profiles.tier` and the credit RPCs exist in your database. See **[Deploying Vector: Open Router API Key](#deploying-vector-open-router-api-key-beginner-guide)** for a step-by-step guide.
+- **mercado-pago-preference** — Creates MercadoPago Checkout Pro preferences for one-time packs and MercadoPago preapproval subscriptions for Builder/Max.
+- **mercado-pago-webhook** — Handles payment notifications and recurring subscription state; updates `payments`, `billing_subscriptions`, `profiles.credits`, and `profiles.tier`; calls **send-email** for receipt where applicable.
+- **billing-cancel-subscription** — Cancels the active Lemon Squeezy or MercadoPago subscription for the signed-in user and syncs the stored billing state.
+- **send-email** — Sends transactional emails (receipt after purchase). Called by mercado-pago-webhook. Uses Resend (or similar); requires `RESEND_API_KEY` or equivalent in Supabase Secrets.
+- **handle-new-user** — Triggered by Supabase Database Webhook (INSERT on `auth.users`). Sends welcome email via Resend. Requires `RESEND_API_KEY` and a Database Webhook configured in Supabase Dashboard.
 
-   **Stripe** (future US implementation): See **[integrations/pending/stripe/](integrations/pending/stripe/)**.
+**Already deployed:** Edge Functions, Supabase Secrets (`OPENROUTER_API_KEY_2` or `OPENROUTER_API_KEY` for the AI proxy, `MERCADOPAGO_ACCESS_TOKEN`, optionally `MERCADOPAGO_ACCESS_TOKEN_PRUEBA` for true test-card flows), frontend env vars (`VITE_OPENROUTER_PROXY_URL`, `VITE_MERCADOPAGO_PUBLIC_KEY`, optionally `VITE_MERCADOPAGO_PUBLIC_KEY_PRUEBA`), and MercadoPago webhook configuration. Ensure `profiles.tier`, `billing_subscriptions`, and the billing RPCs exist in your database. For the detailed MercadoPago implementation and testing notes, see **[docs/mercadopago-billing.md](docs/mercadopago-billing.md)**.
+
+**Stripe** (future US implementation): See **[integrations/pending/stripe/](integrations/pending/stripe/)**.
 
 ---
 
@@ -1552,28 +1554,32 @@ Summary: **Level** = progression / gamification; **Credits** = AI usage budget; 
 
 Vector uses a **frontend-first** architecture with **Supabase Edge Functions** for backend logic:
 
-| Layer        | Where                   | What                                                                                     | Secrets                                                                                       |
-| ------------ | ----------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| **Frontend** | Vercel (React/Vite)     | UI, routing, local state, calls backend APIs                                             | Public keys only (`VITE_SUPABASE_URL`, `VITE_ANON_PUBLIC_KEY`, `VITE_MERCADOPAGO_PUBLIC_KEY`) |
-| **Backend**  | Supabase Edge Functions | AI proxy, payment processing, webhooks, credit management                                | Secret keys (`OPENROUTER_API_KEY`, `MERCADOPAGO_ACCESS_TOKEN`) in Supabase Secrets            |
-| **Database** | Supabase Postgres       | Auth, profiles (tier, credits), blueprints, templates, votes, payments, analytics_events | RLS policies enforce security                                                                 |
+| Layer        | Where                   | What                                                                                     | Secrets                                                                                                                                      |
+| ------------ | ----------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Frontend** | Vercel (React/Vite)     | UI, routing, local state, calls backend APIs                                             | Public keys only (`VITE_SUPABASE_URL`, `VITE_ANON_PUBLIC_KEY`, `VITE_MERCADOPAGO_PUBLIC_KEY`, optional `VITE_MERCADOPAGO_PUBLIC_KEY_PRUEBA`) |
+| **Backend**  | Supabase Edge Functions | AI proxy, payment processing, recurring billing sync, webhooks, credit management        | Secret keys (`OPENROUTER_API_KEY`, `MERCADOPAGO_ACCESS_TOKEN`, optional `MERCADOPAGO_ACCESS_TOKEN_PRUEBA`) in Supabase Secrets               |
+| **Database** | Supabase Postgres       | Auth, profiles (tier, credits), blueprints, templates, votes, payments, analytics_events | RLS policies enforce security                                                                                                                |
 
 **Edge Functions:**
 
 - **openrouter-proxy** — Proxies Open Router API; keeps AI key server-side. Frontend calls this instead of Open Router directly.
-- **mercado-pago-preference** — Creates MercadoPago payment preference; returns `init_point` URL for checkout redirect.
-- **mercado-pago-webhook** — Receives payment notifications from MercadoPago; updates `profiles.credits` and `profiles.tier` using `increment_credits` RPC; calls **send-email** for receipt.
+- **mercado-pago-preference** — Creates MercadoPago Checkout Pro preferences for one-time purchases and preapproval subscriptions for recurring tier billing.
+- **mercado-pago-webhook** — Receives payment notifications from MercadoPago; records payments, upserts recurring subscription state, provisions cycle credits, and syncs `profiles.tier`.
+- **billing-cancel-subscription** — Cancels active Lemon Squeezy or MercadoPago subscriptions and keeps `billing_subscriptions` synchronized with the provider.
 - **send-email** — Sends transactional emails (receipt, etc.). Called by mercado-pago-webhook. Requires `RESEND_API_KEY` (or equivalent) in Supabase Secrets.
 - **handle-new-user** — Triggered by Database Webhook (INSERT on `auth.users`). Sends welcome email via Resend. Requires `RESEND_API_KEY` and webhook configured in Supabase Dashboard.
 
 **Payment Flow (MercadoPago):**
 
-1. User clicks "Get Builder" or "Get Max" on Pricing page.
-2. Frontend calls `mercado-pago-preference` Edge Function with tier/amount.
-3. Edge Function creates preference using `MERCADOPAGO_ACCESS_TOKEN` and returns `init_point`.
-4. Frontend redirects user to MercadoPago Checkout (`init_point`).
-5. User completes payment; MercadoPago sends webhook to `mercado-pago-webhook`.
-6. Webhook verifies payment, determines tier/credits from amount, updates `profiles` table.
+1. User clicks a paid tier on Pricing or Profile.
+2. Region logic routes LATAM users to the custom `MercadoPagoSubscriptionDialog` and global users to Lemon Squeezy.
+3. The dialog loads MercadoPago CardForm, tokenizes the card with `createCardToken()`, and sends `card_token_id`, `payer_email`, `device_id`, tier, amount, and interval to `mercado-pago-preference`.
+4. The Edge Function selects live or test credentials, converts display USD pricing to ARS for MercadoPago processing, and creates a preapproval subscription.
+5. The frontend opens any returned `init_point` in a new tab and navigates the app to a pending billing state.
+6. MercadoPago webhook notifications upsert `billing_subscriptions`, record `payments`, provision plan credits for the active cycle, and sync `profiles.tier`.
+7. One-time extra credit packs still use MercadoPago Checkout Pro through the same Edge Function with `billing_mode: one_time`.
+
+For the implementation details, testing instructions, and rationale behind the MercadoPago UI and environment-switching work, see **[docs/mercadopago-billing.md](docs/mercadopago-billing.md)**.
 
 **Tier Enforcement:**
 

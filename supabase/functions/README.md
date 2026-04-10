@@ -6,19 +6,21 @@ This folder contains the Supabase Edge Functions used by Vector. Deploy them via
 
 ## List of Functions
 
-| Function                      | Purpose                                                                             | Secrets / Dependencies                                                                                       |
-| ----------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `handle-new-user`             | Triggered on signup; sends welcome email                                            | `RESEND_API_KEY`                                                                                             |
-| `mercado-pago-preference`     | Creates MercadoPago Checkout Pro preferences and recurring subscriptions            | `MERCADOPAGO_ACCESS_TOKEN`                                                                                   |
-| `mercado-pago-webhook`        | Handles payment notifications; updates credits/tier                                 | `MERCADOPAGO_ACCESS_TOKEN`                                                                                   |
-| `billing-cancel-subscription` | Cancels the active Lemon Squeezy or MercadoPago subscription for the signed-in user | `LEMONSQUEEZY_API_KEY`, `MERCADOPAGO_ACCESS_TOKEN`                                                           |
-| `openrouter-proxy`            | Proxies AI requests to Open Router                                                  | `OPENROUTER_API_KEY` or `OPENROUTER_API_KEY_2`                                                               |
-| `send-email`                  | Sends transactional emails                                                          | `RESEND_API_KEY`                                                                                             |
-| `lemonsqueezy-checkout`       | Creates Lemon Squeezy checkout for US/EU users                                      | `LEMONSQUEEZY_API_KEY`, `LEMONSQUEEZY_STORE_ID`, `LEMONSQUEEZY_VARIANT_STANDARD`, `LEMONSQUEEZY_VARIANT_MAX` |
-| `lemonsqueezy-webhook`        | Handles Lemon Squeezy payment notifications; updates credits/tier                   | `LEMONSQUEEZY_WEBHOOK_SECRET`                                                                                |
-| **`get-shared-blueprint`**    | **Returns shared plan data by token** (for `/share/:token`)                         | None (uses `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, auto-injected)                                    |
+| Function                      | Purpose                                                                                 | Secrets / Dependencies                                                                                                  |
+| ----------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `handle-new-user`             | Triggered on signup; sends welcome email                                                | `RESEND_API_KEY`                                                                                                        |
+| `mercado-pago-preference`     | Creates MercadoPago Checkout Pro preferences and recurring subscriptions                | `MERCADOPAGO_ACCESS_TOKEN`, optional `MERCADOPAGO_ACCESS_TOKEN_PRUEBA`, optional `MERCADOPAGO_USD_TO_ARS_RATE_OVERRIDE` |
+| `mercado-pago-webhook`        | Handles payment notifications; syncs credits, tier, payments, and billing_subscriptions | `MERCADOPAGO_ACCESS_TOKEN`                                                                                              |
+| `billing-cancel-subscription` | Cancels the active Lemon Squeezy or MercadoPago subscription for the signed-in user     | `LEMONSQUEEZY_API_KEY`, `MERCADOPAGO_ACCESS_TOKEN`, optional `MERCADOPAGO_ACCESS_TOKEN_PRUEBA`                          |
+| `openrouter-proxy`            | Proxies AI requests to Open Router                                                      | `OPENROUTER_API_KEY` or `OPENROUTER_API_KEY_2`                                                                          |
+| `send-email`                  | Sends transactional emails                                                              | `RESEND_API_KEY`                                                                                                        |
+| `lemonsqueezy-checkout`       | Creates Lemon Squeezy checkout for US/EU users                                          | `LEMONSQUEEZY_API_KEY`, `LEMONSQUEEZY_STORE_ID`, `LEMONSQUEEZY_VARIANT_STANDARD`, `LEMONSQUEEZY_VARIANT_MAX`            |
+| `lemonsqueezy-webhook`        | Handles Lemon Squeezy payment notifications; updates credits/tier                       | `LEMONSQUEEZY_WEBHOOK_SECRET`                                                                                           |
+| **`get-shared-blueprint`**    | **Returns shared plan data by token** (for `/share/:token`)                             | None (uses `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, auto-injected)                                               |
 
-For local MercadoPago sandbox testing, you can also set `MERCADOPAGO_ACCESS_TOKEN_PRUEBA`. The `mercado-pago-preference` function will prefer that test token automatically for `localhost` and `127.0.0.1` origins while keeping deployed origins on `MERCADOPAGO_ACCESS_TOKEN`.
+For MercadoPago testing, you can also set `MERCADOPAGO_ACCESS_TOKEN_PRUEBA`. The `mercado-pago-preference` function will prefer that test token for `localhost` and loopback origins automatically, and it will also use it for deployed origins when the frontend explicitly sends `environment: "test"`.
+
+If you are documenting or debugging the current MercadoPago billing architecture, use [docs/mercadopago-billing.md](../../docs/mercadopago-billing.md) as the detailed source of truth.
 
 ---
 
