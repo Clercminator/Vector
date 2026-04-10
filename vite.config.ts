@@ -86,6 +86,7 @@ export default defineConfig(() => {
         readable: true,
       }),
       VitePWA({
+        injectRegister: null,
         registerType: "autoUpdate",
         includeAssets: [
           "images/Logos/favicon.ico",
@@ -95,6 +96,11 @@ export default defineConfig(() => {
         ],
         manifest: false,
         useCredentials: false,
+        workbox: {
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
+        },
       }),
     ],
     resolve: {

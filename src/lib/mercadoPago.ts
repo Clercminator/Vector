@@ -11,6 +11,10 @@ declare global {
 const MERCADOPAGO_SECURITY_SCRIPT_ID = "mercadopago-security-sdk";
 const MERCADOPAGO_SECURITY_SCRIPT_URL =
   "https://www.mercadopago.com/v2/security.js";
+const MERCADOPAGO_ENV_QUERY_PARAM = "mp_env";
+const MERCADOPAGO_ENV_STORAGE_KEY = "vector.mercadopago.environment";
+
+type MercadoPagoEnvironmentMode = "live" | "test";
 
 const getBrowserHostname = (): string => {
   if (typeof window === "undefined") {
@@ -20,11 +24,56 @@ const getBrowserHostname = (): string => {
   return window.location.hostname.toLowerCase();
 };
 
+function getMercadoPagoEnvironmentOverride(): MercadoPagoEnvironmentMode | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const queryValue = params
+      .get(MERCADOPAGO_ENV_QUERY_PARAM)
+      ?.trim()
+      .toLowerCase();
+
+    if (queryValue === "test" || queryValue === "live") {
+      window.localStorage.setItem(MERCADOPAGO_ENV_STORAGE_KEY, queryValue);
+      return queryValue;
+    }
+
+    const storedValue = window.localStorage
+      .getItem(MERCADOPAGO_ENV_STORAGE_KEY)
+      ?.trim()
+      .toLowerCase();
+
+    if (storedValue === "test" || storedValue === "live") {
+      return storedValue;
+    }
+  } catch {
+    // Ignore storage and URL parsing issues.
+  }
+
+  return null;
+}
+
 export function shouldUseMercadoPagoTestEnvironment(): boolean {
   const forcedEnvironment =
     (import.meta.env.VITE_MERCADOPAGO_ENVIRONMENT as string | undefined) ?? "";
-  if (forcedEnvironment.trim().toLowerCase() === "test") {
+  const normalizedForcedEnvironment = forcedEnvironment.trim().toLowerCase();
+
+  if (normalizedForcedEnvironment === "test") {
     return true;
+  }
+  if (normalizedForcedEnvironment === "live") {
+    return false;
+  }
+
+  const environmentOverride = getMercadoPagoEnvironmentOverride();
+  if (environmentOverride === "test") {
+    return true;
+  }
+  if (environmentOverride === "live") {
+    return false;
   }
 
   const hostname = getBrowserHostname();
@@ -244,6 +293,32 @@ export interface CreateSubscriptionResult {
 import { SupabaseClient } from "@supabase/supabase-js";
 import { trackEvent } from "./analytics";
 
+function normalizeMercadoPagoFunctionMessage(message: string): string {
+  const normalized = message.trim();
+
+  if (/card token was generated without cvv validation/i.test(normalized)) {
+    if (typeof window !== "undefined") {
+      const language = window.location.pathname.split("/").filter(Boolean)[0];
+      if (language === "es") {
+        return "Mercado Pago no pudo validar el codigo de seguridad. Vuelve a escribir el CVV y espera un segundo antes de confirmar. Si estas probando con tarjetas de prueba, recuerda que vectorplan.xyz usa credenciales live y para pruebas necesitas un ambiente test con el email test@testuser.com.";
+      }
+      if (language === "pt") {
+        return "O Mercado Pago nao conseguiu validar o codigo de seguranca. Digite o CVV novamente e espere um segundo antes de confirmar. Se voce estiver usando cartoes de teste, lembre que vectorplan.xyz usa credenciais live e os testes exigem ambiente test com o email test@testuser.com.";
+      }
+      if (language === "fr") {
+        return "Mercado Pago n'a pas pu valider le code de securite. Saisissez a nouveau le CVV et attendez une seconde avant de confirmer. Si vous testez avec des cartes de test, notez que vectorplan.xyz utilise des identifiants live et qu'il faut un environnement de test avec l'email test@testuser.com.";
+      }
+      if (language === "de") {
+        return "Mercado Pago konnte den Sicherheitscode nicht validieren. Gib den CVV erneut ein und warte eine Sekunde vor dem Bestatigen. Wenn du mit Testkarten pruefst, beachte bitte, dass vectorplan.xyz Live-Zugangsdaten nutzt und Tests eine Testumgebung mit der E-Mail test@testuser.com brauchen.";
+      }
+    }
+
+    return "MercadoPago could not validate the security code. Re-enter the CVV and wait a second before confirming. If you are using test cards, note that vectorplan.xyz runs with live credentials and test purchases require a test environment with the email test@testuser.com.";
+  }
+
+  return normalized;
+}
+
 async function resolveFunctionErrorMessage(error: unknown): Promise<string> {
   const context =
     error && typeof error === "object" && "context" in error
@@ -258,14 +333,14 @@ async function resolveFunctionErrorMessage(error: unknown): Promise<string> {
           (payload as { error?: string; message?: string }).error ??
           (payload as { error?: string; message?: string }).message;
         if (message) {
-          return message;
+          return normalizeMercadoPagoFunctionMessage(message);
         }
       }
     } catch {
       try {
         const text = await context.clone().text();
         if (text.trim()) {
-          return text;
+          return normalizeMercadoPagoFunctionMessage(text);
         }
       } catch {
         // Fall through to the default message.
@@ -274,7 +349,7 @@ async function resolveFunctionErrorMessage(error: unknown): Promise<string> {
   }
 
   if (error instanceof Error && error.message) {
-    return error.message;
+    return normalizeMercadoPagoFunctionMessage(error.message);
   }
 
   return "Function invocation failed";

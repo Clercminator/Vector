@@ -9,6 +9,7 @@ import { ThemeProvider } from "next-themes";
 import { LanguageProvider } from "@/app/components/language-provider";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import { HelmetProvider } from "react-helmet-async";
+import { registerSW } from "virtual:pwa-register";
 
 function queueNonCriticalClientTask(task: () => void) {
   if (typeof window === "undefined") return;
@@ -26,6 +27,13 @@ if (import.meta.env.PROD) {
   queueNonCriticalClientTask(() => {
     injectSpeedInsights();
     inject();
+  });
+
+  registerSW({
+    immediate: true,
+    onNeedRefresh() {
+      window.location.reload();
+    },
   });
 }
 

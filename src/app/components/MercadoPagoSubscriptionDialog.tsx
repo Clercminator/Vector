@@ -14,6 +14,7 @@ import {
   getMercadoPagoDeviceId,
   getMercadoPagoPublicKey,
   isMercadoPagoSubscriptionConfigured,
+  shouldUseMercadoPagoTestEnvironment,
 } from "@/lib/mercadoPago";
 import { useLanguage } from "@/app/components/language-provider";
 
@@ -31,7 +32,12 @@ interface MercadoPagoCardFormData {
   cardholderEmail?: string;
 }
 
+interface MercadoPagoCardTokenResult {
+  id?: string;
+}
+
 interface MercadoPagoCardFormInstance {
+  createCardToken(): Promise<MercadoPagoCardTokenResult | string>;
   getCardFormData(): MercadoPagoCardFormData;
   unmount?: () => void;
 }
@@ -92,6 +98,8 @@ interface MercadoPagoDialogCopy {
   summaryTitle: string;
   securityCaption: string;
   submitCaption: string;
+  testModeBadge: string;
+  testModeHint: string;
   cardNumber: string;
   expirationDate: string;
   securityCode: string;
@@ -113,6 +121,7 @@ interface MercadoPagoDialogCopy {
   sdkUnavailable: string;
   mountError: string;
   tokenError: string;
+  cvvValidationError: string;
   emailRequired: string;
   submitError: string;
   loadError: string;
@@ -217,6 +226,9 @@ function getMercadoPagoCopy(
           "Cobro recurrente seguro con tokenizacion nativa de Mercado Pago.",
         submitCaption:
           "Al activar la suscripcion, autorizas cobros recurrentes segun la periodicidad elegida.",
+        testModeBadge: "Modo prueba de Mercado Pago",
+        testModeHint:
+          "Estas usando credenciales de prueba. Valida el flujo con cuentas y tarjetas de prueba de Mercado Pago antes de volver al modo live.",
         cardNumber: "Numero de tarjeta",
         expirationDate: "Fecha de vencimiento",
         securityCode: "Codigo de seguridad",
@@ -240,6 +252,8 @@ function getMercadoPagoCopy(
         mountError:
           "No se pudo montar el formulario de tarjeta de Mercado Pago.",
         tokenError: "Mercado Pago no devolvio un token de tarjeta.",
+        cvvValidationError:
+          "Mercado Pago no pudo validar el codigo de seguridad. Vuelve a escribir el CVV y espera un segundo antes de confirmar. Si estas probando con tarjetas de prueba, recuerda que vectorplan.xyz usa credenciales live y para pruebas necesitas un ambiente test con el email test@testuser.com.",
         emailRequired:
           "Necesitas un correo electronico para crear la suscripcion.",
         submitError: "No se pudo iniciar la suscripcion.",
@@ -260,6 +274,9 @@ function getMercadoPagoCopy(
           "Cobranca recorrente segura com tokenizacao nativa do Mercado Pago.",
         submitCaption:
           "Ao ativar a assinatura, voce autoriza cobrancas recorrentes conforme a periodicidade escolhida.",
+        testModeBadge: "Modo de teste do Mercado Pago",
+        testModeHint:
+          "Voce esta usando credenciais de teste. Valide o fluxo com contas e cartoes de teste do Mercado Pago antes de voltar ao modo live.",
         cardNumber: "Numero do cartao",
         expirationDate: "Validade",
         securityCode: "Codigo de seguranca",
@@ -283,6 +300,8 @@ function getMercadoPagoCopy(
         mountError:
           "Nao foi possivel montar o formulario de cartao do Mercado Pago.",
         tokenError: "O Mercado Pago nao retornou um token de cartao.",
+        cvvValidationError:
+          "O Mercado Pago nao conseguiu validar o codigo de seguranca. Digite o CVV novamente e espere um segundo antes de confirmar. Se voce estiver usando cartoes de teste, lembre que vectorplan.xyz usa credenciais live e os testes exigem ambiente test com o email test@testuser.com.",
         emailRequired: "Um email e obrigatorio para criar a assinatura.",
         submitError: "Nao foi possivel iniciar a assinatura.",
         loadError: "Nao foi possivel carregar o checkout do Mercado Pago.",
@@ -302,6 +321,9 @@ function getMercadoPagoCopy(
           "Facturation recurrente securisee avec la tokenisation native de Mercado Pago.",
         submitCaption:
           "En activant l'abonnement, vous autorisez des paiements recurrents selon la periodicite choisie.",
+        testModeBadge: "Mode test Mercado Pago",
+        testModeHint:
+          "Vous utilisez des identifiants de test. Validez le flux avec des comptes et cartes de test Mercado Pago avant de revenir en mode live.",
         cardNumber: "Numero de carte",
         expirationDate: "Date d'expiration",
         securityCode: "Code de securite",
@@ -324,6 +346,8 @@ function getMercadoPagoCopy(
         sdkUnavailable: "Le SDK Mercado Pago est indisponible.",
         mountError: "Impossible de monter le formulaire de carte Mercado Pago.",
         tokenError: "Mercado Pago n'a pas retourne de jeton de carte.",
+        cvvValidationError:
+          "Mercado Pago n'a pas pu valider le code de securite. Saisissez a nouveau le CVV et attendez une seconde avant de confirmer. Si vous testez avec des cartes de test, notez que vectorplan.xyz utilise des identifiants live et qu'il faut un environnement de test avec l'email test@testuser.com.",
         emailRequired: "Une adresse email est requise pour creer l'abonnement.",
         submitError: "Impossible de demarrer l'abonnement.",
         loadError: "Impossible de charger le checkout Mercado Pago.",
@@ -343,6 +367,9 @@ function getMercadoPagoCopy(
           "Sichere wiederkehrende Abbuchung mit nativer Mercado-Pago-Tokenisierung.",
         submitCaption:
           "Mit dem Start des Abonnements autorisierst du wiederkehrende Abbuchungen gemaess dem gewahlten Intervall.",
+        testModeBadge: "Mercado-Pago-Testmodus",
+        testModeHint:
+          "Du verwendest Testzugangsdaten. Prufe den Ablauf mit Mercado-Pago-Testkonten und Testkarten, bevor du wieder in den Live-Modus wechselst.",
         cardNumber: "Kartennummer",
         expirationDate: "Ablaufdatum",
         securityCode: "Sicherheitscode",
@@ -366,6 +393,8 @@ function getMercadoPagoCopy(
         mountError:
           "Das Mercado-Pago-Kartenformular konnte nicht eingebunden werden.",
         tokenError: "Mercado Pago hat kein Kartentoken zuruckgegeben.",
+        cvvValidationError:
+          "Mercado Pago konnte den Sicherheitscode nicht validieren. Gib den CVV erneut ein und warte eine Sekunde vor dem Bestatigen. Wenn du mit Testkarten pruefst, beachte bitte, dass vectorplan.xyz Live-Zugangsdaten nutzt und Tests eine Testumgebung mit der E-Mail test@testuser.com brauchen.",
         emailRequired:
           "Zum Erstellen des Abonnements ist eine E-Mail-Adresse erforderlich.",
         submitError: "Das Abonnement konnte nicht gestartet werden.",
@@ -386,6 +415,9 @@ function getMercadoPagoCopy(
           "Secure recurring billing with MercadoPago's native tokenization flow.",
         submitCaption:
           "By starting the subscription, you authorize recurring charges based on the selected billing interval.",
+        testModeBadge: "MercadoPago test mode",
+        testModeHint:
+          "You are using test credentials. Validate the flow with MercadoPago test accounts and cards before switching back to live mode.",
         cardNumber: "Card number",
         expirationDate: "Expiration date",
         securityCode: "Security code",
@@ -408,11 +440,17 @@ function getMercadoPagoCopy(
         sdkUnavailable: "MercadoPago SDK is unavailable.",
         mountError: "Failed to mount the MercadoPago card form.",
         tokenError: "MercadoPago did not return a card token.",
+        cvvValidationError:
+          "MercadoPago could not validate the security code. Re-enter the CVV and wait a second before confirming. If you are using test cards, note that vectorplan.xyz runs with live credentials and test purchases require a test environment with the email test@testuser.com.",
         emailRequired: "An email is required to create the subscription.",
         submitError: "Failed to start the subscription.",
         loadError: "Failed to load MercadoPago checkout.",
       };
   }
+}
+
+function isCvvValidationError(message: string): boolean {
+  return /card token was generated without cvv validation/i.test(message);
 }
 
 function resetSelectField(id: string) {
@@ -549,6 +587,7 @@ export const MercadoPagoSubscriptionDialog: React.FC<
     () => getMercadoPagoCopy(getSupportedLanguage(language)),
     [language],
   );
+  const isTestEnvironment = shouldUseMercadoPagoTestEnvironment();
 
   const tierDescription =
     tierId === "builder"
@@ -723,30 +762,48 @@ export const MercadoPagoSubscriptionDialog: React.FC<
                 return;
               }
 
-              const data = cardForm.getCardFormData();
-              const cardTokenId = data.token?.trim();
-              const payerEmail =
-                data.cardholderEmail?.trim() || userEmail?.trim() || "";
-
-              if (!cardTokenId) {
-                setFormError(copy.tokenError);
-                return;
-              }
-              if (!payerEmail) {
-                setFormError(copy.emailRequired);
-                return;
+              if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
               }
 
               setIsSubmitting(true);
               setFormError(null);
 
               try {
+                await new Promise((resolve) => window.setTimeout(resolve, 150));
+
+                const tokenResult = await cardForm.createCardToken();
+                const data = cardForm.getCardFormData();
+                const cardTokenId =
+                  (typeof tokenResult === "string"
+                    ? tokenResult
+                    : tokenResult?.id) ?? data.token;
+                const payerEmail =
+                  data.cardholderEmail?.trim() || userEmail?.trim() || "";
+
+                if (!cardTokenId?.trim()) {
+                  setFormError(copy.tokenError);
+                  return;
+                }
+                if (!payerEmail) {
+                  setFormError(copy.emailRequired);
+                  return;
+                }
+
                 await onConfirmRef.current({
-                  cardTokenId,
+                  cardTokenId: cardTokenId.trim(),
                   payerEmail,
                   deviceId: getMercadoPagoDeviceId(),
                 });
               } catch (error) {
+                if (
+                  error instanceof Error &&
+                  isCvvValidationError(error.message)
+                ) {
+                  setFormError(copy.cvvValidationError);
+                  return;
+                }
+
                 setFormError(
                   error instanceof Error ? error.message : copy.submitError,
                 );
@@ -785,8 +842,8 @@ export const MercadoPagoSubscriptionDialog: React.FC<
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden border-zinc-900 bg-zinc-950 p-0 text-white sm:max-w-5xl">
-        <div className="grid lg:grid-cols-[0.95fr_1.05fr]">
+      <DialogContent className="max-h-[92vh] overflow-y-auto overflow-x-hidden border-zinc-900 bg-zinc-950 p-0 text-white sm:max-w-5xl">
+        <div className="grid min-h-0 lg:grid-cols-[0.95fr_1.05fr]">
           <div className={SUMMARY_PANEL_CLASS_NAME}>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/60">
               {copy.summaryTitle}
@@ -817,6 +874,17 @@ export const MercadoPagoSubscriptionDialog: React.FC<
                 {copy.recurringNote}
               </p>
             </div>
+
+            {isTestEnvironment && (
+              <div className="mt-4 rounded-2xl border border-amber-300/25 bg-amber-300/12 p-4 text-amber-50">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-200/90">
+                  {copy.testModeBadge}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-amber-50/80">
+                  {copy.testModeHint}
+                </p>
+              </div>
+            )}
 
             <div className="mt-7 space-y-3">
               {summaryFeatures.map((feature) => (
