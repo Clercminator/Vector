@@ -1048,12 +1048,12 @@ export function Profile({
                 ) : null}
 
                 {/* Plans (included in tier) */}
-                <div className="flex flex-col gap-3 bg-white/5 p-4 rounded-2xl border border-white/10 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center">
                       <Zap className="text-yellow-500" size={20} />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm font-bold">{eff.regularValid}</p>
                       <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">
                         {t("profile.normalCredits") || "Normal Credits"}
@@ -1077,7 +1077,7 @@ export function Profile({
                   <Button
                     size="sm"
                     onClick={() => navigate("/pricing")}
-                    className="bg-white text-black hover:bg-zinc-200 rounded-xl font-bold h-10 px-4 cursor-pointer"
+                    className="bg-white text-black hover:bg-zinc-200 rounded-xl font-bold min-h-10 h-auto w-full justify-center px-4 py-2 cursor-pointer whitespace-normal text-center"
                   >
                     {t("profile.buyMore") || "Buy More"}
                   </Button>
@@ -1085,12 +1085,12 @@ export function Profile({
 
                 {/* Bonus plans */}
                 {/* Always show extra credits section to be explicit, or only if > 0? User said "don't appear visually anywhere", implying they want to see it. */}
-                <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/10">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center">
                       <Star className="text-purple-500" size={20} />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm font-bold">
                         {data.extra_credits || 0}
                       </p>
@@ -1102,12 +1102,12 @@ export function Profile({
                       </p>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <p className="text-[10px] text-zinc-500 uppercase tracking-tighter text-right max-w-[190px]">
+                  <div className="flex flex-col gap-3 min-w-0">
+                    <p className="text-[10px] leading-4 text-zinc-500 uppercase tracking-tighter break-words">
                       {t("profile.creditPackCta") ||
                         "Buy one-time credit packs with MercadoPago Checkout Pro"}
                     </p>
-                    <div className="flex flex-wrap justify-end gap-2">
+                    <div className="grid grid-cols-1 gap-2 w-full">
                       {EXTRA_CREDIT_PACKS.map((pack) => {
                         const isLoading = buyingCreditPackId === pack.id;
                         return (
@@ -1119,7 +1119,7 @@ export function Profile({
                             onClick={() =>
                               handleExtraCreditPackCheckout(pack.id)
                             }
-                            className="rounded-xl border-white/15 bg-white text-black hover:bg-zinc-100 min-w-[132px]"
+                            className="rounded-xl border-white/15 bg-white text-black hover:bg-zinc-100 w-full min-h-10 h-auto justify-center px-3 py-2 text-center whitespace-normal"
                           >
                             {isLoading ? (
                               <Loader2

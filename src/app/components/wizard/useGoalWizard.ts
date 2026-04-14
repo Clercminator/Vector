@@ -935,9 +935,7 @@ export const useGoalWizard = ({
       await wait(150);
       setResult(blueprint);
       setFinalAnswers(userAnswers);
-      appendAiMessage(
-        t("wizard.planPackReadyMessage"),
-      );
+      appendAiMessage(t("wizard.planPackReadyMessage"));
       trackEvent("wizard_completed", {
         framework: framework || blueprint.type,
       });

@@ -81,9 +81,7 @@ export function SharedPlanView() {
 
         if (!res.ok) {
           setError(
-            res.status === 404
-              ? t("shared.expired")
-              : t("shared.loadError"),
+            res.status === 404 ? t("shared.expired") : t("shared.loadError"),
           );
           setLoading(false);
           return;
@@ -163,8 +161,7 @@ export function SharedPlanView() {
           onClick={() => navigate("/")}
           className="flex items-center text-sm font-bold text-gray-500 hover:text-black dark:hover:text-white transition-colors mb-6"
         >
-          <ArrowLeft size={16} className="mr-1" />{" "}
-          {t("shared.backHome")}
+          <ArrowLeft size={16} className="mr-1" /> {t("shared.backHome")}
         </button>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -457,9 +454,7 @@ export function SharedPlanView() {
 
           {!isInfinite && steps.length === 0 && (
             <div className="bg-white dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 text-center text-gray-500">
-              <p className="font-medium mb-2">
-                {t("tracker.noStepsToTrack")}
-              </p>
+              <p className="font-medium mb-2">{t("tracker.noStepsToTrack")}</p>
             </div>
           )}
 
