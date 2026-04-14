@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
@@ -27,6 +27,11 @@ import {
   validateCanonicalPlanResult,
 } from "@/lib/planContract";
 import { buildE2EWizardResult, isE2EMode } from "@/lib/e2eHarness";
+import { buildGoalMri } from "@/lib/goalMri";
+import {
+  generatePlanSectionRefinement,
+  type PlanRefinementSection,
+} from "@/lib/sectionRefinement";
 import { graph } from "@/agent/goalAgent";
 import { Command, isInterrupted, INTERRUPT } from "@langchain/langgraph";
 import { CONFIRM_PLAN_INTERRUPT_TYPE } from "@/agent/nodes/approvalGate";
@@ -92,6 +97,8 @@ export const useGoalWizard = ({
   const [userName, setUserName] = useState<string | undefined>(undefined);
   const [suggestionChips, setSuggestionChips] = useState<string[]>([]);
   const [showRestartConfirm, setShowRestartConfirm] = useState(false);
+  const [refiningSection, setRefiningSection] =
+    useState<PlanRefinementSection | null>(null);
   /** Summary of user profile for the agent (personalization). */
   const [agentUserProfile, setAgentUserProfile] = useState<string>("");
   /** Intake form context for the agent (what the user wrote in Find Your Framework). */
@@ -621,6 +628,24 @@ export const useGoalWizard = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping, result]);
 
+  const goalMri = useMemo(
+    () =>
+      buildGoalMri({
+        draftResult:
+          draftResult && typeof draftResult === "object"
+            ? (draftResult as Record<string, unknown>)
+            : null,
+        framework: framework || String((draftResult as any)?.type || "general"),
+        userMessages: filterRealAnswers(
+          messages
+            .filter((message) => message.role === "user")
+            .map((message) => message.content),
+        ),
+        formContext: agentFormContext,
+      }),
+    [agentFormContext, draftResult, framework, messages],
+  );
+
   // --- Helpers ---
 
   const clearSession = () => {
@@ -835,6 +860,8 @@ export const useGoalWizard = ({
           "I have the goal. Give me one real constraint or current obstacle so the plan can become tracker-ready instead of generic.",
         );
       } else {
+        setDraftResult(buildE2EWizardResult(framework, userAnswers));
+        setAgentPhase("reviewing");
         appendAiMessage(
           "I have enough context to generate a structured execution plan. You can generate now or go one level deeper before I lock the first draft.",
         );
@@ -891,6 +918,8 @@ export const useGoalWizard = ({
     try {
       if (!payload.confirmed) {
         await wait(180);
+        setDraftResult(buildE2EWizardResult(framework, userAnswers));
+        setAgentPhase("reviewing");
         appendAiMessage(
           "Good. One more detail was enough. The plan can be generated now with explicit milestones, schedule hints, and proof hooks.",
         );
@@ -2013,6 +2042,49 @@ export const useGoalWizard = ({
     setResult(newResult);
   };
 
+  const refinePlanSection = async (
+    section: PlanRefinementSection,
+    userNote?: string,
+  ) => {
+    if (!result) return;
+
+    const rawAnswers = finalAnswers.length
+      ? finalAnswers
+      : messages.filter((m) => m.role === "user").map((m) => m.content);
+    const answers = filterRealAnswers(rawAnswers);
+    const blueprintTitle =
+      initialBlueprint?.title ?? blueprintTitleFromAnswers(answers);
+
+    setRefiningSection(section);
+    try {
+      const refinement = await generatePlanSectionRefinement({
+        framework: framework || String(result.type || "general"),
+        blueprintTitle,
+        goal: answers[0],
+        currentResult: result,
+        section,
+        userNote,
+        userProfile: agentUserProfile,
+        formContext: agentFormContext,
+      });
+
+      setResult(refinement.refinedResult);
+      setDraftResult((prev: any) =>
+        prev && !prev.isTeaser ? refinement.refinedResult : prev,
+      );
+      toast.success(refinement.revisionSummary);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "I couldn't tighten that section right now.",
+      );
+      throw error;
+    } finally {
+      setRefiningSection(null);
+    }
+  };
+
   const promoteDraftToResult = () => {
     if (!draftResult || !draftResult.type || draftResult.isTeaser) return;
     setResult(draftResult as BlueprintResult);
@@ -2141,8 +2213,11 @@ export const useGoalWizard = ({
     setShowRestartConfirm,
     handleSave,
     updateResult,
+    refinePlanSection,
+    refiningSection,
     promoteDraftToResult,
     toggleHardMode,
+    goalMri,
     userName,
   };
 };

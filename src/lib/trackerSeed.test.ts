@@ -42,12 +42,28 @@ describe("deriveTrackerSeed", () => {
     expect(seed.subGoals.length).toBeGreaterThan(0);
     expect(seed.tasks.length).toBeGreaterThan(0);
     expect(seed.tasks[0].target_count).toBeGreaterThanOrEqual(1);
+    expect(seed.tasks.some((task) => task.task_type === "proof_entry")).toBe(
+      true,
+    );
+    expect(seed.tasks.some((task) => task.task_type === "review")).toBe(true);
+    expect(seed.tasks.some((task) => task.task_type === "rescue_action")).toBe(
+      true,
+    );
+    expect(
+      seed.tasks.some((task) => task.title.startsWith("Weekly proof:")),
+    ).toBe(false);
     expect(seed.reminders).toEqual([
       {
         blueprint_id: "bp-1",
         user_id: "user-1",
         time: "09:00",
         days: ["tue", "thu"],
+      },
+      {
+        blueprint_id: "bp-1",
+        user_id: "user-1",
+        time: "18:00",
+        days: ["sun"],
       },
     ]);
   });

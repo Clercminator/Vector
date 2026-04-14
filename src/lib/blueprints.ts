@@ -139,12 +139,19 @@ export interface BlueprintSubGoal {
   created_at: string;
 }
 
+export type BlueprintTaskType =
+  | "task"
+  | "proof_entry"
+  | "rescue_action"
+  | "review";
+
 export interface BlueprintTask {
   id: string;
   blueprint_id: string;
   user_id: string;
   title: string;
   target_count: number;
+  task_type?: BlueprintTaskType;
   created_at: string;
 }
 

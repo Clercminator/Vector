@@ -226,8 +226,13 @@ export function generateCalendarHighlights(logs: GoalLog[]): Set<string> {
 export interface ExecutionInsight {
   nextBestAction: string;
   overdueSignals: string[];
+  proofSignals: string[];
   streakRisk: "low" | "medium" | "high";
+  executionState: "on-track" | "at-risk" | "stalled" | "rescue";
+  executionStateLabel: string;
+  stateSummary: string;
   missedDayRecovery: string;
+  rescueAction: string;
   weeklyReviewPrompt: string;
   adaptiveRevisionSuggestion: string;
 }
@@ -251,6 +256,7 @@ export function getExecutionInsight(
     actions[0] ||
     "Define the next concrete action.";
   const overdueSignals: string[] = [];
+  const proofSignals: string[] = [];
   const streak = getCurrentStreak(logs);
   const daysSinceActivity = tracker?.last_activity_at
     ? Math.floor(
@@ -281,27 +287,97 @@ export function getExecutionInsight(
     );
   }
 
+  const recentLogs = logs.filter(
+    (log) => Date.now() - new Date(log.created_at).getTime() <= 7 * 24 * 60 * 60 * 1000,
+  );
+  const recentProofLogs = recentLogs.filter(
+    (log) =>
+      log.kind === "journal" &&
+      ((typeof log.content === "string" && log.content.trim()) ||
+        (log.payload && Object.keys(log.payload).length > 0)),
+  );
+  const recentSetbacks = recentLogs.filter((log) => log.kind === "setback").length;
+
+  if ((daysSinceActivity ?? 0) >= 2 && recentProofLogs.length === 0) {
+    proofSignals.push("No proof or reflection has been logged this week.");
+  }
+  if (recentSetbacks >= 1 && recentProofLogs.length === 0) {
+    proofSignals.push(
+      "The tracker shows friction, but there is no recent proof note explaining what changed.",
+    );
+  }
+
   let streakRisk: "low" | "medium" | "high" = "low";
   if ((daysSinceActivity ?? 0) >= 4 || streak === 0) streakRisk = "high";
   else if ((daysSinceActivity ?? 0) >= 2 || streak <= 1) streakRisk = "medium";
 
+  let executionState: ExecutionInsight["executionState"] = "on-track";
+  if (recentSetbacks >= 2 || (daysSinceActivity ?? 0) >= 5) {
+    executionState = "rescue";
+  } else if ((daysSinceActivity ?? 0) >= 3 || overdueSignals.length >= 2) {
+    executionState = "stalled";
+  } else if (
+    streakRisk !== "low" ||
+    proofSignals.length > 0 ||
+    recentSetbacks === 1
+  ) {
+    executionState = "at-risk";
+  }
+
+  const executionStateLabel =
+    executionState === "on-track"
+      ? "On Track"
+      : executionState === "at-risk"
+        ? "At Risk"
+        : executionState === "stalled"
+          ? "Stalled"
+          : "Rescue Mode";
+
+  const stateSummary =
+    executionState === "on-track"
+      ? "Cadence, proof, and progress are aligned. Keep the system steady."
+      : executionState === "at-risk"
+        ? "Momentum is still recoverable, but the current rhythm needs tighter follow-through."
+        : executionState === "stalled"
+          ? "The plan is losing traction. Simplify the week before pushing harder."
+          : "Execution is breaking down under the current scope. Switch to rescue mode and narrow the plan now.";
+
   const missedDayRecovery =
-    streakRisk === "high"
+    executionState === "rescue" || streakRisk === "high"
       ? `Reset with one small win today: ${nextBestAction}`
       : `If today slips, do a shorter version of this action: ${nextBestAction}`;
 
+  const rescueAction =
+    executionState === "rescue"
+      ? canonical.recoveryProtocol
+      : missedDayRecovery;
+
   const adaptiveRevisionSuggestion =
-    streakRisk === "high"
-      ? canonical.revisionTriggers[0] ||
-        "Reduce scope and simplify the next 7 days."
-      : canonical.revisionTriggers[1] ||
-        "Review whether the current cadence still fits your week.";
+    executionState === "rescue"
+      ? `Tighten this week: ${
+          canonical.revisionTriggers[0] ||
+          "reduce the plan to one recovery block and one proof artifact."
+        }`
+      : executionState === "stalled"
+        ? `Tighten this week: ${
+            canonical.revisionTriggers[1] ||
+            "simplify the cadence before adding new work."
+          }`
+        : proofSignals.length > 0
+          ? "Tighten this week: restore a proof loop before you add more scope."
+          : canonical.revisionTriggers[2] ||
+            "Review whether the current cadence still fits your week.";
 
   return {
     nextBestAction,
     overdueSignals,
+    proofSignals,
     streakRisk,
+    executionState,
+    executionStateLabel,
+    stateSummary,
     missedDayRecovery,
+    rescueAction,
     weeklyReviewPrompt: canonical.weeklyReviewPrompt,
     adaptiveRevisionSuggestion,
   };

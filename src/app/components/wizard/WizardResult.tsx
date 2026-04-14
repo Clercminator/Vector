@@ -1,6 +1,16 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Target, Lock, Star, Rocket, Zap, Layers, Copy } from "lucide-react";
+import {
+  Target,
+  Lock,
+  Star,
+  Rocket,
+  Zap,
+  Layers,
+  Copy,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
 import { EditableText, EditableList } from "../Editable";
 import { useLanguage } from "@/app/components/language-provider";
 import { useNavigate } from "react-router-dom";
@@ -12,17 +22,26 @@ import { IkigaiView } from "./IkigaiView";
 import { GpsView } from "./GpsView";
 import { DsssView } from "./DsssView";
 import { DifficultyBadge } from "./DifficultyBadge";
+import { SectionRefinementDialog } from "./SectionRefinementDialog";
 import { normalizeCanonicalPlanResult } from "@/lib/planContract";
+import type { PlanRefinementSection } from "@/lib/sectionRefinement";
 
 interface WizardResultProps {
   result: any;
   updateResult: (path: (string | number)[], value: any) => void;
+  onRefineSection?: (
+    section: PlanRefinementSection,
+    note?: string,
+  ) => Promise<void> | void;
+  refiningSection?: PlanRefinementSection | null;
   onBack: () => void;
 }
 
 export const WizardResult: React.FC<WizardResultProps> = ({
   result,
   updateResult,
+  onRefineSection,
+  refiningSection = null,
   onBack,
 }) => {
   const { t } = useLanguage();
@@ -79,9 +98,105 @@ export const WizardResult: React.FC<WizardResultProps> = ({
   const showDifficultyBadge =
     difficulty != null ||
     (typeof difficultyReason === "string" && difficultyReason.trim());
+  const [refinementDialogSection, setRefinementDialogSection] =
+    React.useState<PlanRefinementSection | null>(null);
+  const [sectionRefinementNote, setSectionRefinementNote] = React.useState("");
+
+  const sectionTitles: Record<PlanRefinementSection, string> = {
+    diagnosis: "Diagnosis",
+    proof: "Proof",
+    recovery: "Recovery",
+  };
+
+  const openSectionRefinement = (section: PlanRefinementSection) => {
+    if (!onRefineSection || isTeaser) return;
+    setRefinementDialogSection(section);
+    setSectionRefinementNote("");
+  };
+
+  const handleSectionDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      setRefinementDialogSection(null);
+      setSectionRefinementNote("");
+    }
+  };
+
+  const handleApplySectionRefinement = async () => {
+    if (!refinementDialogSection || !onRefineSection) return;
+    await onRefineSection(refinementDialogSection, sectionRefinementNote);
+    setRefinementDialogSection(null);
+    setSectionRefinementNote("");
+  };
+
+  const renderRefineAction = (section: PlanRefinementSection) => {
+    if (!onRefineSection || isTeaser) return null;
+
+    const isRefining = refiningSection === section;
+    return (
+      <button
+        type="button"
+        onClick={() => openSectionRefinement(section)}
+        disabled={Boolean(refiningSection)}
+        className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-gray-700 dark:text-gray-200 transition-colors hover:border-gray-400 dark:hover:border-zinc-500 hover:text-black dark:hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isRefining ? (
+          <Loader2 size={14} className="animate-spin" />
+        ) : (
+          <Sparkles size={14} />
+        )}
+        {isRefining ? "Refining..." : `Tighten ${sectionTitles[section]}`}
+      </button>
+    );
+  };
+
+  const renderSectionCard = (
+    title: string,
+    children: React.ReactNode,
+    className = "",
+  ) => (
+    <div
+      className={`bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7 ${className}`}
+    >
+      <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
+        {title}
+      </h3>
+      {children}
+    </div>
+  );
+
+  const renderSectionShell = (
+    id: string,
+    eyebrow: string,
+    title: string,
+    description: string,
+    children: React.ReactNode,
+    action?: React.ReactNode,
+  ) => (
+    <section id={id} className="scroll-mt-24">
+      <div className="rounded-[2.25rem] border border-gray-200 dark:border-zinc-800 bg-gray-50/70 dark:bg-zinc-950/50 p-6 md:p-8">
+        <div className="mb-6 flex flex-col gap-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-gray-500 mb-2">
+                {eyebrow}
+              </p>
+              <h2 className="text-2xl md:text-3xl font-black tracking-tight text-gray-900 dark:text-white">
+                {title}
+              </h2>
+            </div>
+            {action}
+          </div>
+          <p className="max-w-2xl text-sm md:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+            {description}
+          </p>
+        </div>
+        {children}
+      </div>
+    </section>
+  );
 
   const renderSharedPlanSections = () => (
-    <div className="w-full max-w-5xl mx-auto space-y-6 mb-8">
+    <div className="w-full max-w-5xl mx-auto space-y-8 mb-8">
       <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-xl border border-gray-200 dark:border-zinc-800 p-8">
         <div className="flex flex-col gap-5">
           <div>
@@ -100,6 +215,22 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             multiline
             className="text-base md:text-lg text-gray-600 dark:text-gray-300 leading-relaxed border-transparent px-0"
           />
+          <div className="flex flex-wrap gap-2">
+            {[
+              ["#blueprint-diagnosis", "Diagnosis"],
+              ["#blueprint-operating-system", "Operating System"],
+              ["#blueprint-proof", "Proof"],
+              ["#blueprint-recovery", "Recovery"],
+            ].map(([href, label]) => (
+              <a
+                key={href}
+                href={href}
+                className="inline-flex items-center rounded-full border border-gray-200 dark:border-zinc-700 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:border-gray-400 dark:hover:border-zinc-500 transition-colors"
+              >
+                {label}
+              </a>
+            ))}
+          </div>
           <div className="grid md:grid-cols-3 gap-4">
             <div className="rounded-2xl bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 p-4">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
@@ -134,289 +265,303 @@ export const WizardResult: React.FC<WizardResultProps> = ({
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Strategic Diagnosis
-          </h3>
-          <EditableText
-            value={canonical.currentReality}
-            onChange={(val) => updateResult(["currentReality"], val)}
-            multiline
-            className="text-gray-800 dark:text-gray-200 leading-relaxed border-transparent px-0"
-          />
-        </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Strategic Pillars
-          </h3>
-          <EditableList
-            items={canonical.strategicPillars}
-            onChange={(val) => updateResult(["strategicPillars"], val)}
-            itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-          />
-        </div>
-      </div>
+      {renderSectionShell(
+        "blueprint-diagnosis",
+        "Diagnosis",
+        "Why this blueprint fits",
+        "Pressure-test the logic first. These cards explain the real situation the plan is designed for, and you can refine this layer without changing the rest of the operating system.",
+        <div className="grid lg:grid-cols-2 gap-6">
+          {renderSectionCard(
+            "Strategic Diagnosis",
+            <EditableText
+              value={canonical.currentReality}
+              onChange={(val) => updateResult(["currentReality"], val)}
+              multiline
+              className="text-gray-800 dark:text-gray-200 leading-relaxed border-transparent px-0"
+            />,
+          )}
+          {renderSectionCard(
+            "Strategic Pillars",
+            <EditableList
+              items={canonical.strategicPillars}
+              onChange={(val) => updateResult(["strategicPillars"], val)}
+              itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+            />,
+          )}
+          {renderSectionCard(
+            "Constraint Map",
+            <EditableList
+              items={canonical.keyConstraints}
+              onChange={(val) => updateResult(["keyConstraints"], val)}
+              itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+            />,
+          )}
+          {renderSectionCard(
+            "Leverage Moves",
+            <EditableList
+              items={canonical.leverageMoves}
+              onChange={(val) => updateResult(["leverageMoves"], val)}
+              itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+            />,
+          )}
+          {renderSectionCard(
+            "Why This Matters",
+            <EditableText
+              value={canonical.yourWhy}
+              onChange={(val) => updateResult(["yourWhy"], val)}
+              multiline
+              className="text-gray-800 dark:text-gray-200 leading-relaxed border-transparent px-0"
+            />,
+          )}
+          {renderSectionCard(
+            "What To Avoid",
+            <EditableList
+              items={canonical.whatToAvoid}
+              onChange={(val) => updateResult(["whatToAvoid"], val)}
+              itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+            />,
+          )}
+        </div>,
+        renderRefineAction("diagnosis"),
+      )}
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Constraint Map
-          </h3>
-          <EditableList
-            items={canonical.keyConstraints}
-            onChange={(val) => updateResult(["keyConstraints"], val)}
-            itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-          />
-        </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Leverage Moves
-          </h3>
-          <EditableList
-            items={canonical.leverageMoves}
-            onChange={(val) => updateResult(["leverageMoves"], val)}
-            itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-          />
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Scoreboard
-          </h3>
-          <div className="grid md:grid-cols-2 gap-5">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-3">
-                Lead Indicators
-              </p>
-              <EditableList
-                items={canonical.leadIndicators}
-                onChange={(val) => updateResult(["leadIndicators"], val)}
-                itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+      {renderSectionShell(
+        "blueprint-operating-system",
+        "Operating System",
+        "What you actually run each week",
+        "This is the part of the blueprint that should behave like an execution system, not a report. Tighten the cadence, sequence, and operating rules here.",
+        <div className="grid lg:grid-cols-2 gap-6">
+          {renderSectionCard(
+            "First Week Actions",
+            <EditableList
+              items={canonical.firstWeekActions}
+              onChange={(val) => updateResult(["firstWeekActions"], val)}
+              itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+            />,
+          )}
+          {renderSectionCard(
+            "Milestones",
+            <EditableList
+              items={canonical.milestones}
+              onChange={(val) => updateResult(["milestones"], val)}
+              itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+            />,
+          )}
+          {renderSectionCard(
+            "Ownership System",
+            <>
+              <EditableText
+                value={canonical.trackingPrompt}
+                onChange={(val) => updateResult(["trackingPrompt"], val)}
+                multiline
+                className="text-gray-900 dark:text-white font-semibold leading-relaxed border-transparent px-0 mb-4"
               />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-3">
-                Lag Indicators
-              </p>
-              <EditableList
-                items={canonical.lagIndicators}
-                onChange={(val) => updateResult(["lagIndicators"], val)}
-                itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-              />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Ownership System
-          </h3>
-          <EditableText
-            value={canonical.trackingPrompt}
-            onChange={(val) => updateResult(["trackingPrompt"], val)}
-            multiline
-            className="text-gray-900 dark:text-white font-semibold leading-relaxed border-transparent px-0 mb-4"
-          />
-          <div className="grid md:grid-cols-2 gap-5">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-3">
-                Cadence
-              </p>
-              <EditableList
-                items={canonical.ownershipCadence}
-                onChange={(val) => updateResult(["ownershipCadence"], val)}
-                itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-              />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-3">
-                Support System
-              </p>
-              <EditableList
-                items={canonical.supportSystem}
-                onChange={(val) => updateResult(["supportSystem"], val)}
-                itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-3">
+                    Cadence
+                  </p>
+                  <EditableList
+                    items={canonical.ownershipCadence}
+                    onChange={(val) => updateResult(["ownershipCadence"], val)}
+                    itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-3">
+                    Support System
+                  </p>
+                  <EditableList
+                    items={canonical.supportSystem}
+                    onChange={(val) => updateResult(["supportSystem"], val)}
+                    itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+                  />
+                </div>
+              </div>
+            </>,
+          )}
+          {renderSectionCard(
+            "Decision Rules",
+            <EditableList
+              items={canonical.decisionRules}
+              onChange={(val) => updateResult(["decisionRules"], val)}
+              itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+            />,
+          )}
+          {renderSectionCard(
+            "Schedule Snapshot",
+            <div className="grid md:grid-cols-2 gap-4">
+              {(canonical.scheduleHints || []).length > 0 ? (
+                (canonical.scheduleHints || []).map((hint, index) => (
+                  <div
+                    key={`${hint.label}-${index}`}
+                    className="rounded-2xl bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 p-4"
+                  >
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">
+                      {hint.label}
+                    </p>
+                    <p className="text-xs uppercase tracking-[0.14em] text-gray-500 mt-2">
+                      {hint.cadence}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      {hint.days?.length
+                        ? `Days: ${hint.days.join(", ")}`
+                        : "Days: flexible"}
+                      {hint.time ? ` | Time: ${hint.time}` : ""}
+                      {hint.durationMinutes
+                        ? ` | ${hint.durationMinutes} min`
+                        : ""}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Add schedule hints above so this becomes a real operating
+                  rhythm instead of a flexible intention.
+                </p>
+              )}
+            </div>,
+          )}
+        </div>,
+      )}
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            First Week Actions
-          </h3>
-          <EditableList
-            items={canonical.firstWeekActions}
-            onChange={(val) => updateResult(["firstWeekActions"], val)}
-            itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-          />
-        </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Milestones
-          </h3>
-          <EditableList
-            items={canonical.milestones}
-            onChange={(val) => updateResult(["milestones"], val)}
-            itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-          />
-        </div>
-      </div>
+      {renderSectionShell(
+        "blueprint-proof",
+        "Proof",
+        "How progress becomes visible",
+        "Use this layer to define what counts as real movement. It should be obvious how you will measure, prove, and externally validate progress week by week.",
+        <div className="grid lg:grid-cols-2 gap-6">
+          {renderSectionCard(
+            "Scoreboard",
+            <div className="grid md:grid-cols-2 gap-5">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-3">
+                  Lead Indicators
+                </p>
+                <EditableList
+                  items={canonical.leadIndicators}
+                  onChange={(val) => updateResult(["leadIndicators"], val)}
+                  itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+                />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-3">
+                  Lag Indicators
+                </p>
+                <EditableList
+                  items={canonical.lagIndicators}
+                  onChange={(val) => updateResult(["lagIndicators"], val)}
+                  itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+                />
+              </div>
+            </div>,
+          )}
+          {renderSectionCard(
+            "Success Criteria",
+            <EditableText
+              value={canonical.successCriteria}
+              onChange={(val) => updateResult(["successCriteria"], val)}
+              multiline
+              className="text-gray-800 dark:text-gray-200 leading-relaxed border-transparent px-0"
+            />,
+          )}
+          {renderSectionCard(
+            "Proof Checklist",
+            <EditableList
+              items={canonical.proofChecklist}
+              onChange={(val) => updateResult(["proofChecklist"], val)}
+              itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+            />,
+          )}
+          {renderSectionCard(
+            "Setup Checklist",
+            <EditableList
+              items={canonical.resourceChecklist}
+              onChange={(val) => updateResult(["resourceChecklist"], val)}
+              itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+            />,
+          )}
+          {renderSectionCard(
+            "Accountability Hooks",
+            <EditableList
+              items={canonical.accountabilityHooks}
+              onChange={(val) => updateResult(["accountabilityHooks"], val)}
+              itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+            />,
+            "lg:col-span-2",
+          )}
+        </div>,
+        renderRefineAction("proof"),
+      )}
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Success Criteria
-          </h3>
-          <EditableText
-            value={canonical.successCriteria}
-            onChange={(val) => updateResult(["successCriteria"], val)}
-            multiline
-            className="text-gray-800 dark:text-gray-200 leading-relaxed border-transparent px-0"
-          />
-        </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Why This Matters
-          </h3>
-          <EditableText
-            value={canonical.yourWhy}
-            onChange={(val) => updateResult(["yourWhy"], val)}
-            multiline
-            className="text-gray-800 dark:text-gray-200 leading-relaxed border-transparent px-0"
-          />
-        </div>
-      </div>
+      {renderSectionShell(
+        "blueprint-recovery",
+        "Recovery",
+        "What happens when execution slips",
+        "This layer keeps the blueprint alive after a bad day or bad week. Edit the failure logic, rescue move, and revision triggers here instead of regenerating the whole plan.",
+        <div className="grid lg:grid-cols-2 gap-6">
+          {renderSectionCard(
+            "Failure Modes",
+            <EditableList
+              items={canonical.failureModes}
+              onChange={(val) => updateResult(["failureModes"], val)}
+              itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+            />,
+          )}
+          {renderSectionCard(
+            "Recovery Protocol",
+            <EditableText
+              value={canonical.recoveryProtocol}
+              onChange={(val) => updateResult(["recoveryProtocol"], val)}
+              multiline
+              className="text-gray-800 dark:text-gray-200 leading-relaxed border-transparent px-0"
+            />,
+          )}
+          {renderSectionCard(
+            "Revision Triggers",
+            <EditableList
+              items={canonical.revisionTriggers}
+              onChange={(val) => updateResult(["revisionTriggers"], val)}
+              itemClassName="text-gray-800 dark:text-gray-200 font-medium"
+            />,
+          )}
+          {renderSectionCard(
+            "Review Anchor",
+            <EditableText
+              value={canonical.weeklyReviewPrompt}
+              onChange={(val) => updateResult(["weeklyReviewPrompt"], val)}
+              multiline
+              className="text-gray-800 dark:text-gray-200 leading-relaxed border-transparent px-0"
+            />,
+          )}
+        </div>,
+        renderRefineAction("recovery"),
+      )}
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Setup Checklist
-          </h3>
-          <EditableList
-            items={canonical.resourceChecklist}
-            onChange={(val) => updateResult(["resourceChecklist"], val)}
-            itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-          />
-        </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Decision Rules
-          </h3>
-          <EditableList
-            items={canonical.decisionRules}
-            onChange={(val) => updateResult(["decisionRules"], val)}
-            itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-          />
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Proof Checklist
-          </h3>
-          <EditableList
-            items={canonical.proofChecklist}
-            onChange={(val) => updateResult(["proofChecklist"], val)}
-            itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-          />
-        </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Recovery Protocol
-          </h3>
-          <EditableText
-            value={canonical.recoveryProtocol}
-            onChange={(val) => updateResult(["recoveryProtocol"], val)}
-            multiline
-            className="text-gray-800 dark:text-gray-200 leading-relaxed border-transparent px-0"
-          />
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Failure Modes
-          </h3>
-          <EditableList
-            items={canonical.failureModes}
-            onChange={(val) => updateResult(["failureModes"], val)}
-            itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-          />
-        </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            What To Avoid
-          </h3>
-          <EditableList
-            items={canonical.whatToAvoid}
-            onChange={(val) => updateResult(["whatToAvoid"], val)}
-            itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-          />
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Accountability Hooks
-          </h3>
-          <EditableList
-            items={canonical.accountabilityHooks}
-            onChange={(val) => updateResult(["accountabilityHooks"], val)}
-            itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-          />
-        </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-          <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-            Revision Triggers
-          </h3>
-          <EditableList
-            items={canonical.revisionTriggers}
-            onChange={(val) => updateResult(["revisionTriggers"], val)}
-            itemClassName="text-gray-800 dark:text-gray-200 font-medium"
-          />
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7">
-        <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
-          Schedule Snapshot
-        </h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          {(canonical.scheduleHints || []).map((hint, index) => (
-            <div
-              key={`${hint.label}-${index}`}
-              className="rounded-2xl bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 p-4"
-            >
-              <p className="text-sm font-bold text-gray-900 dark:text-white">
-                {hint.label}
-              </p>
-              <p className="text-xs uppercase tracking-[0.14em] text-gray-500 mt-2">
-                {hint.cadence}
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                {hint.days?.length
-                  ? `Days: ${hint.days.join(", ")}`
-                  : "Days: flexible"}
-                {hint.time ? ` | Time: ${hint.time}` : ""}
-                {hint.durationMinutes ? ` | ${hint.durationMinutes} min` : ""}
-              </p>
-            </div>
-          ))}
-        </div>
+      <div className="rounded-[2rem] border border-dashed border-gray-300 dark:border-zinc-700 bg-white/70 dark:bg-zinc-900/60 px-6 py-5">
+        <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-gray-500 mb-2">
+          Framework Lens
+        </p>
+        <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+          The framework-specific visualization stays below. The shared operating
+          system above makes the plan easier to execute, while the unique
+          framework view keeps the final blueprint distinct.
+        </p>
       </div>
     </div>
   );
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <div className="relative w-full">
+      <SectionRefinementDialog
+        open={refinementDialogSection != null}
+        section={refinementDialogSection}
+        note={sectionRefinementNote}
+        loading={refiningSection != null}
+        onNoteChange={setSectionRefinementNote}
+        onOpenChange={handleSectionDialogOpenChange}
+        onApply={handleApplySectionRefinement}
+      />
       {/* Difficulty badge – non-intrusive, informative */}
       {showDifficultyBadge && (
         <div className="absolute top-0 right-0 z-20 p-3 md:p-4 pointer-events-auto">

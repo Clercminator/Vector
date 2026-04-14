@@ -97,6 +97,40 @@ const FRAMEWORK_THEMES: Record<string, string> = {
   default: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
 };
 
+const EXECUTION_STATE_STYLES = {
+  "on-track": {
+    badge:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+    panel:
+      "border-emerald-200 bg-emerald-50 dark:border-emerald-900/40 dark:bg-emerald-950/30",
+    signal: "text-emerald-600 dark:text-emerald-300",
+    button: "bg-emerald-600 text-white hover:bg-emerald-500",
+  },
+  "at-risk": {
+    badge:
+      "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+    panel:
+      "border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/30",
+    signal: "text-amber-600 dark:text-amber-300",
+    button: "bg-amber-500 text-black hover:bg-amber-400",
+  },
+  stalled: {
+    badge:
+      "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+    panel:
+      "border-orange-200 bg-orange-50 dark:border-orange-900/40 dark:bg-orange-950/30",
+    signal: "text-orange-600 dark:text-orange-300",
+    button: "bg-orange-500 text-black hover:bg-orange-400",
+  },
+  rescue: {
+    badge: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+    panel:
+      "border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-950/30",
+    signal: "text-red-600 dark:text-red-300",
+    button: "bg-red-600 text-white hover:bg-red-500",
+  },
+} as const;
+
 interface TrackerPageProps {
   effectiveUserId?: string | null;
   isImpersonating?: boolean;
@@ -1140,13 +1174,23 @@ export function TrackerPage({
   const revisionReasons = executionInsight
     ? [
         ...executionInsight.overdueSignals,
+        ...executionInsight.proofSignals,
         executionInsight.missedDayRecovery,
       ].filter(Boolean)
     : [];
   const shouldSuggestAdaptiveRevision =
     !!executionInsight &&
-    (executionInsight.streakRisk !== "low" ||
-      executionInsight.overdueSignals.length > 0);
+    (executionInsight.executionState === "stalled" ||
+      executionInsight.executionState === "rescue" ||
+      executionInsight.overdueSignals.length > 0 ||
+      executionInsight.proofSignals.length > 0);
+  const executionStateStyle = executionInsight
+    ? EXECUTION_STATE_STYLES[executionInsight.executionState]
+    : null;
+  const revisionCtaLabel =
+    executionInsight && executionInsight.executionState !== "on-track"
+      ? "Tighten this week"
+      : "Revise plan";
 
   const lastActivityDate = tracker?.last_activity_at
     ? new Date(tracker.last_activity_at).toLocaleDateString(undefined, {
@@ -1642,6 +1686,33 @@ export function TrackerPage({
                 Execution Signals
               </h3>
               <div className="space-y-4">
+                {executionStateStyle && (
+                  <div className={`rounded-2xl border p-4 ${executionStateStyle.panel}`}>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
+                          Execution State
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${executionStateStyle.badge}`}>
+                            {executionInsight.executionStateLabel}
+                          </span>
+                          <span className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
+                            {executionInsight.streakRisk} risk
+                          </span>
+                        </div>
+                      </div>
+                      {lastActivityDate && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Last activity {lastActivityDate}
+                        </p>
+                      )}
+                    </div>
+                    <p className="mt-3 text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+                      {executionInsight.stateSummary}
+                    </p>
+                  </div>
+                )}
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
                     Next Best Action
@@ -1659,7 +1730,24 @@ export function TrackerPage({
                       {executionInsight.overdueSignals.map((signal) => (
                         <li
                           key={signal}
-                          className={`text-sm font-medium ${executionInsight.streakRisk === "high" ? "text-red-500" : "text-amber-500"}`}
+                          className={`text-sm font-medium ${executionStateStyle?.signal || (executionInsight.streakRisk === "high" ? "text-red-500" : "text-amber-500")}`}
+                        >
+                          {signal}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {executionInsight.proofSignals.length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
+                      Proof Signals
+                    </p>
+                    <ul className="space-y-2">
+                      {executionInsight.proofSignals.map((signal) => (
+                        <li
+                          key={signal}
+                          className={`text-sm font-medium ${executionStateStyle?.signal || "text-amber-500"}`}
                         >
                           {signal}
                         </li>
@@ -1669,10 +1757,10 @@ export function TrackerPage({
                 )}
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
-                    Missed-Day Recovery
+                    Recovery Move
                   </p>
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {executionInsight.missedDayRecovery}
+                    {executionInsight.rescueAction}
                   </p>
                 </div>
                 <div>
@@ -1696,11 +1784,9 @@ export function TrackerPage({
                     type="button"
                     onClick={() => setIsAdaptiveRevisionOpen(true)}
                     data-testid="tracker-revise-button"
-                    className={`min-h-[44px] w-full rounded-xl px-4 py-2.5 text-sm font-bold transition-colors cursor-pointer ${shouldSuggestAdaptiveRevision ? "bg-amber-500 text-black hover:bg-amber-400" : "bg-gray-900 text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"}`}
+                    className={`min-h-[44px] w-full rounded-xl px-4 py-2.5 text-sm font-bold transition-colors cursor-pointer ${shouldSuggestAdaptiveRevision && executionStateStyle ? executionStateStyle.button : "bg-gray-900 text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"}`}
                   >
-                    {shouldSuggestAdaptiveRevision
-                      ? "Start guided revision"
-                      : "Revise plan"}
+                    {shouldSuggestAdaptiveRevision ? revisionCtaLabel : "Revise plan"}
                   </button>
                 </div>
               </div>

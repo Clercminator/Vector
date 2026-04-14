@@ -265,9 +265,13 @@ CURRENT CANONICAL EXECUTION VIEW:
 - Proof checklist: ${(canonical.proofChecklist || []).join(" | ")}
 
 EXECUTION SIGNALS:
+- Execution state: ${insight.executionState}
+- State summary: ${insight.stateSummary}
 - Streak risk: ${insight.streakRisk}
 - Overdue signals: ${insight.overdueSignals.join(" | ") || "none"}
+- Proof signals: ${insight.proofSignals.join(" | ") || "none"}
 - Missed-day recovery: ${insight.missedDayRecovery}
+- Rescue action: ${insight.rescueAction}
 - Adaptive revision suggestion: ${insight.adaptiveRevisionSuggestion}
 
 TRACKER DATA:

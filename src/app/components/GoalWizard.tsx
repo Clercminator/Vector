@@ -123,8 +123,11 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
     setShowRestartConfirm,
     handleSave,
     updateResult,
+    refinePlanSection,
+    refiningSection,
     promoteDraftToResult,
     toggleHardMode,
+    goalMri,
     userName,
   } = useGoalWizard(props);
 
@@ -304,6 +307,8 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                 <WizardResult
                   result={result}
                   updateResult={updateResult}
+                  onRefineSection={refinePlanSection}
+                  refiningSection={refiningSection}
                   onBack={props.onBack}
                 />
               </WizardChat>
@@ -313,6 +318,8 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                 <WizardResult
                   result={result}
                   updateResult={updateResult}
+                  onRefineSection={refinePlanSection}
+                  refiningSection={refiningSection}
                   onBack={props.onBack}
                 />
               </div>
@@ -335,6 +342,8 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                 <WizardResult
                   result={result}
                   updateResult={updateResult}
+                  onRefineSection={refinePlanSection}
+                  refiningSection={refiningSection}
                   onBack={props.onBack}
                 />
               </WizardChat>
@@ -427,6 +436,8 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                 onFinalize={promoteDraftToResult}
                 isTyping={isTyping}
                 isAgentRunning={isAgentRunning}
+                awaitingPlanConfirmation={awaitingPlanConfirmation}
+                goalMri={goalMri}
               />
             )}
           </div>

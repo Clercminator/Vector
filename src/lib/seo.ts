@@ -1,6 +1,9 @@
 export const SITE_URL = "https://vectorplan.xyz";
 export const SITE_NAME = "Vector";
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/images/Logos/og-image.png`;
+export const DEFAULT_OG_IMAGE_TYPE = "image/png";
+export const DEFAULT_OG_IMAGE_WIDTH = "2848";
+export const DEFAULT_OG_IMAGE_HEIGHT = "1504";
 
 export const SUPPORTED_SEO_LANGUAGES = ["en", "es", "pt", "fr", "de"] as const;
 

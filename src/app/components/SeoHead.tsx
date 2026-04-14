@@ -6,6 +6,9 @@ import {
   buildLanguageAlternates,
   buildLocalizedUrl,
   DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_HEIGHT,
+  DEFAULT_OG_IMAGE_TYPE,
+  DEFAULT_OG_IMAGE_WIDTH,
   SITE_NAME,
   SITE_URL,
   isLocalizedPublicPath,
@@ -142,12 +145,20 @@ export function SeoHead() {
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={DEFAULT_OG_IMAGE} />
+      <meta property="og:image:type" content={DEFAULT_OG_IMAGE_TYPE} />
+      <meta property="og:image:width" content={DEFAULT_OG_IMAGE_WIDTH} />
+      <meta property="og:image:height" content={DEFAULT_OG_IMAGE_HEIGHT} />
+      <meta property="og:image:alt" content="Vector AI Goal Planner preview" />
       <meta property="og:locale" content={ogLocale} />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:url" content={canonical} />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={DEFAULT_OG_IMAGE} />
+      <meta name="twitter:image:type" content={DEFAULT_OG_IMAGE_TYPE} />
+      <meta name="twitter:image:width" content={DEFAULT_OG_IMAGE_WIDTH} />
+      <meta name="twitter:image:height" content={DEFAULT_OG_IMAGE_HEIGHT} />
+      <meta name="twitter:image:alt" content="Vector AI Goal Planner preview" />
       <html lang={language} />
       {structuredData ? (
         <script type="application/ld+json">

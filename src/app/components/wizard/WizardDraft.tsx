@@ -4,6 +4,7 @@ import { X, CheckCircle2 } from 'lucide-react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { useLanguage } from '@/app/components/language-provider';
 import { ScrollArea } from '@/app/components/ui/scroll-area';
+import type { GoalMri } from '@/lib/goalMri';
 
 // Score Indicator Component (Local to Draft/Result usually)
 const ScoreIndicator = ({ score }: { score: number }) => {
@@ -37,6 +38,8 @@ interface WizardDraftProps {
     onFinalize?: () => void;
     isTyping?: boolean;
     isAgentRunning?: boolean;
+    awaitingPlanConfirmation?: boolean;
+    goalMri?: GoalMri | null;
 }
 
 export const WizardDraft: React.FC<WizardDraftProps> = ({
@@ -46,9 +49,78 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
     draftPulse = false,
     onFinalize,
     isTyping = false,
-    isAgentRunning = false
+    isAgentRunning = false,
+    awaitingPlanConfirmation = false,
+    goalMri = null,
 }) => {
     const { t } = useLanguage();
+
+    const renderGoalMri = (mri: GoalMri) => {
+        const statusLabel = mri.readiness === 'ready'
+            ? 'Ready to lock'
+            : `${mri.missingAssumptions.length} clarification${mri.missingAssumptions.length === 1 ? '' : 's'} left`;
+
+        const renderMriList = (label: string, items: string[], emptyLabel: string, tone: string) => (
+            <div className={`rounded-xl border p-3 ${tone}`}>
+                <h5 className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">{label}</h5>
+                {items.length > 0 ? (
+                    <ul className="space-y-1.5">
+                        {items.map((item) => (
+                            <li key={item} className="text-sm text-gray-700 dark:text-gray-300 leading-snug">
+                                {item}
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{emptyLabel}</p>
+                )}
+            </div>
+        );
+
+        return (
+            <div className={`rounded-2xl border p-4 md:p-5 ${awaitingPlanConfirmation ? 'bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-900/40' : 'bg-slate-50 border-slate-200 dark:bg-zinc-950/40 dark:border-zinc-800'}`}>
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-gray-500 mb-2">Goal MRI</p>
+                        <h4 className="text-base font-bold text-gray-900 dark:text-white">Why this plan will fit before the full blueprint is generated</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
+                            Vector is already forming a diagnosis from your context. This surfaces the friction, leverage, and missing assumptions before the plan is locked.
+                        </p>
+                    </div>
+                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${mri.readiness === 'ready' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-white text-amber-700 border border-amber-200 dark:bg-zinc-900 dark:text-amber-300 dark:border-amber-900/40'}`}>
+                        {statusLabel}
+                    </span>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2 mt-4">
+                    {renderMriList(
+                        'Bottlenecks',
+                        mri.bottlenecks,
+                        'Still waiting for a clearer constraint pattern.',
+                        'bg-white/80 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800',
+                    )}
+                    {renderMriList(
+                        'Likely Failure Modes',
+                        mri.failureModes,
+                        'Failure modes will sharpen as more context arrives.',
+                        'bg-white/80 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800',
+                    )}
+                    {renderMriList(
+                        'Leverage Moves',
+                        mri.leverageMoves,
+                        'The leverage layer is still forming.',
+                        'bg-white/80 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800',
+                    )}
+                    {renderMriList(
+                        'Missing Assumptions',
+                        mri.missingAssumptions,
+                        'No major missing assumptions detected. The plan can be generated from here.',
+                        'bg-white/80 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800',
+                    )}
+                </div>
+            </div>
+        );
+    };
 
     const renderDraftContent = (draft: any) => {
         if (!draft) return null;
@@ -407,6 +479,7 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
                      </div>
                      {draft.score !== undefined && <ScoreIndicator score={draft.score} />}
                  </div>
+                 {goalMri && renderGoalMri(goalMri)}
                  {renderBody()}
             </div>
         );

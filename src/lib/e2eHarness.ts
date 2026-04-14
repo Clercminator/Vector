@@ -10,6 +10,7 @@ import {
   type FrameworkId,
 } from "@/lib/blueprints";
 import { normalizeCanonicalPlanResult } from "@/lib/planContract";
+import { deriveTrackerSeed } from "@/lib/trackerSeed";
 import { getStepIdsAndLabels, inferPlanKind } from "@/lib/trackerSteps";
 
 const E2E_USER_ID = "e2e-user";
@@ -164,44 +165,26 @@ function buildDefaultExecutionState(blueprint: Blueprint): ExecutionState {
     color: "#2563eb",
   };
 
-  const reminders: BlueprintReminder[] = canonical.scheduleHints
-    .slice(0, 2)
-    .map((hint, index) => ({
-      id: `e2e-reminder-${index + 1}`,
-      blueprint_id: blueprint.id,
-      user_id: E2E_USER_ID,
-      time: hint.time || "09:00",
-      days: hint.days?.length ? hint.days : ["mon"],
-      created_at: blueprint.createdAt,
-    }));
+  const seed = deriveTrackerSeed(blueprint, E2E_USER_ID, now);
 
-  const subGoals: BlueprintSubGoal[] = canonical.milestones
-    .slice(0, 3)
-    .map((milestone, index) => {
-      const targetDate = new Date(
-        now.getTime() + (index + 3) * 24 * 60 * 60 * 1000,
-      );
-      return {
-        id: `e2e-subgoal-${index + 1}`,
-        blueprint_id: blueprint.id,
-        user_id: E2E_USER_ID,
-        title: milestone,
-        target_date: targetDate.toISOString().slice(0, 10),
-        status: index === 0 ? "completed" : "active",
-        created_at: blueprint.createdAt,
-      };
-    });
+  const reminders: BlueprintReminder[] = seed.reminders.map((reminder, index) => ({
+    id: `e2e-reminder-${index + 1}`,
+    created_at: blueprint.createdAt,
+    ...reminder,
+  }));
 
-  const tasks: BlueprintTask[] = canonical.firstWeekActions
-    .slice(0, 3)
-    .map((action, index) => ({
-      id: `e2e-task-${index + 1}`,
-      blueprint_id: blueprint.id,
-      user_id: E2E_USER_ID,
-      title: action,
-      target_count: 1,
-      created_at: blueprint.createdAt,
-    }));
+  const subGoals: BlueprintSubGoal[] = seed.subGoals.map((goal, index) => ({
+    id: `e2e-subgoal-${index + 1}`,
+    created_at: blueprint.createdAt,
+    status: index === 0 ? "completed" : goal.status,
+    ...goal,
+  }));
+
+  const tasks: BlueprintTask[] = seed.tasks.map((task, index) => ({
+    id: `e2e-task-${index + 1}`,
+    created_at: blueprint.createdAt,
+    ...task,
+  }));
 
   const taskCompletions: BlueprintTaskCompletion[] = tasks
     .slice(0, 1)

@@ -58,7 +58,10 @@ describe("trackerStats execution insight", () => {
     const insight = getExecutionInsight(blueprint, tracker, logs);
 
     expect(insight.streakRisk).toBe("high");
+    expect(insight.executionState).toBe("rescue");
     expect(insight.overdueSignals.length).toBeGreaterThan(0);
+    expect(insight.proofSignals.length).toBeGreaterThan(0);
     expect(insight.missedDayRecovery).toContain("Workout 3x/week");
+    expect(insight.adaptiveRevisionSuggestion).toContain("Tighten this week");
   });
 });
