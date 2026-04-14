@@ -936,7 +936,7 @@ export const useGoalWizard = ({
       setResult(blueprint);
       setFinalAnswers(userAnswers);
       appendAiMessage(
-        "Your blueprint is ready below. Review the plan pack, save it, then move into tracking and export.",
+        t("wizard.planPackReadyMessage"),
       );
       trackEvent("wizard_completed", {
         framework: framework || blueprint.type,
@@ -2077,7 +2077,7 @@ export const useGoalWizard = ({
       toast.error(
         error instanceof Error
           ? error.message
-          : "I couldn't tighten that section right now.",
+          : t("wizard.sectionRefinement.error"),
       );
       throw error;
     } finally {

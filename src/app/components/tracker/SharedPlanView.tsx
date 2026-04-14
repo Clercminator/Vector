@@ -56,7 +56,7 @@ export function SharedPlanView() {
   useEffect(() => {
     async function loadShared() {
       if (!token) {
-        setError(t("shared.expired") || "Link expired or invalid");
+        setError(t("shared.expired"));
         setLoading(false);
         return;
       }
@@ -82,9 +82,8 @@ export function SharedPlanView() {
         if (!res.ok) {
           setError(
             res.status === 404
-              ? t("shared.expired") || "Link expired or invalid."
-              : t("shared.loadError") ||
-                  "Couldn't load shared plan. Please try again later.",
+              ? t("shared.expired")
+              : t("shared.loadError"),
           );
           setLoading(false);
           return;
@@ -96,10 +95,7 @@ export function SharedPlanView() {
         setSharedData(data);
       } catch (e: any) {
         console.error("Share error:", e);
-        setError(
-          t("shared.loadError") ||
-            "Couldn't load shared plan. Please try again later.",
-        );
+        setError(t("shared.loadError"));
       } finally {
         setLoading(false);
       }
@@ -123,11 +119,11 @@ export function SharedPlanView() {
           <Lock size={48} />
         </div>
         <h2 className="text-2xl font-black text-gray-900 dark:text-white">
-          {t("shared.expired") || "Link expired or invalid"}
+          {t("shared.expired")}
         </h2>
         <p className="text-gray-500 max-w-md text-center">{error}</p>
         <Button onClick={() => navigate("/")} className="mt-4 gap-2 rounded-xl">
-          <ArrowLeft size={16} /> {t("shared.backHome") || "Back to home"}
+          <ArrowLeft size={16} /> {t("shared.backHome")}
         </Button>
       </div>
     );
@@ -155,16 +151,20 @@ export function SharedPlanView() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      data-testid="shared-plan-shell"
       className="max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8 pb-32"
     >
       {/* Header */}
-      <div className="mb-8 border-b border-gray-200 dark:border-zinc-800 pb-6 relative">
+      <div
+        data-testid="shared-plan-header"
+        className="mb-8 border-b border-gray-200 dark:border-zinc-800 pb-6 relative"
+      >
         <button
           onClick={() => navigate("/")}
           className="flex items-center text-sm font-bold text-gray-500 hover:text-black dark:hover:text-white transition-colors mb-6"
         >
           <ArrowLeft size={16} className="mr-1" />{" "}
-          {t("shared.backHome") || "Back to home"}
+          {t("shared.backHome")}
         </button>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -181,7 +181,7 @@ export function SharedPlanView() {
                 </span>
               </span>
               <span className="text-xs font-bold uppercase tracking-widest text-gray-400 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-md">
-                {t("shared.readOnly") || "Shared plan (read-only)"}
+                {t("shared.readOnly")}
               </span>
             </div>
             <h1 className="text-3xl md:text-5xl font-black text-black dark:text-white leading-tight mt-2 flex items-center gap-3">
@@ -197,7 +197,7 @@ export function SharedPlanView() {
           <div className="bg-white dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 space-y-6">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                Executive Summary
+                {t("wizard.executiveSummary")}
               </p>
               <p className="text-base md:text-lg text-gray-800 dark:text-gray-200 leading-relaxed">
                 {canonical.executiveSummary}
@@ -206,7 +206,7 @@ export function SharedPlanView() {
             <div className="grid md:grid-cols-2 gap-5">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                  Strategic Diagnosis
+                  {t("wizard.card.strategicDiagnosis")}
                 </p>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   {canonical.currentReality}
@@ -214,7 +214,7 @@ export function SharedPlanView() {
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                  Strategic Pillars
+                  {t("wizard.card.strategicPillars")}
                 </p>
                 <ul className="space-y-2">
                   {canonical.strategicPillars.map((item) => (
@@ -231,7 +231,7 @@ export function SharedPlanView() {
             <div className="grid md:grid-cols-2 gap-5">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                  Constraint Map
+                  {t("wizard.card.constraintMap")}
                 </p>
                 <ul className="space-y-2">
                   {canonical.keyConstraints.map((item) => (
@@ -246,7 +246,7 @@ export function SharedPlanView() {
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                  Leverage Moves
+                  {t("wizard.card.leverageMoves")}
                 </p>
                 <ul className="space-y-2">
                   {canonical.leverageMoves.map((item) => (
@@ -263,7 +263,7 @@ export function SharedPlanView() {
             <div className="grid md:grid-cols-2 gap-5">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                  First Week Actions
+                  {t("wizard.card.firstWeekActions")}
                 </p>
                 <ul className="space-y-2">
                   {canonical.firstWeekActions.map((action) => (
@@ -278,7 +278,7 @@ export function SharedPlanView() {
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                  Milestones
+                  {t("wizard.card.milestones")}
                 </p>
                 <ul className="space-y-2">
                   {canonical.milestones.map((milestone) => (
@@ -295,7 +295,7 @@ export function SharedPlanView() {
             <div className="grid md:grid-cols-2 gap-5">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                  Success Criteria
+                  {t("wizard.card.successCriteria")}
                 </p>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   {canonical.successCriteria}
@@ -303,7 +303,7 @@ export function SharedPlanView() {
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                  Weekly Review
+                  {t("wizard.weeklyReview")}
                 </p>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   {canonical.weeklyReviewPrompt}
@@ -313,12 +313,12 @@ export function SharedPlanView() {
             <div className="grid md:grid-cols-2 gap-5">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                  Scoreboard
+                  {t("wizard.card.scoreboard")}
                 </p>
                 <div className="grid gap-4">
                   <div>
                     <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400 mb-2">
-                      Lead Indicators
+                      {t("wizard.card.leadIndicators")}
                     </p>
                     <ul className="space-y-2">
                       {canonical.leadIndicators.map((item) => (
@@ -333,7 +333,7 @@ export function SharedPlanView() {
                   </div>
                   <div>
                     <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400 mb-2">
-                      Lag Indicators
+                      {t("wizard.card.lagIndicators")}
                     </p>
                     <ul className="space-y-2">
                       {canonical.lagIndicators.map((item) => (
@@ -350,7 +350,7 @@ export function SharedPlanView() {
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                  Ownership System
+                  {t("wizard.card.ownershipSystem")}
                 </p>
                 <p className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
                   {tracker?.tracking_question || canonical.trackingPrompt}
@@ -366,7 +366,7 @@ export function SharedPlanView() {
                   ))}
                 </ul>
                 <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400 mb-2">
-                  Support System
+                  {t("wizard.card.supportSystem")}
                 </p>
                 <ul className="space-y-2">
                   {canonical.supportSystem.map((item) => (
@@ -383,7 +383,7 @@ export function SharedPlanView() {
             <div className="grid md:grid-cols-2 gap-5">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                  Proof Checklist
+                  {t("wizard.card.proofChecklist")}
                 </p>
                 <ul className="space-y-2">
                   {canonical.proofChecklist.map((item) => (
@@ -398,7 +398,7 @@ export function SharedPlanView() {
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                  Recovery Protocol
+                  {t("wizard.card.recoveryProtocol")}
                 </p>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   {canonical.recoveryProtocol}
@@ -458,8 +458,7 @@ export function SharedPlanView() {
           {!isInfinite && steps.length === 0 && (
             <div className="bg-white dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 text-center text-gray-500">
               <p className="font-medium mb-2">
-                {t("tracker.noStepsToTrack") ||
-                  "No trackable steps found for this plan."}
+                {t("tracker.noStepsToTrack")}
               </p>
             </div>
           )}
@@ -472,7 +471,7 @@ export function SharedPlanView() {
             </h2>
             {filteredLogs.length === 0 ? (
               <p className="text-gray-500 text-center py-8 font-medium">
-                {t("tracker.noActivity") || "No activity yet"}
+                {t("tracker.noActivity")}
               </p>
             ) : (
               <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gray-200 dark:before:bg-zinc-800">
@@ -514,10 +513,10 @@ export function SharedPlanView() {
                           <span
                             className={`text-xs font-bold uppercase tracking-wider ${isSetback ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}
                           >
-                            {isJournal && (t("tracker.journal") || "Journal")}
-                            {isCheckIn && "Check-in"}
-                            {isStepDone && "Completed Step"}
-                            {isSetback && "Setback Logged"}
+                            {isJournal && t("tracker.journal")}
+                            {isCheckIn && t("tracker.checkIn")}
+                            {isStepDone && t("tracker.completedStep")}
+                            {isSetback && t("tracker.setbackLogged")}
                           </span>
                           <span className="text-xs font-bold text-gray-400">
                             {new Date(log.created_at).toLocaleDateString()}

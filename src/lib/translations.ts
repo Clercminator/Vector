@@ -113,6 +113,17 @@ export const translations = {
     "common.error": "Something went wrong",
     "common.errorCopiedToClipboard": "Error copied to clipboard",
     "common.retry": "Retry",
+    "common.share": "Share",
+    "common.exit": "Exit",
+    "common.fullScreen": "Full screen",
+    "common.copyStrategy": "Copy Strategy",
+    "common.copySection": "Copy section",
+    "common.copyList": "Copy list",
+    "common.moveUp": "Move up",
+    "common.moveDown": "Move down",
+    "common.deleteItem": "Delete item",
+    "common.typeHere": "Type here...",
+    "common.typeTask": "Type a task...",
 
     // Onboarding
     "onboarding.welcome.title": "Welcome to Vector",
@@ -615,6 +626,110 @@ export const translations = {
     "wizard.inputCollapse": "Collapse",
     "wizard.viewDraft": "View Draft",
     "wizard.closeDraft": "Close Draft",
+    "wizard.planPack": "Plan Pack",
+    "wizard.nextBestAction": "Next Best Action",
+    "wizard.commitment": "Commitment",
+    "wizard.weeklyReview": "Weekly Review",
+    "wizard.executiveSummary": "Executive Summary",
+    "wizard.planPackReadyMessage":
+      "Your blueprint is ready below. Review the plan pack, save it, then move into tracking and export.",
+    "wizard.upgrade.title": "Unlock Full Blueprint",
+    "wizard.upgrade.description":
+      "You've generated a Teaser Preview. Upgrade to the Standard Plan to reveal the full detailed strategy.",
+    "wizard.upgrade.cta": "Upgrade Now",
+    "wizard.upgrade.back": "No thanks, take me back",
+    "wizard.sectionRefinement.action": "Tighten {0}",
+    "wizard.sectionRefinement.refining": "Refining...",
+    "wizard.sectionRefinement.defaultTitle": "Tighten Section",
+    "wizard.sectionRefinement.defaultDescription":
+      "Refine one section of the blueprint without regenerating the entire plan.",
+    "wizard.sectionRefinement.optionalContext": "Optional context",
+    "wizard.sectionRefinement.defaultPlaceholder":
+      "Add any extra context the refinement should respect.",
+    "wizard.sectionRefinement.apply": "Apply AI Update",
+    "wizard.sectionRefinement.error":
+      "I couldn't tighten that section right now.",
+    "wizard.sectionRefinement.diagnosis.description":
+      "Refine the strategic read on the situation without rewriting the rest of the blueprint.",
+    "wizard.sectionRefinement.diagnosis.placeholder":
+      "Optional: name a new constraint, pressure point, blind spot, or angle the diagnosis should account for.",
+    "wizard.sectionRefinement.proof.description":
+      "Strengthen only the evidence loop, scoreboards, and accountability layer.",
+    "wizard.sectionRefinement.proof.placeholder":
+      "Optional: describe what proof is missing, what should be measurable, or what kind of evidence you want the plan to require.",
+    "wizard.sectionRefinement.recovery.description":
+      "Sharpen the fallback logic so the plan survives bad days and missed weeks.",
+    "wizard.sectionRefinement.recovery.placeholder":
+      "Optional: add the exact failure pattern or recovery constraint this rescue logic should solve for.",
+    "wizard.section.diagnosis": "Diagnosis",
+    "wizard.section.operatingSystem": "Operating System",
+    "wizard.section.proof": "Proof",
+    "wizard.section.recovery": "Recovery",
+    "wizard.section.diagnosis.title": "Why this blueprint fits",
+    "wizard.section.diagnosis.description":
+      "Pressure-test the logic first. These cards explain the real situation the plan is designed for, and you can refine this layer without changing the rest of the operating system.",
+    "wizard.section.operatingSystem.title": "What you actually run each week",
+    "wizard.section.operatingSystem.description":
+      "This is the part of the blueprint that should behave like an execution system, not a report. Tighten the cadence, sequence, and operating rules here.",
+    "wizard.section.proof.title": "How progress becomes visible",
+    "wizard.section.proof.description":
+      "Use this layer to define what counts as real movement. It should be obvious how you will measure, prove, and externally validate progress week by week.",
+    "wizard.section.recovery.title": "What happens when execution slips",
+    "wizard.section.recovery.description":
+      "This layer keeps the blueprint alive after a bad day or bad week. Edit the failure logic, rescue move, and revision triggers here instead of regenerating the whole plan.",
+    "wizard.section.frameworkLens": "Framework Lens",
+    "wizard.section.frameworkLens.description":
+      "The framework-specific visualization stays below. The shared operating system above makes the plan easier to execute, while the unique framework view keeps the final blueprint distinct.",
+    "wizard.card.strategicDiagnosis": "Strategic Diagnosis",
+    "wizard.card.strategicPillars": "Strategic Pillars",
+    "wizard.card.constraintMap": "Constraint Map",
+    "wizard.card.leverageMoves": "Leverage Moves",
+    "wizard.card.whyThisMatters": "Why This Matters",
+    "wizard.card.whatToAvoid": "What To Avoid",
+    "wizard.card.firstWeekActions": "First Week Actions",
+    "wizard.card.milestones": "Milestones",
+    "wizard.card.ownershipSystem": "Ownership System",
+    "wizard.card.cadence": "Cadence",
+    "wizard.card.supportSystem": "Support System",
+    "wizard.card.decisionRules": "Decision Rules",
+    "wizard.card.scheduleSnapshot": "Schedule Snapshot",
+    "wizard.card.scheduleEmpty":
+      "Add schedule hints above so this becomes a real operating rhythm instead of a flexible intention.",
+    "wizard.card.scoreboard": "Scoreboard",
+    "wizard.card.leadIndicators": "Lead Indicators",
+    "wizard.card.lagIndicators": "Lag Indicators",
+    "wizard.card.successCriteria": "Success Criteria",
+    "wizard.card.proofChecklist": "Proof Checklist",
+    "wizard.card.setupChecklist": "Setup Checklist",
+    "wizard.card.accountabilityHooks": "Accountability Hooks",
+    "wizard.card.failureModes": "Failure Modes",
+    "wizard.card.recoveryProtocol": "Recovery Protocol",
+    "wizard.card.revisionTriggers": "Revision Triggers",
+    "wizard.card.reviewAnchor": "Review Anchor",
+    "wizard.schedule.days": "Days",
+    "wizard.schedule.flexible": "flexible",
+    "wizard.schedule.time": "Time",
+    "wizard.schedule.minutesShort": "min",
+    "wizard.goalMri.title": "Goal MRI",
+    "wizard.goalMri.heading":
+      "Why this plan will fit before the full blueprint is generated",
+    "wizard.goalMri.description":
+      "Vector is already forming a diagnosis from your context. This surfaces the friction, leverage, and missing assumptions before the plan is locked.",
+    "wizard.goalMri.status.ready": "Ready to lock",
+    "wizard.goalMri.status.leftSingular": "{0} clarification left",
+    "wizard.goalMri.status.leftPlural": "{0} clarifications left",
+    "wizard.goalMri.bottlenecks": "Bottlenecks",
+    "wizard.goalMri.failureModes": "Likely Failure Modes",
+    "wizard.goalMri.leverageMoves": "Leverage Moves",
+    "wizard.goalMri.missingAssumptions": "Missing Assumptions",
+    "wizard.goalMri.empty.bottlenecks":
+      "Still waiting for a clearer constraint pattern.",
+    "wizard.goalMri.empty.failureModes":
+      "Failure modes will sharpen as more context arrives.",
+    "wizard.goalMri.empty.leverageMoves":
+      "The leverage layer is still forming.",
+    "wizard.goalMri.empty.missingAssumptions":
+      "No major missing assumptions detected. The plan can be generated from here.",
     "wizard.generatePlan": "Generate my plan",
     "wizard.notReadyGoDeeper":
       "Not ready yet, let's keep going deeper into the problem",
@@ -881,6 +996,11 @@ export const translations = {
       "If you could only do TWO of these tomorrow that would move the needle the most, which would they be?",
     "pareto.vital": "The Vital Few (20%)",
     "pareto.trivial": "The Trivial Many (80%)",
+    "pareto.focusRatio": "Focus ratio",
+    "pareto.highImpactCount": "{0} high-impact",
+    "pareto.deprioritizeCount": "{0} to deprioritize",
+    "pareto.subtitleVital": "High Impact (20%)",
+    "pareto.subtitleTrivial": "Lower Impact (80%)",
 
     "rpm.title": "RPM Goal Strategist",
     "rpm.q1": "What is the specific Result you want to achieve? (Be precise)",
@@ -947,6 +1067,10 @@ export const translations = {
       "Why do you think you have a high chance of failing this? (If you are sure you can do it, it's not a Misogi).",
     "misogi.q3":
       "What is the physical or mental 'purification' you hope to achieve by attempting this?",
+    "misogi.challenge": "The Challenge",
+    "misogi.challengeBadge": "The Challenge (50% Fail Rate)",
+    "misogi.failureGap": "The Failure Gap",
+    "misogi.purification": "The Purification",
 
     "ikigai.title": "Ikigai",
     "ikigai.q1":
@@ -1065,6 +1189,11 @@ export const translations = {
     "dsss.selection": "Selection",
     "dsss.sequence": "Sequence",
     "dsss.stakes": "Stakes",
+    "dsss.desc.deconstruct": "Break the skill into subcomponents",
+    "dsss.desc.selection": "Select the vital 20% to focus on",
+    "dsss.desc.sequence": "Order of learning or execution",
+    "dsss.desc.stakes":
+      "Accountability - what's at risk if you don't follow through",
 
     "fw.mandalas.definition":
       "A visual chart with a central core goal surrounded by 8 distinct categories, each with 8 actionable steps (64 total items).",
@@ -1205,6 +1334,52 @@ export const translations = {
 
     // Tracker UI
     "tracker.title": "Track progress",
+    "tracker.execution.signals": "Execution Signals",
+    "tracker.execution.stateLabel": "Execution State",
+    "tracker.execution.lastActivity": "Last activity {0}",
+    "tracker.execution.nextBestAction": "Next Best Action",
+    "tracker.execution.overdueSignals": "Overdue Signals",
+    "tracker.execution.proofSignals": "Proof Signals",
+    "tracker.execution.recoveryMove": "Recovery Move",
+    "tracker.execution.adaptiveRevision": "Adaptive Revision",
+    "tracker.execution.revisionTighten": "Tighten this week",
+    "tracker.execution.revisionStandard": "Revise plan",
+    "tracker.execution.useRealData":
+      "Use the real execution data to simplify and tighten the plan.",
+    "tracker.execution.risk.low": "low",
+    "tracker.execution.risk.medium": "medium",
+    "tracker.execution.risk.high": "high",
+    "tracker.execution.riskLabel": "{0} risk",
+    "tracker.execution.state.onTrack": "On Track",
+    "tracker.execution.state.atRisk": "At Risk",
+    "tracker.execution.state.stalled": "Stalled",
+    "tracker.execution.state.rescue": "Rescue Mode",
+    "tracker.execution.summary.onTrack":
+      "Cadence, proof, and progress are aligned. Keep the system steady.",
+    "tracker.execution.summary.atRisk":
+      "Momentum is still recoverable, but the current rhythm needs tighter follow-through.",
+    "tracker.execution.summary.stalled":
+      "The plan is losing traction. Simplify the week before pushing harder.",
+    "tracker.execution.summary.rescue":
+      "Execution is breaking down under the current scope. Switch to rescue mode and narrow the plan now.",
+    "tracker.execution.overdue.noActivity": "No logged activity for {0} days.",
+    "tracker.execution.overdue.noSteps":
+      "No tracked steps completed yet. Start with the next best action.",
+    "tracker.execution.overdue.lowProgress":
+      "Progress is still below the first milestone threshold.",
+    "tracker.execution.proof.noLog":
+      "No proof or reflection has been logged this week.",
+    "tracker.execution.proof.noProofAfterSetback":
+      "The tracker shows friction, but there is no recent proof note explaining what changed.",
+    "tracker.execution.recovery.resetPrefix":
+      "Reset with one small win today: ",
+    "tracker.execution.recovery.shorterPrefix":
+      "If today slips, do a shorter version of this action: ",
+    "tracker.execution.adaptive.tightenPrefix": "Tighten this week",
+    "tracker.execution.adaptive.restoreProofLoop":
+      "Tighten this week: restore a proof loop before you add more scope.",
+    "tracker.execution.adaptive.reviewFit":
+      "Review whether the current cadence still fits your week.",
     "tracker.backToPlans": "Back to My Plans",
     "tracker.planSummary": "Plan summary",
     "tracker.steps": "Steps",
@@ -1222,6 +1397,9 @@ export const translations = {
     "tracker.timeline": "Activity",
     "tracker.noActivity":
       "No activity yet. Mark steps complete or add a journal entry.",
+    "tracker.checkIn": "Check-in",
+    "tracker.completedStep": "Completed Step",
+    "tracker.setbackLogged": "Setback Logged",
     "tracker.status.active": "Active",
     "tracker.status.completed": "Completed",
     "tracker.status.paused": "Paused",
@@ -1325,6 +1503,11 @@ export const translations = {
     "tracker.share.copy": "Copy Link",
     "tracker.share.viewOnly": "View Only Mode",
     "tracker.share.copied": "Share link copied to clipboard!",
+    "tracker.share.error": "Failed to generate share link",
+    "shared.backHome": "Back to home",
+    "shared.expired": "Link expired or invalid",
+    "shared.loadError": "Couldn't load shared plan. Please try again later.",
+    "shared.readOnly": "Shared plan (read-only)",
 
     "tracker.rangeAll": "All Time",
     "tracker.range7Days": "Last 7 Days",
@@ -1520,6 +1703,17 @@ export const translations = {
     "common.clickToEdit": "Clic para editar...",
     "common.error": "Algo salió mal",
     "common.errorCopiedToClipboard": "Error copiado al portapapeles",
+    "common.share": "Compartir",
+    "common.exit": "Salir",
+    "common.fullScreen": "Pantalla completa",
+    "common.copyStrategy": "Copiar estrategia",
+    "common.copySection": "Copiar sección",
+    "common.copyList": "Copiar lista",
+    "common.moveUp": "Mover arriba",
+    "common.moveDown": "Mover abajo",
+    "common.deleteItem": "Eliminar elemento",
+    "common.typeHere": "Escribe aquí...",
+    "common.typeTask": "Escribe una tarea...",
 
     // Onboarding
     "onboarding.welcome.title": "Bienvenido a Vector",
@@ -1999,6 +2193,110 @@ export const translations = {
     "wizard.inputCollapse": "Contraer",
     "wizard.viewDraft": "Ver borrador",
     "wizard.closeDraft": "Cerrar borrador",
+    "wizard.planPack": "Paquete del plan",
+    "wizard.nextBestAction": "Siguiente mejor acción",
+    "wizard.commitment": "Compromiso",
+    "wizard.weeklyReview": "Revisión semanal",
+    "wizard.executiveSummary": "Resumen ejecutivo",
+    "wizard.planPackReadyMessage":
+      "Tu plano está listo abajo. Revisa el paquete del plan, guárdalo y luego pasa al seguimiento y la exportación.",
+    "wizard.upgrade.title": "Desbloquea el blueprint completo",
+    "wizard.upgrade.description":
+      "Has generado una vista previa. Mejora al Plan Estándar para revelar la estrategia detallada completa.",
+    "wizard.upgrade.cta": "Mejorar ahora",
+    "wizard.upgrade.back": "No, llévame de vuelta",
+    "wizard.sectionRefinement.action": "Afinar {0}",
+    "wizard.sectionRefinement.refining": "Afinando...",
+    "wizard.sectionRefinement.defaultTitle": "Afinar sección",
+    "wizard.sectionRefinement.defaultDescription":
+      "Refina una sección del plan sin regenerar el blueprint completo.",
+    "wizard.sectionRefinement.optionalContext": "Contexto opcional",
+    "wizard.sectionRefinement.defaultPlaceholder":
+      "Añade cualquier contexto extra que el ajuste deba respetar.",
+    "wizard.sectionRefinement.apply": "Aplicar actualización con IA",
+    "wizard.sectionRefinement.error": "No pude afinar esa sección ahora mismo.",
+    "wizard.sectionRefinement.diagnosis.description":
+      "Refina la lectura estratégica de la situación sin reescribir el resto del plan.",
+    "wizard.sectionRefinement.diagnosis.placeholder":
+      "Opcional: nombra una restricción nueva, un punto de presión, un punto ciego o un ángulo que el diagnóstico deba tener en cuenta.",
+    "wizard.sectionRefinement.proof.description":
+      "Refuerza solo el bucle de evidencia, los marcadores y la capa de responsabilidad.",
+    "wizard.sectionRefinement.proof.placeholder":
+      "Opcional: describe qué evidencia falta, qué debería ser medible o qué tipo de prueba quieres que el plan exija.",
+    "wizard.sectionRefinement.recovery.description":
+      "Afina la lógica de recuperación para que el plan sobreviva a días malos y semanas fallidas.",
+    "wizard.sectionRefinement.recovery.placeholder":
+      "Opcional: añade el patrón exacto de fallo o la restricción de recuperación que esta lógica de rescate debe resolver.",
+    "wizard.section.diagnosis": "Diagnóstico",
+    "wizard.section.operatingSystem": "Sistema de ejecución",
+    "wizard.section.proof": "Evidencia",
+    "wizard.section.recovery": "Recuperación",
+    "wizard.section.diagnosis.title": "Por qué este plan encaja",
+    "wizard.section.diagnosis.description":
+      "Pon a prueba la lógica primero. Estas tarjetas explican la situación real para la que está diseñado el plan y puedes afinar esta capa sin cambiar el resto del sistema de ejecución.",
+    "wizard.section.operatingSystem.title":
+      "Lo que realmente ejecutas cada semana",
+    "wizard.section.operatingSystem.description":
+      "Esta es la parte del plan que debe comportarse como un sistema de ejecución, no como un informe. Afina aquí la cadencia, la secuencia y las reglas operativas.",
+    "wizard.section.proof.title": "Cómo se vuelve visible el progreso",
+    "wizard.section.proof.description":
+      "Usa esta capa para definir qué cuenta como movimiento real. Debe ser obvio cómo medirás, demostrarás y validarás externamente el progreso semana a semana.",
+    "wizard.section.recovery.title": "Qué ocurre cuando la ejecución se rompe",
+    "wizard.section.recovery.description":
+      "Esta capa mantiene vivo el plan después de un mal día o una mala semana. Edita aquí la lógica de fallos, el movimiento de rescate y los disparadores de revisión en lugar de regenerar todo el plan.",
+    "wizard.section.frameworkLens": "Lente del framework",
+    "wizard.section.frameworkLens.description":
+      "La visualización específica del framework queda abajo. El sistema de ejecución compartido de arriba hace que el plan sea más fácil de ejecutar, mientras que la vista única del framework mantiene el blueprint final diferenciado.",
+    "wizard.card.strategicDiagnosis": "Diagnóstico estratégico",
+    "wizard.card.strategicPillars": "Pilares estratégicos",
+    "wizard.card.constraintMap": "Mapa de restricciones",
+    "wizard.card.leverageMoves": "Movimientos de palanca",
+    "wizard.card.whyThisMatters": "Por qué importa",
+    "wizard.card.whatToAvoid": "Qué evitar",
+    "wizard.card.firstWeekActions": "Acciones de la primera semana",
+    "wizard.card.milestones": "Hitos",
+    "wizard.card.ownershipSystem": "Sistema de responsabilidad",
+    "wizard.card.cadence": "Cadencia",
+    "wizard.card.supportSystem": "Sistema de apoyo",
+    "wizard.card.decisionRules": "Reglas de decisión",
+    "wizard.card.scheduleSnapshot": "Resumen del horario",
+    "wizard.card.scheduleEmpty":
+      "Añade arriba sugerencias de horario para que esto se convierta en un ritmo real de ejecución en lugar de una intención flexible.",
+    "wizard.card.scoreboard": "Marcador",
+    "wizard.card.leadIndicators": "Indicadores líderes",
+    "wizard.card.lagIndicators": "Indicadores rezagados",
+    "wizard.card.successCriteria": "Criterios de éxito",
+    "wizard.card.proofChecklist": "Checklist de evidencia",
+    "wizard.card.setupChecklist": "Checklist de preparación",
+    "wizard.card.accountabilityHooks": "Ganchos de responsabilidad",
+    "wizard.card.failureModes": "Modos de fallo",
+    "wizard.card.recoveryProtocol": "Protocolo de recuperación",
+    "wizard.card.revisionTriggers": "Disparadores de revisión",
+    "wizard.card.reviewAnchor": "Ancla de revisión",
+    "wizard.schedule.days": "Días",
+    "wizard.schedule.flexible": "flexible",
+    "wizard.schedule.time": "Hora",
+    "wizard.schedule.minutesShort": "min",
+    "wizard.goalMri.title": "Goal MRI",
+    "wizard.goalMri.heading":
+      "Por qué este plan encajará antes de generar el blueprint completo",
+    "wizard.goalMri.description":
+      "Vector ya está formando un diagnóstico a partir de tu contexto. Esto muestra la fricción, la palanca y las suposiciones faltantes antes de fijar el plan.",
+    "wizard.goalMri.status.ready": "Listo para cerrar",
+    "wizard.goalMri.status.leftSingular": "Queda {0} aclaración",
+    "wizard.goalMri.status.leftPlural": "Quedan {0} aclaraciones",
+    "wizard.goalMri.bottlenecks": "Cuellos de botella",
+    "wizard.goalMri.failureModes": "Modos probables de fallo",
+    "wizard.goalMri.leverageMoves": "Movimientos de palanca",
+    "wizard.goalMri.missingAssumptions": "Suposiciones faltantes",
+    "wizard.goalMri.empty.bottlenecks":
+      "Todavía falta un patrón de restricción más claro.",
+    "wizard.goalMri.empty.failureModes":
+      "Los modos de fallo se afinarán a medida que llegue más contexto.",
+    "wizard.goalMri.empty.leverageMoves":
+      "La capa de palanca todavía se está formando.",
+    "wizard.goalMri.empty.missingAssumptions":
+      "No se detectaron supuestos faltantes importantes. El plan puede generarse desde aquí.",
     "wizard.blueprintReadyBelow":
       "Tu plano {0} está listo abajo. Revisa tu plan personalizado y ajusta si quieres.",
     "wizard.planStepsPlaceholder":
@@ -2325,6 +2623,15 @@ export const translations = {
     "ikigai.worldNeeds": "Lo que el mundo necesita",
     "ikigai.paidFor": "Por lo que te pueden pagar",
     "ikigai.purpose": "Tu Ikigai (propósito)",
+    "pareto.focusRatio": "Proporción de enfoque",
+    "pareto.highImpactCount": "{0} de alto impacto",
+    "pareto.deprioritizeCount": "{0} para quitar prioridad",
+    "pareto.subtitleVital": "Alto impacto (20%)",
+    "pareto.subtitleTrivial": "Menor impacto (80%)",
+    "misogi.challenge": "El desafío",
+    "misogi.challengeBadge": "El desafío (50% de probabilidad de fallar)",
+    "misogi.failureGap": "La brecha del fracaso",
+    "misogi.purification": "La purificación",
 
     // Frameworks Data
     "fw.first-principles.title": "Método First Principles (Elon Musk)",
@@ -2436,6 +2743,10 @@ export const translations = {
     "fw.dsss.cons.0": "Requiere disciplina",
     "fw.dsss.cons.1": "Las apuestas pueden ser estresantes",
     "fw.dsss.cons.2": "Necesita buen análisis",
+    "dsss.desc.deconstruct": "Descompón la habilidad en subcomponentes",
+    "dsss.desc.selection": "Selecciona el 20% vital en el que enfocarte",
+    "dsss.desc.sequence": "Orden de aprendizaje o ejecución",
+    "dsss.desc.stakes": "Responsabilidad: qué está en juego si no cumples",
 
     "fw.mandalas.definition":
       "Un gráfico visual con un objetivo central rodeado por 8 categorías, cada una con 8 pasos accionables (64 ítems).",
@@ -2481,6 +2792,53 @@ export const translations = {
 
     // Tracker UI
     "tracker.title": "Seguir progreso",
+    "tracker.execution.signals": "Señales de ejecución",
+    "tracker.execution.stateLabel": "Estado de ejecución",
+    "tracker.execution.lastActivity": "Última actividad {0}",
+    "tracker.execution.nextBestAction": "Siguiente mejor acción",
+    "tracker.execution.overdueSignals": "Señales de atraso",
+    "tracker.execution.proofSignals": "Señales de evidencia",
+    "tracker.execution.recoveryMove": "Movimiento de recuperación",
+    "tracker.execution.adaptiveRevision": "Revisión adaptativa",
+    "tracker.execution.revisionTighten": "Ajustar esta semana",
+    "tracker.execution.revisionStandard": "Revisar plan",
+    "tracker.execution.useRealData":
+      "Usa los datos reales de ejecución para simplificar y ajustar el plan.",
+    "tracker.execution.risk.low": "bajo",
+    "tracker.execution.risk.medium": "medio",
+    "tracker.execution.risk.high": "alto",
+    "tracker.execution.riskLabel": "riesgo {0}",
+    "tracker.execution.state.onTrack": "En marcha",
+    "tracker.execution.state.atRisk": "En riesgo",
+    "tracker.execution.state.stalled": "Estancado",
+    "tracker.execution.state.rescue": "Modo rescate",
+    "tracker.execution.summary.onTrack":
+      "La cadencia, la evidencia y el progreso están alineados. Mantén el sistema estable.",
+    "tracker.execution.summary.atRisk":
+      "Todavía se puede recuperar el impulso, pero el ritmo actual necesita una ejecución más ajustada.",
+    "tracker.execution.summary.stalled":
+      "El plan está perdiendo tracción. Simplifica la semana antes de empujar más.",
+    "tracker.execution.summary.rescue":
+      "La ejecución se está rompiendo con el alcance actual. Pasa a modo rescate y reduce el plan ahora.",
+    "tracker.execution.overdue.noActivity":
+      "No se ha registrado actividad en {0} días.",
+    "tracker.execution.overdue.noSteps":
+      "Todavía no hay pasos registrados como completados. Empieza por la siguiente mejor acción.",
+    "tracker.execution.overdue.lowProgress":
+      "El progreso sigue por debajo del primer umbral de hito.",
+    "tracker.execution.proof.noLog":
+      "No se ha registrado ninguna evidencia ni reflexión esta semana.",
+    "tracker.execution.proof.noProofAfterSetback":
+      "El tracker muestra fricción, pero no hay una nota reciente de evidencia que explique qué cambió.",
+    "tracker.execution.recovery.resetPrefix":
+      "Reinicia con una pequeña victoria hoy: ",
+    "tracker.execution.recovery.shorterPrefix":
+      "Si hoy se complica, haz una versión más corta de esta acción: ",
+    "tracker.execution.adaptive.tightenPrefix": "Ajusta esta semana",
+    "tracker.execution.adaptive.restoreProofLoop":
+      "Ajusta esta semana: restablece un bucle de evidencia antes de añadir más alcance.",
+    "tracker.execution.adaptive.reviewFit":
+      "Revisa si la cadencia actual todavía encaja con tu semana.",
     "tracker.backToPlans": "Volver a Mis Planos",
     "tracker.planSummary": "Resumen del plan",
     "tracker.steps": "Pasos",
@@ -2498,6 +2856,9 @@ export const translations = {
     "tracker.timeline": "Actividad",
     "tracker.noActivity":
       "Sin actividad todavía. Marca pasos como completados o añade una entrada en el diario.",
+    "tracker.checkIn": "Check-in",
+    "tracker.completedStep": "Paso completado",
+    "tracker.setbackLogged": "Contratiempo registrado",
     "tracker.status.active": "Activo",
     "tracker.status.completed": "Completado",
     "tracker.status.paused": "Pausado",
@@ -2507,6 +2868,12 @@ export const translations = {
     "tracker.editPlan": "Editar plan",
     "tracker.trackingQuestion": "Pregunta de seguimiento",
     "tracker.trackingQuestionPlaceholder": "ej. ¿Seguiste tu plan hoy?",
+    "tracker.share.error": "No se pudo generar el enlace para compartir",
+    "shared.backHome": "Volver al inicio",
+    "shared.expired": "Enlace vencido o no válido",
+    "shared.loadError":
+      "No se pudo cargar el plan compartido. Inténtalo de nuevo más tarde.",
+    "shared.readOnly": "Plan compartido (solo lectura)",
     "tracker.color": "Color",
     "tracker.frequency": "Frecuencia",
     "tracker.frequency.daily": "Cada día",
@@ -2746,6 +3113,17 @@ export const translations = {
     "common.copiedToClipboard": "Copiado para a área de transferência",
     "common.errorCopiedToClipboard":
       "Erro copiado para a área de transferência",
+    "common.share": "Compartilhar",
+    "common.exit": "Sair",
+    "common.fullScreen": "Tela cheia",
+    "common.copyStrategy": "Copiar estratégia",
+    "common.copySection": "Copiar seção",
+    "common.copyList": "Copiar lista",
+    "common.moveUp": "Mover para cima",
+    "common.moveDown": "Mover para baixo",
+    "common.deleteItem": "Excluir item",
+    "common.typeHere": "Digite aqui...",
+    "common.typeTask": "Digite uma tarefa...",
 
     // Onboarding
     "onboarding.welcome.title": "Bem-vindo ao Vector",
@@ -2988,6 +3366,110 @@ export const translations = {
     "wizard.inputCollapse": "Recolher",
     "wizard.viewDraft": "Ver rascunho",
     "wizard.closeDraft": "Fechar rascunho",
+    "wizard.planPack": "Pacote do plano",
+    "wizard.nextBestAction": "Próxima melhor ação",
+    "wizard.commitment": "Compromisso",
+    "wizard.weeklyReview": "Revisão semanal",
+    "wizard.executiveSummary": "Resumo executivo",
+    "wizard.planPackReadyMessage":
+      "Seu plano está pronto abaixo. Revise o pacote do plano, salve e depois siga para o acompanhamento e a exportação.",
+    "wizard.upgrade.title": "Desbloqueie o blueprint completo",
+    "wizard.upgrade.description":
+      "Você gerou uma prévia. Faça upgrade para o Plano Standard para revelar a estratégia detalhada completa.",
+    "wizard.upgrade.cta": "Fazer upgrade agora",
+    "wizard.upgrade.back": "Não, voltar",
+    "wizard.sectionRefinement.action": "Ajustar {0}",
+    "wizard.sectionRefinement.refining": "Ajustando...",
+    "wizard.sectionRefinement.defaultTitle": "Ajustar seção",
+    "wizard.sectionRefinement.defaultDescription":
+      "Refine uma seção do plano sem regenerar o blueprint inteiro.",
+    "wizard.sectionRefinement.optionalContext": "Contexto opcional",
+    "wizard.sectionRefinement.defaultPlaceholder":
+      "Adicione qualquer contexto extra que o ajuste deva respeitar.",
+    "wizard.sectionRefinement.apply": "Aplicar atualização com IA",
+    "wizard.sectionRefinement.error": "Não consegui ajustar essa seção agora.",
+    "wizard.sectionRefinement.diagnosis.description":
+      "Refine a leitura estratégica da situação sem reescrever o restante do plano.",
+    "wizard.sectionRefinement.diagnosis.placeholder":
+      "Opcional: cite uma nova restrição, ponto de pressão, ponto cego ou ângulo que o diagnóstico deva considerar.",
+    "wizard.sectionRefinement.proof.description":
+      "Fortaleça apenas o ciclo de evidência, os marcadores e a camada de responsabilidade.",
+    "wizard.sectionRefinement.proof.placeholder":
+      "Opcional: descreva qual evidência está faltando, o que deve ser mensurável ou que tipo de prova você quer exigir do plano.",
+    "wizard.sectionRefinement.recovery.description":
+      "Aperfeiçoe a lógica de recuperação para que o plano sobreviva a dias ruins e semanas perdidas.",
+    "wizard.sectionRefinement.recovery.placeholder":
+      "Opcional: adicione o padrão exato de falha ou a restrição de recuperação que essa lógica de resgate deve resolver.",
+    "wizard.section.diagnosis": "Diagnóstico",
+    "wizard.section.operatingSystem": "Sistema de execução",
+    "wizard.section.proof": "Evidência",
+    "wizard.section.recovery": "Recuperação",
+    "wizard.section.diagnosis.title": "Por que este plano se encaixa",
+    "wizard.section.diagnosis.description":
+      "Teste a lógica primeiro. Estes cartões explicam a situação real para a qual o plano foi desenhado, e você pode ajustar esta camada sem mudar o restante do sistema de execução.",
+    "wizard.section.operatingSystem.title":
+      "O que você realmente executa toda semana",
+    "wizard.section.operatingSystem.description":
+      "Esta é a parte do plano que deve funcionar como um sistema de execução, não como um relatório. Ajuste aqui a cadência, a sequência e as regras operacionais.",
+    "wizard.section.proof.title": "Como o progresso fica visível",
+    "wizard.section.proof.description":
+      "Use esta camada para definir o que conta como movimento real. Deve ficar óbvio como você vai medir, provar e validar externamente o progresso semana após semana.",
+    "wizard.section.recovery.title": "O que acontece quando a execução escapa",
+    "wizard.section.recovery.description":
+      "Esta camada mantém o plano vivo depois de um dia ruim ou de uma semana ruim. Edite aqui a lógica de falha, o movimento de resgate e os gatilhos de revisão em vez de regenerar o plano inteiro.",
+    "wizard.section.frameworkLens": "Lente do framework",
+    "wizard.section.frameworkLens.description":
+      "A visualização específica do framework fica abaixo. O sistema de execução compartilhado acima torna o plano mais fácil de executar, enquanto a visão única do framework mantém o blueprint final distinto.",
+    "wizard.card.strategicDiagnosis": "Diagnóstico estratégico",
+    "wizard.card.strategicPillars": "Pilares estratégicos",
+    "wizard.card.constraintMap": "Mapa de restrições",
+    "wizard.card.leverageMoves": "Movimentos de alavanca",
+    "wizard.card.whyThisMatters": "Por que isso importa",
+    "wizard.card.whatToAvoid": "O que evitar",
+    "wizard.card.firstWeekActions": "Ações da primeira semana",
+    "wizard.card.milestones": "Marcos",
+    "wizard.card.ownershipSystem": "Sistema de responsabilidade",
+    "wizard.card.cadence": "Cadência",
+    "wizard.card.supportSystem": "Sistema de apoio",
+    "wizard.card.decisionRules": "Regras de decisão",
+    "wizard.card.scheduleSnapshot": "Resumo da agenda",
+    "wizard.card.scheduleEmpty":
+      "Adicione sugestões de agenda acima para que isto se torne um ritmo real de execução em vez de uma intenção flexível.",
+    "wizard.card.scoreboard": "Placar",
+    "wizard.card.leadIndicators": "Indicadores antecedentes",
+    "wizard.card.lagIndicators": "Indicadores de resultado",
+    "wizard.card.successCriteria": "Critérios de sucesso",
+    "wizard.card.proofChecklist": "Checklist de evidência",
+    "wizard.card.setupChecklist": "Checklist de preparação",
+    "wizard.card.accountabilityHooks": "Ganchos de responsabilidade",
+    "wizard.card.failureModes": "Modos de falha",
+    "wizard.card.recoveryProtocol": "Protocolo de recuperação",
+    "wizard.card.revisionTriggers": "Gatilhos de revisão",
+    "wizard.card.reviewAnchor": "Âncora de revisão",
+    "wizard.schedule.days": "Dias",
+    "wizard.schedule.flexible": "flexível",
+    "wizard.schedule.time": "Hora",
+    "wizard.schedule.minutesShort": "min",
+    "wizard.goalMri.title": "Goal MRI",
+    "wizard.goalMri.heading":
+      "Por que este plano vai se encaixar antes de o blueprint completo ser gerado",
+    "wizard.goalMri.description":
+      "O Vector já está formando um diagnóstico a partir do seu contexto. Isso revela a fricção, a alavanca e as suposições faltantes antes de o plano ser travado.",
+    "wizard.goalMri.status.ready": "Pronto para fechar",
+    "wizard.goalMri.status.leftSingular": "Falta {0} esclarecimento",
+    "wizard.goalMri.status.leftPlural": "Faltam {0} esclarecimentos",
+    "wizard.goalMri.bottlenecks": "Gargalos",
+    "wizard.goalMri.failureModes": "Prováveis modos de falha",
+    "wizard.goalMri.leverageMoves": "Movimentos de alavanca",
+    "wizard.goalMri.missingAssumptions": "Suposições faltantes",
+    "wizard.goalMri.empty.bottlenecks":
+      "Ainda aguardando um padrão de restrição mais claro.",
+    "wizard.goalMri.empty.failureModes":
+      "Os modos de falha vão se tornar mais claros com mais contexto.",
+    "wizard.goalMri.empty.leverageMoves":
+      "A camada de alavanca ainda está se formando.",
+    "wizard.goalMri.empty.missingAssumptions":
+      "Nenhuma suposição importante faltando foi detectada. O plano pode ser gerado daqui.",
     "wizard.blueprintReadyBelow":
       "Seu plano {0} está pronto abaixo. Revise e refine conforme necessário.",
     "wizard.planStepsPlaceholder":
@@ -3142,6 +3624,20 @@ export const translations = {
     "fw.dsss.cons.0": "Requer disciplina",
     "fw.dsss.cons.1": "Apostas podem ser estressantes",
     "fw.dsss.cons.2": "Precisa de boa análise",
+    "dsss.desc.deconstruct": "Quebre a habilidade em subcomponentes",
+    "dsss.desc.selection": "Selecione os 20% vitais para focar",
+    "dsss.desc.sequence": "Ordem de aprendizado ou execução",
+    "dsss.desc.stakes":
+      "Responsabilização: o que está em risco se você não cumprir",
+    "pareto.focusRatio": "Proporção de foco",
+    "pareto.highImpactCount": "{0} de alto impacto",
+    "pareto.deprioritizeCount": "{0} para despriorizar",
+    "pareto.subtitleVital": "Alto impacto (20%)",
+    "pareto.subtitleTrivial": "Menor impacto (80%)",
+    "misogi.challenge": "O desafio",
+    "misogi.challengeBadge": "O desafio (50% de chance de fracasso)",
+    "misogi.failureGap": "A lacuna do fracasso",
+    "misogi.purification": "A purificação",
 
     "fw.mandalas.definition":
       "Gráfico visual com objetivo central cercado por 8 categorias, cada uma com 8 passos (64 itens).",
@@ -3168,6 +3664,53 @@ export const translations = {
 
     // Tracker UI
     "tracker.title": "Acompanhar progresso",
+    "tracker.execution.signals": "Sinais de execução",
+    "tracker.execution.stateLabel": "Estado de execução",
+    "tracker.execution.lastActivity": "Última atividade {0}",
+    "tracker.execution.nextBestAction": "Próxima melhor ação",
+    "tracker.execution.overdueSignals": "Sinais de atraso",
+    "tracker.execution.proofSignals": "Sinais de evidência",
+    "tracker.execution.recoveryMove": "Movimento de recuperação",
+    "tracker.execution.adaptiveRevision": "Revisão adaptativa",
+    "tracker.execution.revisionTighten": "Ajustar esta semana",
+    "tracker.execution.revisionStandard": "Revisar plano",
+    "tracker.execution.useRealData":
+      "Use os dados reais de execução para simplificar e ajustar o plano.",
+    "tracker.execution.risk.low": "baixo",
+    "tracker.execution.risk.medium": "médio",
+    "tracker.execution.risk.high": "alto",
+    "tracker.execution.riskLabel": "risco {0}",
+    "tracker.execution.state.onTrack": "No ritmo",
+    "tracker.execution.state.atRisk": "Em risco",
+    "tracker.execution.state.stalled": "Travado",
+    "tracker.execution.state.rescue": "Modo de resgate",
+    "tracker.execution.summary.onTrack":
+      "Cadência, evidência e progresso estão alinhados. Mantenha o sistema estável.",
+    "tracker.execution.summary.atRisk":
+      "Ainda é possível recuperar o impulso, mas o ritmo atual precisa de uma execução mais firme.",
+    "tracker.execution.summary.stalled":
+      "O plano está perdendo tração. Simplifique a semana antes de pressionar mais.",
+    "tracker.execution.summary.rescue":
+      "A execução está se rompendo com o escopo atual. Mude para o modo de resgate e reduza o plano agora.",
+    "tracker.execution.overdue.noActivity":
+      "Nenhuma atividade foi registrada há {0} dias.",
+    "tracker.execution.overdue.noSteps":
+      "Nenhum passo rastreado foi concluído ainda. Comece pela próxima melhor ação.",
+    "tracker.execution.overdue.lowProgress":
+      "O progresso ainda está abaixo do primeiro limite de marco.",
+    "tracker.execution.proof.noLog":
+      "Nenhuma evidência ou reflexão foi registrada esta semana.",
+    "tracker.execution.proof.noProofAfterSetback":
+      "O tracker mostra fricção, mas não há uma nota recente de evidência explicando o que mudou.",
+    "tracker.execution.recovery.resetPrefix":
+      "Recomece com uma pequena vitória hoje: ",
+    "tracker.execution.recovery.shorterPrefix":
+      "Se hoje escapar, faça uma versão menor desta ação: ",
+    "tracker.execution.adaptive.tightenPrefix": "Ajuste esta semana",
+    "tracker.execution.adaptive.restoreProofLoop":
+      "Ajuste esta semana: restaure um ciclo de evidência antes de aumentar o escopo.",
+    "tracker.execution.adaptive.reviewFit":
+      "Revise se a cadência atual ainda cabe na sua semana.",
     "tracker.backToPlans": "Voltar aos Meus Planos",
     "tracker.planSummary": "Resumo do plano",
     "tracker.steps": "Passos",
@@ -3185,6 +3728,9 @@ export const translations = {
     "tracker.timeline": "Atividade",
     "tracker.noActivity":
       "Nenhuma atividade ainda. Marque os passos como concluídos ou adicione uma entrada no diário.",
+    "tracker.checkIn": "Check-in",
+    "tracker.completedStep": "Etapa concluída",
+    "tracker.setbackLogged": "Contratempo registrado",
     "tracker.status.active": "Ativo",
     "tracker.status.completed": "Concluído",
     "tracker.status.paused": "Pausado",
@@ -3194,6 +3740,12 @@ export const translations = {
     "tracker.editPlan": "Editar plano",
     "tracker.trackingQuestion": "Pergunta de acompanhamento",
     "tracker.trackingQuestionPlaceholder": "ex. Você seguiu seu plano hoje?",
+    "tracker.share.error": "Falha ao gerar link de compartilhamento",
+    "shared.backHome": "Voltar ao início",
+    "shared.expired": "Link expirado ou inválido",
+    "shared.loadError":
+      "Não foi possível carregar o plano compartilhado. Tente novamente mais tarde.",
+    "shared.readOnly": "Plano compartilhado (somente leitura)",
     "tracker.color": "Cor",
     "tracker.frequency": "Frequência",
     "tracker.frequency.daily": "Todos os dias",
@@ -3368,6 +3920,17 @@ export const translations = {
     "common.use": "Utiliser ce modèle",
     "common.copiedToClipboard": "Copié dans le presse-papiers",
     "common.errorCopiedToClipboard": "Erreur copiée dans le presse-papiers",
+    "common.share": "Partager",
+    "common.exit": "Quitter",
+    "common.fullScreen": "Plein écran",
+    "common.copyStrategy": "Copier la stratégie",
+    "common.copySection": "Copier la section",
+    "common.copyList": "Copier la liste",
+    "common.moveUp": "Monter",
+    "common.moveDown": "Descendre",
+    "common.deleteItem": "Supprimer l'élément",
+    "common.typeHere": "Saisissez ici...",
+    "common.typeTask": "Saisissez une tâche...",
 
     // Onboarding
     "onboarding.welcome.title": "Bienvenue sur Vector",
@@ -3608,6 +4171,111 @@ export const translations = {
     "wizard.inputCollapse": "Réduire",
     "wizard.viewDraft": "Voir le brouillon",
     "wizard.closeDraft": "Fermer le brouillon",
+    "wizard.planPack": "Pack du plan",
+    "wizard.nextBestAction": "Prochaine meilleure action",
+    "wizard.commitment": "Engagement",
+    "wizard.weeklyReview": "Revue hebdomadaire",
+    "wizard.executiveSummary": "Résumé exécutif",
+    "wizard.planPackReadyMessage":
+      "Votre plan est prêt ci-dessous. Consultez le pack du plan, enregistrez-le puis passez au suivi et à l’export.",
+    "wizard.upgrade.title": "Déverrouiller le blueprint complet",
+    "wizard.upgrade.description":
+      "Vous avez généré un aperçu. Passez au forfait Standard pour révéler toute la stratégie détaillée.",
+    "wizard.upgrade.cta": "Passer au forfait Standard",
+    "wizard.upgrade.back": "Non merci, retour",
+    "wizard.sectionRefinement.action": "Resserrer {0}",
+    "wizard.sectionRefinement.refining": "Affinage en cours...",
+    "wizard.sectionRefinement.defaultTitle": "Resserrer une section",
+    "wizard.sectionRefinement.defaultDescription":
+      "Affinez une section du plan sans régénérer le blueprint complet.",
+    "wizard.sectionRefinement.optionalContext": "Contexte facultatif",
+    "wizard.sectionRefinement.defaultPlaceholder":
+      "Ajoutez tout contexte supplémentaire que l’ajustement doit respecter.",
+    "wizard.sectionRefinement.apply": "Appliquer la mise à jour IA",
+    "wizard.sectionRefinement.error":
+      "Je n’ai pas pu resserrer cette section pour le moment.",
+    "wizard.sectionRefinement.diagnosis.description":
+      "Affinez la lecture stratégique de la situation sans réécrire le reste du plan.",
+    "wizard.sectionRefinement.diagnosis.placeholder":
+      "Facultatif : indiquez une nouvelle contrainte, un point de pression, un angle mort ou un angle que le diagnostic doit intégrer.",
+    "wizard.sectionRefinement.proof.description":
+      "Renforcez uniquement la boucle de preuve, les tableaux de bord et la couche de responsabilité.",
+    "wizard.sectionRefinement.proof.placeholder":
+      "Facultatif : décrivez la preuve manquante, ce qui doit être mesurable ou le type d’évidence que vous voulez exiger du plan.",
+    "wizard.sectionRefinement.recovery.description":
+      "Affinez la logique de récupération pour que le plan survive aux mauvaises journées et aux semaines ratées.",
+    "wizard.sectionRefinement.recovery.placeholder":
+      "Facultatif : ajoutez le schéma d’échec exact ou la contrainte de récupération que cette logique de secours doit résoudre.",
+    "wizard.section.diagnosis": "Diagnostic",
+    "wizard.section.operatingSystem": "Système d’exécution",
+    "wizard.section.proof": "Preuve",
+    "wizard.section.recovery": "Récupération",
+    "wizard.section.diagnosis.title": "Pourquoi ce plan tient la route",
+    "wizard.section.diagnosis.description":
+      "Testez d’abord la logique. Ces cartes expliquent la situation réelle pour laquelle le plan est conçu, et vous pouvez affiner cette couche sans modifier le reste du système d’exécution.",
+    "wizard.section.operatingSystem.title":
+      "Ce que vous exécutez réellement chaque semaine",
+    "wizard.section.operatingSystem.description":
+      "C’est la partie du plan qui doit se comporter comme un système d’exécution, pas comme un rapport. Affinez ici la cadence, la séquence et les règles de fonctionnement.",
+    "wizard.section.proof.title": "Comment le progrès devient visible",
+    "wizard.section.proof.description":
+      "Utilisez cette couche pour définir ce qui compte comme un vrai mouvement. Il doit être évident de voir comment vous mesurerez, prouverez et validerez extérieurement le progrès semaine après semaine.",
+    "wizard.section.recovery.title": "Ce qui se passe quand l’exécution dérape",
+    "wizard.section.recovery.description":
+      "Cette couche maintient le plan vivant après une mauvaise journée ou une mauvaise semaine. Modifiez ici la logique d’échec, le mouvement de secours et les déclencheurs de révision au lieu de régénérer tout le plan.",
+    "wizard.section.frameworkLens": "Angle du framework",
+    "wizard.section.frameworkLens.description":
+      "La visualisation propre au framework reste ci-dessous. Le système d’exécution partagé au-dessus rend le plan plus facile à exécuter, tandis que la vue unique du framework garde le blueprint final distinct.",
+    "wizard.card.strategicDiagnosis": "Diagnostic stratégique",
+    "wizard.card.strategicPillars": "Piliers stratégiques",
+    "wizard.card.constraintMap": "Carte des contraintes",
+    "wizard.card.leverageMoves": "Mouvements de levier",
+    "wizard.card.whyThisMatters": "Pourquoi cela compte",
+    "wizard.card.whatToAvoid": "À éviter",
+    "wizard.card.firstWeekActions": "Actions de la première semaine",
+    "wizard.card.milestones": "Jalons",
+    "wizard.card.ownershipSystem": "Système de responsabilité",
+    "wizard.card.cadence": "Cadence",
+    "wizard.card.supportSystem": "Système de soutien",
+    "wizard.card.decisionRules": "Règles de décision",
+    "wizard.card.scheduleSnapshot": "Aperçu du planning",
+    "wizard.card.scheduleEmpty":
+      "Ajoutez des indications de planning ci-dessus pour que cela devienne un vrai rythme d’exécution plutôt qu’une intention flexible.",
+    "wizard.card.scoreboard": "Tableau de bord",
+    "wizard.card.leadIndicators": "Indicateurs avancés",
+    "wizard.card.lagIndicators": "Indicateurs de résultat",
+    "wizard.card.successCriteria": "Critères de succès",
+    "wizard.card.proofChecklist": "Checklist de preuve",
+    "wizard.card.setupChecklist": "Checklist de préparation",
+    "wizard.card.accountabilityHooks": "Points d’obligation",
+    "wizard.card.failureModes": "Modes d’échec",
+    "wizard.card.recoveryProtocol": "Protocole de récupération",
+    "wizard.card.revisionTriggers": "Déclencheurs de révision",
+    "wizard.card.reviewAnchor": "Ancre de revue",
+    "wizard.schedule.days": "Jours",
+    "wizard.schedule.flexible": "flexible",
+    "wizard.schedule.time": "Heure",
+    "wizard.schedule.minutesShort": "min",
+    "wizard.goalMri.title": "Goal MRI",
+    "wizard.goalMri.heading":
+      "Pourquoi ce plan tiendra avant même que le blueprint complet ne soit généré",
+    "wizard.goalMri.description":
+      "Vector est déjà en train de former un diagnostic à partir de votre contexte. Cela fait ressortir les frictions, les leviers et les hypothèses manquantes avant de verrouiller le plan.",
+    "wizard.goalMri.status.ready": "Prêt à verrouiller",
+    "wizard.goalMri.status.leftSingular": "Il reste {0} clarification",
+    "wizard.goalMri.status.leftPlural": "Il reste {0} clarifications",
+    "wizard.goalMri.bottlenecks": "Goulots d’étranglement",
+    "wizard.goalMri.failureModes": "Modes d’échec probables",
+    "wizard.goalMri.leverageMoves": "Mouvements de levier",
+    "wizard.goalMri.missingAssumptions": "Hypothèses manquantes",
+    "wizard.goalMri.empty.bottlenecks":
+      "Un schéma de contrainte plus clair est encore attendu.",
+    "wizard.goalMri.empty.failureModes":
+      "Les modes d’échec se préciseront avec plus de contexte.",
+    "wizard.goalMri.empty.leverageMoves":
+      "La couche de levier est encore en train de se former.",
+    "wizard.goalMri.empty.missingAssumptions":
+      "Aucune hypothèse manquante majeure détectée. Le plan peut être généré à partir d’ici.",
     "wizard.blueprintReadyBelow":
       "Votre plan {0} est prêt ci-dessous. Consultez et affinez selon vos besoins.",
     "wizard.planStepsPlaceholder":
@@ -3762,6 +4430,21 @@ export const translations = {
     "fw.dsss.cons.0": "Nécessite de la discipline",
     "fw.dsss.cons.1": "Miser peut être stressant",
     "fw.dsss.cons.2": "Nécessite une bonne analyse",
+    "dsss.desc.deconstruct": "Décomposez la compétence en sous-composants",
+    "dsss.desc.selection":
+      "Sélectionnez les 20 % vitaux sur lesquels vous concentrer",
+    "dsss.desc.sequence": "Ordre d'apprentissage ou d'exécution",
+    "dsss.desc.stakes":
+      "Responsabilisation : ce qui est en jeu si vous n'allez pas au bout",
+    "pareto.focusRatio": "Ratio de focus",
+    "pareto.highImpactCount": "{0} à fort impact",
+    "pareto.deprioritizeCount": "{0} à déprioriser",
+    "pareto.subtitleVital": "Fort impact (20 %)",
+    "pareto.subtitleTrivial": "Impact plus faible (80 %)",
+    "misogi.challenge": "Le défi",
+    "misogi.challengeBadge": "Le défi (50 % de risque d'échec)",
+    "misogi.failureGap": "L'écart d'échec",
+    "misogi.purification": "La purification",
 
     "fw.mandalas.definition":
       "Un graphique visuel avec un objectif central entouré de 8 catégories, chacune avec 8 étapes (64 éléments).",
@@ -3789,6 +4472,53 @@ export const translations = {
 
     // Tracker UI
     "tracker.title": "Suivre les progrès",
+    "tracker.execution.signals": "Signaux d’exécution",
+    "tracker.execution.stateLabel": "État d’exécution",
+    "tracker.execution.lastActivity": "Dernière activité {0}",
+    "tracker.execution.nextBestAction": "Prochaine meilleure action",
+    "tracker.execution.overdueSignals": "Signaux de retard",
+    "tracker.execution.proofSignals": "Signaux de preuve",
+    "tracker.execution.recoveryMove": "Mouvement de récupération",
+    "tracker.execution.adaptiveRevision": "Révision adaptative",
+    "tracker.execution.revisionTighten": "Resserrer cette semaine",
+    "tracker.execution.revisionStandard": "Réviser le plan",
+    "tracker.execution.useRealData":
+      "Utilisez les données réelles d’exécution pour simplifier et resserrer le plan.",
+    "tracker.execution.risk.low": "faible",
+    "tracker.execution.risk.medium": "moyen",
+    "tracker.execution.risk.high": "élevé",
+    "tracker.execution.riskLabel": "risque {0}",
+    "tracker.execution.state.onTrack": "Dans le rythme",
+    "tracker.execution.state.atRisk": "À risque",
+    "tracker.execution.state.stalled": "Bloqué",
+    "tracker.execution.state.rescue": "Mode secours",
+    "tracker.execution.summary.onTrack":
+      "La cadence, la preuve et le progrès sont alignés. Gardez le système stable.",
+    "tracker.execution.summary.atRisk":
+      "L’élan reste récupérable, mais le rythme actuel a besoin d’un suivi plus rigoureux.",
+    "tracker.execution.summary.stalled":
+      "Le plan perd de la traction. Simplifiez la semaine avant de pousser davantage.",
+    "tracker.execution.summary.rescue":
+      "L’exécution se dégrade sous la portée actuelle. Passez en mode secours et réduisez le plan maintenant.",
+    "tracker.execution.overdue.noActivity":
+      "Aucune activité enregistrée depuis {0} jours.",
+    "tracker.execution.overdue.noSteps":
+      "Aucune étape suivie n’a encore été terminée. Commencez par la prochaine meilleure action.",
+    "tracker.execution.overdue.lowProgress":
+      "Le progrès reste sous le premier seuil de jalon.",
+    "tracker.execution.proof.noLog":
+      "Aucune preuve ni réflexion n’a été enregistrée cette semaine.",
+    "tracker.execution.proof.noProofAfterSetback":
+      "Le tracker montre des frictions, mais aucune note de preuve récente n’explique ce qui a changé.",
+    "tracker.execution.recovery.resetPrefix":
+      "Réinitialisez avec une petite victoire aujourd’hui : ",
+    "tracker.execution.recovery.shorterPrefix":
+      "Si aujourd’hui dérape, faites une version plus courte de cette action : ",
+    "tracker.execution.adaptive.tightenPrefix": "Resserrez cette semaine",
+    "tracker.execution.adaptive.restoreProofLoop":
+      "Resserrez cette semaine : rétablissez une boucle de preuve avant d’ajouter davantage de portée.",
+    "tracker.execution.adaptive.reviewFit":
+      "Vérifiez si la cadence actuelle correspond toujours à votre semaine.",
     "tracker.backToPlans": "Retour à Mes Plans",
     "tracker.planSummary": "Résumé du plan",
     "tracker.steps": "Étapes",
@@ -3806,6 +4536,9 @@ export const translations = {
     "tracker.timeline": "Activité",
     "tracker.noActivity":
       "Aucune activité. Marquez les étapes comme terminées ou ajoutez une entrée au journal.",
+    "tracker.checkIn": "Point de contrôle",
+    "tracker.completedStep": "Étape terminée",
+    "tracker.setbackLogged": "Recul enregistré",
     "tracker.status.active": "Actif",
     "tracker.status.completed": "Terminé",
     "tracker.status.paused": "En pause",
@@ -3816,6 +4549,12 @@ export const translations = {
     "tracker.trackingQuestion": "Question de suivi",
     "tracker.trackingQuestionPlaceholder":
       "ex. Avez-vous suivi votre plan aujourd'hui ?",
+    "tracker.share.error": "Impossible de générer le lien de partage",
+    "shared.backHome": "Retour à l'accueil",
+    "shared.expired": "Lien expiré ou invalide",
+    "shared.loadError":
+      "Impossible de charger le plan partagé. Réessayez plus tard.",
+    "shared.readOnly": "Plan partagé (lecture seule)",
     "tracker.color": "Couleur",
     "tracker.frequency": "Fréquence",
     "tracker.frequency.daily": "Chaque jour",
@@ -3983,6 +4722,17 @@ export const translations = {
     "common.use": "Dieses Modell verwenden",
     "common.copiedToClipboard": "In die Zwischenablage kopiert",
     "common.errorCopiedToClipboard": "Fehler in die Zwischenablage kopiert",
+    "common.share": "Teilen",
+    "common.exit": "Beenden",
+    "common.fullScreen": "Vollbild",
+    "common.copyStrategy": "Strategie kopieren",
+    "common.copySection": "Abschnitt kopieren",
+    "common.copyList": "Liste kopieren",
+    "common.moveUp": "Nach oben",
+    "common.moveDown": "Nach unten",
+    "common.deleteItem": "Element löschen",
+    "common.typeHere": "Hier eingeben...",
+    "common.typeTask": "Aufgabe eingeben...",
 
     // Onboarding
     "onboarding.welcome.title": "Willkommen bei Vector",
@@ -4220,6 +4970,111 @@ export const translations = {
     "wizard.inputCollapse": "Verkleinern",
     "wizard.viewDraft": "Entwurf anzeigen",
     "wizard.closeDraft": "Entwurf schließen",
+    "wizard.planPack": "Planpaket",
+    "wizard.nextBestAction": "Nächste beste Aktion",
+    "wizard.commitment": "Verbindlichkeit",
+    "wizard.weeklyReview": "Wöchentliche Überprüfung",
+    "wizard.executiveSummary": "Zusammenfassung",
+    "wizard.planPackReadyMessage":
+      "Ihr Plan ist unten bereit. Prüfen Sie das Planpaket, speichern Sie es und wechseln Sie dann in Tracking und Export.",
+    "wizard.upgrade.title": "Vollständigen Blueprint freischalten",
+    "wizard.upgrade.description":
+      "Sie haben eine Vorschau erstellt. Wechseln Sie zum Standard-Plan, um die vollständige detaillierte Strategie zu sehen.",
+    "wizard.upgrade.cta": "Jetzt upgraden",
+    "wizard.upgrade.back": "Nein danke, zurück",
+    "wizard.sectionRefinement.action": "{0} schärfen",
+    "wizard.sectionRefinement.refining": "Wird geschärft...",
+    "wizard.sectionRefinement.defaultTitle": "Abschnitt schärfen",
+    "wizard.sectionRefinement.defaultDescription":
+      "Verfeinern Sie einen Abschnitt des Plans, ohne den gesamten Blueprint neu zu erzeugen.",
+    "wizard.sectionRefinement.optionalContext": "Optionaler Kontext",
+    "wizard.sectionRefinement.defaultPlaceholder":
+      "Fügen Sie zusätzlichen Kontext hinzu, den die Verfeinerung berücksichtigen soll.",
+    "wizard.sectionRefinement.apply": "KI-Aktualisierung anwenden",
+    "wizard.sectionRefinement.error":
+      "Ich konnte diesen Abschnitt gerade nicht schärfen.",
+    "wizard.sectionRefinement.diagnosis.description":
+      "Verfeinern Sie die strategische Lesart der Situation, ohne den Rest des Plans neu zu schreiben.",
+    "wizard.sectionRefinement.diagnosis.placeholder":
+      "Optional: nennen Sie eine neue Einschränkung, einen Druckpunkt, einen blinden Fleck oder eine Perspektive, die die Diagnose berücksichtigen soll.",
+    "wizard.sectionRefinement.proof.description":
+      "Stärken Sie nur die Beweis-Schleife, Scoreboards und die Verantwortungsebene.",
+    "wizard.sectionRefinement.proof.placeholder":
+      "Optional: beschreiben Sie, welcher Beleg fehlt, was messbar sein sollte oder welche Art von Nachweis der Plan verlangen soll.",
+    "wizard.sectionRefinement.recovery.description":
+      "Schärfen Sie die Rückfalllogik, damit der Plan schlechte Tage und verpasste Wochen überlebt.",
+    "wizard.sectionRefinement.recovery.placeholder":
+      "Optional: fügen Sie das genaue Fehlermuster oder die Erholungsbedingung hinzu, die diese Rettungslogik lösen soll.",
+    "wizard.section.diagnosis": "Diagnose",
+    "wizard.section.operatingSystem": "Ausführungssystem",
+    "wizard.section.proof": "Nachweis",
+    "wizard.section.recovery": "Erholung",
+    "wizard.section.diagnosis.title": "Warum dieser Plan passt",
+    "wizard.section.diagnosis.description":
+      "Testen Sie zuerst die Logik. Diese Karten erklären die reale Situation, für die der Plan gedacht ist, und Sie können diese Ebene schärfen, ohne den Rest des Ausführungssystems zu verändern.",
+    "wizard.section.operatingSystem.title":
+      "Was Sie jede Woche tatsächlich ausführen",
+    "wizard.section.operatingSystem.description":
+      "Dies ist der Teil des Plans, der sich wie ein Ausführungssystem verhalten sollte, nicht wie ein Bericht. Schärfen Sie hier Takt, Reihenfolge und operative Regeln.",
+    "wizard.section.proof.title": "Wie Fortschritt sichtbar wird",
+    "wizard.section.proof.description":
+      "Nutzen Sie diese Ebene, um zu definieren, was als echte Bewegung zählt. Es sollte klar sein, wie Sie Fortschritt Woche für Woche messen, belegen und extern validieren.",
+    "wizard.section.recovery.title":
+      "Was passiert, wenn die Ausführung abrutscht",
+    "wizard.section.recovery.description":
+      "Diese Ebene hält den Plan nach einem schlechten Tag oder einer schlechten Woche am Leben. Bearbeiten Sie hier Fehlerlogik, Rettungsschritt und Revisionsauslöser, statt den ganzen Plan neu zu generieren.",
+    "wizard.section.frameworkLens": "Framework-Perspektive",
+    "wizard.section.frameworkLens.description":
+      "Die frameworkspezifische Visualisierung bleibt unten. Das gemeinsame Ausführungssystem oben macht den Plan leichter umsetzbar, während die einzigartige Framework-Ansicht den finalen Blueprint unterscheidbar hält.",
+    "wizard.card.strategicDiagnosis": "Strategische Diagnose",
+    "wizard.card.strategicPillars": "Strategische Säulen",
+    "wizard.card.constraintMap": "Einschränkungskarte",
+    "wizard.card.leverageMoves": "Hebelbewegungen",
+    "wizard.card.whyThisMatters": "Warum das wichtig ist",
+    "wizard.card.whatToAvoid": "Was zu vermeiden ist",
+    "wizard.card.firstWeekActions": "Aktionen der ersten Woche",
+    "wizard.card.milestones": "Meilensteine",
+    "wizard.card.ownershipSystem": "Verantwortungssystem",
+    "wizard.card.cadence": "Takt",
+    "wizard.card.supportSystem": "Unterstützungssystem",
+    "wizard.card.decisionRules": "Entscheidungsregeln",
+    "wizard.card.scheduleSnapshot": "Zeitplan-Überblick",
+    "wizard.card.scheduleEmpty":
+      "Fügen Sie oben Zeitplan-Hinweise hinzu, damit daraus ein echter Ausführungsrhythmus statt einer flexiblen Absicht wird.",
+    "wizard.card.scoreboard": "Scoreboard",
+    "wizard.card.leadIndicators": "Frühindikatoren",
+    "wizard.card.lagIndicators": "Spätindikatoren",
+    "wizard.card.successCriteria": "Erfolgskriterien",
+    "wizard.card.proofChecklist": "Nachweis-Checkliste",
+    "wizard.card.setupChecklist": "Setup-Checkliste",
+    "wizard.card.accountabilityHooks": "Verbindlichkeits-Haken",
+    "wizard.card.failureModes": "Fehlermuster",
+    "wizard.card.recoveryProtocol": "Erholungsprotokoll",
+    "wizard.card.revisionTriggers": "Revisionsauslöser",
+    "wizard.card.reviewAnchor": "Review-Anker",
+    "wizard.schedule.days": "Tage",
+    "wizard.schedule.flexible": "flexibel",
+    "wizard.schedule.time": "Zeit",
+    "wizard.schedule.minutesShort": "Min",
+    "wizard.goalMri.title": "Goal MRI",
+    "wizard.goalMri.heading":
+      "Warum dieser Plan passt, bevor der vollständige Blueprint erzeugt wird",
+    "wizard.goalMri.description":
+      "Vector formt bereits eine Diagnose aus Ihrem Kontext. Das macht Reibung, Hebel und fehlende Annahmen sichtbar, bevor der Plan festgezogen wird.",
+    "wizard.goalMri.status.ready": "Bereit zum Festziehen",
+    "wizard.goalMri.status.leftSingular": "Noch {0} Klärung offen",
+    "wizard.goalMri.status.leftPlural": "Noch {0} Klärungen offen",
+    "wizard.goalMri.bottlenecks": "Engpässe",
+    "wizard.goalMri.failureModes": "Wahrscheinliche Fehlermuster",
+    "wizard.goalMri.leverageMoves": "Hebelbewegungen",
+    "wizard.goalMri.missingAssumptions": "Fehlende Annahmen",
+    "wizard.goalMri.empty.bottlenecks":
+      "Ein klareres Einschränkungsmuster wird noch benötigt.",
+    "wizard.goalMri.empty.failureModes":
+      "Die Fehlermuster werden mit mehr Kontext schärfer.",
+    "wizard.goalMri.empty.leverageMoves": "Die Hebelebene formt sich noch.",
+    "wizard.goalMri.empty.missingAssumptions":
+      "Keine größeren fehlenden Annahmen erkannt. Der Plan kann von hier aus erzeugt werden.",
     "wizard.blueprintReadyBelow":
       "Ihr {0}-Plan ist unten bereit. Überprüfen und verfeinern Sie ihn bei Bedarf.",
     "wizard.planStepsPlaceholder":
@@ -4375,6 +5230,21 @@ export const translations = {
     "fw.dsss.cons.0": "Erfordert Disziplin",
     "fw.dsss.cons.1": "Wetteinsatz kann stressen",
     "fw.dsss.cons.2": "Braucht gute Analyse",
+    "dsss.desc.deconstruct": "Zerlegen Sie die Fähigkeit in Teilkomponenten",
+    "dsss.desc.selection":
+      "Wählen Sie die entscheidenden 20 %, auf die Sie sich konzentrieren",
+    "dsss.desc.sequence": "Reihenfolge des Lernens oder der Ausführung",
+    "dsss.desc.stakes":
+      "Verbindlichkeit: Was steht auf dem Spiel, wenn Sie nicht durchziehen",
+    "pareto.focusRatio": "Fokusverhältnis",
+    "pareto.highImpactCount": "{0} mit hoher Wirkung",
+    "pareto.deprioritizeCount": "{0} zurückstellen",
+    "pareto.subtitleVital": "Hohe Wirkung (20 %)",
+    "pareto.subtitleTrivial": "Geringere Wirkung (80 %)",
+    "misogi.challenge": "Die Herausforderung",
+    "misogi.challengeBadge": "Die Herausforderung (50 % Ausfallquote)",
+    "misogi.failureGap": "Die Scheiternslücke",
+    "misogi.purification": "Die Reinigung",
 
     "fw.mandalas.definition":
       "Eine visuelle Grafik mit einem zentralen Ziel, umgeben von 8 Kategorien (64 Elemente).",
@@ -4402,6 +5272,53 @@ export const translations = {
 
     // Tracker UI
     "tracker.title": "Fortschritt verfolgen",
+    "tracker.execution.signals": "Ausführungssignale",
+    "tracker.execution.stateLabel": "Ausführungszustand",
+    "tracker.execution.lastActivity": "Letzte Aktivität {0}",
+    "tracker.execution.nextBestAction": "Nächste beste Aktion",
+    "tracker.execution.overdueSignals": "Verzugssignale",
+    "tracker.execution.proofSignals": "Nachweissignale",
+    "tracker.execution.recoveryMove": "Erholungsschritt",
+    "tracker.execution.adaptiveRevision": "Adaptive Revision",
+    "tracker.execution.revisionTighten": "Diese Woche schärfen",
+    "tracker.execution.revisionStandard": "Plan überarbeiten",
+    "tracker.execution.useRealData":
+      "Nutzen Sie die echten Ausführungsdaten, um den Plan zu vereinfachen und zu schärfen.",
+    "tracker.execution.risk.low": "niedrig",
+    "tracker.execution.risk.medium": "mittel",
+    "tracker.execution.risk.high": "hoch",
+    "tracker.execution.riskLabel": "{0}es Risiko",
+    "tracker.execution.state.onTrack": "Im Takt",
+    "tracker.execution.state.atRisk": "Gefährdet",
+    "tracker.execution.state.stalled": "Festgefahren",
+    "tracker.execution.state.rescue": "Rettungsmodus",
+    "tracker.execution.summary.onTrack":
+      "Takt, Nachweis und Fortschritt sind ausgerichtet. Halten Sie das System stabil.",
+    "tracker.execution.summary.atRisk":
+      "Momentum ist noch rettbar, aber der aktuelle Rhythmus braucht straffere Umsetzung.",
+    "tracker.execution.summary.stalled":
+      "Der Plan verliert Zugkraft. Vereinfachen Sie die Woche, bevor Sie stärker drücken.",
+    "tracker.execution.summary.rescue":
+      "Die Ausführung bricht unter dem aktuellen Umfang auseinander. Wechseln Sie jetzt in den Rettungsmodus und verengen Sie den Plan.",
+    "tracker.execution.overdue.noActivity":
+      "Seit {0} Tagen wurde keine Aktivität protokolliert.",
+    "tracker.execution.overdue.noSteps":
+      "Es wurden noch keine verfolgten Schritte abgeschlossen. Beginnen Sie mit der nächsten besten Aktion.",
+    "tracker.execution.overdue.lowProgress":
+      "Der Fortschritt liegt noch unter dem ersten Meilenstein-Schwellenwert.",
+    "tracker.execution.proof.noLog":
+      "Diese Woche wurde noch kein Nachweis oder Reflexion protokolliert.",
+    "tracker.execution.proof.noProofAfterSetback":
+      "Der Tracker zeigt Reibung, aber es gibt keine aktuelle Nachweis-Notiz, die erklärt, was sich geändert hat.",
+    "tracker.execution.recovery.resetPrefix":
+      "Starten Sie heute mit einem kleinen Erfolg neu: ",
+    "tracker.execution.recovery.shorterPrefix":
+      "Wenn heute abrutscht, machen Sie eine kürzere Version dieser Aktion: ",
+    "tracker.execution.adaptive.tightenPrefix": "Diese Woche schärfen",
+    "tracker.execution.adaptive.restoreProofLoop":
+      "Diese Woche schärfen: Stellen Sie zuerst wieder eine Nachweis-Schleife her, bevor Sie den Umfang erhöhen.",
+    "tracker.execution.adaptive.reviewFit":
+      "Prüfen Sie, ob der aktuelle Takt noch zu Ihrer Woche passt.",
     "tracker.backToPlans": "Zurück zu Meine Pläne",
     "tracker.planSummary": "Zusammenfassung des Plans",
     "tracker.steps": "Schritte",
@@ -4419,6 +5336,9 @@ export const translations = {
     "tracker.timeline": "Aktivität",
     "tracker.noActivity":
       "Noch keine Aktivität. Markieren Sie Schritte als abgeschlossen oder fügen Sie einen Tagebucheintrag hinzu.",
+    "tracker.checkIn": "Check-in",
+    "tracker.completedStep": "Schritt abgeschlossen",
+    "tracker.setbackLogged": "Rückschlag protokolliert",
     "tracker.status.active": "Aktiv",
     "tracker.status.completed": "Abgeschlossen",
     "tracker.status.paused": "Pausiert",
@@ -4429,6 +5349,12 @@ export const translations = {
     "tracker.trackingQuestion": "Fortschrittsfrage",
     "tracker.trackingQuestionPlaceholder":
       "z.B. Hast du heute deinen Plan befolgt?",
+    "tracker.share.error": "Freigabelink konnte nicht erstellt werden",
+    "shared.backHome": "Zur Startseite",
+    "shared.expired": "Link abgelaufen oder ungültig",
+    "shared.loadError":
+      "Der geteilte Plan konnte nicht geladen werden. Bitte versuchen Sie es später erneut.",
+    "shared.readOnly": "Geteilter Plan (schreibgeschützt)",
     "tracker.color": "Farbe",
     "tracker.frequency": "Häufigkeit",
     "tracker.frequency.daily": "Jeden Tag",

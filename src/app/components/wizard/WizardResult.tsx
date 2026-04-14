@@ -46,6 +46,9 @@ export const WizardResult: React.FC<WizardResultProps> = ({
 }) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const replaceValue = (key: string, value: string) =>
+    t(key).replace("{0}", value);
+  const copyStrategyLabel = t("common.copyStrategy");
 
   if (!result) return null;
 
@@ -67,11 +70,10 @@ export const WizardResult: React.FC<WizardResultProps> = ({
           <Lock size={32} />
         </div>
         <h3 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">
-          Unlock Full Blueprint
+          {t("wizard.upgrade.title")}
         </h3>
         <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
-          You've generated a <strong>Teaser Preview</strong>. Upgrade to the{" "}
-          <strong>Standard Plan</strong> to reveal the full detailed strategy.
+          {t("wizard.upgrade.description")}
         </p>
         <button
           type="button"
@@ -79,14 +81,14 @@ export const WizardResult: React.FC<WizardResultProps> = ({
           className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl hover:shadow-2xl flex items-center justify-center gap-2 cursor-pointer"
         >
           <Zap size={20} className="fill-current" />
-          Upgrade Now
+          {t("wizard.upgrade.cta")}
         </button>
         <button
           type="button"
           onClick={onBack}
           className="mt-4 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
         >
-          No thanks, take me back
+          {t("wizard.upgrade.back")}
         </button>
       </div>
     </div>
@@ -103,9 +105,9 @@ export const WizardResult: React.FC<WizardResultProps> = ({
   const [sectionRefinementNote, setSectionRefinementNote] = React.useState("");
 
   const sectionTitles: Record<PlanRefinementSection, string> = {
-    diagnosis: "Diagnosis",
-    proof: "Proof",
-    recovery: "Recovery",
+    diagnosis: t("wizard.section.diagnosis"),
+    proof: t("wizard.section.proof"),
+    recovery: t("wizard.section.recovery"),
   };
 
   const openSectionRefinement = (section: PlanRefinementSection) => {
@@ -137,14 +139,19 @@ export const WizardResult: React.FC<WizardResultProps> = ({
         type="button"
         onClick={() => openSectionRefinement(section)}
         disabled={Boolean(refiningSection)}
-        className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-gray-700 dark:text-gray-200 transition-colors hover:border-gray-400 dark:hover:border-zinc-500 hover:text-black dark:hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-gray-700 dark:text-gray-200 transition-colors hover:border-gray-400 dark:hover:border-zinc-500 hover:text-black dark:hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isRefining ? (
           <Loader2 size={14} className="animate-spin" />
         ) : (
           <Sparkles size={14} />
         )}
-        {isRefining ? "Refining..." : `Tighten ${sectionTitles[section]}`}
+        {isRefining
+          ? t("wizard.sectionRefinement.refining")
+          : replaceValue(
+              "wizard.sectionRefinement.action",
+              sectionTitles[section],
+            )}
       </button>
     );
   };
@@ -155,7 +162,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
     className = "",
   ) => (
     <div
-      className={`bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-7 ${className}`}
+      className={`bg-white dark:bg-zinc-900 rounded-[2rem] shadow-lg border border-gray-200 dark:border-zinc-800 p-5 sm:p-7 ${className}`}
     >
       <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-4">
         {title}
@@ -197,11 +204,11 @@ export const WizardResult: React.FC<WizardResultProps> = ({
 
   const renderSharedPlanSections = () => (
     <div className="w-full max-w-5xl mx-auto space-y-8 mb-8">
-      <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-xl border border-gray-200 dark:border-zinc-800 p-8">
+      <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-xl border border-gray-200 dark:border-zinc-800 p-6 sm:p-8">
         <div className="flex flex-col gap-5">
           <div>
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-[0.2em] bg-black text-white dark:bg-white dark:text-black mb-4">
-              Plan Pack
+              {t("wizard.planPack")}
             </span>
             <EditableText
               value={canonical.shortTitle}
@@ -217,10 +224,13 @@ export const WizardResult: React.FC<WizardResultProps> = ({
           />
           <div className="flex flex-wrap gap-2">
             {[
-              ["#blueprint-diagnosis", "Diagnosis"],
-              ["#blueprint-operating-system", "Operating System"],
-              ["#blueprint-proof", "Proof"],
-              ["#blueprint-recovery", "Recovery"],
+              ["#blueprint-diagnosis", t("wizard.section.diagnosis")],
+              [
+                "#blueprint-operating-system",
+                t("wizard.section.operatingSystem"),
+              ],
+              ["#blueprint-proof", t("wizard.section.proof")],
+              ["#blueprint-recovery", t("wizard.section.recovery")],
             ].map(([href, label]) => (
               <a
                 key={href}
@@ -234,7 +244,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
           <div className="grid md:grid-cols-3 gap-4">
             <div className="rounded-2xl bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 p-4">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
-                Next Best Action
+                {t("wizard.nextBestAction")}
               </p>
               <p className="text-sm md:text-base font-semibold text-gray-900 dark:text-white">
                 {canonical.nextBestAction}
@@ -242,7 +252,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             </div>
             <div className="rounded-2xl bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 p-4">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
-                Commitment
+                {t("wizard.commitment")}
               </p>
               <EditableText
                 value={canonical.commitment}
@@ -252,7 +262,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             </div>
             <div className="rounded-2xl bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 p-4">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
-                Weekly Review
+                {t("wizard.weeklyReview")}
               </p>
               <EditableText
                 value={canonical.weeklyReviewPrompt}
@@ -267,12 +277,12 @@ export const WizardResult: React.FC<WizardResultProps> = ({
 
       {renderSectionShell(
         "blueprint-diagnosis",
-        "Diagnosis",
-        "Why this blueprint fits",
-        "Pressure-test the logic first. These cards explain the real situation the plan is designed for, and you can refine this layer without changing the rest of the operating system.",
+        t("wizard.section.diagnosis"),
+        t("wizard.section.diagnosis.title"),
+        t("wizard.section.diagnosis.description"),
         <div className="grid lg:grid-cols-2 gap-6">
           {renderSectionCard(
-            "Strategic Diagnosis",
+            t("wizard.card.strategicDiagnosis"),
             <EditableText
               value={canonical.currentReality}
               onChange={(val) => updateResult(["currentReality"], val)}
@@ -281,7 +291,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             />,
           )}
           {renderSectionCard(
-            "Strategic Pillars",
+            t("wizard.card.strategicPillars"),
             <EditableList
               items={canonical.strategicPillars}
               onChange={(val) => updateResult(["strategicPillars"], val)}
@@ -289,7 +299,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             />,
           )}
           {renderSectionCard(
-            "Constraint Map",
+            t("wizard.card.constraintMap"),
             <EditableList
               items={canonical.keyConstraints}
               onChange={(val) => updateResult(["keyConstraints"], val)}
@@ -297,7 +307,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             />,
           )}
           {renderSectionCard(
-            "Leverage Moves",
+            t("wizard.card.leverageMoves"),
             <EditableList
               items={canonical.leverageMoves}
               onChange={(val) => updateResult(["leverageMoves"], val)}
@@ -305,7 +315,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             />,
           )}
           {renderSectionCard(
-            "Why This Matters",
+            t("wizard.card.whyThisMatters"),
             <EditableText
               value={canonical.yourWhy}
               onChange={(val) => updateResult(["yourWhy"], val)}
@@ -314,7 +324,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             />,
           )}
           {renderSectionCard(
-            "What To Avoid",
+            t("wizard.card.whatToAvoid"),
             <EditableList
               items={canonical.whatToAvoid}
               onChange={(val) => updateResult(["whatToAvoid"], val)}
@@ -327,12 +337,12 @@ export const WizardResult: React.FC<WizardResultProps> = ({
 
       {renderSectionShell(
         "blueprint-operating-system",
-        "Operating System",
-        "What you actually run each week",
-        "This is the part of the blueprint that should behave like an execution system, not a report. Tighten the cadence, sequence, and operating rules here.",
+        t("wizard.section.operatingSystem"),
+        t("wizard.section.operatingSystem.title"),
+        t("wizard.section.operatingSystem.description"),
         <div className="grid lg:grid-cols-2 gap-6">
           {renderSectionCard(
-            "First Week Actions",
+            t("wizard.card.firstWeekActions"),
             <EditableList
               items={canonical.firstWeekActions}
               onChange={(val) => updateResult(["firstWeekActions"], val)}
@@ -340,7 +350,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             />,
           )}
           {renderSectionCard(
-            "Milestones",
+            t("wizard.card.milestones"),
             <EditableList
               items={canonical.milestones}
               onChange={(val) => updateResult(["milestones"], val)}
@@ -348,7 +358,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             />,
           )}
           {renderSectionCard(
-            "Ownership System",
+            t("wizard.card.ownershipSystem"),
             <>
               <EditableText
                 value={canonical.trackingPrompt}
@@ -359,7 +369,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-3">
-                    Cadence
+                    {t("wizard.card.cadence")}
                   </p>
                   <EditableList
                     items={canonical.ownershipCadence}
@@ -369,7 +379,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-3">
-                    Support System
+                    {t("wizard.card.supportSystem")}
                   </p>
                   <EditableList
                     items={canonical.supportSystem}
@@ -381,7 +391,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             </>,
           )}
           {renderSectionCard(
-            "Decision Rules",
+            t("wizard.card.decisionRules"),
             <EditableList
               items={canonical.decisionRules}
               onChange={(val) => updateResult(["decisionRules"], val)}
@@ -389,7 +399,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             />,
           )}
           {renderSectionCard(
-            "Schedule Snapshot",
+            t("wizard.card.scheduleSnapshot"),
             <div className="grid md:grid-cols-2 gap-4">
               {(canonical.scheduleHints || []).length > 0 ? (
                 (canonical.scheduleHints || []).map((hint, index) => (
@@ -405,19 +415,20 @@ export const WizardResult: React.FC<WizardResultProps> = ({
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                       {hint.days?.length
-                        ? `Days: ${hint.days.join(", ")}`
-                        : "Days: flexible"}
-                      {hint.time ? ` | Time: ${hint.time}` : ""}
+                        ? `${t("wizard.schedule.days")}: ${hint.days.join(", ")}`
+                        : `${t("wizard.schedule.days")}: ${t("wizard.schedule.flexible")}`}
+                      {hint.time
+                        ? ` | ${t("wizard.schedule.time")}: ${hint.time}`
+                        : ""}
                       {hint.durationMinutes
-                        ? ` | ${hint.durationMinutes} min`
+                        ? ` | ${hint.durationMinutes} ${t("wizard.schedule.minutesShort")}`
                         : ""}
                     </p>
                   </div>
                 ))
               ) : (
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Add schedule hints above so this becomes a real operating
-                  rhythm instead of a flexible intention.
+                  {t("wizard.card.scheduleEmpty")}
                 </p>
               )}
             </div>,
@@ -427,16 +438,16 @@ export const WizardResult: React.FC<WizardResultProps> = ({
 
       {renderSectionShell(
         "blueprint-proof",
-        "Proof",
-        "How progress becomes visible",
-        "Use this layer to define what counts as real movement. It should be obvious how you will measure, prove, and externally validate progress week by week.",
+        t("wizard.section.proof"),
+        t("wizard.section.proof.title"),
+        t("wizard.section.proof.description"),
         <div className="grid lg:grid-cols-2 gap-6">
           {renderSectionCard(
-            "Scoreboard",
+            t("wizard.card.scoreboard"),
             <div className="grid md:grid-cols-2 gap-5">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-3">
-                  Lead Indicators
+                  {t("wizard.card.leadIndicators")}
                 </p>
                 <EditableList
                   items={canonical.leadIndicators}
@@ -446,7 +457,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-3">
-                  Lag Indicators
+                  {t("wizard.card.lagIndicators")}
                 </p>
                 <EditableList
                   items={canonical.lagIndicators}
@@ -457,7 +468,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             </div>,
           )}
           {renderSectionCard(
-            "Success Criteria",
+            t("wizard.card.successCriteria"),
             <EditableText
               value={canonical.successCriteria}
               onChange={(val) => updateResult(["successCriteria"], val)}
@@ -466,7 +477,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             />,
           )}
           {renderSectionCard(
-            "Proof Checklist",
+            t("wizard.card.proofChecklist"),
             <EditableList
               items={canonical.proofChecklist}
               onChange={(val) => updateResult(["proofChecklist"], val)}
@@ -474,7 +485,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             />,
           )}
           {renderSectionCard(
-            "Setup Checklist",
+            t("wizard.card.setupChecklist"),
             <EditableList
               items={canonical.resourceChecklist}
               onChange={(val) => updateResult(["resourceChecklist"], val)}
@@ -482,7 +493,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             />,
           )}
           {renderSectionCard(
-            "Accountability Hooks",
+            t("wizard.card.accountabilityHooks"),
             <EditableList
               items={canonical.accountabilityHooks}
               onChange={(val) => updateResult(["accountabilityHooks"], val)}
@@ -496,12 +507,12 @@ export const WizardResult: React.FC<WizardResultProps> = ({
 
       {renderSectionShell(
         "blueprint-recovery",
-        "Recovery",
-        "What happens when execution slips",
-        "This layer keeps the blueprint alive after a bad day or bad week. Edit the failure logic, rescue move, and revision triggers here instead of regenerating the whole plan.",
+        t("wizard.section.recovery"),
+        t("wizard.section.recovery.title"),
+        t("wizard.section.recovery.description"),
         <div className="grid lg:grid-cols-2 gap-6">
           {renderSectionCard(
-            "Failure Modes",
+            t("wizard.card.failureModes"),
             <EditableList
               items={canonical.failureModes}
               onChange={(val) => updateResult(["failureModes"], val)}
@@ -509,7 +520,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             />,
           )}
           {renderSectionCard(
-            "Recovery Protocol",
+            t("wizard.card.recoveryProtocol"),
             <EditableText
               value={canonical.recoveryProtocol}
               onChange={(val) => updateResult(["recoveryProtocol"], val)}
@@ -518,7 +529,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             />,
           )}
           {renderSectionCard(
-            "Revision Triggers",
+            t("wizard.card.revisionTriggers"),
             <EditableList
               items={canonical.revisionTriggers}
               onChange={(val) => updateResult(["revisionTriggers"], val)}
@@ -526,7 +537,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             />,
           )}
           {renderSectionCard(
-            "Review Anchor",
+            t("wizard.card.reviewAnchor"),
             <EditableText
               value={canonical.weeklyReviewPrompt}
               onChange={(val) => updateResult(["weeklyReviewPrompt"], val)}
@@ -540,12 +551,10 @@ export const WizardResult: React.FC<WizardResultProps> = ({
 
       <div className="rounded-[2rem] border border-dashed border-gray-300 dark:border-zinc-700 bg-white/70 dark:bg-zinc-900/60 px-6 py-5">
         <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-gray-500 mb-2">
-          Framework Lens
+          {t("wizard.section.frameworkLens")}
         </p>
         <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
-          The framework-specific visualization stays below. The shared operating
-          system above makes the plan easier to execute, while the unique
-          framework view keeps the final blueprint distinct.
+          {t("wizard.section.frameworkLens.description")}
         </p>
       </div>
     </div>
@@ -631,10 +640,10 @@ export const WizardResult: React.FC<WizardResultProps> = ({
               type="button"
               onClick={copyOkr}
               className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white/90 dark:bg-zinc-800/90 border border-gray-200 dark:border-zinc-700 px-4 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95 cursor-pointer"
-              aria-label="Copy strategy"
+              aria-label={copyStrategyLabel}
             >
               <Copy size={16} />
-              Copy Strategy
+              {copyStrategyLabel}
             </button>
           </div>
           <div className="absolute top-0 w-full h-2 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600" />
@@ -720,10 +729,10 @@ export const WizardResult: React.FC<WizardResultProps> = ({
               type="button"
               onClick={copyFp}
               className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95 cursor-pointer"
-              aria-label="Copy strategy"
+              aria-label={copyStrategyLabel}
             >
               <Copy size={16} />
-              Copy Strategy
+              {copyStrategyLabel}
             </button>
           </div>
           <div className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-zinc-700/80 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
@@ -784,10 +793,10 @@ export const WizardResult: React.FC<WizardResultProps> = ({
               type="button"
               onClick={copyRpm}
               className="flex items-center gap-2 text-sm font-bold text-white/90 hover:text-white transition-all bg-black/20 hover:bg-black/30 border border-white/20 px-4 py-2.5 rounded-full shadow-sm cursor-pointer"
-              aria-label="Copy strategy"
+              aria-label={copyStrategyLabel}
             >
               <Copy size={16} />
-              Copy Strategy
+              {copyStrategyLabel}
             </button>
           </div>
           {/* Left Sidebar: Result & Purpose */}
@@ -859,9 +868,9 @@ export const WizardResult: React.FC<WizardResultProps> = ({
     const purification = toStr(result.purification);
     const copyMisogi = () => {
       const parts = [
-        `# The Challenge\n${challenge}`,
-        `\n# The Failure Gap\n${gap}`,
-        `\n# The Purification\n${purification}`,
+        `# ${t("misogi.challenge")}\n${challenge}`,
+        `\n# ${t("misogi.failureGap")}\n${gap}`,
+        `\n# ${t("misogi.purification")}\n${purification}`,
       ];
       navigator.clipboard.writeText(parts.join("\n"));
       toast.success(t("common.copiedToClipboard"));
@@ -878,17 +887,17 @@ export const WizardResult: React.FC<WizardResultProps> = ({
               type="button"
               onClick={copyMisogi}
               className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95 cursor-pointer"
-              aria-label="Copy strategy"
+              aria-label={copyStrategyLabel}
             >
               <Copy size={16} />
-              Copy Strategy
+              {copyStrategyLabel}
             </button>
           </div>
           <div className="bg-gradient-to-br from-red-900 to-rose-900 text-white rounded-[2.5rem] p-12 shadow-2xl relative overflow-hidden border border-red-800">
             <div className="absolute top-0 right-0 w-[30rem] h-[30rem] bg-orange-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="relative z-10 text-center">
               <span className="inline-block px-4 py-1.5 rounded-full bg-white/10 text-red-100 text-xs font-bold uppercase tracking-[0.3em] mb-8 border border-white/20">
-                The Challenge (50% Fail Rate)
+                {t("misogi.challengeBadge")}
               </span>
               <div className="text-4xl md:text-5xl font-black leading-tight tracking-tight">
                 <EditableText
@@ -904,7 +913,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-gray-200 dark:border-zinc-800 shadow-xl">
               <h4 className="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-sm mb-4">
-                The Failure Gap
+                {t("misogi.failureGap")}
               </h4>
               <EditableText
                 value={gap}
@@ -915,7 +924,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
             </div>
             <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-gray-200 dark:border-zinc-800 shadow-xl">
               <h4 className="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-sm mb-4">
-                The Purification
+                {t("misogi.purification")}
               </h4>
               <EditableText
                 value={purification}
@@ -965,7 +974,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
   if (result.type === "general") {
     const steps = Array.isArray(result.steps) ? result.steps : [];
     const copyGeneral = () => {
-      const parts = `# ${t("general.steps") || "Action Steps"}\n${steps.map((s: string, i: number) => `${i + 1}. ${s}`).join("\n")}`;
+      const parts = `# ${t("general.steps")}\n${steps.map((s: string, i: number) => `${i + 1}. ${s}`).join("\n")}`;
       navigator.clipboard.writeText(parts);
       toast.success(t("common.copiedToClipboard"));
     };
@@ -981,10 +990,10 @@ export const WizardResult: React.FC<WizardResultProps> = ({
               type="button"
               onClick={copyGeneral}
               className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-sm hover:shadow-md active:scale-95 cursor-pointer"
-              aria-label="Copy strategy"
+              aria-label={copyStrategyLabel}
             >
               <Copy size={16} />
-              Copy Strategy
+              {copyStrategyLabel}
             </button>
           </div>
           <div className="bg-white dark:bg-zinc-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-zinc-700/80 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
@@ -993,7 +1002,7 @@ export const WizardResult: React.FC<WizardResultProps> = ({
                 <Layers size={20} />
               </div>
               <h4 className="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-                {t("general.steps") || "Action Steps"}
+                {t("general.steps")}
               </h4>
             </div>
             <EditableList

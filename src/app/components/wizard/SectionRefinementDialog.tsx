@@ -10,36 +10,31 @@ import {
   DialogTitle,
 } from "@/app/components/ui/dialog";
 import { Textarea } from "@/app/components/ui/textarea";
+import { useLanguage } from "@/app/components/language-provider";
 import type { PlanRefinementSection } from "@/lib/sectionRefinement";
 
 const SECTION_COPY: Record<
   PlanRefinementSection,
   {
-    title: string;
-    description: string;
-    placeholder: string;
+    labelKey: string;
+    descriptionKey: string;
+    placeholderKey: string;
   }
 > = {
   diagnosis: {
-    title: "Tighten Diagnosis",
-    description:
-      "Refine the strategic read on the situation without rewriting the rest of the blueprint.",
-    placeholder:
-      "Optional: name a new constraint, pressure point, blind spot, or angle the diagnosis should account for.",
+    labelKey: "wizard.section.diagnosis",
+    descriptionKey: "wizard.sectionRefinement.diagnosis.description",
+    placeholderKey: "wizard.sectionRefinement.diagnosis.placeholder",
   },
   proof: {
-    title: "Tighten Proof",
-    description:
-      "Strengthen only the evidence loop, scoreboards, and accountability layer.",
-    placeholder:
-      "Optional: describe what proof is missing, what should be measurable, or what kind of evidence you want the plan to require.",
+    labelKey: "wizard.section.proof",
+    descriptionKey: "wizard.sectionRefinement.proof.description",
+    placeholderKey: "wizard.sectionRefinement.proof.placeholder",
   },
   recovery: {
-    title: "Tighten Recovery",
-    description:
-      "Sharpen the fallback logic so the plan survives bad days and missed weeks.",
-    placeholder:
-      "Optional: add the exact failure pattern or recovery constraint this rescue logic should solve for.",
+    labelKey: "wizard.section.recovery",
+    descriptionKey: "wizard.sectionRefinement.recovery.description",
+    placeholderKey: "wizard.sectionRefinement.recovery.placeholder",
   },
 };
 
@@ -62,33 +57,37 @@ export function SectionRefinementDialog({
   onOpenChange,
   onApply,
 }: SectionRefinementDialogProps) {
+  const { t } = useLanguage();
   const copy = section ? SECTION_COPY[section] : null;
+  const title = copy
+    ? t("wizard.sectionRefinement.action").replace("{0}", t(copy.labelKey))
+    : t("wizard.sectionRefinement.defaultTitle");
+  const description = copy
+    ? t(copy.descriptionKey)
+    : t("wizard.sectionRefinement.defaultDescription");
+  const placeholder = copy
+    ? t(copy.placeholderKey)
+    : t("wizard.sectionRefinement.defaultPlaceholder");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <Sparkles size={18} /> {copy?.title || "Tighten Section"}
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Sparkles size={18} /> {title}
           </DialogTitle>
-          <DialogDescription>
-            {copy?.description ||
-              "Refine one section of the blueprint without regenerating the entire plan."}
-          </DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
-              Optional context
+              {t("wizard.sectionRefinement.optionalContext")}
             </p>
             <Textarea
               value={note}
               onChange={(event) => onNoteChange(event.target.value)}
-              placeholder={
-                copy?.placeholder ||
-                "Add any extra context the refinement should respect."
-              }
+              placeholder={placeholder}
               className="min-h-[140px]"
             />
           </div>
@@ -100,7 +99,7 @@ export function SectionRefinementDialog({
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Close
+              {t("common.close")}
             </Button>
             <Button
               type="button"
@@ -110,7 +109,7 @@ export function SectionRefinementDialog({
               {loading ? (
                 <Loader2 size={16} className="mr-2 animate-spin" />
               ) : null}
-              Apply AI Update
+              {t("wizard.sectionRefinement.apply")}
             </Button>
           </div>
         </div>

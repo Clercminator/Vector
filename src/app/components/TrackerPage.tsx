@@ -124,8 +124,7 @@ const EXECUTION_STATE_STYLES = {
   },
   rescue: {
     badge: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-    panel:
-      "border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-950/30",
+    panel: "border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-950/30",
     signal: "text-red-600 dark:text-red-300",
     button: "bg-red-600 text-white hover:bg-red-500",
   },
@@ -172,6 +171,76 @@ export function TrackerPage({
   const { blueprintId } = useParams<{ blueprintId: string }>();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const replaceValue = (key: string, value: string) =>
+    t(key).replace("{0}", value);
+  const executionStateKey = {
+    "on-track": "onTrack",
+    "at-risk": "atRisk",
+    stalled: "stalled",
+    rescue: "rescue",
+  } as const;
+  const riskKey = {
+    low: "low",
+    medium: "medium",
+    high: "high",
+  } as const;
+  const translateExecutionText = (value: string) => {
+    const noActivityMatch = value.match(
+      /^No logged activity for (\d+) days\.$/,
+    );
+    if (noActivityMatch) {
+      return replaceValue(
+        "tracker.execution.overdue.noActivity",
+        noActivityMatch[1],
+      );
+    }
+
+    if (
+      value ===
+      "No tracked steps completed yet. Start with the next best action."
+    ) {
+      return t("tracker.execution.overdue.noSteps");
+    }
+    if (value === "Progress is still below the first milestone threshold.") {
+      return t("tracker.execution.overdue.lowProgress");
+    }
+    if (value === "No proof or reflection has been logged this week.") {
+      return t("tracker.execution.proof.noLog");
+    }
+    if (
+      value ===
+      "The tracker shows friction, but there is no recent proof note explaining what changed."
+    ) {
+      return t("tracker.execution.proof.noProofAfterSetback");
+    }
+    if (
+      value ===
+      "Tighten this week: restore a proof loop before you add more scope."
+    ) {
+      return t("tracker.execution.adaptive.restoreProofLoop");
+    }
+    if (value === "Review whether the current cadence still fits your week.") {
+      return t("tracker.execution.adaptive.reviewFit");
+    }
+
+    const resetPrefix = "Reset with one small win today: ";
+    if (value.startsWith(resetPrefix)) {
+      return `${t("tracker.execution.recovery.resetPrefix")}${value.slice(resetPrefix.length)}`;
+    }
+
+    const shorterPrefix =
+      "If today slips, do a shorter version of this action: ";
+    if (value.startsWith(shorterPrefix)) {
+      return `${t("tracker.execution.recovery.shorterPrefix")}${value.slice(shorterPrefix.length)}`;
+    }
+
+    const tightenPrefix = "Tighten this week: ";
+    if (value.startsWith(tightenPrefix)) {
+      return `${t("tracker.execution.adaptive.tightenPrefix")}: ${value.slice(tightenPrefix.length)}`;
+    }
+
+    return value;
+  };
 
   const [blueprint, setBlueprint] = useState<Blueprint | null>(null);
   const [tracker, setTracker] = useState<any>(null);
@@ -723,7 +792,7 @@ export function TrackerPage({
     setTracker((prev) =>
       prev ? { ...prev, last_activity_at: new Date().toISOString() } : null,
     );
-    toast.success("Setback logged");
+    toast.success(t("tracker.setbackLogged"));
   };
 
   const handleSaveSettings = async (bpUpdates: any, trUpdates: any) => {
@@ -862,9 +931,7 @@ export function TrackerPage({
       persistE2ESharePayload(shareToken, { blueprint, tracker, logs });
       rememberE2EShareUrl(shareUrl);
       await navigator.clipboard.writeText(shareUrl);
-      toast.success(
-        t("tracker.share.copied") || "Share link copied to clipboard! 📋",
-      );
+      toast.success(t("tracker.share.copied"));
       return;
     }
 
@@ -897,12 +964,10 @@ export function TrackerPage({
 
       const shareUrl = `${window.location.origin}/share/${shareToken}`;
       await navigator.clipboard.writeText(shareUrl);
-      toast.success(
-        t("tracker.share.copied") || "Share link copied to clipboard! 📋",
-      );
+      toast.success(t("tracker.share.copied"));
     } catch (e: any) {
       console.error(e);
-      toast.error(t("common.error") || "Failed to generate share link");
+      toast.error(t("tracker.share.error"));
     }
   };
 
@@ -1176,7 +1241,9 @@ export function TrackerPage({
         ...executionInsight.overdueSignals,
         ...executionInsight.proofSignals,
         executionInsight.missedDayRecovery,
-      ].filter(Boolean)
+      ]
+        .filter(Boolean)
+        .map(translateExecutionText)
     : [];
   const shouldSuggestAdaptiveRevision =
     !!executionInsight &&
@@ -1189,8 +1256,28 @@ export function TrackerPage({
     : null;
   const revisionCtaLabel =
     executionInsight && executionInsight.executionState !== "on-track"
-      ? "Tighten this week"
-      : "Revise plan";
+      ? t("tracker.execution.revisionTighten")
+      : t("tracker.execution.revisionStandard");
+  const executionStateLabel = executionInsight
+    ? t(
+        `tracker.execution.state.${
+          executionStateKey[executionInsight.executionState]
+        }`,
+      )
+    : null;
+  const executionStateSummary = executionInsight
+    ? t(
+        `tracker.execution.summary.${
+          executionStateKey[executionInsight.executionState]
+        }`,
+      )
+    : null;
+  const streakRiskLabel = executionInsight
+    ? replaceValue(
+        "tracker.execution.riskLabel",
+        t(`tracker.execution.risk.${riskKey[executionInsight.streakRisk]}`),
+      )
+    : null;
 
   const lastActivityDate = tracker?.last_activity_at
     ? new Date(tracker.last_activity_at).toLocaleDateString(undefined, {
@@ -1226,8 +1313,11 @@ export function TrackerPage({
         suggested={shouldSuggestAdaptiveRevision}
         revisionReasons={revisionReasons}
         currentSuggestion={
-          executionInsight?.adaptiveRevisionSuggestion ||
-          "Use the real execution data to simplify and tighten the plan."
+          (executionInsight
+            ? translateExecutionText(
+                executionInsight.adaptiveRevisionSuggestion,
+              )
+            : null) || t("tracker.execution.useRealData")
         }
         note={adaptiveRevisionNote}
         onNoteChange={setAdaptiveRevisionNote}
@@ -1252,14 +1342,9 @@ export function TrackerPage({
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span
-                className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-white"
-                style={
-                  colorAccent ? { backgroundColor: colorAccent } : undefined
-                }
+                className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${themeClass}`}
               >
-                <span className={!colorAccent ? themeClass : ""}>
-                  {blueprint.framework}
-                </span>
+                {blueprint.framework}
               </span>
               {lastActivityDate && (
                 <span className="text-xs text-gray-500 font-bold flex items-center gap-1">
@@ -1273,7 +1358,10 @@ export function TrackerPage({
             </h1>
           </div>
 
-          <div className="shrink-0 flex flex-wrap items-center gap-2">
+          <div
+            data-testid="tracker-header-actions"
+            className="shrink-0 flex flex-wrap items-center gap-2"
+          >
             <div className="flex items-center gap-2">
               {isInfinite && !isImpersonating && (
                 <button
@@ -1364,7 +1452,8 @@ export function TrackerPage({
           <div className="grid md:grid-cols-3 gap-4">
             <Card className="rounded-2xl border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-5 shadow-sm">
               <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                <Gauge size={16} className="text-indigo-500" /> Diagnosis
+                <Gauge size={16} className="text-indigo-500" />{" "}
+                {t("wizard.card.strategicDiagnosis")}
               </div>
               <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
                 {canonicalPlan.currentReality}
@@ -1373,12 +1462,13 @@ export function TrackerPage({
 
             <Card className="rounded-2xl border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-5 shadow-sm">
               <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                <ListChecks size={16} className="text-cyan-500" /> Scoreboard
+                <ListChecks size={16} className="text-cyan-500" />{" "}
+                {t("wizard.card.scoreboard")}
               </div>
               <div className="space-y-3">
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400 mb-2">
-                    Lead Indicators
+                    {t("wizard.card.leadIndicators")}
                   </p>
                   <ul className="space-y-1.5 text-sm text-gray-700 dark:text-gray-300">
                     {canonicalPlan.leadIndicators.slice(0, 3).map((item) => (
@@ -1388,7 +1478,7 @@ export function TrackerPage({
                 </div>
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400 mb-2">
-                    Lag Indicators
+                    {t("wizard.card.lagIndicators")}
                   </p>
                   <ul className="space-y-1.5 text-sm text-gray-700 dark:text-gray-300">
                     {canonicalPlan.lagIndicators.slice(0, 2).map((item) => (
@@ -1401,7 +1491,8 @@ export function TrackerPage({
 
             <Card className="rounded-2xl border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 p-5 shadow-sm">
               <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-                <Users size={16} className="text-emerald-500" /> Ownership Loop
+                <Users size={16} className="text-emerald-500" />{" "}
+                {t("wizard.card.ownershipSystem")}
               </div>
               <p className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
                 {tracker?.tracking_question || canonicalPlan.trackingPrompt}
@@ -1412,7 +1503,7 @@ export function TrackerPage({
                 ))}
               </ul>
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400 mb-2">
-                Support System
+                {t("wizard.card.supportSystem")}
               </p>
               <ul className="space-y-1.5 text-sm text-gray-700 dark:text-gray-300">
                 {canonicalPlan.supportSystem.slice(0, 2).map((item) => (
@@ -1608,10 +1699,10 @@ export function TrackerPage({
                           <span
                             className={`text-xs font-bold uppercase tracking-wider ${isSetback ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}
                           >
-                            {isJournal && (t("tracker.journal") || "Journal")}
-                            {isCheckIn && "Check-in"}
-                            {isStepDone && "Completed Step"}
-                            {isSetback && "Setback Logged"}
+                            {isJournal && t("tracker.journal")}
+                            {isCheckIn && t("tracker.checkIn")}
+                            {isStepDone && t("tracker.completedStep")}
+                            {isSetback && t("tracker.setbackLogged")}
                           </span>
                           <span className="text-xs font-bold text-gray-400">
                             {new Date(log.created_at).toLocaleDateString()}
@@ -1683,39 +1774,46 @@ export function TrackerPage({
           {executionInsight && (
             <Card className="p-5 rounded-2xl border-gray-200 dark:border-zinc-800">
               <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
-                Execution Signals
+                {t("tracker.execution.signals")}
               </h3>
               <div className="space-y-4">
                 {executionStateStyle && (
-                  <div className={`rounded-2xl border p-4 ${executionStateStyle.panel}`}>
+                  <div
+                    className={`rounded-2xl border p-4 ${executionStateStyle.panel}`}
+                  >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
-                          Execution State
+                          {t("tracker.execution.stateLabel")}
                         </p>
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${executionStateStyle.badge}`}>
-                            {executionInsight.executionStateLabel}
+                          <span
+                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${executionStateStyle.badge}`}
+                          >
+                            {executionStateLabel}
                           </span>
                           <span className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
-                            {executionInsight.streakRisk} risk
+                            {streakRiskLabel}
                           </span>
                         </div>
                       </div>
                       {lastActivityDate && (
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          Last activity {lastActivityDate}
+                          {replaceValue(
+                            "tracker.execution.lastActivity",
+                            lastActivityDate,
+                          )}
                         </p>
                       )}
                     </div>
                     <p className="mt-3 text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
-                      {executionInsight.stateSummary}
+                      {executionStateSummary}
                     </p>
                   </div>
                 )}
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
-                    Next Best Action
+                    {t("tracker.execution.nextBestAction")}
                   </p>
                   <p className="text-sm font-semibold text-gray-900 dark:text-white">
                     {executionInsight.nextBestAction}
@@ -1724,7 +1822,7 @@ export function TrackerPage({
                 {executionInsight.overdueSignals.length > 0 && (
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
-                      Overdue Signals
+                      {t("tracker.execution.overdueSignals")}
                     </p>
                     <ul className="space-y-2">
                       {executionInsight.overdueSignals.map((signal) => (
@@ -1732,7 +1830,7 @@ export function TrackerPage({
                           key={signal}
                           className={`text-sm font-medium ${executionStateStyle?.signal || (executionInsight.streakRisk === "high" ? "text-red-500" : "text-amber-500")}`}
                         >
-                          {signal}
+                          {translateExecutionText(signal)}
                         </li>
                       ))}
                     </ul>
@@ -1741,7 +1839,7 @@ export function TrackerPage({
                 {executionInsight.proofSignals.length > 0 && (
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
-                      Proof Signals
+                      {t("tracker.execution.proofSignals")}
                     </p>
                     <ul className="space-y-2">
                       {executionInsight.proofSignals.map((signal) => (
@@ -1749,7 +1847,7 @@ export function TrackerPage({
                           key={signal}
                           className={`text-sm font-medium ${executionStateStyle?.signal || "text-amber-500"}`}
                         >
-                          {signal}
+                          {translateExecutionText(signal)}
                         </li>
                       ))}
                     </ul>
@@ -1757,15 +1855,15 @@ export function TrackerPage({
                 )}
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
-                    Recovery Move
+                    {t("tracker.execution.recoveryMove")}
                   </p>
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {executionInsight.rescueAction}
+                    {translateExecutionText(executionInsight.rescueAction)}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
-                    Weekly Review
+                    {t("wizard.weeklyReview")}
                   </p>
                   <p className="text-sm text-gray-700 dark:text-gray-300">
                     {executionInsight.weeklyReviewPrompt}
@@ -1773,10 +1871,12 @@ export function TrackerPage({
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
-                    Adaptive Revision
+                    {t("tracker.execution.adaptiveRevision")}
                   </p>
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {executionInsight.adaptiveRevisionSuggestion}
+                    {translateExecutionText(
+                      executionInsight.adaptiveRevisionSuggestion,
+                    )}
                   </p>
                 </div>
                 <div className="pt-2">
@@ -1786,7 +1886,9 @@ export function TrackerPage({
                     data-testid="tracker-revise-button"
                     className={`min-h-[44px] w-full rounded-xl px-4 py-2.5 text-sm font-bold transition-colors cursor-pointer ${shouldSuggestAdaptiveRevision && executionStateStyle ? executionStateStyle.button : "bg-gray-900 text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"}`}
                   >
-                    {shouldSuggestAdaptiveRevision ? revisionCtaLabel : "Revise plan"}
+                    {shouldSuggestAdaptiveRevision
+                      ? revisionCtaLabel
+                      : t("tracker.execution.revisionStandard")}
                   </button>
                 </div>
               </div>

@@ -101,10 +101,10 @@ export const GpsView: React.FC<GpsViewProps> = ({ result, updateResult }) => {
           type="button"
           onClick={copyGps}
           className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-all bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 px-5 py-2.5 rounded-full shadow-md hover:shadow-lg active:scale-[0.98] cursor-pointer shrink-0"
-          aria-label="Copy strategy"
+          aria-label={t('common.copyStrategy')}
         >
           <Copy size={16} />
-          {t('common.copyStrategy') || 'Copy Strategy'}
+          {t('common.copyStrategy')}
         </button>
       </div>
 

@@ -54,25 +54,31 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
     goalMri = null,
 }) => {
     const { t } = useLanguage();
+    const replaceValue = (key: string, value: string) => t(key).replace("{0}", value);
 
     const renderGoalMri = (mri: GoalMri) => {
         const statusLabel = mri.readiness === 'ready'
-            ? 'Ready to lock'
-            : `${mri.missingAssumptions.length} clarification${mri.missingAssumptions.length === 1 ? '' : 's'} left`;
+            ? t('wizard.goalMri.status.ready')
+            : replaceValue(
+                mri.missingAssumptions.length === 1
+                    ? 'wizard.goalMri.status.leftSingular'
+                    : 'wizard.goalMri.status.leftPlural',
+                String(mri.missingAssumptions.length),
+              );
 
-        const renderMriList = (label: string, items: string[], emptyLabel: string, tone: string) => (
+        const renderMriList = (labelKey: string, items: string[], emptyLabelKey: string, tone: string) => (
             <div className={`rounded-xl border p-3 ${tone}`}>
-                <h5 className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">{label}</h5>
+                <h5 className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">{t(labelKey)}</h5>
                 {items.length > 0 ? (
                     <ul className="space-y-1.5">
                         {items.map((item) => (
-                            <li key={item} className="text-sm text-gray-700 dark:text-gray-300 leading-snug">
+                            <li key={item} className="text-sm text-gray-700 dark:text-gray-300 leading-snug break-words">
                                 {item}
                             </li>
                         ))}
                     </ul>
                 ) : (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{emptyLabel}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t(emptyLabelKey)}</p>
                 )}
             </div>
         );
@@ -81,40 +87,40 @@ export const WizardDraft: React.FC<WizardDraftProps> = ({
             <div className={`rounded-2xl border p-4 md:p-5 ${awaitingPlanConfirmation ? 'bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-900/40' : 'bg-slate-50 border-slate-200 dark:bg-zinc-950/40 dark:border-zinc-800'}`}>
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div>
-                        <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-gray-500 mb-2">Goal MRI</p>
-                        <h4 className="text-base font-bold text-gray-900 dark:text-white">Why this plan will fit before the full blueprint is generated</h4>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-gray-500 mb-2">{t('wizard.goalMri.title')}</p>
+                        <h4 className="text-base font-bold text-gray-900 dark:text-white">{t('wizard.goalMri.heading')}</h4>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
-                            Vector is already forming a diagnosis from your context. This surfaces the friction, leverage, and missing assumptions before the plan is locked.
+                            {t('wizard.goalMri.description')}
                         </p>
                     </div>
-                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${mri.readiness === 'ready' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-white text-amber-700 border border-amber-200 dark:bg-zinc-900 dark:text-amber-300 dark:border-amber-900/40'}`}>
+                    <span className={`inline-flex max-w-full items-center justify-center self-start rounded-full px-3 py-1 text-center text-xs font-bold md:self-auto ${mri.readiness === 'ready' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-white text-amber-700 border border-amber-200 dark:bg-zinc-900 dark:text-amber-300 dark:border-amber-900/40'}`}>
                         {statusLabel}
                     </span>
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-2 mt-4">
                     {renderMriList(
-                        'Bottlenecks',
+                        'wizard.goalMri.bottlenecks',
                         mri.bottlenecks,
-                        'Still waiting for a clearer constraint pattern.',
+                        'wizard.goalMri.empty.bottlenecks',
                         'bg-white/80 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800',
                     )}
                     {renderMriList(
-                        'Likely Failure Modes',
+                        'wizard.goalMri.failureModes',
                         mri.failureModes,
-                        'Failure modes will sharpen as more context arrives.',
+                        'wizard.goalMri.empty.failureModes',
                         'bg-white/80 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800',
                     )}
                     {renderMriList(
-                        'Leverage Moves',
+                        'wizard.goalMri.leverageMoves',
                         mri.leverageMoves,
-                        'The leverage layer is still forming.',
+                        'wizard.goalMri.empty.leverageMoves',
                         'bg-white/80 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800',
                     )}
                     {renderMriList(
-                        'Missing Assumptions',
+                        'wizard.goalMri.missingAssumptions',
                         mri.missingAssumptions,
-                        'No major missing assumptions detected. The plan can be generated from here.',
+                        'wizard.goalMri.empty.missingAssumptions',
                         'bg-white/80 dark:bg-zinc-900/60 border-gray-200 dark:border-zinc-800',
                     )}
                 </div>

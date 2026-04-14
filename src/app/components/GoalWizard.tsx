@@ -83,7 +83,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
     if (props.framework) params.set("framework", props.framework);
     const url = `${base}?${params.toString()}`;
     navigator.clipboard.writeText(url);
-    toast.success(t("common.copiedToClipboard") || "Link copied to clipboard");
+    toast.success(t("common.copiedToClipboard"));
   };
 
   React.useEffect(() => {
@@ -251,9 +251,9 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
             type="button"
             onClick={handleShare}
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-gray-200 dark:border-zinc-700 shadow-lg hover:shadow-xl transition-all cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-200"
-            aria-label="Share link"
+            aria-label={t("common.share")}
           >
-            <Share2 size={18} /> Share
+            <Share2 size={18} /> {t("common.share")}
           </button>
           <button
             type="button"
@@ -271,9 +271,9 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
               );
             }}
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-gray-200 dark:border-zinc-700 shadow-lg hover:shadow-xl transition-all cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-200"
-            aria-label="Exit fullscreen"
+            aria-label={t("common.exit")}
           >
-            <Minimize2 size={18} /> Exit
+            <Minimize2 size={18} /> {t("common.exit")}
           </button>
         </div>
       )}
@@ -468,6 +468,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
             return (
               <div
                 data-print-hide
+                data-testid="wizard-result-actions"
                 className={cn(
                   "flex-none flex flex-col gap-3 py-4 px-4 pb-safe border-t border-gray-100 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm",
                   fullscreenBlueprint && "hidden",
@@ -493,10 +494,10 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                       });
                     }}
                     className="flex items-center gap-2 cursor-pointer px-4 py-2.5 sm:px-6 sm:py-3 bg-white dark:bg-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-800 rounded-full shadow-lg hover:shadow-xl transition-all font-medium text-sm sm:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 shrink-0"
-                    aria-label="Full screen view"
+                    aria-label={t("common.fullScreen")}
                   >
                     <Maximize2 size={16} className="sm:w-[18px] sm:h-[18px]" />{" "}
-                    Full screen
+                    {t("common.fullScreen")}
                   </button>
                   <button
                     type="button"
