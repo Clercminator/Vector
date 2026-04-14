@@ -159,6 +159,21 @@ function dedupeSelectOptions(field: HTMLSelectElement) {
   }
 }
 
+function selectFirstAvailableOption(field: HTMLSelectElement) {
+  if (field.value) {
+    return;
+  }
+
+  const firstAvailableOption = Array.from(field.options).find((option) => {
+    const value = option.value.trim();
+    return value.length > 0 && !option.disabled;
+  });
+
+  if (firstAvailableOption) {
+    field.value = firstAvailableOption.value;
+  }
+}
+
 function observeUniqueSelectOptions(ids: string[]) {
   if (typeof document === "undefined") {
     return () => undefined;
@@ -644,9 +659,11 @@ export const MercadoPagoSubscriptionDialog: React.FC<
 
       if (issuerField instanceof HTMLSelectElement) {
         dedupeSelectOptions(issuerField);
+        selectFirstAvailableOption(issuerField);
       }
       if (installmentsField instanceof HTMLSelectElement) {
         dedupeSelectOptions(installmentsField);
+        selectFirstAvailableOption(installmentsField);
       }
       if (identificationField instanceof HTMLSelectElement) {
         dedupeSelectOptions(identificationField);
@@ -842,7 +859,7 @@ export const MercadoPagoSubscriptionDialog: React.FC<
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto overflow-x-hidden border-zinc-900 bg-zinc-950 p-0 text-white sm:max-w-5xl">
+      <DialogContent className="max-h-[92vh] overflow-y-auto overflow-x-hidden border-zinc-900 bg-zinc-950 p-0 text-white sm:max-w-5xl [&>button]:!top-5 [&>button]:!right-5 [&>button]:!rounded-full [&>button]:!border [&>button]:!border-zinc-200 [&>button]:!bg-white/95 [&>button]:!p-2 [&>button]:!text-zinc-700 [&>button]:!opacity-100 [&>button]:!shadow-sm [&>button:hover]:!bg-white [&>button:hover]:!text-zinc-950">
         <div className="grid min-h-0 lg:grid-cols-[0.95fr_1.05fr]">
           <div className={SUMMARY_PANEL_CLASS_NAME}>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/60">
@@ -959,32 +976,6 @@ export const MercadoPagoSubscriptionDialog: React.FC<
                 </div>
                 <div className="space-y-1.5">
                   <label
-                    htmlFor={ids.issuerId}
-                    className="text-sm font-semibold text-zinc-800"
-                  >
-                    {copy.issuer}
-                  </label>
-                  <select
-                    id={ids.issuerId}
-                    className={FORM_FIELD_CLASS_NAME}
-                    defaultValue=""
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor={ids.installmentsId}
-                    className="text-sm font-semibold text-zinc-800"
-                  >
-                    {copy.installments}
-                  </label>
-                  <select
-                    id={ids.installmentsId}
-                    className={FORM_FIELD_CLASS_NAME}
-                    defaultValue=""
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label
                     htmlFor={ids.identificationTypeId}
                     className="text-sm font-semibold text-zinc-800"
                   >
@@ -1025,6 +1016,14 @@ export const MercadoPagoSubscriptionDialog: React.FC<
                     autoComplete="email"
                     placeholder={copy.email}
                     className={FORM_FIELD_CLASS_NAME}
+                  />
+                </div>
+                <div className="hidden" aria-hidden="true">
+                  <select id={ids.issuerId} defaultValue="" tabIndex={-1} />
+                  <select
+                    id={ids.installmentsId}
+                    defaultValue=""
+                    tabIndex={-1}
                   />
                 </div>
               </div>
