@@ -13,6 +13,30 @@ const LEMONSQUEEZY_ENV_STORAGE_KEY = "vector.lemonsqueezy.environment";
 
 type LemonSqueezyEnvironmentMode = "live" | "test";
 
+export function shouldDefaultLemonSqueezyToTestForHostname(
+  hostname: string,
+): boolean {
+  const normalizedHostname = hostname.trim().toLowerCase();
+
+  if (!normalizedHostname) {
+    return false;
+  }
+
+  if (
+    normalizedHostname === "localhost" ||
+    normalizedHostname === "127.0.0.1" ||
+    normalizedHostname === "::1"
+  ) {
+    return true;
+  }
+
+  return (
+    normalizedHostname.endsWith(".vercel.app") &&
+    (normalizedHostname.includes("-git-") ||
+      normalizedHostname.includes("-preview-"))
+  );
+}
+
 const getBrowserHostname = (): string => {
   if (typeof window === "undefined") {
     return "";
@@ -74,9 +98,7 @@ export function shouldUseLemonSqueezyTestEnvironment(): boolean {
   }
 
   const hostname = getBrowserHostname();
-  return (
-    hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1"
-  );
+  return shouldDefaultLemonSqueezyToTestForHostname(hostname);
 }
 
 const getSupabaseUrl = (): string => {

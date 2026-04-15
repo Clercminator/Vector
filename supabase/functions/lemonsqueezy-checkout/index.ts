@@ -20,6 +20,28 @@ interface Body {
   environment?: "live" | "test";
 }
 
+function shouldDefaultLemonSqueezyToTestForHostname(hostname: string): boolean {
+  const normalizedHostname = hostname.trim().toLowerCase();
+
+  if (!normalizedHostname) {
+    return false;
+  }
+
+  if (
+    normalizedHostname === "localhost" ||
+    normalizedHostname === "127.0.0.1" ||
+    normalizedHostname === "::1"
+  ) {
+    return true;
+  }
+
+  return (
+    normalizedHostname.endsWith(".vercel.app") &&
+    (normalizedHostname.includes("-git-") ||
+      normalizedHostname.includes("-preview-"))
+  );
+}
+
 function shouldUseLemonSqueezyTestCredentials(
   origin: string,
   environment: Body["environment"],
@@ -33,9 +55,7 @@ function shouldUseLemonSqueezyTestCredentials(
 
   try {
     const hostname = new URL(origin).hostname.toLowerCase();
-    return (
-      hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1"
-    );
+    return shouldDefaultLemonSqueezyToTestForHostname(hostname);
   } catch {
     return false;
   }

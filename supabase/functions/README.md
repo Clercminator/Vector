@@ -20,7 +20,7 @@ This folder contains the Supabase Edge Functions used by Vector. Deploy them via
 
 For MercadoPago testing, you can also set `MERCADOPAGO_ACCESS_TOKEN_PRUEBA`. The `mercado-pago-preference` function will prefer that test token for `localhost` and loopback origins automatically, and it will also use it for deployed origins when the frontend explicitly sends `environment: "test"`.
 
-For Lemon Squeezy testing, you can set `LEMONSQUEEZY_API_KEY_TESTING` together with `LEMONSQUEEZY_VARIANT_BUILDER_TESTING` and `LEMONSQUEEZY_VARIANT_MAX_TESTING` (and optionally `LEMONSQUEEZY_STORE_ID_TESTING` if your test variants live in a different store). The frontend will automatically request test checkout on `localhost`, and you can force it on a deployed URL with `?ls_env=test`. Switch back with `?ls_env=live`.
+For Lemon Squeezy testing, you can set `LEMONSQUEEZY_API_KEY_TESTING` together with `LEMONSQUEEZY_VARIANT_BUILDER_TESTING` and `LEMONSQUEEZY_VARIANT_MAX_TESTING` (and optionally `LEMONSQUEEZY_STORE_ID_TESTING` if your test variants live in a different store). The frontend will automatically request test checkout on `localhost` and Vercel preview deployments, and you can still force it on any deployed URL with `?ls_env=test`. Switch back with `?ls_env=live`.
 
 If you are documenting or debugging the current MercadoPago billing architecture, use [docs/mercadopago-billing.md](../../docs/mercadopago-billing.md) as the detailed source of truth.
 
