@@ -41,9 +41,17 @@ const upgradedProfileState = {
   ],
 };
 
+const toppedUpProfileState = {
+  profile: {
+    ...initialProfileState.profile,
+    extra_credits: 5,
+  },
+  subscriptions: [],
+};
+
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(
-    ({ seededProfileState, nextProfileState }) => {
+    ({ seededProfileState, nextProfileState, updateSearchToken }) => {
       localStorage.clear();
       sessionStorage.clear();
       localStorage.setItem("vector.onboarding_done", "true");
@@ -53,7 +61,7 @@ test.beforeEach(async ({ page }) => {
       );
 
       const applyHostedReturnUpdate = () => {
-        if (!window.location.search.includes("provider=lemonsqueezy")) {
+        if (!window.location.search.includes(updateSearchToken)) {
           return;
         }
 
@@ -76,6 +84,7 @@ test.beforeEach(async ({ page }) => {
     {
       seededProfileState: initialProfileState,
       nextProfileState: upgradedProfileState,
+      updateSearchToken: "provider=lemonsqueezy",
     },
   );
 });
@@ -87,6 +96,11 @@ test("profile updates after a hosted LemonSqueezy return is processed", async ({
     "/profile?payment=success&purchase=tier&provider=lemonsqueezy&tier=builder",
   );
 
+  await expect(
+    page.getByText(
+      "Payment received. We are verifying your account update now.",
+    ),
+  ).toHaveCount(0);
   await expect(page.getByText("Current Plan")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: /^Architect$/i }),
@@ -99,4 +113,64 @@ test("profile updates after a hosted LemonSqueezy return is processed", async ({
   await expect(page.getByText("Active")).toBeVisible();
   await expect(page.getByText("Lemon Squeezy")).toBeVisible();
   await expect(page.getByText("$5.99/mo")).toBeVisible();
+});
+
+test("profile shows extra credits after a MercadoPago credit-pack return", async ({
+  page,
+}) => {
+  await page.addInitScript(
+    ({ seededProfileState, nextProfileState, updateSearchToken }) => {
+      localStorage.clear();
+      sessionStorage.clear();
+      localStorage.setItem("vector.onboarding_done", "true");
+      localStorage.setItem(
+        "vector.e2e.profileState",
+        JSON.stringify(seededProfileState),
+      );
+
+      const applyHostedReturnUpdate = () => {
+        if (!window.location.search.includes(updateSearchToken)) {
+          return;
+        }
+
+        window.setTimeout(() => {
+          localStorage.setItem(
+            "vector.e2e.profileState",
+            JSON.stringify(nextProfileState),
+          );
+        }, 1800);
+      };
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", applyHostedReturnUpdate, {
+          once: true,
+        });
+      } else {
+        applyHostedReturnUpdate();
+      }
+    },
+    {
+      seededProfileState: initialProfileState,
+      nextProfileState: toppedUpProfileState,
+      updateSearchToken: "purchase=extra_credits&provider=mercadopago",
+    },
+  );
+
+  await page.goto(
+    "/profile?payment=success&purchase=extra_credits&provider=mercadopago",
+  );
+
+  await expect(
+    page.getByText(
+      "Payment received. We are verifying your account update now.",
+    ),
+  ).toHaveCount(0);
+  await expect(page.getByText("Verifying your payment")).toBeVisible();
+  await expect(page.getByText("Payment confirmed")).toBeVisible({
+    timeout: 8000,
+  });
+  await expect(page).toHaveURL(/\/profile$/);
+  await expect(
+    page.locator("div").filter({ hasText: "Bonus plans" }).first(),
+  ).toContainText("5");
 });

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  createPendingPaymentSyncRecord,
   buildBillingReturnSyncToken,
+  isPendingPaymentSyncResolved,
   resolvePaymentReturnPaths,
   shouldReturnTierPurchaseToProfile,
 } from "./paymentReturn";
@@ -20,16 +22,16 @@ describe("paymentReturn", () => {
     });
   });
 
-  it("keeps Mercado Pago tier returns on the dashboard", () => {
+  it("routes Mercado Pago tier returns to the profile page", () => {
     expect(
       resolvePaymentReturnPaths({
         purchaseType: "tier",
         provider: "mercadopago",
       }),
     ).toEqual({
-      successPath: "/dashboard",
+      successPath: "/profile",
       failurePath: "/pricing",
-      pendingPath: "/dashboard",
+      pendingPath: "/profile",
     });
   });
 
@@ -46,7 +48,7 @@ describe("paymentReturn", () => {
     });
   });
 
-  it("marks only LemonSqueezy tier returns for post-payment billing sync", () => {
+  it("marks tier returns for post-payment billing sync", () => {
     expect(
       shouldReturnTierPurchaseToProfile({
         purchaseType: "tier",
@@ -63,7 +65,77 @@ describe("paymentReturn", () => {
       buildBillingReturnSyncToken({
         purchaseType: "tier",
         provider: "mercadopago",
+        tier: "builder",
       }),
-    ).toBeNull();
+    ).toBe("mercadopago:tier:builder");
+  });
+
+  it("confirms tier purchases only after plan state updates", () => {
+    const pendingPayment = createPendingPaymentSyncRecord({
+      provider: "lemonsqueezy",
+      purchaseType: "tier",
+      tier: "builder",
+      currentTier: "architect",
+      startedAt: Date.now(),
+      paymentStatus: "returned",
+    });
+
+    expect(pendingPayment).not.toBeNull();
+    expect(
+      isPendingPaymentSyncResolved(pendingPayment!, {
+        profile: {
+          tier: "builder",
+          credits: 5,
+          extraCredits: 0,
+        },
+        subscription: {
+          provider: "lemonsqueezy",
+          tier: "builder",
+          status: "active",
+        },
+        payments: [],
+      }),
+    ).toBe(true);
+
+    expect(
+      isPendingPaymentSyncResolved(pendingPayment!, {
+        profile: {
+          tier: "architect",
+          credits: 5,
+          extraCredits: 0,
+        },
+        subscription: {
+          provider: "lemonsqueezy",
+          tier: "builder",
+          status: "active",
+        },
+        payments: [],
+      }),
+    ).toBe(false);
+  });
+
+  it("confirms extra credit purchases when bonus credits increase", () => {
+    const pendingPayment = createPendingPaymentSyncRecord({
+      provider: "mercadopago",
+      purchaseType: "extra_credits",
+      creditPackId: "credits_5",
+      creditsAmount: 5,
+      currentExtraCredits: 2,
+      startedAt: Date.now(),
+      paymentStatus: "returned",
+    });
+
+    expect(pendingPayment).not.toBeNull();
+    expect(
+      isPendingPaymentSyncResolved(pendingPayment!, {
+        profile: {
+          tier: "architect",
+          credits: 1,
+          extraCredits: 7,
+        },
+        subscription: null,
+        payments: [],
+      }),
+    ).toBe(true);
   });
 });

@@ -184,6 +184,16 @@ export const translations = {
       "Cancellation requested. Your paid access stays active until the end of the current billing period.",
     "profile.subscriptionCancelSuccess": "Subscription cancelled successfully.",
     "profile.subscriptionCancelError": "Failed to cancel subscription.",
+    "profile.paymentSyncVerifyingTitle": "Verifying your payment",
+    "profile.paymentSyncVerifyingDescription":
+      "Do not pay again. We are checking with the provider and updating your plan and credits automatically.",
+    "profile.paymentSyncConfirmedTitle": "Payment confirmed",
+    "profile.paymentSyncConfirmedDescription":
+      "Your account has been updated with the latest billing changes.",
+    "profile.paymentSyncDelayedTitle": "Still waiting for confirmation",
+    "profile.paymentSyncDelayedDescription":
+      "If you completed the payment, do not pay again. Provider webhooks can take a little longer to update your account.",
+    "profile.refreshBillingStatus": "Refresh status",
     "profile.avatarUrl": "Avatar URL",
     "profile.save": "Save Changes",
     "profile.saving": "Saving...",
@@ -447,9 +457,13 @@ export const translations = {
     "pricing.binance.openChat": "Open chat to notify us",
     "pricing.paymentSuccess":
       "Payment successful! Your account will update shortly.",
+    "pricing.paymentSuccessVerifying":
+      "Payment received. We are verifying your account update now.",
     "pricing.paymentFailed": "Payment failed or was cancelled.",
     "pricing.paymentPending":
       "Payment is being processed. Your account will update shortly—refresh in a moment.",
+    "pricing.paymentPendingVerifying":
+      "Payment is still processing. Do not pay again — your account will update automatically.",
 
     // Pricing FAQ / How it works
     "pricing.faq.title": "Understanding plans & features",

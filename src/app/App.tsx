@@ -41,8 +41,8 @@ import {
   isLemonSqueezyConfigured,
 } from "@/lib/lemonSqueezy";
 import {
-  BILLING_RETURN_SYNC_STORAGE_KEY,
-  buildBillingReturnSyncToken,
+  clearPendingPaymentSyncRecord,
+  markPendingPaymentReturned,
   resolvePaymentReturnPaths,
 } from "@/lib/paymentReturn";
 import { buildCommunityProofArtifacts } from "@/lib/communityProof";
@@ -298,50 +298,43 @@ function App() {
     const paymentStatus = params.get("payment");
     const purchaseType = params.get("purchase");
     const provider = params.get("provider");
+    const tierId = params.get("tier");
     const { successPath, failurePath } = resolvePaymentReturnPaths({
-      purchaseType,
-      provider,
-    });
-    const billingReturnSyncToken = buildBillingReturnSyncToken({
       purchaseType,
       provider,
     });
 
     if (paymentStatus === "success") {
-      if (billingReturnSyncToken) {
-        window.sessionStorage.setItem(
-          BILLING_RETURN_SYNC_STORAGE_KEY,
-          billingReturnSyncToken,
-        );
+      markPendingPaymentReturned({
+        purchaseType,
+        provider,
+        tier: tierId,
+      });
+      if (successPath !== "/profile") {
+        toast.success(t("pricing.paymentSuccessVerifying"));
       }
-      toast.success(
-        t("pricing.paymentSuccess") ||
-          "Payment successful! Your account will update shortly.",
-      );
       confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
-      // Clean URL
-      window.history.replaceState({}, "", successPath);
-      scheduleProfileRefreshes([1500, 3500, 7000]);
+      navigate(successPath, { replace: true });
+      scheduleProfileRefreshes([1500, 3500, 7000, 12000, 20000]);
     } else if (paymentStatus === "failure") {
+      clearPendingPaymentSyncRecord();
       toast.error(
         t("pricing.paymentFailed") || "Payment failed or was cancelled.",
       );
-      window.history.replaceState({}, "", failurePath);
+      navigate(failurePath, { replace: true });
     } else if (paymentStatus === "pending") {
-      if (billingReturnSyncToken) {
-        window.sessionStorage.setItem(
-          BILLING_RETURN_SYNC_STORAGE_KEY,
-          billingReturnSyncToken,
-        );
+      markPendingPaymentReturned({
+        purchaseType,
+        provider,
+        tier: tierId,
+      });
+      if (successPath !== "/profile") {
+        toast.info(t("pricing.paymentPendingVerifying"));
       }
-      toast.info(
-        t("pricing.paymentPending") ||
-          "Payment is being processed. Your account will update shortly—refresh in a moment.",
-      );
-      window.history.replaceState({}, "", successPath);
-      scheduleProfileRefreshes([2000, 5000, 9000, 14000]);
+      navigate(successPath, { replace: true });
+      scheduleProfileRefreshes([2000, 5000, 9000, 14000, 22000, 30000]);
     }
-  }, [location.search, t]);
+  }, [location.search, navigate, t]);
 
   // Restore framework from session when landing on /wizard after reload (location.state is lost)
   useEffect(() => {
@@ -1067,6 +1060,7 @@ function App() {
           tier: tierId as "builder" | "max",
           userId,
           userEmail: userEmail ?? undefined,
+          currentTier: tier,
         });
       } else {
         setIsCheckoutLoading(false);
@@ -1115,6 +1109,7 @@ function App() {
         backUrlSuccess: returnUrls.success,
         backUrlFailure: returnUrls.failure,
         backUrlPending: returnUrls.pending,
+        currentTier: tier,
       });
 
       setMercadoPagoSubscriptionCheckout(null);

@@ -2,6 +2,12 @@
  * MercadoPago helpers for both Checkout Pro and tokenized subscriptions.
  */
 
+import {
+  createPendingPaymentSyncRecord,
+  resolvePaymentReturnPaths,
+  writePendingPaymentSyncRecord,
+} from "./paymentReturn";
+
 declare global {
   interface Window {
     MP_DEVICE_SESSION_ID?: string;
@@ -140,13 +146,13 @@ export function buildPaymentReturnUrls(options: PaymentReturnUrlOptions = {}) {
     (typeof window !== "undefined" ? window.location.origin : "");
   const provider = options.provider;
   const tier = options.tier?.trim();
-  const successPath =
-    options.successPath ??
-    (purchaseType === "extra_credits" ? "/profile" : "/dashboard");
-  const failurePath =
-    options.failurePath ??
-    (purchaseType === "extra_credits" ? "/profile" : "/pricing");
-  const pendingPath = options.pendingPath ?? successPath;
+  const resolvedPaths = resolvePaymentReturnPaths({
+    purchaseType,
+    provider,
+  });
+  const successPath = options.successPath ?? resolvedPaths.successPath;
+  const failurePath = options.failurePath ?? resolvedPaths.failurePath;
+  const pendingPath = options.pendingPath ?? resolvedPaths.pendingPath;
 
   const buildUrl = (
     path: string,
@@ -263,6 +269,9 @@ export interface CreateCheckoutOptions {
   backUrlSuccess?: string;
   backUrlFailure?: string;
   backUrlPending?: string;
+  currentTier?: string;
+  currentCredits?: number;
+  currentExtraCredits?: number;
 }
 
 export interface CreateSubscriptionOptions {
@@ -278,6 +287,9 @@ export interface CreateSubscriptionOptions {
   backUrlSuccess?: string;
   backUrlFailure?: string;
   backUrlPending?: string;
+  currentTier?: string;
+  currentCredits?: number;
+  currentExtraCredits?: number;
 }
 
 export interface CreateSubscriptionResult {
@@ -361,10 +373,17 @@ export async function createCheckout(
 ): Promise<void> {
   await ensureMercadoPagoSecurityLoaded().catch(() => undefined);
 
+  const resolvedPaths = resolvePaymentReturnPaths({
+    purchaseType: options.purchaseType,
+    provider: "mercadopago",
+  });
   const returnUrls = buildPaymentReturnUrls({
     purchaseType: options.purchaseType,
     provider: "mercadopago",
     tier: options.tier,
+    successPath: resolvedPaths.successPath,
+    failurePath: resolvedPaths.failurePath,
+    pendingPath: resolvedPaths.pendingPath,
   });
 
   const { data, error } = await supabase.functions.invoke(
@@ -407,6 +426,21 @@ export async function createCheckout(
     throw new Error("No checkout URL returned");
   }
 
+  const pendingPaymentSync = createPendingPaymentSyncRecord({
+    provider: "mercadopago",
+    purchaseType: options.purchaseType ?? "tier",
+    tier: options.tier ?? null,
+    creditPackId: options.creditPackId ?? null,
+    creditsAmount: options.creditsAmount ?? null,
+    currentTier: options.currentTier ?? null,
+    currentCredits: options.currentCredits ?? null,
+    currentExtraCredits: options.currentExtraCredits ?? null,
+  });
+
+  if (pendingPaymentSync) {
+    writePendingPaymentSyncRecord(pendingPaymentSync);
+  }
+
   // Track checkout started
   // We don't await this to avoid delaying redirect, and we catch errors silently (implied by trackEvent)
   trackEvent("checkout_started", {
@@ -428,10 +462,17 @@ export async function createSubscription(
 ): Promise<CreateSubscriptionResult> {
   await ensureMercadoPagoSecurityLoaded().catch(() => undefined);
 
+  const resolvedPaths = resolvePaymentReturnPaths({
+    purchaseType: "tier",
+    provider: "mercadopago",
+  });
   const returnUrls = buildPaymentReturnUrls({
     purchaseType: "tier",
     provider: "mercadopago",
     tier: options.tier,
+    successPath: resolvedPaths.successPath,
+    failurePath: resolvedPaths.failurePath,
+    pendingPath: resolvedPaths.pendingPath,
   });
 
   const { data, error } = await supabase.functions.invoke(
@@ -479,6 +520,19 @@ export async function createSubscription(
 
   if (!subscriptionId && !initPoint) {
     throw new Error("No subscription confirmation returned");
+  }
+
+  const pendingPaymentSync = createPendingPaymentSyncRecord({
+    provider: "mercadopago",
+    purchaseType: "tier",
+    tier: options.tier,
+    currentTier: options.currentTier ?? null,
+    currentCredits: options.currentCredits ?? null,
+    currentExtraCredits: options.currentExtraCredits ?? null,
+  });
+
+  if (pendingPaymentSync) {
+    writePendingPaymentSyncRecord(pendingPaymentSync);
   }
 
   trackEvent("checkout_started", {

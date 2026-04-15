@@ -55,8 +55,14 @@ import { usePaymentRegion } from "@/hooks/usePaymentRegion";
 import { supabase } from "@/lib/supabase";
 import { ensureMyProfile } from "@/lib/ensureProfile";
 import {
-  BILLING_RETURN_SYNC_STORAGE_KEY,
-  buildBillingReturnSyncToken,
+  clearPendingPaymentSyncRecord,
+  isPendingPaymentSyncExpired,
+  isPendingPaymentSyncResolved,
+  markPendingPaymentReturned,
+  readPendingPaymentSyncRecord,
+  writePendingPaymentSyncRecord,
+  type PaymentSyncPaymentSnapshot,
+  type PendingPaymentSyncRecord,
 } from "@/lib/paymentReturn";
 import { toast } from "sonner";
 import { AchievementsList } from "@/app/components/AchievementsList";
@@ -185,6 +191,25 @@ interface BillingSubscriptionData {
   paused: boolean;
 }
 
+interface PaymentRecordData extends PaymentSyncPaymentSnapshot {
+  provider: "lemonsqueezy" | "mercadopago";
+  tier: string | null;
+  paymentType: string | null;
+  status: string | null;
+  createdAt: string | null;
+  metadata: Record<string, unknown> | null;
+}
+
+type PaymentSyncState = {
+  phase: "verifying" | "confirmed" | "delayed";
+  record: PendingPaymentSyncRecord;
+};
+
+type LoadedBillingSnapshot = {
+  profile: Pick<ProfileData, "tier" | "credits" | "extra_credits"> | null;
+  currentSubscription: BillingSubscriptionData | null;
+};
+
 const EXTRA_CREDIT_PACKS = [
   { id: "credits_5" as const, credits: 5, priceUsd: 5.99 },
   { id: "credits_20" as const, credits: 20, priceUsd: 15.99 },
@@ -267,6 +292,8 @@ export function Profile({
   const [subscription, setSubscription] =
     useState<BillingSubscriptionData | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+  const [paymentSyncState, setPaymentSyncState] =
+    useState<PaymentSyncState | null>(null);
   const [cancellingSubscription, setCancellingSubscription] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [buyingCreditPackId, setBuyingCreditPackId] = useState<string | null>(
@@ -313,145 +340,206 @@ export function Profile({
     },
   });
 
-  const fetchProfile = React.useCallback(async () => {
-    if (isE2EMode()) {
-      const e2eState = loadE2EProfileState();
-      const e2eUser = getE2EUser();
-      setIdentities([{ provider: "email", id: e2eUser.id }]);
-      setSubscription(getCurrentBillingSubscription(e2eState.subscriptions));
-      setData({
-        display_name: e2eState.profile.display_name || "",
-        bio: e2eState.profile.bio || "",
-        avatar_url: e2eState.profile.avatar_url || "",
-        level: e2eState.profile.level || 1,
-        credits: e2eState.profile.credits || 0,
-        extra_credits: e2eState.profile.extra_credits || 0,
-        credits_expires_at: e2eState.profile.credits_expires_at || "",
-        points: e2eState.profile.points || 0,
-        streak_count: e2eState.profile.streak_count || 0,
-        branding_logo_url: e2eState.profile.branding_logo_url || "",
-        branding_color: e2eState.profile.branding_color || "#000000",
-        tier: e2eState.profile.tier || "architect",
-        metadata: e2eState.profile.metadata || {
-          demographics: "",
-          age: "",
-          gender: "",
-          country: "",
-          zodiac_sign: "",
-          zodiac_importance: "",
-          hobbies: "",
-          skills: "",
-          interests: "",
-          values: "",
-          vision: "",
-          other_observations: "",
-          preferred_plan_style: "",
-          stay_on_track: "",
-          question_flow: "",
-          preferred_tone: "",
-          treatment_level: "",
-        },
-      });
-      setLoading(false);
-      setSubscriptionLoading(false);
-      return;
-    }
+  const translateOrFallback = React.useCallback(
+    (key: string, fallback: string) => {
+      const translated = t(key);
+      return translated === key ? fallback : translated;
+    },
+    [t],
+  );
 
-    if (!supabase) return;
-
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        setIdentities(user.identities || []);
-        const [profileResult, subscriptionResult] = await Promise.all([
-          supabase
-            .from("profiles")
-            .select(
-              "display_name, bio, avatar_url, level, credits, extra_credits, credits_expires_at, points, streak_count, branding_logo_url, branding_color, tier, metadata",
-            )
-            .eq("user_id", user.id)
-            .single(),
-          supabase
-            .from("billing_subscriptions")
-            .select(
-              "provider, provider_subscription_id, tier, status, status_formatted, billing_interval, renews_at, ends_at, cancel_requested, paused",
-            )
-            .eq("user_id", user.id)
-            .order("updated_at", { ascending: false }),
-        ]);
-
-        let profile = profileResult.data;
-        let profileErr = profileResult.error;
-
-        if (subscriptionResult.error) {
-          console.error(
-            "Error fetching billing subscriptions:",
-            subscriptionResult.error,
-          );
-        } else {
-          setSubscription(
-            getCurrentBillingSubscription(
-              (subscriptionResult.data ?? []) as BillingSubscriptionData[],
-            ),
-          );
-        }
-
-        if (profileErr?.code === "PGRST116" || !profile) {
-          await ensureMyProfile(supabase);
-          const retry = await supabase
-            .from("profiles")
-            .select(
-              "display_name, bio, avatar_url, level, credits, extra_credits, credits_expires_at, points, streak_count, branding_logo_url, branding_color, tier, metadata",
-            )
-            .eq("user_id", user.id)
-            .single();
-          profile = retry.data ?? undefined;
-        }
-
-        if (profile) {
-          setData({
-            display_name: profile.display_name || "",
-            bio: profile.bio || "",
-            avatar_url: profile.avatar_url || "",
-            level: profile.level || 1,
-            credits: profile.credits || 0,
-            extra_credits: profile.extra_credits || 0,
-            credits_expires_at: profile.credits_expires_at || "",
-            points: profile.points || 0,
-            streak_count: profile.streak_count || 0,
-            branding_logo_url: profile.branding_logo_url || "",
-            branding_color: profile.branding_color || "#000000",
-            tier: profile.tier || "free",
-            metadata: profile.metadata || {
-              demographics: "",
-              age: "",
-              gender: "",
-              country: "",
-              zodiac_sign: "",
-              zodiac_importance: "",
-              hobbies: "",
-              skills: "",
-              interests: "",
-              values: "",
-              vision: "",
-              other_observations: "",
-              preferred_plan_style: "",
-              stay_on_track: "",
-              question_flow: "",
-              preferred_tone: "",
-              treatment_level: "",
-            },
-          });
-        }
+  const fetchProfile =
+    React.useCallback(async (): Promise<LoadedBillingSnapshot | null> => {
+      if (isE2EMode()) {
+        const e2eState = loadE2EProfileState();
+        const e2eUser = getE2EUser();
+        const currentSubscription = getCurrentBillingSubscription(
+          e2eState.subscriptions,
+        );
+        setIdentities([{ provider: "email", id: e2eUser.id }]);
+        setSubscription(currentSubscription);
+        setData({
+          display_name: e2eState.profile.display_name || "",
+          bio: e2eState.profile.bio || "",
+          avatar_url: e2eState.profile.avatar_url || "",
+          level: e2eState.profile.level || 1,
+          credits: e2eState.profile.credits || 0,
+          extra_credits: e2eState.profile.extra_credits || 0,
+          credits_expires_at: e2eState.profile.credits_expires_at || "",
+          points: e2eState.profile.points || 0,
+          streak_count: e2eState.profile.streak_count || 0,
+          branding_logo_url: e2eState.profile.branding_logo_url || "",
+          branding_color: e2eState.profile.branding_color || "#000000",
+          tier: e2eState.profile.tier || "architect",
+          metadata: e2eState.profile.metadata || {
+            demographics: "",
+            age: "",
+            gender: "",
+            country: "",
+            zodiac_sign: "",
+            zodiac_importance: "",
+            hobbies: "",
+            skills: "",
+            interests: "",
+            values: "",
+            vision: "",
+            other_observations: "",
+            preferred_plan_style: "",
+            stay_on_track: "",
+            question_flow: "",
+            preferred_tone: "",
+            treatment_level: "",
+          },
+        });
+        setLoading(false);
+        setSubscriptionLoading(false);
+        return {
+          profile: {
+            tier: e2eState.profile.tier || "architect",
+            credits: e2eState.profile.credits || 0,
+            extra_credits: e2eState.profile.extra_credits || 0,
+          },
+          currentSubscription,
+        };
       }
-    } catch (e) {
-      console.error("Error fetching profile:", e);
-    } finally {
-      setLoading(false);
-      setSubscriptionLoading(false);
+
+      if (!supabase) return null;
+
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          setIdentities(user.identities || []);
+          const [profileResult, subscriptionResult] = await Promise.all([
+            supabase
+              .from("profiles")
+              .select(
+                "display_name, bio, avatar_url, level, credits, extra_credits, credits_expires_at, points, streak_count, branding_logo_url, branding_color, tier, metadata",
+              )
+              .eq("user_id", user.id)
+              .single(),
+            supabase
+              .from("billing_subscriptions")
+              .select(
+                "provider, provider_subscription_id, tier, status, status_formatted, billing_interval, renews_at, ends_at, cancel_requested, paused",
+              )
+              .eq("user_id", user.id)
+              .order("updated_at", { ascending: false }),
+          ]);
+
+          let profile = profileResult.data;
+          let profileErr = profileResult.error;
+          let currentSubscription: BillingSubscriptionData | null = null;
+
+          if (subscriptionResult.error) {
+            console.error(
+              "Error fetching billing subscriptions:",
+              subscriptionResult.error,
+            );
+          } else {
+            currentSubscription = getCurrentBillingSubscription(
+              (subscriptionResult.data ?? []) as BillingSubscriptionData[],
+            );
+            setSubscription(currentSubscription);
+          }
+
+          if (profileErr?.code === "PGRST116" || !profile) {
+            await ensureMyProfile(supabase);
+            const retry = await supabase
+              .from("profiles")
+              .select(
+                "display_name, bio, avatar_url, level, credits, extra_credits, credits_expires_at, points, streak_count, branding_logo_url, branding_color, tier, metadata",
+              )
+              .eq("user_id", user.id)
+              .single();
+            profile = retry.data ?? undefined;
+          }
+
+          if (profile) {
+            setData({
+              display_name: profile.display_name || "",
+              bio: profile.bio || "",
+              avatar_url: profile.avatar_url || "",
+              level: profile.level || 1,
+              credits: profile.credits || 0,
+              extra_credits: profile.extra_credits || 0,
+              credits_expires_at: profile.credits_expires_at || "",
+              points: profile.points || 0,
+              streak_count: profile.streak_count || 0,
+              branding_logo_url: profile.branding_logo_url || "",
+              branding_color: profile.branding_color || "#000000",
+              tier: profile.tier || "free",
+              metadata: profile.metadata || {
+                demographics: "",
+                age: "",
+                gender: "",
+                country: "",
+                zodiac_sign: "",
+                zodiac_importance: "",
+                hobbies: "",
+                skills: "",
+                interests: "",
+                values: "",
+                vision: "",
+                other_observations: "",
+                preferred_plan_style: "",
+                stay_on_track: "",
+                question_flow: "",
+                preferred_tone: "",
+                treatment_level: "",
+              },
+            });
+
+            return {
+              profile: {
+                tier: profile.tier || "architect",
+                credits: profile.credits || 0,
+                extra_credits: profile.extra_credits || 0,
+              },
+              currentSubscription,
+            };
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching profile:", e);
+      } finally {
+        setLoading(false);
+        setSubscriptionLoading(false);
+      }
+      return null;
+    }, [userId]);
+
+  const fetchRecentPayments = React.useCallback(async (): Promise<
+    PaymentRecordData[]
+  > => {
+    if (isE2EMode() || !supabase) {
+      return [];
     }
+
+    const { data: payments, error } = await supabase
+      .from("payments")
+      .select("provider, tier, payment_type, status, created_at, metadata")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (error) {
+      console.error("Error fetching recent payments:", error);
+      return [];
+    }
+
+    return (payments ?? []).map((payment) => ({
+      provider: payment.provider as "lemonsqueezy" | "mercadopago",
+      tier: payment.tier ?? null,
+      paymentType: payment.payment_type ?? null,
+      status: payment.status ?? null,
+      createdAt: payment.created_at ?? null,
+      metadata:
+        payment.metadata && typeof payment.metadata === "object"
+          ? (payment.metadata as Record<string, unknown>)
+          : null,
+    }));
   }, [userId]);
 
   useEffect(() => {
@@ -461,37 +549,177 @@ export function Profile({
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const paymentStatus = searchParams.get("payment");
-    const searchSyncToken = buildBillingReturnSyncToken({
-      purchaseType: searchParams.get("purchase"),
-      provider: searchParams.get("provider"),
-    });
-    const storedSyncToken = window.sessionStorage.getItem(
-      BILLING_RETURN_SYNC_STORAGE_KEY,
-    );
-    const shouldPollBillingReturn =
-      (searchSyncToken !== null &&
-        ["success", "pending"].includes(paymentStatus ?? "")) ||
-      storedSyncToken === "lemonsqueezy:tier";
+    const purchaseType = searchParams.get("purchase");
+    const provider = searchParams.get("provider");
+    const tier = searchParams.get("tier");
 
-    if (!shouldPollBillingReturn) {
+    if (paymentStatus === "failure") {
+      clearPendingPaymentSyncRecord();
+      setPaymentSyncState(null);
       return;
     }
 
-    const refreshDelays = [1500, 3500, 7000, 12000];
-    const refreshTimers = refreshDelays.map((delay) =>
-      window.setTimeout(() => {
-        void fetchProfile();
-      }, delay),
-    );
-    const cleanupTimer = window.setTimeout(() => {
-      window.sessionStorage.removeItem(BILLING_RETURN_SYNC_STORAGE_KEY);
-    }, 15000);
+    if (["success", "pending"].includes(paymentStatus ?? "")) {
+      markPendingPaymentReturned({
+        purchaseType,
+        provider,
+        tier,
+      });
+    }
+
+    const pendingPayment = readPendingPaymentSyncRecord();
+    if (!pendingPayment || isPendingPaymentSyncExpired(pendingPayment)) {
+      clearPendingPaymentSyncRecord();
+      setPaymentSyncState(null);
+      return;
+    }
+
+    let cancelled = false;
+    const pollDelays = [0, 1500, 3500, 7000, 12000, 20000, 30000];
+    const pollTimers: number[] = [];
+
+    const verifyPendingPayment = async (isFinalAttempt: boolean) => {
+      const [billingSnapshot, recentPayments] = await Promise.all([
+        fetchProfile(),
+        fetchRecentPayments(),
+      ]);
+
+      let effectivePendingPayment =
+        readPendingPaymentSyncRecord() ?? pendingPayment;
+      if (
+        billingSnapshot?.profile &&
+        effectivePendingPayment.purchaseType === "extra_credits" &&
+        effectivePendingPayment.currentExtraCredits == null
+      ) {
+        effectivePendingPayment = {
+          ...effectivePendingPayment,
+          currentExtraCredits: billingSnapshot.profile.extra_credits,
+        };
+        writePendingPaymentSyncRecord(effectivePendingPayment);
+      }
+
+      if (cancelled) {
+        return;
+      }
+
+      const resolved = billingSnapshot
+        ? isPendingPaymentSyncResolved(effectivePendingPayment, {
+            profile: billingSnapshot.profile
+              ? {
+                  tier: billingSnapshot.profile.tier,
+                  credits: billingSnapshot.profile.credits,
+                  extraCredits: billingSnapshot.profile.extra_credits,
+                }
+              : null,
+            subscription: billingSnapshot.currentSubscription
+              ? {
+                  provider: billingSnapshot.currentSubscription.provider,
+                  tier: billingSnapshot.currentSubscription.tier,
+                  status: billingSnapshot.currentSubscription.status,
+                }
+              : null,
+            payments: recentPayments,
+          })
+        : false;
+
+      if (resolved) {
+        clearPendingPaymentSyncRecord();
+        setPaymentSyncState({
+          phase: "confirmed",
+          record: effectivePendingPayment,
+        });
+        return;
+      }
+
+      setPaymentSyncState({
+        phase: isFinalAttempt ? "delayed" : "verifying",
+        record: effectivePendingPayment,
+      });
+    };
+
+    setPaymentSyncState({ phase: "verifying", record: pendingPayment });
+    pollDelays.forEach((delay, index) => {
+      pollTimers.push(
+        window.setTimeout(() => {
+          void verifyPendingPayment(index === pollDelays.length - 1);
+        }, delay),
+      );
+    });
 
     return () => {
-      refreshTimers.forEach((timer) => window.clearTimeout(timer));
+      cancelled = true;
+      pollTimers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, [fetchProfile, fetchRecentPayments, location.search]);
+
+  useEffect(() => {
+    if (paymentSyncState?.phase !== "confirmed") {
+      return;
+    }
+
+    const cleanupTimer = window.setTimeout(() => {
+      setPaymentSyncState((current) =>
+        current?.phase === "confirmed" ? null : current,
+      );
+    }, 12000);
+
+    return () => {
       window.clearTimeout(cleanupTimer);
     };
-  }, [fetchProfile, location.search]);
+  }, [paymentSyncState]);
+
+  const handleRefreshBillingStatus = async () => {
+    let pendingPayment = readPendingPaymentSyncRecord();
+    if (!pendingPayment) {
+      setPaymentSyncState(null);
+      return;
+    }
+
+    setPaymentSyncState({ phase: "verifying", record: pendingPayment });
+    const [billingSnapshot, recentPayments] = await Promise.all([
+      fetchProfile(),
+      fetchRecentPayments(),
+    ]);
+
+    if (
+      billingSnapshot?.profile &&
+      pendingPayment.purchaseType === "extra_credits" &&
+      pendingPayment.currentExtraCredits == null
+    ) {
+      pendingPayment = {
+        ...pendingPayment,
+        currentExtraCredits: billingSnapshot.profile.extra_credits,
+      };
+      writePendingPaymentSyncRecord(pendingPayment);
+    }
+
+    if (
+      billingSnapshot &&
+      isPendingPaymentSyncResolved(pendingPayment, {
+        profile: billingSnapshot.profile
+          ? {
+              tier: billingSnapshot.profile.tier,
+              credits: billingSnapshot.profile.credits,
+              extraCredits: billingSnapshot.profile.extra_credits,
+            }
+          : null,
+        subscription: billingSnapshot.currentSubscription
+          ? {
+              provider: billingSnapshot.currentSubscription.provider,
+              tier: billingSnapshot.currentSubscription.tier,
+              status: billingSnapshot.currentSubscription.status,
+            }
+          : null,
+        payments: recentPayments,
+      })
+    ) {
+      clearPendingPaymentSyncRecord();
+      setPaymentSyncState({ phase: "confirmed", record: pendingPayment });
+      return;
+    }
+
+    setPaymentSyncState({ phase: "delayed", record: pendingPayment });
+  };
 
   const handleSave = async () => {
     if (isReadOnly) return;
@@ -580,6 +808,9 @@ export function Profile({
           tier: tierId as "builder" | "max",
           userId,
           userEmail: userEmail ?? undefined,
+          currentTier: data.tier ?? "architect",
+          currentCredits: data.credits ?? 0,
+          currentExtraCredits: data.extra_credits ?? 0,
         });
       } else {
         setMercadoPagoSubscriptionCheckout({
@@ -633,6 +864,9 @@ export function Profile({
         backUrlSuccess: returnUrls.success,
         backUrlFailure: returnUrls.failure,
         backUrlPending: returnUrls.pending,
+        currentTier: data.tier ?? "architect",
+        currentCredits: data.credits ?? 0,
+        currentExtraCredits: data.extra_credits ?? 0,
       });
     } catch (e) {
       console.error(e);
@@ -668,6 +902,9 @@ export function Profile({
       backUrlSuccess: returnUrls.success,
       backUrlFailure: returnUrls.failure,
       backUrlPending: returnUrls.pending,
+      currentTier: data.tier ?? "architect",
+      currentCredits: data.credits ?? 0,
+      currentExtraCredits: data.extra_credits ?? 0,
     });
 
     setMercadoPagoSubscriptionCheckout(null);
@@ -904,6 +1141,38 @@ export function Profile({
   const subscriptionRenewsAt = subscription?.renews_at
     ? new Date(subscription.renews_at).toLocaleDateString()
     : null;
+  const paymentSyncTitle = paymentSyncState
+    ? paymentSyncState.phase === "confirmed"
+      ? translateOrFallback(
+          "profile.paymentSyncConfirmedTitle",
+          "Payment confirmed",
+        )
+      : paymentSyncState.phase === "delayed"
+        ? translateOrFallback(
+            "profile.paymentSyncDelayedTitle",
+            "Still waiting for confirmation",
+          )
+        : translateOrFallback(
+            "profile.paymentSyncVerifyingTitle",
+            "Verifying your payment",
+          )
+    : null;
+  const paymentSyncDescription = paymentSyncState
+    ? paymentSyncState.phase === "confirmed"
+      ? translateOrFallback(
+          "profile.paymentSyncConfirmedDescription",
+          "Your account has been updated with the latest billing changes.",
+        )
+      : paymentSyncState.phase === "delayed"
+        ? translateOrFallback(
+            "profile.paymentSyncDelayedDescription",
+            "If you completed the payment, do not pay again. Provider webhooks can take a little longer to update your account.",
+          )
+        : translateOrFallback(
+            "profile.paymentSyncVerifyingDescription",
+            "Do not pay again. We are checking with the provider and updating your plan and credits automatically.",
+          )
+    : null;
 
   return (
     <>
@@ -1041,6 +1310,51 @@ export function Profile({
               </div>
 
               <div className="space-y-4 mb-8">
+                {paymentSyncState ? (
+                  <div
+                    className={`rounded-2xl border p-4 ${paymentSyncState.phase === "confirmed" ? "border-emerald-400/30 bg-emerald-500/10" : paymentSyncState.phase === "delayed" ? "border-amber-400/30 bg-amber-500/10" : "border-sky-400/30 bg-sky-500/10"}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div
+                          className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${paymentSyncState.phase === "confirmed" ? "bg-emerald-400/15 text-emerald-300" : paymentSyncState.phase === "delayed" ? "bg-amber-400/15 text-amber-300" : "bg-sky-400/15 text-sky-300"}`}
+                        >
+                          {paymentSyncState.phase === "confirmed" ? (
+                            <CheckCircle2 size={18} />
+                          ) : paymentSyncState.phase === "delayed" ? (
+                            <TriangleAlert size={18} />
+                          ) : (
+                            <Loader2 size={18} className="animate-spin" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-white">
+                            {paymentSyncTitle}
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-zinc-200/90">
+                            {paymentSyncDescription}
+                          </p>
+                        </div>
+                      </div>
+                      {paymentSyncState.phase !== "confirmed" ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            void handleRefreshBillingStatus();
+                          }}
+                          className="shrink-0 border-white/15 bg-white/5 text-white hover:bg-white/10"
+                        >
+                          {translateOrFallback(
+                            "profile.refreshBillingStatus",
+                            "Refresh status",
+                          )}
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
+
                 {subscriptionLoading ? (
                   <div className="bg-white/5 p-4 rounded-2xl border border-white/10 text-sm text-zinc-400">
                     {t("profile.subscriptionLoading")}

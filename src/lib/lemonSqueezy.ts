@@ -6,7 +6,11 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { trackEvent } from "./analytics";
 import { buildPaymentReturnUrls } from "./mercadoPago";
-import { resolvePaymentReturnPaths } from "./paymentReturn";
+import {
+  createPendingPaymentSyncRecord,
+  resolvePaymentReturnPaths,
+  writePendingPaymentSyncRecord,
+} from "./paymentReturn";
 
 const LEMONSQUEEZY_ENV_QUERY_PARAM = "ls_env";
 const LEMONSQUEEZY_ENV_STORAGE_KEY = "vector.lemonsqueezy.environment";
@@ -117,6 +121,9 @@ export interface CreateLemonSqueezyCheckoutOptions {
   tier: "builder" | "max";
   userId: string;
   userEmail?: string;
+  currentTier?: string;
+  currentCredits?: number;
+  currentExtraCredits?: number;
 }
 
 export async function createLemonSqueezyCheckout(
@@ -161,6 +168,19 @@ export async function createLemonSqueezyCheckout(
 
   if (!checkout_url) {
     throw new Error("No checkout URL returned");
+  }
+
+  const pendingPaymentSync = createPendingPaymentSyncRecord({
+    provider: "lemonsqueezy",
+    purchaseType: "tier",
+    tier: options.tier,
+    currentTier: options.currentTier ?? null,
+    currentCredits: options.currentCredits ?? null,
+    currentExtraCredits: options.currentExtraCredits ?? null,
+  });
+
+  if (pendingPaymentSync) {
+    writePendingPaymentSyncRecord(pendingPaymentSync);
   }
 
   trackEvent("checkout_started", {
