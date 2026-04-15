@@ -10,7 +10,7 @@ const DIST_DIR = path.resolve(__dirname, "../dist");
 function isMissingBrowserError(error) {
   const message = error instanceof Error ? error.message : String(error);
 
-  return /Could not find Chrome|Could not find Chromium|Browser was not found at the configured executablePath|spawn .* ENOENT/i.test(
+  return /Could not find Chrome|Could not find Chromium|Browser was not found at the configured executablePath|spawn .* ENOENT|error while loading shared libraries|Code:\s*127|libnspr4\.so/i.test(
     message,
   );
 }
@@ -141,10 +141,10 @@ async function prerender() {
     } catch (error) {
       if (isMissingBrowserError(error)) {
         console.warn(
-          "Skipping prerender because no Chrome/Chromium binary is available in this environment.",
+          "Skipping prerender because the browser binary or required system libraries are unavailable in this environment.",
         );
         console.warn(
-          "Install a browser or set PUPPETEER_EXECUTABLE_PATH if prerendered output is required during deployment.",
+          "Install a compatible browser runtime or set PUPPETEER_EXECUTABLE_PATH if prerendered output is required during deployment.",
         );
         return;
       }
