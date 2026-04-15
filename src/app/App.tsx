@@ -40,11 +40,17 @@ import {
   createLemonSqueezyCheckout,
   isLemonSqueezyConfigured,
 } from "@/lib/lemonSqueezy";
+import {
+  BILLING_RETURN_SYNC_STORAGE_KEY,
+  buildBillingReturnSyncToken,
+  resolvePaymentReturnPaths,
+} from "@/lib/paymentReturn";
 import { buildCommunityProofArtifacts } from "@/lib/communityProof";
 import { loadBlueprintExecutionContext } from "@/lib/executionData";
 import {
   getE2EUser,
   isE2EMode,
+  loadE2EProfileState,
   persistE2ECommunityTemplate,
 } from "@/lib/e2eHarness";
 import { usePaymentRegion } from "@/hooks/usePaymentRegion";
@@ -291,11 +297,23 @@ function App() {
     const params = new URLSearchParams(location.search);
     const paymentStatus = params.get("payment");
     const purchaseType = params.get("purchase");
-    const successPath =
-      purchaseType === "extra_credits" ? "/profile" : "/dashboard";
-    const failurePath =
-      purchaseType === "extra_credits" ? "/profile" : "/pricing";
+    const provider = params.get("provider");
+    const { successPath, failurePath } = resolvePaymentReturnPaths({
+      purchaseType,
+      provider,
+    });
+    const billingReturnSyncToken = buildBillingReturnSyncToken({
+      purchaseType,
+      provider,
+    });
+
     if (paymentStatus === "success") {
+      if (billingReturnSyncToken) {
+        window.sessionStorage.setItem(
+          BILLING_RETURN_SYNC_STORAGE_KEY,
+          billingReturnSyncToken,
+        );
+      }
       toast.success(
         t("pricing.paymentSuccess") ||
           "Payment successful! Your account will update shortly.",
@@ -310,6 +328,12 @@ function App() {
       );
       window.history.replaceState({}, "", failurePath);
     } else if (paymentStatus === "pending") {
+      if (billingReturnSyncToken) {
+        window.sessionStorage.setItem(
+          BILLING_RETURN_SYNC_STORAGE_KEY,
+          billingReturnSyncToken,
+        );
+      }
       toast.info(
         t("pricing.paymentPending") ||
           "Payment is being processed. Your account will update shortly—refresh in a moment.",
@@ -647,6 +671,15 @@ function App() {
   };
 
   const refreshProfile = () => {
+    if (isE2EMode()) {
+      const profileState = loadE2EProfileState();
+      if (profileState.profile.avatar_url) {
+        setAvatarUrl(profileState.profile.avatar_url);
+      }
+      setTier(normalizeTierId(profileState.profile.tier));
+      return;
+    }
+
     if (!userId || !supabase) return;
     supabase
       .from("profiles")

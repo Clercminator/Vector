@@ -48,16 +48,80 @@ const executionKey = (blueprintId: string) =>
 const shareKey = (token: string) => `vector.e2e.share.${token}`;
 const lastShareUrlKey = "vector.e2e.lastShareUrl";
 const communityTemplatesKey = "vector.e2e.communityTemplates";
+const profileStateKey = "vector.e2e.profileState";
+
+export type E2EBillingSubscription = {
+  provider: "lemonsqueezy" | "mercadopago";
+  provider_subscription_id: string;
+  tier: "builder" | "max";
+  status: string;
+  status_formatted: string | null;
+  billing_interval: string | null;
+  renews_at: string | null;
+  ends_at: string | null;
+  cancel_requested: boolean;
+  paused: boolean;
+};
+
+export type E2EProfileState = {
+  profile: {
+    display_name: string;
+    bio: string;
+    avatar_url: string;
+    level: number;
+    credits: number;
+    extra_credits: number;
+    credits_expires_at: string;
+    points: number;
+    streak_count: number;
+    branding_logo_url: string;
+    branding_color: string;
+    tier: string;
+    metadata: Record<string, unknown>;
+  };
+  subscriptions: E2EBillingSubscription[];
+};
+
+function getDefaultE2EProfileState(): E2EProfileState {
+  return {
+    profile: {
+      display_name: "E2E User",
+      bio: "",
+      avatar_url: "",
+      level: 1,
+      credits: 20,
+      extra_credits: 0,
+      credits_expires_at: "",
+      points: 0,
+      streak_count: 0,
+      branding_logo_url: "",
+      branding_color: "#000000",
+      tier: "max",
+      metadata: {},
+    },
+    subscriptions: [],
+  };
+}
+
+function normalizeE2ETier(rawTier: unknown): "architect" | "builder" | "max" {
+  const normalized =
+    typeof rawTier === "string" ? rawTier.trim().toLowerCase() : "";
+  if (normalized === "builder" || normalized === "max") {
+    return normalized;
+  }
+  return "architect";
+}
 
 export function isE2EMode(): boolean {
   return import.meta.env.VITE_E2E_MODE === "true";
 }
 
 export function getE2EUser() {
+  const state = loadE2EProfileState();
   return {
     id: E2E_USER_ID,
     email: E2E_USER_EMAIL,
-    tier: "max" as const,
+    tier: normalizeE2ETier(state.profile.tier),
   };
 }
 
@@ -72,6 +136,23 @@ function safeParse<T>(raw: string | null): T | null {
 
 function saveJson(key: string, value: unknown) {
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+export function loadE2EProfileState(): E2EProfileState {
+  const existing = safeParse<E2EProfileState>(
+    localStorage.getItem(profileStateKey),
+  );
+  if (existing) {
+    return existing;
+  }
+
+  const defaults = getDefaultE2EProfileState();
+  saveJson(profileStateKey, defaults);
+  return defaults;
+}
+
+export function saveE2EProfileState(state: E2EProfileState) {
+  saveJson(profileStateKey, state);
 }
 
 function buildTrackableActions(goal: string) {

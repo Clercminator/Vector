@@ -5,6 +5,15 @@ const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const LEMONSQUEEZY_API_KEY = Deno.env.get("LEMONSQUEEZY_API_KEY")?.trim() ?? "";
+const LEMONSQUEEZY_API_KEY_TESTING =
+  Deno.env.get("LEMONSQUEEZY_API_KEY_TESTING")?.trim() ?? "";
+const LEMONSQUEEZY_VARIANT_BUILDER_TESTING =
+  (
+    Deno.env.get("LEMONSQUEEZY_VARIANT_STANDARD_TESTING") ??
+    Deno.env.get("LEMONSQUEEZY_VARIANT_BUILDER_TESTING")
+  )?.trim() ?? "";
+const LEMONSQUEEZY_VARIANT_MAX_TESTING =
+  Deno.env.get("LEMONSQUEEZY_VARIANT_MAX_TESTING")?.trim() ?? "";
 const MERCADOPAGO_ACCESS_TOKEN =
   Deno.env.get("MERCADOPAGO_ACCESS_TOKEN")?.trim() ?? "";
 
@@ -65,9 +74,18 @@ function normalizeMercadoPagoSubscriptionStatus(status: string | null): string {
 
 async function cancelLemonSqueezySubscription(
   subscriptionId: string,
+  useTestingApiKey = false,
 ): Promise<Record<string, unknown>> {
-  if (!LEMONSQUEEZY_API_KEY) {
-    throw new Error("LEMONSQUEEZY_API_KEY not configured");
+  const apiKey = useTestingApiKey
+    ? LEMONSQUEEZY_API_KEY_TESTING
+    : LEMONSQUEEZY_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      useTestingApiKey
+        ? "LEMONSQUEEZY_API_KEY_TESTING not configured"
+        : "LEMONSQUEEZY_API_KEY not configured",
+    );
   }
 
   const response = await fetch(
@@ -77,7 +95,7 @@ async function cancelLemonSqueezySubscription(
       headers: {
         Accept: "application/vnd.api+json",
         "Content-Type": "application/vnd.api+json",
-        Authorization: `Bearer ${LEMONSQUEEZY_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
       },
     },
   );
@@ -92,6 +110,32 @@ async function cancelLemonSqueezySubscription(
   }
 
   return (payload?.data?.attributes ?? {}) as Record<string, unknown>;
+}
+
+function isTestingLemonSqueezySubscription(subscription: {
+  variant_id?: string | null;
+  metadata?: Record<string, unknown> | null;
+}): boolean {
+  if (
+    subscription.variant_id &&
+    [LEMONSQUEEZY_VARIANT_BUILDER_TESTING, LEMONSQUEEZY_VARIANT_MAX_TESTING]
+      .filter(Boolean)
+      .includes(subscription.variant_id)
+  ) {
+    return true;
+  }
+
+  const meta = subscription.metadata;
+  if (!meta || typeof meta !== "object") {
+    return false;
+  }
+
+  const customData =
+    typeof meta.meta === "object" && meta.meta !== null
+      ? (meta.meta as { custom_data?: Record<string, unknown> }).custom_data
+      : undefined;
+  const environment = asString(customData?.environment)?.toLowerCase();
+  return environment === "test";
 }
 
 async function cancelMercadoPagoSubscription(
@@ -171,7 +215,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     const { data: subscription, error: subscriptionError } = await serviceClient
       .from("billing_subscriptions")
-      .select("provider, provider_subscription_id, status, renews_at, ends_at")
+      .select(
+        "provider, provider_subscription_id, status, renews_at, ends_at, variant_id, metadata",
+      )
       .eq("user_id", user.id)
       .eq("provider", provider)
       .eq("provider_subscription_id", requestedSubscriptionId)
@@ -211,8 +257,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
     let updatedMetadata: Record<string, unknown> | null = null;
 
     if (provider === "lemonsqueezy") {
+      const useTestingApiKey = isTestingLemonSqueezySubscription(subscription);
       const attrs = await cancelLemonSqueezySubscription(
         requestedSubscriptionId,
+        useTestingApiKey,
       );
       updatedStatus = asString(attrs.status) ?? "cancelled";
       updatedStatusFormatted =

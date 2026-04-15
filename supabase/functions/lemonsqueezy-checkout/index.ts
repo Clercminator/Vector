@@ -17,6 +17,28 @@ interface Body {
   user_id?: string;
   user_email?: string;
   redirect_url?: string;
+  environment?: "live" | "test";
+}
+
+function shouldUseLemonSqueezyTestCredentials(
+  origin: string,
+  environment: Body["environment"],
+): boolean {
+  if (environment === "test") {
+    return true;
+  }
+  if (environment === "live") {
+    return false;
+  }
+
+  try {
+    const hostname = new URL(origin).hostname.toLowerCase();
+    return (
+      hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1"
+    );
+  } catch {
+    return false;
+  }
 }
 
 Deno.serve(async (req: Request): Promise<Response> => {
@@ -31,16 +53,27 @@ Deno.serve(async (req: Request): Promise<Response> => {
     });
   }
 
-  const apiKey = Deno.env.get("LEMONSQUEEZY_API_KEY")?.trim() ?? "";
-  const storeId = Deno.env.get("LEMONSQUEEZY_STORE_ID")?.trim() ?? "";
-  const variantStandard =
+  const liveApiKey = Deno.env.get("LEMONSQUEEZY_API_KEY")?.trim() ?? "";
+  const testingApiKey =
+    Deno.env.get("LEMONSQUEEZY_API_KEY_TESTING")?.trim() ?? "";
+  const liveStoreId = Deno.env.get("LEMONSQUEEZY_STORE_ID")?.trim() ?? "";
+  const testingStoreId =
+    Deno.env.get("LEMONSQUEEZY_STORE_ID_TESTING")?.trim() ?? "";
+  const liveVariantStandard =
     (
       Deno.env.get("LEMONSQUEEZY_VARIANT_STANDARD") ??
       Deno.env.get("LEMONSQUEEZY_VARIANT_BUILDER")
     )?.trim() ?? "";
-  const variantMax = Deno.env.get("LEMONSQUEEZY_VARIANT_MAX")?.trim() ?? "";
+  const liveVariantMax = Deno.env.get("LEMONSQUEEZY_VARIANT_MAX")?.trim() ?? "";
+  const testingVariantStandard =
+    (
+      Deno.env.get("LEMONSQUEEZY_VARIANT_STANDARD_TESTING") ??
+      Deno.env.get("LEMONSQUEEZY_VARIANT_BUILDER_TESTING")
+    )?.trim() ?? "";
+  const testingVariantMax =
+    Deno.env.get("LEMONSQUEEZY_VARIANT_MAX_TESTING")?.trim() ?? "";
 
-  if (!apiKey || !storeId) {
+  if (!liveApiKey || !liveStoreId) {
     return new Response(
       JSON.stringify({
         error: "LEMONSQUEEZY_API_KEY or LEMONSQUEEZY_STORE_ID not configured",
@@ -54,12 +87,40 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   try {
     const body = (await req.json()) as Body;
+    const origin =
+      req.headers.get("origin") ?? req.headers.get("referer") ?? req.url;
+    const useTestingEnvironment = shouldUseLemonSqueezyTestCredentials(
+      origin,
+      body.environment,
+    );
     // Default "builder"; legacy clients may still send "standard". Any non-max → Builder variant.
     const tierRaw = (body.tier ?? "builder").toLowerCase();
     const userId = body.user_id;
     const userEmail = body.user_email ?? "";
     const redirectUrl =
       body.redirect_url ?? "https://vectorplan.xyz/dashboard?payment=success";
+
+    const apiKey = useTestingEnvironment ? testingApiKey : liveApiKey;
+    const storeId =
+      (useTestingEnvironment ? testingStoreId : liveStoreId) || liveStoreId;
+    const variantStandard = useTestingEnvironment
+      ? testingVariantStandard
+      : liveVariantStandard;
+    const variantMax = useTestingEnvironment
+      ? testingVariantMax
+      : liveVariantMax;
+
+    if (useTestingEnvironment && !testingApiKey) {
+      return new Response(
+        JSON.stringify({
+          error: "LEMONSQUEEZY_API_KEY_TESTING not configured",
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
 
     const variantId = tierRaw === "max" ? variantMax : variantStandard;
     if (!variantId) {
@@ -83,7 +144,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
           },
           checkout_data: {
             email: userEmail,
-            custom: userId ? { user_id: userId } : {},
+            custom: {
+              ...(userId ? { user_id: userId } : {}),
+              environment: useTestingEnvironment ? "test" : "live",
+            },
           },
         },
         relationships: {
@@ -95,6 +159,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     // Helpful for debugging 4xx/5xx from Lemon Squeezy without leaking secrets.
     console.log("lemonsqueezy-checkout request", {
+      environment: useTestingEnvironment ? "test" : "live",
       tier: tierRaw,
       hasApiKey: Boolean(apiKey?.trim()),
       storeIdConfigured: Boolean(storeId?.trim()),

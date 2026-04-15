@@ -16,6 +16,13 @@ const BUILDER_VARIANT_ID =
     Deno.env.get("LEMONSQUEEZY_VARIANT_BUILDER")
   )?.trim() ?? "";
 const MAX_VARIANT_ID = Deno.env.get("LEMONSQUEEZY_VARIANT_MAX")?.trim() ?? "";
+const BUILDER_VARIANT_ID_TESTING =
+  (
+    Deno.env.get("LEMONSQUEEZY_VARIANT_STANDARD_TESTING") ??
+    Deno.env.get("LEMONSQUEEZY_VARIANT_BUILDER_TESTING")
+  )?.trim() ?? "";
+const MAX_VARIANT_ID_TESTING =
+  Deno.env.get("LEMONSQUEEZY_VARIANT_MAX_TESTING")?.trim() ?? "";
 
 type PaidTierId = "builder" | "max";
 
@@ -86,8 +93,22 @@ function inferTierFromVariant(
   }
   if (
     normalizedVariantId &&
+    MAX_VARIANT_ID_TESTING &&
+    normalizedVariantId === MAX_VARIANT_ID_TESTING
+  ) {
+    return "max";
+  }
+  if (
+    normalizedVariantId &&
     BUILDER_VARIANT_ID &&
     normalizedVariantId === BUILDER_VARIANT_ID
+  ) {
+    return "builder";
+  }
+  if (
+    normalizedVariantId &&
+    BUILDER_VARIANT_ID_TESTING &&
+    normalizedVariantId === BUILDER_VARIANT_ID_TESTING
   ) {
     return "builder";
   }

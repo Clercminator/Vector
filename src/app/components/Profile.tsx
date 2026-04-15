@@ -39,6 +39,7 @@ import {
 import { Label } from "@/app/components/ui/label";
 import { Switch } from "@/app/components/ui/switch";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
   buildPaymentReturnUrls,
   createCheckout,
@@ -53,6 +54,10 @@ import {
 import { usePaymentRegion } from "@/hooks/usePaymentRegion";
 import { supabase } from "@/lib/supabase";
 import { ensureMyProfile } from "@/lib/ensureProfile";
+import {
+  BILLING_RETURN_SYNC_STORAGE_KEY,
+  buildBillingReturnSyncToken,
+} from "@/lib/paymentReturn";
 import { toast } from "sonner";
 import { AchievementsList } from "@/app/components/AchievementsList";
 import { Flame } from "lucide-react";
@@ -80,6 +85,7 @@ import {
   MercadoPagoSubscriptionDialog,
   type MercadoPagoSubscriptionSubmitData,
 } from "@/app/components/MercadoPagoSubscriptionDialog";
+import { getE2EUser, isE2EMode, loadE2EProfileState } from "@/lib/e2eHarness";
 
 interface ProfileProps {
   userId: string;
@@ -244,6 +250,7 @@ export function Profile({
 }: ProfileProps) {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [identities, setIdentities] = useState<any[]>([]);
@@ -306,105 +313,185 @@ export function Profile({
     },
   });
 
-  useEffect(() => {
-    async function fetchProfile() {
-      if (!supabase) return;
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user) {
-          setIdentities(user.identities || []);
-          const [profileResult, subscriptionResult] = await Promise.all([
-            supabase
-              .from("profiles")
-              .select(
-                "display_name, bio, avatar_url, level, credits, extra_credits, credits_expires_at, points, streak_count, branding_logo_url, branding_color, tier, metadata",
-              )
-              .eq("user_id", user.id)
-              .single(),
-            supabase
-              .from("billing_subscriptions")
-              .select(
-                "provider, provider_subscription_id, tier, status, status_formatted, billing_interval, renews_at, ends_at, cancel_requested, paused",
-              )
-              .eq("user_id", user.id)
-              .order("updated_at", { ascending: false }),
-          ]);
-
-          let profile = profileResult.data;
-          let profileErr = profileResult.error;
-
-          if (subscriptionResult.error) {
-            console.error(
-              "Error fetching billing subscriptions:",
-              subscriptionResult.error,
-            );
-          } else {
-            setSubscription(
-              getCurrentBillingSubscription(
-                (subscriptionResult.data ?? []) as BillingSubscriptionData[],
-              ),
-            );
-          }
-
-          if (profileErr?.code === "PGRST116" || !profile) {
-            await ensureMyProfile(supabase);
-            const retry = await supabase
-              .from("profiles")
-              .select(
-                "display_name, bio, avatar_url, level, credits, extra_credits, credits_expires_at, points, streak_count, branding_logo_url, branding_color, tier, metadata",
-              )
-              .eq("user_id", user.id)
-              .single();
-            profile = retry.data ?? undefined;
-          }
-
-          if (profile) {
-            setData({
-              display_name: profile.display_name || "",
-              bio: profile.bio || "",
-              avatar_url: profile.avatar_url || "",
-              level: profile.level || 1,
-              credits: profile.credits || 0,
-              extra_credits: profile.extra_credits || 0,
-              credits_expires_at: profile.credits_expires_at || "",
-              points: profile.points || 0,
-              streak_count: profile.streak_count || 0,
-              branding_logo_url: profile.branding_logo_url || "",
-              branding_color: profile.branding_color || "#000000",
-              tier: profile.tier || "free",
-              metadata: profile.metadata || {
-                demographics: "",
-                age: "",
-                gender: "",
-                country: "",
-                zodiac_sign: "",
-                zodiac_importance: "",
-                hobbies: "",
-                skills: "",
-                interests: "",
-                values: "",
-                vision: "",
-                other_observations: "",
-                preferred_plan_style: "",
-                stay_on_track: "",
-                question_flow: "",
-                preferred_tone: "",
-                treatment_level: "",
-              },
-            });
-          }
-        }
-      } catch (e) {
-        console.error("Error fetching profile:", e);
-      } finally {
-        setLoading(false);
-        setSubscriptionLoading(false);
-      }
+  const fetchProfile = React.useCallback(async () => {
+    if (isE2EMode()) {
+      const e2eState = loadE2EProfileState();
+      const e2eUser = getE2EUser();
+      setIdentities([{ provider: "email", id: e2eUser.id }]);
+      setSubscription(getCurrentBillingSubscription(e2eState.subscriptions));
+      setData({
+        display_name: e2eState.profile.display_name || "",
+        bio: e2eState.profile.bio || "",
+        avatar_url: e2eState.profile.avatar_url || "",
+        level: e2eState.profile.level || 1,
+        credits: e2eState.profile.credits || 0,
+        extra_credits: e2eState.profile.extra_credits || 0,
+        credits_expires_at: e2eState.profile.credits_expires_at || "",
+        points: e2eState.profile.points || 0,
+        streak_count: e2eState.profile.streak_count || 0,
+        branding_logo_url: e2eState.profile.branding_logo_url || "",
+        branding_color: e2eState.profile.branding_color || "#000000",
+        tier: e2eState.profile.tier || "architect",
+        metadata: e2eState.profile.metadata || {
+          demographics: "",
+          age: "",
+          gender: "",
+          country: "",
+          zodiac_sign: "",
+          zodiac_importance: "",
+          hobbies: "",
+          skills: "",
+          interests: "",
+          values: "",
+          vision: "",
+          other_observations: "",
+          preferred_plan_style: "",
+          stay_on_track: "",
+          question_flow: "",
+          preferred_tone: "",
+          treatment_level: "",
+        },
+      });
+      setLoading(false);
+      setSubscriptionLoading(false);
+      return;
     }
-    fetchProfile();
+
+    if (!supabase) return;
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        setIdentities(user.identities || []);
+        const [profileResult, subscriptionResult] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select(
+              "display_name, bio, avatar_url, level, credits, extra_credits, credits_expires_at, points, streak_count, branding_logo_url, branding_color, tier, metadata",
+            )
+            .eq("user_id", user.id)
+            .single(),
+          supabase
+            .from("billing_subscriptions")
+            .select(
+              "provider, provider_subscription_id, tier, status, status_formatted, billing_interval, renews_at, ends_at, cancel_requested, paused",
+            )
+            .eq("user_id", user.id)
+            .order("updated_at", { ascending: false }),
+        ]);
+
+        let profile = profileResult.data;
+        let profileErr = profileResult.error;
+
+        if (subscriptionResult.error) {
+          console.error(
+            "Error fetching billing subscriptions:",
+            subscriptionResult.error,
+          );
+        } else {
+          setSubscription(
+            getCurrentBillingSubscription(
+              (subscriptionResult.data ?? []) as BillingSubscriptionData[],
+            ),
+          );
+        }
+
+        if (profileErr?.code === "PGRST116" || !profile) {
+          await ensureMyProfile(supabase);
+          const retry = await supabase
+            .from("profiles")
+            .select(
+              "display_name, bio, avatar_url, level, credits, extra_credits, credits_expires_at, points, streak_count, branding_logo_url, branding_color, tier, metadata",
+            )
+            .eq("user_id", user.id)
+            .single();
+          profile = retry.data ?? undefined;
+        }
+
+        if (profile) {
+          setData({
+            display_name: profile.display_name || "",
+            bio: profile.bio || "",
+            avatar_url: profile.avatar_url || "",
+            level: profile.level || 1,
+            credits: profile.credits || 0,
+            extra_credits: profile.extra_credits || 0,
+            credits_expires_at: profile.credits_expires_at || "",
+            points: profile.points || 0,
+            streak_count: profile.streak_count || 0,
+            branding_logo_url: profile.branding_logo_url || "",
+            branding_color: profile.branding_color || "#000000",
+            tier: profile.tier || "free",
+            metadata: profile.metadata || {
+              demographics: "",
+              age: "",
+              gender: "",
+              country: "",
+              zodiac_sign: "",
+              zodiac_importance: "",
+              hobbies: "",
+              skills: "",
+              interests: "",
+              values: "",
+              vision: "",
+              other_observations: "",
+              preferred_plan_style: "",
+              stay_on_track: "",
+              question_flow: "",
+              preferred_tone: "",
+              treatment_level: "",
+            },
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Error fetching profile:", e);
+    } finally {
+      setLoading(false);
+      setSubscriptionLoading(false);
+    }
   }, [userId]);
+
+  useEffect(() => {
+    void fetchProfile();
+  }, [fetchProfile]);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const paymentStatus = searchParams.get("payment");
+    const searchSyncToken = buildBillingReturnSyncToken({
+      purchaseType: searchParams.get("purchase"),
+      provider: searchParams.get("provider"),
+    });
+    const storedSyncToken = window.sessionStorage.getItem(
+      BILLING_RETURN_SYNC_STORAGE_KEY,
+    );
+    const shouldPollBillingReturn =
+      (searchSyncToken !== null &&
+        ["success", "pending"].includes(paymentStatus ?? "")) ||
+      storedSyncToken === "lemonsqueezy:tier";
+
+    if (!shouldPollBillingReturn) {
+      return;
+    }
+
+    const refreshDelays = [1500, 3500, 7000, 12000];
+    const refreshTimers = refreshDelays.map((delay) =>
+      window.setTimeout(() => {
+        void fetchProfile();
+      }, delay),
+    );
+    const cleanupTimer = window.setTimeout(() => {
+      window.sessionStorage.removeItem(BILLING_RETURN_SYNC_STORAGE_KEY);
+    }, 15000);
+
+    return () => {
+      refreshTimers.forEach((timer) => window.clearTimeout(timer));
+      window.clearTimeout(cleanupTimer);
+    };
+  }, [fetchProfile, location.search]);
 
   const handleSave = async () => {
     if (isReadOnly) return;
