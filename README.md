@@ -13,6 +13,13 @@ This document explains **what the app does**, **how it’s built**, **how the pi
   - [What Vector Does (In Plain Language)](#what-vector-does-in-plain-language)
   - [What We Built \& Why](#what-we-built--why)
   - [How to Run the App](#how-to-run-the-app)
+  - [How Vite, Builds, Environments, and Deployments Work](#how-vite-builds-environments-and-deployments-work)
+    - [What a Vite app is](#what-a-vite-app-is)
+    - [Build time vs runtime](#build-time-vs-runtime)
+    - [What it means that client-side vars are baked in at build time](#what-it-means-that-client-side-vars-are-baked-in-at-build-time)
+    - [How Vercel Preview and Production work in this repo](#how-vercel-preview-and-production-work-in-this-repo)
+    - [Why two domains can look different even with the same code](#why-two-domains-can-look-different-even-with-the-same-code)
+    - [Good Git and deployment workflow](#good-git-and-deployment-workflow)
   - [Image Optimization Workflow (Mobile Performance)](#image-optimization-workflow-mobile-performance)
   - [Deploying Vector: Open Router API Key (Beginner Guide)](#deploying-vector-open-router-api-key-beginner-guide)
   - [Replicating Supabase, Auth, Profile, and Feedback in Another Project](#replicating-supabase-auth-profile-and-feedback-in-another-project)
@@ -175,6 +182,271 @@ This document explains **what the app does**, **how it’s built**, **how the pi
 **Already deployed:** Edge Functions, Supabase Secrets (`OPENROUTER_API_KEY_2` or `OPENROUTER_API_KEY` for the AI proxy, `MERCADOPAGO_ACCESS_TOKEN`, optionally `MERCADOPAGO_ACCESS_TOKEN_PRUEBA` for true test-card flows), frontend env vars (`VITE_OPENROUTER_PROXY_URL`, `VITE_MERCADOPAGO_PUBLIC_KEY`, optionally `VITE_MERCADOPAGO_PUBLIC_KEY_PRUEBA`), and MercadoPago webhook configuration. Ensure `profiles.tier`, `billing_subscriptions`, and the billing RPCs exist in your database. For the detailed MercadoPago implementation and testing notes, see **[docs/mercadopago-billing.md](docs/mercadopago-billing.md)**.
 
 **Stripe** (future US implementation): See **[integrations/pending/stripe/](integrations/pending/stripe/)**.
+
+---
+
+## How Vite, Builds, Environments, and Deployments Work
+
+This section explains the concepts that usually cause confusion when moving from local development to Vercel deployments.
+
+### What a Vite app is
+
+Vector is a **Vite** app.
+
+Vite is the tool that handles two separate jobs for the frontend:
+
+- **Development server**
+
+  When you run `npm run dev`, Vite starts a local server. It serves your source files directly and updates the browser quickly when you save changes. This is why local development feels fast.
+
+- **Production build tool**
+
+  When you run `npm run build`, Vite transforms the source code into deployable static assets. For this repo, those assets end up in `dist/`. Vercel then serves that built output to users.
+
+In simple terms:
+
+- `npm run dev` = workbench for development
+- `npm run build` = package the frontend for deployment
+
+That distinction matters because some values are decided while the app is being packaged, not later in the browser.
+
+### Build time vs runtime
+
+These are two different moments in the life of the app.
+
+#### Build time
+
+- The moment Vite runs `npm run build`
+- Happens locally when you build manually, or on Vercel during deployment
+- Produces the final JavaScript, CSS, HTML, and other frontend assets
+
+#### Runtime
+
+- The moment a real user opens the deployed site in the browser
+- The app is already built and is now just executing what was generated earlier
+
+For this repo there are actually three runtimes to keep in mind:
+
+- **Browser runtime**
+
+  React, routing, localStorage, language state, theme state, and Supabase browser auth.
+
+- **Vercel deployment runtime**
+
+  Static hosting of the already-built frontend assets.
+
+- **Supabase Edge Function runtime**
+
+  Server-side code such as `openrouter-proxy`, `lemonsqueezy-checkout`, and `mercado-pago-preference`. These functions have their own secrets and do not read the browser's environment variables.
+
+This separation is one of the most important deployment concepts in the project.
+
+### What it means that client-side vars are baked in at build time
+
+In a Vite app, variables referenced as `import.meta.env.VITE_*` are resolved during the build.
+
+That means:
+
+- Vite reads the value during `npm run build`
+- Vite inserts that value into the generated frontend bundle
+- The browser later runs the built code with those already-inserted values
+
+So when someone says **client-side vars are baked in at build time**, they mean the frontend does **not** go back to Vercel and ask for those values on every page load. The values were already copied into the built files.
+
+Practical consequences:
+
+- If you change a `VITE_*` variable in Vercel, the current deployment does **not** change retroactively.
+- You must trigger a **new deployment** so Vite can build a new bundle with the new value.
+- Anything under `VITE_*` should be treated as **public** because it is shipped to the browser.
+- Secrets belong in server-side environments such as Supabase Edge Function secrets, not in `VITE_*` vars.
+
+Examples in this repo:
+
+- `VITE_SUPABASE_URL` and the anon/public key are frontend values used in `src/lib/supabase.ts`.
+- `VITE_OPENROUTER_PROXY_URL` is a frontend value that tells the browser where to send requests.
+- `OPENROUTER_API_KEY`, `LEMONSQUEEZY_API_KEY`, and `MERCADOPAGO_ACCESS_TOKEN` belong on the server side and should live in Supabase secrets, not in the client bundle.
+
+### How Vercel Preview and Production work in this repo
+
+For this project, the usual Vercel model is:
+
+- `main` -> **Production** deployment
+- another tracked branch such as `Preview` -> **Preview** deployment
+
+Each deployment is its own built artifact.
+
+Important ideas:
+
+- A **deployment** is the result of a specific build.
+- An **environment** is the set of variables and settings used during that build.
+- A **domain** is just a URL pointing to a deployment.
+
+So a domain is **not** the same thing as an environment.
+
+For example:
+
+- `https://vectorplan.xyz` points to the Production deployment
+- `https://vector-chi-coral.vercel.app` points to a Preview deployment alias
+
+Those two URLs can run:
+
+- different commits
+- the same commit built with different environment variables
+- the same code but different browser state and route state
+
+That is why looking at the domain alone is not enough to conclude what the app should look like.
+
+### Why two domains can look different even with the same code
+
+This is the part that most directly explains why `vectorplan.xyz` and `vector-chi-coral.vercel.app` can look different.
+
+In this repo, the frontend can differ across domains for several reasons that have nothing to do with a code mismatch.
+
+#### 1. Browser session is origin-scoped
+
+The Supabase browser client is created with `persistSession: true` in `src/lib/supabase.ts`.
+
+That means the login session is persisted by the browser for the current origin.
+
+These are different origins:
+
+- `https://vectorplan.xyz`
+- `https://vector-chi-coral.vercel.app`
+
+So being signed in on one does **not** automatically mean you are signed in on the other.
+
+That alone changes the header significantly, because in `src/app/components/layout/Header.tsx` the `Today`, `My Blueprints`, avatar/profile button, and sign-out state only appear when `userEmail` exists.
+
+#### 2. Language is driven by both route and localStorage
+
+The language provider in `src/app/components/language-provider.tsx` reads language from:
+
+1. the URL path such as `/es`
+2. the query string
+3. localStorage key `vector.language`
+4. browser language fallback
+
+So these two URLs are not equivalent:
+
+- `https://vectorplan.xyz/es`
+- `https://vector-chi-coral.vercel.app/`
+
+The first explicitly forces Spanish. The second defaults from its own local state and browser rules.
+
+#### 3. localStorage is also origin-scoped
+
+This app stores multiple pieces of browser state in localStorage, for example:
+
+- `vector.language`
+- `vector.onboarding_done`
+- `vector_wizard_session`
+- referral and payment override values
+
+Because localStorage is scoped by origin, production and preview do not share those values.
+
+So two domains can show different onboarding state, language, wizard state, or payment overrides even if the code is identical.
+
+#### 4. Environment variables can differ between Preview and Production
+
+Even if the commit is the same, Preview and Production may be built with different `VITE_*` values.
+
+So there are two independent axes of difference:
+
+- **build-time differences** from Preview vs Production environment variables
+- **runtime differences** from browser session, path, and localStorage
+
+#### 5. Backend data can differ from frontend state
+
+If the user is signed in, the app also loads profile and blueprint data from Supabase. That means a page can differ based on:
+
+- which user session is active
+- whether the user is signed in at all
+- which route they opened
+
+This is why a whole-page UI difference like the screenshots is much more likely to be explained by **origin, session, and locale** than by a payment integration. Lemon Squeezy and MercadoPago matter for checkout behavior, but they do not explain why one header shows a signed-in Spanish navigation and the other shows a signed-out English navigation.
+
+### Good Git and deployment workflow
+
+If you want to test on Preview and then release the exact tested code to Production, the best practice is to **promote the exact tested commit**, not recreate it with a fresh manual commit on `main`.
+
+#### Why a new commit on `main` with "the same code" is not ideal
+
+Even if the file contents look the same, a new commit is still a different commit object with:
+
+- a different commit hash
+- different metadata
+- possibly different surrounding branch history
+
+That causes practical problems:
+
+- **You lose one-to-one traceability**
+
+  The commit you tested on Preview is not the same commit you released.
+
+- **Rollback becomes less clear**
+
+  If Production breaks, it is harder to answer "which exact tested artifact did we ship?"
+
+- **Diffs become noisier**
+
+  Git history now contains duplicate intent expressed as separate commits.
+
+- **Human error becomes more likely**
+
+  Recreating a commit can accidentally include an extra file, omit a file, or change metadata and branch context.
+
+- **CI and deployment history become harder to reason about**
+
+  You want Preview and Production to point to the same tested SHA whenever possible.
+
+#### Better options
+
+#### Option A: Merge the tested branch into `main`
+
+If your `Preview` branch contains exactly the code you tested and want to release, merge that branch into `main`.
+
+Example:
+
+```bash
+git checkout main
+git merge --ff-only Preview
+git push origin main
+```
+
+`--ff-only` is useful because it guarantees `main` simply advances to the already-tested commit instead of creating an unnecessary merge commit.
+
+#### Option B: Cherry-pick the exact tested commit
+
+If `Preview` contains extra work that is not ready, cherry-pick only the tested commit(s):
+
+```bash
+git checkout main
+git cherry-pick <tested_commit_sha>
+git push origin main
+```
+
+This is still much better than manually recreating a new commit with similar files.
+
+#### Recommended branch mindset
+
+Think of the flow as:
+
+1. Write code locally
+2. Commit once with a meaningful message
+3. Push to Preview branch
+4. Let Vercel build the Preview deployment
+5. Test the Preview deployment
+6. Promote the exact tested commit to `main`
+
+That gives you a clean answer to the most important deployment question: "Is Production running the exact commit we already tested?"
+
+#### Commit habits that help in practice
+
+- Keep commits focused on one concern when possible.
+- Use descriptive commit messages so deployment history is readable.
+- Avoid mixing unrelated docs, refactors, and features into one commit unless they are tightly coupled.
+- If a Preview deployment is the one you approved, record or note its commit SHA before promoting it.
+- If `Preview` is a long-lived branch, regularly sync it with `main` so the next promotion is predictable.
 
 ---
 
