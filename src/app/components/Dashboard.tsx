@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Blueprint } from "@/lib/blueprints";
+import { Blueprint, BlueprintTask } from "@/lib/blueprints";
 import { Button } from "@/app/components/ui/button";
 import { Card } from "@/app/components/ui/card";
 import {
@@ -51,6 +51,11 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { getStepIdsAndLabels } from "@/lib/trackerSteps";
 import { TrackerHeatmap } from "@/app/components/tracker/TrackerHeatmap";
+import {
+  getMetricSummary,
+  getQuickLogCadenceState,
+  hasTrackerQuickLogSurface,
+} from "@/lib/trackerSurface";
 
 // Theme Configuration
 const FRAMEWORK_THEMES: Record<
@@ -172,6 +177,7 @@ export function Dashboard({
   const [showBulkExport, setBulkExportOpen] = useState(false);
   const [trackers, setTrackers] = useState<Record<string, any>>({});
   const [logsMap, setLogsMap] = useState<Record<string, any[]>>({});
+  const [tasksMap, setTasksMap] = useState<Record<string, BlueprintTask[]>>({});
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterFramework, setFilterFramework] = useState<string>("ALL");
@@ -276,6 +282,69 @@ export function Dashboard({
   const [canBulkExport, setCanBulkExport] = useState(false);
   const [trackerPrefs, setTrackerPrefs] = useState<any>({});
 
+  const getTrackerSummary = React.useCallback(
+    (bp: Blueprint) => {
+      const tracker = trackers[bp.id];
+      if (!tracker) return null;
+
+      const trackerTasks = tasksMap[bp.id] || [];
+      const trackerLogs = logsMap[bp.id] || [];
+
+      if (hasTrackerQuickLogSurface(tracker, trackerTasks)) {
+        const cadence = getQuickLogCadenceState(tracker, trackerLogs);
+        const metricSummary = getMetricSummary(trackerTasks, trackerLogs);
+        return {
+          mode: "quick-log" as const,
+          eyebrow:
+            tracker.frequency === "weekly"
+              ? "Weekly quick log"
+              : tracker.frequency === "custom"
+                ? "Custom quick log"
+                : "Daily quick log",
+          detail:
+            tracker.tracking_question || metricSummary || "Smart tracker ready",
+          meta: metricSummary || cadence.streakOrLast,
+          metaClass: cadence.completedToday
+            ? "text-green-600 dark:text-green-400"
+            : "text-blue-600 dark:text-blue-400",
+        };
+      }
+
+      if (tracker.plan_kind === "finite") {
+        const totalSteps = getStepIdsAndLabels(bp.result, bp.framework).length;
+        const completed = tracker.completed_step_ids?.length || 0;
+        const pct = totalSteps > 0 ? (completed / totalSteps) * 100 : 0;
+        return {
+          mode: "finite" as const,
+          eyebrow: "Step progress",
+          detail: `${completed}/${totalSteps} steps complete`,
+          meta: `${Math.round(pct)}% complete`,
+          metaClass: "text-amber-600 dark:text-amber-400",
+          pct,
+          completed,
+          totalSteps,
+        };
+      }
+
+      const lastActive = tracker.last_activity_at
+        ? new Date(tracker.last_activity_at).toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+          })
+        : null;
+      return {
+        mode: "activity" as const,
+        eyebrow: "Tracker activity",
+        detail: lastActive
+          ? `Last active ${lastActive}`
+          : "Tracker not started",
+        meta: tracker.tracking_question || null,
+        metaClass: "text-gray-500 dark:text-gray-400",
+      };
+    },
+    [logsMap, tasksMap, trackers],
+  );
+
   React.useEffect(() => {
     if (supabase) {
       supabase.auth.getUser().then(({ data: { user } }) => {
@@ -333,6 +402,20 @@ export function Dashboard({
           data.forEach((l) => map[l.blueprint_id].push(l));
           setLogsMap(map);
         }
+      });
+
+    supabase
+      .from("blueprint_tasks")
+      .select("*")
+      .in("blueprint_id", ids)
+      .then(({ data }) => {
+        const map: Record<string, BlueprintTask[]> = {};
+        ids.forEach((id) => (map[id] = []));
+        (data || []).forEach((task) => {
+          if (!map[task.blueprint_id]) map[task.blueprint_id] = [];
+          map[task.blueprint_id].push(task as BlueprintTask);
+        });
+        setTasksMap(map);
       });
   }, [filteredBlueprints]);
 
@@ -559,6 +642,7 @@ export function Dashboard({
                       FRAMEWORK_THEMES["default"];
                     const Icon = theme.icon;
                     const isPinned = pinnedIds.includes(bp.id);
+                    const trackerSummary = getTrackerSummary(bp);
 
                     return (
                       <motion.div
@@ -616,6 +700,23 @@ export function Dashboard({
                             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                               {bp.title}
                             </h3>
+                            {trackerSummary && (
+                              <div className="mb-3 space-y-1">
+                                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">
+                                  {trackerSummary.eyebrow}
+                                </p>
+                                <p className="line-clamp-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                  {trackerSummary.detail}
+                                </p>
+                                {trackerSummary.meta && (
+                                  <p
+                                    className={`line-clamp-2 text-xs font-bold ${trackerSummary.metaClass}`}
+                                  >
+                                    {trackerSummary.meta}
+                                  </p>
+                                )}
+                              </div>
+                            )}
                             <div className="flex items-center justify-between">
                               <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
                                 {new Date(bp.createdAt).toLocaleDateString(
@@ -629,47 +730,22 @@ export function Dashboard({
                               </p>
                               {/* Tracker Status Badge */}
                               {(() => {
-                                const tracker = trackers[bp.id];
-                                if (!tracker) return null;
+                                if (!trackerSummary) return null;
 
-                                if (tracker.plan_kind === "finite") {
-                                  const totalSteps = getStepIdsAndLabels(
-                                    bp.result,
-                                    bp.framework,
-                                  ).length;
-                                  const completed =
-                                    tracker.completed_step_ids?.length || 0;
-                                  const pct =
-                                    totalSteps > 0
-                                      ? (completed / totalSteps) * 100
-                                      : 0;
+                                if (trackerSummary.mode === "finite") {
                                   return trackerPrefs?.show_score !== false ? (
-                                    <div className="flex items-center gap-1">
-                                      <div className="w-16 h-1.5 bg-gray-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-                                        <div
-                                          className="h-full bg-blue-500 rounded-full"
-                                          style={{ width: `${pct}%` }}
-                                        />
-                                      </div>
-                                      <span className="text-[10px] font-bold text-gray-500">
-                                        {completed}/{totalSteps}
+                                    <div className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                                      <span className="text-[10px] font-bold">
+                                        {trackerSummary.completed}/
+                                        {trackerSummary.totalSteps}
                                       </span>
                                     </div>
                                   ) : null;
                                 }
 
-                                // Infinite plans - just show last done
-                                const lastActive = tracker.last_activity_at
-                                  ? new Date(
-                                      tracker.last_activity_at,
-                                    ).toLocaleDateString(undefined, {
-                                      month: "short",
-                                      day: "numeric",
-                                    })
-                                  : null;
-                                return lastActive ? (
-                                  <span className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full font-bold">
-                                    Last: {lastActive}
+                                return trackerSummary.meta ? (
+                                  <span className="text-[10px] rounded-full bg-blue-100 px-2 py-0.5 font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                    {trackerSummary.meta}
                                   </span>
                                 ) : null;
                               })()}
@@ -751,6 +827,7 @@ export function Dashboard({
                       FRAMEWORK_THEMES["default"];
                     const Icon = theme.icon;
                     const isPinned = pinnedIds.includes(bp.id);
+                    const trackerSummary = getTrackerSummary(bp);
 
                     return (
                       <motion.div
@@ -782,6 +859,16 @@ export function Dashboard({
                             <span className="text-xs text-gray-500 uppercase">
                               {frameworkKey}
                             </span>
+                            {trackerSummary && (
+                              <div className="mt-2 space-y-1">
+                                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">
+                                  {trackerSummary.eyebrow}
+                                </p>
+                                <p className="line-clamp-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                  {trackerSummary.detail}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto overflow-hidden">
@@ -850,6 +937,7 @@ export function Dashboard({
                       FRAMEWORK_THEMES[bp.framework] ||
                       FRAMEWORK_THEMES["default"];
                     const Icon = theme.icon;
+                    const trackerSummary = getTrackerSummary(bp);
 
                     return (
                       <motion.div
@@ -886,6 +974,23 @@ export function Dashboard({
                           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-100 dark:border-zinc-800 pb-4">
                             {frameworkKey} Report
                           </p>
+                          {trackerSummary && (
+                            <div className="mb-6 space-y-1 rounded-2xl bg-gray-50 p-4 dark:bg-zinc-800/50">
+                              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">
+                                {trackerSummary.eyebrow}
+                              </p>
+                              <p className="line-clamp-3 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                {trackerSummary.detail}
+                              </p>
+                              {trackerSummary.meta && (
+                                <p
+                                  className={`line-clamp-2 text-xs font-bold ${trackerSummary.metaClass}`}
+                                >
+                                  {trackerSummary.meta}
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         <div className="flex-1 flex flex-col justify-end">

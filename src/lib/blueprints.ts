@@ -145,6 +145,12 @@ export type BlueprintTaskType =
   | "rescue_action"
   | "review";
 
+export type BlueprintTaskInputType =
+  | "count"
+  | "number"
+  | "duration"
+  | "currency";
+
 export interface BlueprintTask {
   id: string;
   blueprint_id: string;
@@ -152,6 +158,9 @@ export interface BlueprintTask {
   title: string;
   target_count: number;
   task_type?: BlueprintTaskType;
+  input_type?: BlueprintTaskInputType | null;
+  target_value?: number | null;
+  unit_label?: string | null;
   created_at: string;
 }
 

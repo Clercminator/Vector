@@ -1,8 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import type { BlueprintTaskType } from "@/lib/blueprints";
+import type { BlueprintTaskType, BlueprintTracker } from "@/lib/blueprints";
+import {
+  buildTrackerIntentSuggestion,
+  deriveTrackerIntentDraft,
+} from "@/lib/trackerIntent";
+import { formatTaskTarget, isMetricTask } from "@/lib/trackerSurface";
 import { useLanguage } from "@/app/components/language-provider";
-import { Plus, CheckSquare, Trash2, CheckCircle2 } from "lucide-react";
+import {
+  Plus,
+  CheckSquare,
+  Trash2,
+  CheckCircle2,
+  Clock3,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
 import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
 import { Progress } from "@/app/components/ui/progress";
@@ -13,6 +26,9 @@ interface Task {
   title: string;
   target_count: number;
   task_type?: BlueprintTaskType | null;
+  input_type?: "count" | "number" | "duration" | "currency" | null;
+  target_value?: number | null;
+  unit_label?: string | null;
 }
 
 const TASK_TYPE_ORDER: Record<BlueprintTaskType, number> = {
@@ -53,16 +69,68 @@ function normalizeTaskType(
   return taskType || "task";
 }
 
+function sortTasks(tasks: Task[]): Task[] {
+  return [...tasks].sort(
+    (left, right) =>
+      TASK_TYPE_ORDER[normalizeTaskType(left.task_type)] -
+      TASK_TYPE_ORDER[normalizeTaskType(right.task_type)],
+  );
+}
+
+function normalizeTaskKey(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function formatFrequencyLabel(
+  frequency: NonNullable<BlueprintTracker["frequency"]>,
+): string {
+  if (frequency === "daily") return "Daily";
+  if (frequency === "weekly") return "Weekly";
+  return "Custom";
+}
+
+function formatReminderLabel(time: string | null, days: string[]): string {
+  if (!time && days.length === 0) return "No reminder suggested";
+
+  const dayLabel =
+    days.length === 7
+      ? "Every day"
+      : days.length > 0
+        ? days.map((day) => day.toUpperCase()).join(", ")
+        : "Flexible days";
+
+  return time ? `${dayLabel} at ${time}` : dayLabel;
+}
+
 export function TrackerTasks({
   blueprintId,
   userId,
   color,
+  blueprintTitle,
+  fallbackQuestion,
+  leadIndicators,
+  weeklyReviewPrompt,
+  onTrackerUpdated,
+  onTasksUpdated,
 }: {
   blueprintId: string;
   userId: string;
   color?: string;
+  blueprintTitle?: string;
+  fallbackQuestion?: string | null;
+  leadIndicators?: string[];
+  weeklyReviewPrompt?: string | null;
+  onTrackerUpdated?: (patch: Partial<BlueprintTracker>) => void;
+  onTasksUpdated?: (tasks: Task[]) => void;
 }) {
   const { t } = useLanguage();
+  const copy = (key: string, fallback: string) => {
+    const value = t(key);
+    return value === key ? fallback : value;
+  };
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completions, setCompletions] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
@@ -70,6 +138,21 @@ export function TrackerTasks({
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newTarget, setNewTarget] = useState(1);
+  const [composerText, setComposerText] = useState("");
+  const [isApplyingIntent, setIsApplyingIntent] = useState(false);
+
+  const smartSuggestion = buildTrackerIntentSuggestion({
+    blueprintTitle,
+    fallbackQuestion,
+    leadIndicators,
+    weeklyReviewPrompt,
+  });
+  const smartDraft = deriveTrackerIntentDraft(composerText, {
+    blueprintTitle,
+    fallbackQuestion,
+    leadIndicators,
+    weeklyReviewPrompt,
+  });
 
   useEffect(() => {
     if (!blueprintId || !supabase) return;
@@ -83,12 +166,9 @@ export function TrackerTasks({
         .order("created_at", { ascending: true });
 
       if (!tErr && tsks) {
-        const sortedTasks = [...tsks].sort(
-          (left: any, right: any) =>
-            TASK_TYPE_ORDER[normalizeTaskType(left.task_type)] -
-            TASK_TYPE_ORDER[normalizeTaskType(right.task_type)],
-        );
-        setTasks(sortedTasks);
+        const nextTasks = sortTasks(tsks);
+        setTasks(nextTasks);
+        onTasksUpdated?.(nextTasks);
 
         // 2. Fetch completions
         const taskIds = tsks.map((t) => t.id);
@@ -120,6 +200,9 @@ export function TrackerTasks({
       title: newTitle.trim(),
       target_count: Math.max(1, newTarget),
       task_type: "task" as const,
+      input_type: "count" as const,
+      target_value: null,
+      unit_label: null,
     };
 
     const { data, error } = await supabase
@@ -132,17 +215,97 @@ export function TrackerTasks({
       return;
     }
 
-    setTasks(
-      [...tasks, data].sort(
-        (left, right) =>
-          TASK_TYPE_ORDER[normalizeTaskType(left.task_type)] -
-          TASK_TYPE_ORDER[normalizeTaskType(right.task_type)],
-      ),
-    );
+    const nextTasks = sortTasks([...tasks, data]);
+    setTasks(nextTasks);
+    onTasksUpdated?.(nextTasks);
     setNewTitle("");
     setNewTarget(1);
     setIsAdding(false);
     toast.success("Task added");
+  };
+
+  const handleApplyIntent = async () => {
+    if (!smartDraft || !supabase) return;
+
+    setIsApplyingIntent(true);
+
+    const trackerPatch: Partial<BlueprintTracker> = {
+      tracking_question: smartDraft.trackingQuestion,
+      frequency: smartDraft.frequency,
+      reminder_enabled: smartDraft.reminderEnabled,
+      reminder_time: smartDraft.reminderTime,
+      reminder_days: smartDraft.reminderDays,
+    };
+
+    const existingTaskKeys = new Set(
+      tasks.map((task) => normalizeTaskKey(task.title)),
+    );
+    const tasksToInsert = smartDraft.tasks
+      .filter((task) => {
+        const key = normalizeTaskKey(task.title);
+        if (!key || existingTaskKeys.has(key)) return false;
+        existingTaskKeys.add(key);
+        return true;
+      })
+      .map((task) => ({
+        blueprint_id: blueprintId,
+        user_id: userId,
+        title: task.title,
+        target_count: Math.max(1, task.targetCount),
+        task_type: "task" as const,
+        input_type: task.inputType,
+        target_value: task.targetValue,
+        unit_label: task.unitLabel,
+      }));
+
+    try {
+      const [trackerResult, insertResult] = await Promise.all([
+        supabase
+          .from("blueprint_tracker")
+          .update(trackerPatch)
+          .eq("blueprint_id", blueprintId)
+          .eq("user_id", userId),
+        tasksToInsert.length > 0
+          ? supabase.from("blueprint_tasks").insert(tasksToInsert).select()
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+
+      if (trackerResult.error) throw trackerResult.error;
+      if (insertResult.error) throw insertResult.error;
+
+      if (insertResult.data && insertResult.data.length > 0) {
+        const nextTasks = sortTasks([
+          ...tasks,
+          ...(insertResult.data as Task[]),
+        ]);
+        setTasks(nextTasks);
+        onTasksUpdated?.(nextTasks);
+      }
+
+      onTrackerUpdated?.(trackerPatch);
+      setComposerText("");
+      toast.success(
+        tasksToInsert.length > 0
+          ? copy(
+              "tracker.smartSetupApplied",
+              `Smart setup applied with ${tasksToInsert.length} new task${tasksToInsert.length === 1 ? "" : "s"}.`,
+            )
+          : copy(
+              "tracker.smartSetupUpdated",
+              "Smart setup applied. Your tracker question and cadence were updated.",
+            ),
+      );
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        copy(
+          "tracker.smartSetupError",
+          "Couldn't apply the smart setup. Please try again.",
+        ),
+      );
+    } finally {
+      setIsApplyingIntent(false);
+    }
   };
 
   const handleAddCompletion = async (
@@ -173,7 +336,9 @@ export function TrackerTasks({
 
   const handleDelete = async (id: string) => {
     const oldTasks = [...tasks];
-    setTasks(tasks.filter((t) => t.id !== id));
+    const nextTasks = tasks.filter((t) => t.id !== id);
+    setTasks(nextTasks);
+    onTasksUpdated?.(nextTasks);
 
     if (supabase) {
       const { error } = await supabase
@@ -182,6 +347,7 @@ export function TrackerTasks({
         .eq("id", id);
       if (error) {
         setTasks(oldTasks);
+        onTasksUpdated?.(oldTasks);
         toast.error(t("common.error"));
       }
     }
@@ -204,6 +370,141 @@ export function TrackerTasks({
         >
           <Plus size={16} /> {t("tracker.addTask") || "Add"}
         </Button>
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-cyan-200/70 bg-cyan-50/70 p-4 shadow-sm dark:border-cyan-900/40 dark:bg-cyan-950/20">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-1">
+            <p className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.18em] text-cyan-700 dark:text-cyan-300">
+              <Sparkles size={16} />
+              {copy("tracker.smartSetupTitle", "Smart Setup")}
+            </p>
+            <p className="text-sm leading-relaxed text-cyan-900/80 dark:text-cyan-100/80">
+              {copy(
+                "tracker.smartSetupDescription",
+                "Describe what you want to track in plain English. Vector will turn it into a tracking question, cadence, reminder suggestion, and concrete tasks.",
+              )}
+            </p>
+          </div>
+          {smartSuggestion && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setComposerText(smartSuggestion)}
+              className="rounded-xl border-cyan-200 bg-white/80 text-cyan-700 hover:bg-white dark:border-cyan-900/40 dark:bg-cyan-950/20 dark:text-cyan-200"
+            >
+              {copy("tracker.smartSetupUsePlan", "Use Plan Cues")}
+            </Button>
+          )}
+        </div>
+
+        <div className="mt-4 space-y-4">
+          <textarea
+            value={composerText}
+            onChange={(event) => setComposerText(event.target.value)}
+            placeholder={copy(
+              "tracker.smartSetupPlaceholder",
+              "Try: workouts 4x/week at 07:00; protein daily; Sunday review at 18:00",
+            )}
+            className="min-h-[110px] w-full rounded-2xl border border-cyan-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 outline-none transition focus:ring-2 focus:ring-cyan-500 dark:border-cyan-900/40 dark:bg-zinc-900 dark:text-white"
+          />
+
+          {smartDraft ? (
+            <div className="rounded-2xl border border-white/80 bg-white/80 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70">
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/80">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500">
+                    {copy("tracker.smartSetupQuestion", "Tracking Question")}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-white">
+                    {smartDraft.trackingQuestion}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/80">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500">
+                    {copy("tracker.smartSetupCadence", "Cadence")}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-white">
+                    {formatFrequencyLabel(smartDraft.frequency)}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/80">
+                  <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500">
+                    <Clock3 size={12} />
+                    {copy("tracker.smartSetupReminder", "Reminder")}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-gray-900 dark:text-white">
+                    {formatReminderLabel(
+                      smartDraft.reminderTime,
+                      smartDraft.reminderDays,
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500">
+                  {copy("tracker.smartSetupTasks", "Generated Tasks")}
+                </p>
+                {smartDraft.tasks.length > 0 ? (
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {smartDraft.tasks.map((task) => (
+                      <div
+                        key={`${task.title}-${task.targetCount}`}
+                        className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900/80"
+                      >
+                        <div className="font-semibold text-gray-900 dark:text-white">
+                          {task.title}
+                        </div>
+                        <div className="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
+                          {task.targetValue != null && task.unitLabel
+                            ? `${task.targetValue} ${task.unitLabel}`
+                            : `${task.targetCount} target${task.targetCount === 1 ? "" : "s"}`}
+                          {task.inputType !== "count"
+                            ? ` • ${task.inputType}`
+                            : ""}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {copy(
+                      "tracker.smartSetupNoTasks",
+                      "Vector will still update the tracker question and cadence even if you only want a lighter check-in flow.",
+                    )}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-cyan-900/80 dark:text-cyan-100/80">
+              {copy(
+                "tracker.smartSetupHint",
+                "Use commas, new lines, or semicolons to describe multiple things you want to track.",
+              )}
+            </p>
+          )}
+
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              onClick={handleApplyIntent}
+              disabled={!smartDraft || isApplyingIntent}
+              className="rounded-xl bg-cyan-600 text-white hover:bg-cyan-700"
+            >
+              {isApplyingIntent ? (
+                <>
+                  <Loader2 size={16} className="mr-2 animate-spin" />
+                  {copy("tracker.smartSetupApplying", "Applying")}
+                </>
+              ) : (
+                copy("tracker.smartSetupApply", "Apply Smart Setup")
+              )}
+            </Button>
+          </div>
+        </div>
       </div>
 
       {isAdding && (
@@ -254,20 +555,26 @@ export function TrackerTasks({
           {tasks.map((task) => {
             const taskType = normalizeTaskType(task.task_type);
             const taskMeta = TASK_TYPE_META[taskType];
-            const current = completions[task.id] || 0;
+            const metricTask = isMetricTask(task as any);
+            const current = metricTask ? 0 : completions[task.id] || 0;
             const target = task.target_count;
-            const isDone = current >= target;
+            const isDone = metricTask ? false : current >= target;
             const progressPct = Math.min(100, (current / target) * 100);
+            const targetLabel = formatTaskTarget(task as any);
 
             return (
               <div
                 key={task.id}
-                className={`flex flex-col gap-2 p-4 rounded-xl border-2 transition-all ${isDone ? "bg-gray-50 dark:bg-zinc-800/30 border-gray-200 dark:border-zinc-800 opacity-80" : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 shadow-sm"}`}
+                className={`flex flex-col gap-2 rounded-xl border-2 p-4 transition-all ${isDone ? "bg-gray-50 dark:bg-zinc-800/30 border-gray-200 dark:border-zinc-800 opacity-80" : metricTask ? "bg-cyan-50/50 dark:bg-cyan-950/10 border-cyan-200/70 dark:border-cyan-900/40 shadow-sm" : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 shadow-sm"}`}
               >
                 <div className="flex items-start md:items-center justify-between gap-4">
                   <div className="flex items-start md:items-center gap-3 flex-1 min-w-0">
                     <div className="pt-1 md:pt-0 shrink-0">
-                      {isDone ? (
+                      {metricTask ? (
+                        <div className="flex h-9 min-w-9 items-center justify-center rounded-xl border border-cyan-200 bg-white px-2 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-700 dark:border-cyan-900/40 dark:bg-cyan-950/20 dark:text-cyan-300">
+                          Log
+                        </div>
+                      ) : isDone ? (
                         <CheckCircle2 size={24} className="text-cyan-500" />
                       ) : (
                         <div className="flex h-6 min-w-6 items-center justify-center rounded-full border border-cyan-200 bg-cyan-50 px-1 text-[10px] font-bold text-cyan-700 dark:border-cyan-900/40 dark:bg-cyan-950/40 dark:text-cyan-300">
@@ -290,15 +597,25 @@ export function TrackerTasks({
                             {taskMeta.label}
                           </Badge>
                         )}
+                        {metricTask && (
+                          <Badge
+                            variant="outline"
+                            className="border-cyan-200 bg-cyan-100/80 text-cyan-700 dark:border-cyan-900/40 dark:bg-cyan-950/40 dark:text-cyan-300"
+                          >
+                            {task.input_type}
+                          </Badge>
+                        )}
                       </div>
                       <span className="text-xs font-bold text-gray-400 mt-1">
-                        {current} / {target}
+                        {metricTask
+                          ? `Target: ${targetLabel} • Logged from quick check-in`
+                          : `${current} / ${target}`}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    {!isDone && (
+                    {!isDone && !metricTask && (
                       <Button
                         onClick={() =>
                           handleAddCompletion(task.id, current, target)
@@ -322,7 +639,7 @@ export function TrackerTasks({
                   </div>
                 </div>
 
-                {!isDone && (
+                {!isDone && !metricTask && (
                   <Progress
                     value={progressPct}
                     className="mt-2 h-1.5 bg-gray-100 dark:bg-zinc-800 [&_[data-slot=progress-indicator]]:bg-cyan-500"

@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { supabase } from "@/lib/supabase";
 import {
   Blueprint,
+  BlueprintTask,
   loadLocalBlueprints,
   saveLocalBlueprints,
   upsertBlueprint,
@@ -63,6 +64,10 @@ import {
   onTrackerSynced,
 } from "@/lib/trackerOffline";
 import { deriveTrackerSeed } from "@/lib/trackerSeed";
+import {
+  hasTrackerQuickLogSurface,
+  type TrackerMetricLogEntry,
+} from "@/lib/trackerSurface";
 
 import { TrackerHeatmap } from "./tracker/TrackerHeatmap";
 import { TrackerScore } from "./tracker/TrackerScore";
@@ -245,6 +250,7 @@ export function TrackerPage({
   const [blueprint, setBlueprint] = useState<Blueprint | null>(null);
   const [tracker, setTracker] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<BlueprintTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<"not-found" | "unauthorized" | null>(null);
 
@@ -299,6 +305,7 @@ export function TrackerPage({
       setBlueprint(localBlueprint);
       setTracker(execution.tracker);
       setLogs(execution.logs);
+      setTasks(execution.tasks || []);
       setLoading(false);
       return;
     }
@@ -438,8 +445,16 @@ export function TrackerPage({
       }
     }
 
+    const { data: taskRows } = await supabase
+      .from("blueprint_tasks")
+      .select("*")
+      .eq("blueprint_id", blueprintId)
+      .eq("user_id", effectiveUserForPage)
+      .order("created_at", { ascending: true });
+
     setTracker(trkData);
     setLogs(gLogs || []);
+    setTasks((taskRows as BlueprintTask[] | null) || []);
 
     setLoading(false);
   };
@@ -598,7 +613,10 @@ export function TrackerPage({
     }
   };
 
-  const handleLogToday = async (note?: string) => {
+  const handleLogToday = async (payload?: {
+    note?: string;
+    metrics?: TrackerMetricLogEntry[];
+  }) => {
     if (isImpersonating) {
       toast.error(
         t("tracker.viewOnly") || "View-only mode. Changes are disabled.",
@@ -606,12 +624,23 @@ export function TrackerPage({
       return;
     }
     if (!userId) return;
+    const metricPayload = (payload?.metrics || []).map((entry) => ({
+      task_id: entry.taskId,
+      title: entry.title,
+      input_type: entry.inputType,
+      value: entry.value,
+      unit_label: entry.unitLabel ?? null,
+      target_value: entry.targetValue ?? null,
+    }));
     const newLog = {
       blueprint_id: blueprintId,
       user_id: userId,
       kind: "check_in" as const,
-      content: note?.trim() ?? null,
-      payload: { done: true },
+      content: payload?.note?.trim() ?? null,
+      payload:
+        metricPayload.length > 0
+          ? { done: true, metrics: metricPayload }
+          : { done: true },
     };
     if (!isOnline()) {
       addPendingGoalLog(blueprintId, userId, "check_in", {
@@ -651,7 +680,9 @@ export function TrackerPage({
     setTracker((prev) =>
       prev ? { ...prev, last_activity_at: new Date().toISOString() } : null,
     );
-    toast.success("Activity logged! ✔️");
+    toast.success(
+      metricPayload.length > 0 ? "Quick log saved." : "Activity logged! ✔️",
+    );
   };
 
   const handleAddJournal = async () => {
@@ -1211,6 +1242,7 @@ export function TrackerPage({
     { title: blueprint.title, goal: blueprint.answers?.[0] },
   );
   const isInfinite = tracker?.plan_kind === "infinite";
+  const showQuickLogSurface = hasTrackerQuickLogSurface(tracker, tasks);
   const showCalendarExport = isBlueprintCalendarWorthy(blueprint);
 
   const themeClass =
@@ -1514,9 +1546,10 @@ export function TrackerPage({
           </div>
 
           {/* Quick Log Box */}
-          {isInfinite && (
+          {showQuickLogSurface && tracker && (
             <TrackerQuickLog
               tracker={tracker}
+              tasks={tasks}
               isDoneToday={isDoneToday}
               onLog={handleLogToday}
               color={colorAccent}
@@ -1610,7 +1643,7 @@ export function TrackerPage({
             <TrackerSubGoals
               key={`subgoals-${blueprint.id}-${revisionNonce}`}
               blueprintId={blueprint.id}
-              userId={blueprint.user_id}
+              userId={userId || ""}
               color={colorAccent}
             />
           </div>
@@ -1619,8 +1652,20 @@ export function TrackerPage({
             <TrackerTasks
               key={`tasks-${blueprint.id}-${revisionNonce}`}
               blueprintId={blueprint.id}
-              userId={blueprint.user_id}
+              userId={userId || ""}
               color={colorAccent}
+              blueprintTitle={blueprint.title}
+              fallbackQuestion={
+                tracker?.tracking_question || canonicalPlan.trackingPrompt
+              }
+              leadIndicators={canonicalPlan.leadIndicators}
+              weeklyReviewPrompt={canonicalPlan.weeklyReviewPrompt}
+              onTrackerUpdated={(patch) =>
+                setTracker((prev: any) => (prev ? { ...prev, ...patch } : prev))
+              }
+              onTasksUpdated={(nextTasks) =>
+                setTasks(nextTasks as BlueprintTask[])
+              }
             />
           </div>
 

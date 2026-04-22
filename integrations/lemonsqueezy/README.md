@@ -19,14 +19,16 @@ Secrets (Supabase Dashboard → Project Settings → Edge Functions → Secrets)
 
 - **Products** → **+ New Product**.
 
-**Product 1 – Builder (Standard)**  
-- Name: e.g. **Vector Builder** (or Constructor).  
-- One-time payment, **$5.99**.  
+**Product 1 – Builder (Standard)**
+
+- Name: e.g. **Vector Builder** (or Constructor).
+- One-time payment, **$5.99**.
 - Publish, then open the product → copy the **Variant ID** (from variant row or API). Set in Supabase as `LEMONSQUEEZY_VARIANT_STANDARD`.
 
-**Product 2 – Max**  
-- Name: e.g. **Vector Max**.  
-- One-time payment, **$12.99**.  
+**Product 2 – Max**
+
+- Name: e.g. **Vector Max**.
+- One-time payment, **$12.99**.
 - Publish, then copy the **Variant ID**. Set in Supabase as `LEMONSQUEEZY_VARIANT_MAX`.
 
 (Optional) In each product’s **Confirmation modal** / **Email receipt**, set **Button link** to your app (e.g. `https://vectorplan.xyz/dashboard` or `/dashboard?payment=success`).
@@ -45,13 +47,13 @@ Secrets (Supabase Dashboard → Project Settings → Edge Functions → Secrets)
 
 In Supabase → **Project Settings** → **Edge Functions** → **Secrets**, add:
 
-| Secret | Value |
-|--------|--------|
-| `LEMONSQUEEZY_API_KEY` | Your Lemon Squeezy API key |
-| `LEMONSQUEEZY_STORE_ID` | Your store ID (numeric) |
-| `LEMONSQUEEZY_VARIANT_STANDARD` | Variant ID of the $5.99 Builder product |
-| `LEMONSQUEEZY_VARIANT_MAX` | Variant ID of the $12.99 Max product |
-| `LEMONSQUEEZY_WEBHOOK_SECRET` | Same string as the webhook Signing secret |
+| Secret                          | Value                                     |
+| ------------------------------- | ----------------------------------------- |
+| `LEMONSQUEEZY_API_KEY`          | Your Lemon Squeezy API key                |
+| `LEMONSQUEEZY_STORE_ID`         | Your store ID (numeric)                   |
+| `LEMONSQUEEZY_VARIANT_STANDARD` | Variant ID of the $5.99 Builder product   |
+| `LEMONSQUEEZY_VARIANT_MAX`      | Variant ID of the $12.99 Max product      |
+| `LEMONSQUEEZY_WEBHOOK_SECRET`   | Same string as the webhook Signing secret |
 
 Redeploy or wait for the next cold start so the functions pick up the new secrets.
 
