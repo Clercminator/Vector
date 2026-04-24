@@ -1275,7 +1275,7 @@ export const generatePdf = async (
     if (!trimmed) return [];
     const byLines = trimmed
       .split(/\n+/)
-      .map((s) => s.replace(/^[\s•\-]+\s*/, "").trim())
+      .map((s) => s.replace(/^[\s•-]+\s*/, "").trim())
       .filter(Boolean);
     if (byLines.length > 1) return byLines;
     const bySentence = trimmed

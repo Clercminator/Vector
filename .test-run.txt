@@ -1,0 +1,832 @@
+npm warn Unknown cli config "--run". This will stop working in the next major version of npm.
+
+> vector@0.0.1 test
+> vitest
+
+
+[1m[44m DEV [49m[22m [34mv4.0.18 [39m[90mC:/Users/clerc/Documents/Vector Project/Vector[39m
+
+ [32mΓ£ô[39m src/lib/planContract.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/trackerIntent.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/trackerSurface.test.ts [2m([22m[2m3 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 32[2mms[22m[39m
+     [32mΓ£ô[39m shows a quick-log surface when a finite tracker has a question or metric tasks[32m 3[2mms[22m[39m
+     [32mΓ£ô[39m formats metric targets and the latest metric summary[32m 2[2mms[22m[39m
+[31m     [31m├ù[31m tracks due-state and completion from check-ins for hybrid quick logs[39m[32m 22[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/e2eHarness.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/trackerSeed.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/blueprints.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/goalMri.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32mΓ£ô[39m src/agent/constants.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/sectionRefinement.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/paymentReturn.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/trackerStats.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 9[2mms[22m[39m
+stderr | src/agent/nodes/validator.test.ts > validatorNode > rejects invalid JSON in draft block and increments validationAttempts
+Validator caught bad Data: SyntaxError: Expected property name or '}' in JSON at position 2 (line 1 column 3)
+    at JSON.parse (<anonymous>)
+    at validatorNode (C:/Users/clerc/Documents/Vector Project/Vector/src/agent/nodes/validator.ts:119:33)
+    at C:/Users/clerc/Documents/Vector Project/Vector/src/agent/nodes/validator.test.ts:71:23
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:145:11
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:915:26
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1209:10)
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1653:37
+    at Traces.$ (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:142:27)
+
+stderr | src/agent/nodes/validator.test.ts > validatorNode > rejects draft with unknown keys for framework
+Validator caught bad Data: Error: Unknown properties detected: unknownKey. Only allowed keys for pareto are: vital, trivial.
+    at validatorNode (C:/Users/clerc/Documents/Vector Project/Vector/src/agent/nodes/validator.ts:143:32)
+    at C:/Users/clerc/Documents/Vector Project/Vector/src/agent/nodes/validator.test.ts:88:23
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:145:11
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:915:26
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1209:10)
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1653:37
+    at Traces.$ (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:142:27)
+    at trace (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/vitest/dist/chunks/test.B8ej_ZHS.js:239:21)
+
+ [32mΓ£ô[39m src/agent/nodes/validator.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/calendarExport.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/communityProof.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/tiers.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mΓ£ô[39m src/agent/nodes/frameworkSetter.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/lemonSqueezy.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32mΓ£ô[39m src/agent/mathTest.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+[22m[39m[Agent:consultant] ok | 29990 chars | 1ms
+
+ [32mΓ£ô[39m src/lib/adaptiveRevision.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 6[2mms[22m[39m
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+[22m[39m[Agent:consultant] ok | 30004 chars | 0ms
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+[22m[39m[Agent:ask] ok | 35818 chars | 0ms
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+ [32mΓ£ô[39m src/agent/goalAgent.integration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 2516[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text [33m 1402[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call [33m 1111[2mms[22m[39m
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Failed Tests 1 ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+ FAIL  src/lib/trackerSurface.test.ts > trackerSurface > tracks due-state and completion from check-ins for hybrid quick logs
+AssertionError: expected { completedToday: true, ΓÇª(2) } to deeply equal { completedToday: true, ΓÇª(2) }
+
+- Expected
++ Received
+
+  {
+    "completedToday": true,
+    "isDue": true,
+-   "streakOrLast": "Active",
++   "streakOrLast": "Last: 4 days ago",
+  }
+
+ Γ¥» src/lib/trackerSurface.test.ts:96:57
+     94|     ];
+     95| 
+     96|     expect(getQuickLogCadenceState(tracker, logs, now)).toEqual({
+       |                                                         ^
+     97|       completedToday: true,
+     98|       isDue: true,
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/1]ΓÄ»
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m19 passed[39m[22m[90m (20)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m76 passed[39m[22m[90m (77)[39m
+[2m   Start at [22m 09:57:50
+[2m   Duration [22m 6.43s[2m (transform 7.35s, setup 0ms, import 19.80s, tests 2.81s, environment 7ms)[22m
+
+[1m[41m FAIL [49m[22m [31mTests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/lib/trackerSurface.ts [22m[34mx1 [34m[39m
+
+ [32mΓ£ô[39m src/lib/trackerSurface.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m 10:03:29
+[2m   Duration [22m 48ms
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2mpackage.json [22m[39m
+
+ [32mΓ£ô[39m src/lib/blueprints.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/trackerIntent.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/trackerSeed.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/e2eHarness.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/planContract.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/goalMri.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/tiers.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/paymentReturn.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/sectionRefinement.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/calendarExport.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 11[2mms[22m[39m
+stderr | src/agent/nodes/validator.test.ts > validatorNode > rejects invalid JSON in draft block and increments validationAttempts
+Validator caught bad Data: SyntaxError: Expected property name or '}' in JSON at position 2 (line 1 column 3)
+    at JSON.parse (<anonymous>)
+    at validatorNode (C:/Users/clerc/Documents/Vector Project/Vector/src/agent/nodes/validator.ts:119:33)
+    at C:/Users/clerc/Documents/Vector Project/Vector/src/agent/nodes/validator.test.ts:71:23
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:145:11
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:915:26
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1209:10)
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1653:37
+    at Traces.$ (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:142:27)
+
+stderr | src/agent/nodes/validator.test.ts > validatorNode > rejects draft with unknown keys for framework
+Validator caught bad Data: Error: Unknown properties detected: unknownKey. Only allowed keys for pareto are: vital, trivial.
+    at validatorNode (C:/Users/clerc/Documents/Vector Project/Vector/src/agent/nodes/validator.ts:143:32)
+    at C:/Users/clerc/Documents/Vector Project/Vector/src/agent/nodes/validator.test.ts:88:23
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:145:11
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:915:26
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1209:10)
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1653:37
+    at Traces.$ (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:142:27)
+    at trace (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/vitest/dist/chunks/test.B8ej_ZHS.js:239:21)
+
+ [32mΓ£ô[39m src/agent/nodes/validator.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 99[2mms[22m[39m
+ [32mΓ£ô[39m src/agent/constants.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/communityProof.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/trackerStats.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/trackerSurface.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/lemonSqueezy.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32mΓ£ô[39m src/agent/nodes/frameworkSetter.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32mΓ£ô[39m src/agent/mathTest.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/adaptiveRevision.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 18[2mms[22m[39m
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+[22m[39m[Agent:consultant] ok | 29990 chars | 1ms
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+[22m[39m[Agent:consultant] ok | 30004 chars | 0ms
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+[22m[39m[Agent:ask] ok | 35818 chars | 0ms
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+ [32mΓ£ô[39m src/agent/goalAgent.integration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 3831[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text [33m 2500[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call [33m 1328[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+[2m      Tests [22m [1m[32m77 passed[39m[22m[90m (77)[39m
+[2m   Start at [22m 10:10:54
+[2m   Duration [22m 32.55s
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/agent/goalAgent.ts [22m[34mx2 [34m[39m
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+[22m[39m[Agent:consultant] ok | 29990 chars | 0ms
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+[22m[39m[Agent:consultant] ok | 30004 chars | 0ms
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+[22m[39m[Agent:ask] ok | 35818 chars | 0ms
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+ [32mΓ£ô[39m src/agent/goalAgent.integration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 2643[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text [33m 1484[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call [33m 1157[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 10:14:07
+[2m   Duration [22m 4.05s
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/agent/goalAgent.ts [22m[34mx3 [34m[39m
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+[22m[39m[Agent:consultant] ok | 29990 chars | 1ms
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+[22m[39m[Agent:consultant] ok | 30004 chars | 0ms
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+[22m[39m[Agent:ask] ok | 35818 chars | 0ms
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+ [32mΓ£ô[39m src/agent/goalAgent.integration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 2620[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text [33m 1482[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call [33m 1135[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 10:16:03
+[2m   Duration [22m 5.67s
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/lib/supabaseCheckpointer.ts [22m[34mx4 [34m[39m
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+[22m[39m[Agent:consultant] ok | 29990 chars | 0ms
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+[22m[39m[Agent:consultant] ok | 30004 chars | 0ms
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+[22m[39m[Agent:ask] ok | 35818 chars | 0ms
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+ [32mΓ£ô[39m src/agent/goalAgent.integration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 2349[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text [33m 1206[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call [33m 1141[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 10:18:48
+[2m   Duration [22m 3.66s
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/agent/nodes/draft.ts [22m[34mx5 [34m[39m
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+[22m[39m[Agent:consultant] ok | 29990 chars | 1ms
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+[22m[39m[Agent:consultant] ok | 30004 chars | 0ms
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+[22m[39m[Agent:ask] ok | 35818 chars | 0ms
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+ [32mΓ£ô[39m src/agent/goalAgent.integration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 3378[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text [33m 2245[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call [33m 1129[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 10:24:55
+[2m   Duration [22m 6.27s
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2mpackage.json [22m[39m
+
+ [32mΓ£ô[39m src/lib/e2eHarness.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 72[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/trackerSeed.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/trackerIntent.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/planContract.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/blueprints.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/goalMri.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/sectionRefinement.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/calendarExport.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/trackerSurface.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/trackerStats.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32mΓ£ô[39m src/agent/constants.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/paymentReturn.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32mΓ£ô[39m src/agent/nodes/frameworkSetter.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/tiers.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/communityProof.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/lemonSqueezy.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+stderr | src/agent/nodes/validator.test.ts > validatorNode > rejects invalid JSON in draft block and increments validationAttempts
+Validator caught bad Data: SyntaxError: Expected property name or '}' in JSON at position 2 (line 1 column 3)
+    at JSON.parse (<anonymous>)
+    at validatorNode (C:/Users/clerc/Documents/Vector Project/Vector/src/agent/nodes/validator.ts:119:33)
+    at C:/Users/clerc/Documents/Vector Project/Vector/src/agent/nodes/validator.test.ts:71:23
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:145:11
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:915:26
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1209:10)
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1653:37
+    at Traces.$ (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:142:27)
+
+stderr | src/agent/nodes/validator.test.ts > validatorNode > rejects draft with unknown keys for framework
+Validator caught bad Data: Error: Unknown properties detected: unknownKey. Only allowed keys for pareto are: vital, trivial.
+    at validatorNode (C:/Users/clerc/Documents/Vector Project/Vector/src/agent/nodes/validator.ts:143:32)
+    at C:/Users/clerc/Documents/Vector Project/Vector/src/agent/nodes/validator.test.ts:88:23
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:145:11
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:915:26
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1209:10)
+    at file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/@vitest/runner/dist/index.js:1653:37
+    at Traces.$ (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:142:27)
+    at trace (file:///C:/Users/clerc/Documents/Vector%20Project/Vector/node_modules/vitest/dist/chunks/test.B8ej_ZHS.js:239:21)
+
+ [32mΓ£ô[39m src/lib/adaptiveRevision.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32mΓ£ô[39m src/agent/nodes/validator.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 111[2mms[22m[39m
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+[22m[39m[Agent:consultant] ok | 29990 chars | 1ms
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+[22m[39m[Agent:consultant] ok | 30004 chars | 0ms
+
+[90mstdout[2m | src/agent/goalAgent.integration.test.ts[2m > [22m[2mgoalAgent integration[2m > [22m[2mruns consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+[22m[39m[Agent:ask] ok | 35818 chars | 0ms
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+ [32mΓ£ô[39m src/agent/mathTest.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save writes (non-fatal): new row violates row-level security policy for table "checkpoint_writes"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+stderr | src/agent/goalAgent.integration.test.ts > goalAgent integration > runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call
+SupabaseCheckpointer: Failed to save checkpoint (non-fatal): new row violates row-level security policy for table "checkpoints"
+
+ [32mΓ£ô[39m src/agent/goalAgent.integration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 3435[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m runs consultant ΓåÆ validator ΓåÆ END and returns state with messages when consultant returns text [33m 2111[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m runs consultant ΓåÆ framework_setter ΓåÆ ask when consultant returns set_framework tool call [33m 1317[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+[2m      Tests [22m [1m[32m77 passed[39m[22m[90m (77)[39m
+[2m   Start at [22m 10:36:13
+[2m   Duration [22m 42.88s
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/lib/trackerSurface.ts [22m[34mx4 [34m[39m
+
+ [32mΓ£ô[39m src/lib/trackerSurface.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m 10:42:22
+[2m   Duration [22m 97ms
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/lib/calendarExport.ts [22m[34mx3 [34m[39m
+
+ [32mΓ£ô[39m src/lib/calendarExport.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 11[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m   Start at [22m 10:43:57
+[2m   Duration [22m 132ms
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/app/components/wizard/wizardFrameworkConfig.test.ts [22m[34mx1 [34m[39m
+
+ [32mΓ£ô[39m src/app/components/wizard/wizardFrameworkConfig.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 10:47:51
+[2m   Duration [22m 96ms
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/app/components/wizard/wizardFrameworkConfig.test.ts [22m[34mx2 [34m[39m
+
+ [32mΓ£ô[39m src/app/components/wizard/wizardFrameworkConfig.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 10:47:51
+[2m   Duration [22m 41ms
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/lib/supabaseCheckpointer.test.ts [22m[34mx1 [34m[39m
+
+ [32mΓ£ô[39m src/lib/supabaseCheckpointer.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m 10:50:20
+[2m   Duration [22m 1.28s
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/lib/supabaseCheckpointer.test.ts [22m[34mx2 [34m[39m
+
+ [32mΓ£ô[39m src/lib/supabaseCheckpointer.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m 10:50:23
+[2m   Duration [22m 1.20s
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+c[3J[1m[44m RERUN [49m[22m [34m[2msrc/lib/supabaseCheckpointer.test.ts [22m[34mx3 [34m[39m
+
+ [32mΓ£ô[39m src/lib/supabaseCheckpointer.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m 11:06:13
+[2m   Duration [22m 1.44s
+
+[1m[42m PASS [49m[22m [32mWaiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m

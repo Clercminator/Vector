@@ -365,14 +365,22 @@ export function downloadIcs(filename: string, events: CalendarEvent[]) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  const safeName =
-    filename.replace(/[<>:"/\\|?*\x00-\x1f]/g, "_").trim() ||
-    "vector-blueprint";
+  const safeName = sanitizeCalendarFilename(filename) || "vector-blueprint";
   a.download = safeName.endsWith(".ics") ? safeName : `${safeName}.ics`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+}
+
+function sanitizeCalendarFilename(filename: string) {
+  return Array.from(filename)
+    .map((char) => {
+      const charCode = char.charCodeAt(0);
+      return charCode < 32 || /[<>:"/\\|?*]/.test(char) ? "_" : char;
+    })
+    .join("")
+    .trim();
 }
 
 function escapeIcsText(s: string) {

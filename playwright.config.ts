@@ -16,13 +16,10 @@ export default defineConfig({
     permissions: ["clipboard-read", "clipboard-write"],
   },
   webServer: {
-    command: "npx vite --host 127.0.0.1 --port 4173",
+    command: "npm run build:e2e && npm run preview:e2e",
     url: "http://127.0.0.1:4173",
-    reuseExistingServer: true,
-    timeout: 120_000,
-    env: {
-      VITE_E2E_MODE: "true",
-    },
+    reuseExistingServer: !process.env.CI,
+    timeout: 240_000,
   },
   projects: [
     {

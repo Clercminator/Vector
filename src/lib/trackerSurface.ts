@@ -100,34 +100,39 @@ export function extractMetricEntriesFromLog(
     : [];
 
   return rawMetrics
-    .map((entry) => ({
-      taskId:
-        typeof entry.task_id === "string" && entry.task_id.trim()
-          ? entry.task_id
-          : undefined,
-      title:
-        typeof entry.title === "string" && entry.title.trim()
-          ? entry.title.trim()
-          : "Metric",
-      inputType:
+    .map((entry): TrackerMetricLogEntry => {
+      const inputType: TrackerMetricLogEntry["inputType"] =
         entry.input_type === "currency" ||
         entry.input_type === "duration" ||
         entry.input_type === "number"
           ? entry.input_type
-          : "number",
-      value:
-        typeof entry.value === "number"
-          ? entry.value
-          : Number(entry.value || 0),
-      unitLabel: typeof entry.unit_label === "string" ? entry.unit_label : null,
-      targetValue:
-        typeof entry.target_value === "number"
-          ? entry.target_value
-          : entry.target_value != null
-            ? Number(entry.target_value)
-            : null,
-      loggedAt: log.created_at,
-    }))
+          : "number";
+
+      return {
+        taskId:
+          typeof entry.task_id === "string" && entry.task_id.trim()
+            ? entry.task_id
+            : undefined,
+        title:
+          typeof entry.title === "string" && entry.title.trim()
+            ? entry.title.trim()
+            : "Metric",
+        inputType,
+        value:
+          typeof entry.value === "number"
+            ? entry.value
+            : Number(entry.value || 0),
+        unitLabel:
+          typeof entry.unit_label === "string" ? entry.unit_label : null,
+        targetValue:
+          typeof entry.target_value === "number"
+            ? entry.target_value
+            : entry.target_value != null
+              ? Number(entry.target_value)
+              : null,
+        loggedAt: log.created_at,
+      };
+    })
     .filter((entry) => Number.isFinite(entry.value));
 }
 
@@ -252,7 +257,8 @@ export function getQuickLogCadenceState(
   const lastDoneAt = completedLogs[0]
     ? new Date(completedLogs[0].created_at).getTime()
     : 0;
-  const sevenDaysAgo = Date.now() - 7 * 24 * 3600 * 1000;
+  const currentTime = now.getTime();
+  const sevenDaysAgo = currentTime - 7 * 24 * 3600 * 1000;
   const currentDayStr = DAY_MAP[now.getDay()];
 
   let isDue = false;
@@ -269,7 +275,7 @@ export function getQuickLogCadenceState(
   let streakOrLast = "Not started";
   if (tracker.last_activity_at) {
     const diff = Math.floor(
-      (Date.now() - new Date(tracker.last_activity_at).getTime()) /
+      (currentTime - new Date(tracker.last_activity_at).getTime()) /
         (1000 * 3600 * 24),
     );
     streakOrLast = diff <= 1 ? "Active" : `Last: ${diff} days ago`;

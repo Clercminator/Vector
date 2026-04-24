@@ -65,7 +65,9 @@ export const draftNode = async (state: AgentStateType) => {
     },
   } as const;
 
-  const extractAndParse = (rawContent: string): object | null => {
+  const extractAndParse = (
+    rawContent: string,
+  ): Record<string, unknown> | null => {
     const jsonBlock = rawContent.match(/```(?:json)?\s*([\s\S]*?)```/);
     const rawJson = jsonBlock ? jsonBlock[1].trim() : rawContent;
     const braceMatch = rawJson.match(/\{[\s\S]*\}/);
@@ -188,6 +190,14 @@ export const draftNode = async (state: AgentStateType) => {
     if (fw) blueprint.type = fw;
 
     if (blueprint.type === "rpm") {
+      const rpmPlan = Array.isArray(blueprint.plan)
+        ? blueprint.plan
+            .filter(Boolean)
+            .map((s: unknown) => (typeof s === "string" ? s : String(s)))
+        : typeof blueprint.plan === "string" && blueprint.plan.trim()
+          ? [blueprint.plan.trim()]
+          : [];
+
       blueprint = {
         ...blueprint,
         result:
@@ -202,15 +212,9 @@ export const draftNode = async (state: AgentStateType) => {
             : blueprint.purpose != null
               ? String(blueprint.purpose)
               : "",
-        plan: Array.isArray(blueprint.plan)
-          ? blueprint.plan
-              .filter(Boolean)
-              .map((s: unknown) => (typeof s === "string" ? s : String(s)))
-          : typeof blueprint.plan === "string" && blueprint.plan.trim()
-            ? [blueprint.plan.trim()]
-            : [],
+        plan: rpmPlan,
       };
-      if (!blueprint.plan.length) {
+      if (rpmPlan.length === 0) {
         blueprint.plan = ["(Add your first action step.)"];
       }
     }

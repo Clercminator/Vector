@@ -51,13 +51,22 @@ const routeStep = (state: AgentStateType) => {
   return END;
 };
 
+const isAIMessageWithToolCalls = (message: unknown): message is AIMessage => {
+    if (!message || typeof message !== "object") return false;
+    const candidate = message as {
+        tool_calls?: AIMessage["tool_calls"];
+        _getType?: () => string;
+    };
+    const isAIMessageLike =
+        candidate instanceof AIMessage || candidate._getType?.() === "ai";
+    return isAIMessageLike && Boolean(candidate.tool_calls?.length);
+};
+
 /** After tools: if request_confirmation was executed, go to approval_gate; else ask. */
 const routeAfterTools = (state: AgentStateType) => {
   const { messages } = state;
   if (!messages?.length) return "ask";
-  const aiWithCalls = [...(messages || [])].reverse().find(
-    (m: any) => (m._getType?.() === "ai" || m.constructor?.name === "AIMessage") && (m as AIMessage).tool_calls?.length
-  ) as AIMessage | undefined;
+    const aiWithCalls = [...messages].reverse().find(isAIMessageWithToolCalls);
   if (aiWithCalls?.tool_calls?.some((tc: { name?: string }) => tc.name === "request_confirmation")) {
     return "approval_gate";
   }
@@ -109,6 +118,7 @@ const workflow = new StateGraph(AgentState)
   .addNode("framework_setter", frameworkSetterNode)
   .addNode("ask", askNode)
   .addNode("tools", toolNode)
+    .addNode("approval_gate", approvalGateNode)
   .addNode("draft", draftNode)
   .addNode("critique", critiqueNode)
   .addNode("user_review", userReviewNode)
@@ -140,7 +150,6 @@ const workflow = new StateGraph(AgentState)
   
   .addEdge("framework_setter", "ask")
   
-  .addNode("approval_gate", approvalGateNode)
   .addConditionalEdges("tools", routeAfterTools, {
       approval_gate: "approval_gate",
       ask: "ask"

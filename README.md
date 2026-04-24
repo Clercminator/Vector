@@ -1996,7 +1996,7 @@ In short: the agent’s logic lives in the browser; the server provides secure a
 - **Advanced AI features:** Deeper multi-turn refinement, more context-aware follow-ups.
 - **Gamification:** Weekly challenges, team leaderboards.
 - **Export enhancements:** Export to Notion, Trello, Asana, or other project management tools; bulk calendar export; custom PDF branding (Max tier branding from profile is already used in bulk PDF export).
-- **Subscription model:** Convert one-time pricing to recurring subscriptions (monthly/yearly) for sustained revenue. Requires Stripe or MercadoPago subscriptions API.
+- **Billing expansion:** Builder and Max recurring subscriptions already run through Lemon Squeezy and MercadoPago. The remaining gap is adding the future US Stripe path and improving provider redundancy and billing operations.
 - **Admin enhancements:** Approve/reject/feature community templates from Admin UI; bulk user/tier management.
 - **Internationalization expansion:** Add more languages (French, German, Portuguese) to `translations.ts`.
 - **SEO improvements:** Per-framework pages and meta are already in place. Optional: link framework cards or "Learn more" to `/frameworks/:id` from the landing page for discoverability; implement SSR or prerendering for better indexing.

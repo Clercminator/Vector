@@ -50,15 +50,15 @@ export const WizardResult: React.FC<WizardResultProps> = ({
     t(key).replace("{0}", value);
   const copyStrategyLabel = t("common.copyStrategy");
 
-  if (!result) return null;
-
   const canonical = React.useMemo(
     () =>
-      normalizeCanonicalPlanResult(
-        result as Record<string, unknown>,
-        String((result as any).type || "general"),
-        { title: (result as any).shortTitle },
-      ),
+      result
+        ? normalizeCanonicalPlanResult(
+            result as Record<string, unknown>,
+            String((result as any).type || "general"),
+            { title: (result as any).shortTitle },
+          )
+        : null,
     [result],
   );
 
@@ -94,15 +94,17 @@ export const WizardResult: React.FC<WizardResultProps> = ({
     </div>
   );
 
-  const isTeaser = (result as any).isTeaser;
-  const difficulty = (result as any).difficulty;
-  const difficultyReason = (result as any).difficultyReason;
+  const isTeaser = Boolean((result as any)?.isTeaser);
+  const difficulty = (result as any)?.difficulty;
+  const difficultyReason = (result as any)?.difficultyReason;
   const showDifficultyBadge =
     difficulty != null ||
     (typeof difficultyReason === "string" && difficultyReason.trim());
   const [refinementDialogSection, setRefinementDialogSection] =
     React.useState<PlanRefinementSection | null>(null);
   const [sectionRefinementNote, setSectionRefinementNote] = React.useState("");
+
+  if (!result) return null;
 
   const sectionTitles: Record<PlanRefinementSection, string> = {
     diagnosis: t("wizard.section.diagnosis"),

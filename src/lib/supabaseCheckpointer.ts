@@ -1,11 +1,14 @@
 import {
   BaseCheckpointSaver,
+  ChannelVersions,
   Checkpoint,
+  CheckpointListOptions,
   CheckpointMetadata,
+  CheckpointPendingWrite,
   CheckpointTuple,
-  SerializerProtocol,
   PendingWrite,
 } from "@langchain/langgraph-checkpoint";
+import { RunnableConfig } from "@langchain/core/runnables";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 interface CheckpointRow {
@@ -14,8 +17,18 @@ interface CheckpointRow {
   checkpoint_id: string;
   parent_checkpoint_id: string | undefined;
   type: "checkpoint" | "metadata";
-  checkpoint: any; // jsonb
-  metadata: any; // jsonb
+  checkpoint: unknown;
+  metadata: unknown;
+}
+
+interface CheckpointWriteRow {
+  owner_user_id?: string | null;
+  thread_id: string;
+  checkpoint_id: string;
+  task_id: string;
+  idx: number;
+  channel: string | null;
+  value: unknown;
 }
 
 /**
@@ -37,9 +50,7 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
     return session?.user?.id ?? null;
   }
 
-  async getTuple(config: {
-    configurable?: { thread_id?: string; checkpoint_id?: string };
-  }): Promise<CheckpointTuple | undefined> {
+  async getTuple(config: RunnableConfig): Promise<CheckpointTuple | undefined> {
     const thread_id = config.configurable?.thread_id;
     const checkpoint_id = config.configurable?.checkpoint_id;
 
@@ -67,11 +78,10 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
     if (!data || data.length === 0) return undefined;
 
     const row = data[0];
-    // We also need the pending writes for this checkpoint?
-    // For simplicity in this implementation, we might skip 'putWrites' logic if we aren't using advanced human-in-the-loop requiring write persistence BEFORE commit.
-    // But for full compliance, we should implementing putting writes.
-    // Getting writes:
-    // const writes = await this.client.from("checkpoint_writes")...
+    const pendingWrites = await this.getPendingWrites(
+      thread_id,
+      row.checkpoint_id,
+    );
 
     return {
       config: { configurable: { thread_id, checkpoint_id: row.checkpoint_id } },
@@ -85,15 +95,14 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
             },
           }
         : undefined,
-      pendingWrites: [], // TODO: Implement writes fetching if needed
+      pendingWrites,
     };
   }
 
-  async *list(config: {
-    configurable?: { thread_id?: string };
-    limit?: number;
-    before?: { configurable?: { checkpoint_id?: string } };
-  }): AsyncGenerator<CheckpointTuple> {
+  async *list(
+    config: RunnableConfig,
+    options?: CheckpointListOptions,
+  ): AsyncGenerator<CheckpointTuple> {
     const thread_id = config.configurable?.thread_id;
     if (!thread_id) return;
 
@@ -104,8 +113,8 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
       .eq("type", "checkpoint")
       .order("created_at", { ascending: false });
 
-    if (config.limit) {
-      query = query.limit(config.limit);
+    if (options?.limit) {
+      query = query.limit(options.limit);
     }
 
     // 'before' logic would require created_at filtering or cursor based on ID.
@@ -118,12 +127,16 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
     }
 
     for (const row of data || []) {
+      const pendingWrites = await this.getPendingWrites(
+        thread_id,
+        row.checkpoint_id,
+      );
       yield {
         config: {
           configurable: { thread_id, checkpoint_id: row.checkpoint_id },
         },
-        checkpoint: row.checkpoint,
-        metadata: row.metadata,
+        checkpoint: row.checkpoint as Checkpoint,
+        metadata: row.metadata as CheckpointMetadata,
         parentConfig: row.parent_checkpoint_id
           ? {
               configurable: {
@@ -132,16 +145,17 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
               },
             }
           : undefined,
+        pendingWrites,
       };
     }
   }
 
   async put(
-    config: { configurable?: { thread_id?: string; checkpoint_id?: string } },
+    config: RunnableConfig,
     checkpoint: Checkpoint,
     metadata: CheckpointMetadata,
-    newVersions?: any,
-  ): Promise<{ configurable: { thread_id: string; checkpoint_id: string } }> {
+    _newVersions: ChannelVersions,
+  ): Promise<RunnableConfig> {
     const thread_id = config.configurable?.thread_id;
     const checkpoint_id = checkpoint.id; // Checkpoint ID comes from the checkpoint object itself usually
     const owner_user_id = await this.getCurrentUserId();
@@ -165,7 +179,7 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
         );
         // We do NOT throw here, allowing the agent to continue even if persistence fails.
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.warn(
         "SupabaseCheckpointer: Unexpected error saving checkpoint (non-fatal)",
         e,
@@ -176,7 +190,7 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
   }
 
   async putWrites(
-    config: { configurable?: { thread_id?: string; checkpoint_id?: string } },
+    config: RunnableConfig,
     writes: PendingWrite[],
     taskId: string,
   ): Promise<void> {
@@ -214,10 +228,64 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
     }
   }
 
-  async deleteThread(config: {
-    configurable?: { thread_id?: string };
-  }): Promise<void> {
-    // Not implemented for this MVP, but required by interface
-    // console.warn("deleteThread not implemented");
+  async deleteThread(threadId: string): Promise<void> {
+    const owner_user_id = await this.getCurrentUserId();
+    if (!threadId) return;
+
+    const writeDelete = this.client
+      .from("checkpoint_writes")
+      .delete()
+      .eq("thread_id", threadId);
+    const checkpointDelete = this.client
+      .from("checkpoints")
+      .delete()
+      .eq("thread_id", threadId);
+
+    const scopedWriteDelete = owner_user_id
+      ? writeDelete.eq("owner_user_id", owner_user_id)
+      : writeDelete;
+    const scopedCheckpointDelete = owner_user_id
+      ? checkpointDelete.eq("owner_user_id", owner_user_id)
+      : checkpointDelete;
+
+    const [{ error: writesError }, { error: checkpointsError }] =
+      await Promise.all([scopedWriteDelete, scopedCheckpointDelete]);
+
+    if (writesError) {
+      console.warn(
+        `SupabaseCheckpointer: Failed to delete checkpoint writes (non-fatal): ${writesError.message}`,
+      );
+    }
+
+    if (checkpointsError) {
+      console.warn(
+        `SupabaseCheckpointer: Failed to delete checkpoints (non-fatal): ${checkpointsError.message}`,
+      );
+    }
+  }
+
+  private async getPendingWrites(
+    threadId: string,
+    checkpointId: string,
+  ): Promise<CheckpointPendingWrite[]> {
+    const { data, error } = await this.client
+      .from("checkpoint_writes")
+      .select("thread_id, checkpoint_id, task_id, idx, channel, value, owner_user_id")
+      .eq("thread_id", threadId)
+      .eq("checkpoint_id", checkpointId)
+      .order("task_id", { ascending: true })
+      .order("idx", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching checkpoint writes", error);
+      return [];
+    }
+
+    return ((data as CheckpointWriteRow[] | null) || [])
+      .filter((row) => typeof row.channel === "string" && row.channel.length > 0)
+      .map(
+        (row) =>
+          [row.task_id, row.channel as string, row.value] as CheckpointPendingWrite,
+      );
   }
 }

@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/agent/**/*.ts",
+    "src/lib/supabaseCheckpointer.ts",
+    "src/lib/supabaseCheckpointer.test.ts",
+    "src/lib/trackerSurface.ts",
+    "src/lib/trackerSurface.test.ts",
+    "src/app/components/wizard/wizard*.ts",
+    "src/app/components/wizard/wizard*.test.ts",
+    "playwright.config.ts",
+    "vite.config.ts"
+  ]
+}

@@ -36,6 +36,12 @@ import { graph } from "@/agent/goalAgent";
 import { Command, isInterrupted, INTERRUPT } from "@langchain/langgraph";
 import { CONFIRM_PLAN_INTERRUPT_TYPE } from "@/agent/nodes/approvalGate";
 import { AIMessage, HumanMessage } from "@langchain/core/messages";
+import {
+  getWizardFrameworkConfig,
+  getWizardInitialMessage,
+  getWizardOpeningMessage,
+  getWizardReopeningMessage,
+} from "./wizardFrameworkConfig";
 
 export interface GoalWizardHookProps {
   framework?: FrameworkId;
@@ -176,62 +182,6 @@ export const useGoalWizard = ({
   /** True once profile fetch has completed (success or fail). Ensures agent gets profile from message 1. */
   const [profileLoadAttempted, setProfileLoadAttempted] = useState(false);
 
-  // Framework Config Helper (Simplified for hook)
-  const getFrameworkConfig = (fw: string) => {
-    // We rely on translations mostly, but need basic config if used logic
-    // For now returning basic lookup or relying on 't' keys
-    const keys: Record<string, any> = {
-      "first-principles": {
-        title: t("fpf.title"),
-        questions: [t("fpf.q1"), t("fpf.q2"), t("fpf.q3")],
-      },
-      pareto: {
-        title: t("pareto.title"),
-        questions: [t("pareto.q1"), t("pareto.q2"), t("pareto.q3")],
-      },
-      rpm: {
-        title: t("rpm.title"),
-        questions: [t("rpm.q1"), t("rpm.q2"), t("rpm.q3")],
-      },
-      eisenhower: {
-        title: t("eisenhower.title"),
-        questions: [t("eisenhower.q1"), t("eisenhower.q2"), t("eisenhower.q3")],
-      },
-      okr: {
-        title: t("okr.title"),
-        questions: [t("okr.q1"), t("okr.q2"), t("okr.q3")],
-      },
-      media: {
-        title: t("misogi.title"),
-        questions: [t("misogi.q1"), t("misogi.q2"), t("misogi.q3")],
-      },
-      misogi: {
-        title: t("misogi.title"),
-        questions: [t("misogi.q1"), t("misogi.q2"), t("misogi.q3")],
-      },
-      ikigai: {
-        title: t("ikigai.title"),
-        questions: [
-          t("ikigai.q1"),
-          t("ikigai.q2"),
-          t("ikigai.q3"),
-          t("ikigai.q4"),
-        ],
-      },
-      dsss: {
-        title: t("fw.dsss.title"),
-        questions: [t("wizard.dsss.firstQuestion")],
-      },
-      gps: {
-        title: t("gps.title"),
-        questions: [t("gps.q1"), t("gps.q2"), t("gps.q3")],
-      },
-      general: { title: t("fp.title"), questions: [t("fp.q1")] },
-    };
-    if (!fw) return { title: t("fp.title"), questions: [t("fp.q1")] }; // Default Goal Planner Generator
-    return keys[fw] || keys["first-principles"];
-  };
-
   // --- Effects ---
 
   useEffect(() => {
@@ -339,19 +289,15 @@ export const useGoalWizard = ({
       return;
     }
 
-    const currentConfig = getFrameworkConfig(framework);
+    const currentConfig = getWizardFrameworkConfig(t, framework);
 
     if (initialBlueprint) {
-      const openingMsg = currentConfig.questions?.[0]
-        ? currentConfig.questions[0]
-        : t("wizard.welcome").replace("{0}", currentConfig.title) +
-          " " +
-          t("wizard.agentStart");
+      const openingMsg = getWizardOpeningMessage(t, currentConfig);
       const baseMessages: Message[] = [
         {
           id: uuidv4(),
           role: "system",
-          content: t("wizard.reopening").replace("{0}", currentConfig.title),
+          content: getWizardReopeningMessage(t, currentConfig),
         },
         { id: uuidv4(), role: "ai", content: openingMsg },
         {
@@ -408,19 +354,7 @@ export const useGoalWizard = ({
       return; // Auto-run effect will invoke agent with intake data
     }
 
-    let initialMsg = "";
-    if (initialContext && initialContext.explanation) {
-      initialMsg = initialContext.objective
-        ? `${initialContext.explanation}\n\n${t("wizard.readyToBuild")}`
-        : `${initialContext.explanation}\n\n${t(currentConfig.questions?.[0] || "wizard.agentStart")}`;
-    } else if (currentConfig.questions?.[0]) {
-      initialMsg = currentConfig.questions[0];
-    } else {
-      initialMsg =
-        t("wizard.welcome").replace("{0}", currentConfig.title) +
-        " " +
-        t("wizard.agentStart");
-    }
+    const initialMsg = getWizardInitialMessage(t, currentConfig, initialContext);
 
     if (framework) {
       setIsTyping(true);
@@ -658,12 +592,8 @@ export const useGoalWizard = ({
     setFinalAnswers([]);
     setSuggestionChips([]);
     setThreadId(uuidv4());
-    const currentConfig = getFrameworkConfig(framework || "");
-    const initialMsg =
-      currentConfig.questions?.[0] ||
-      t("wizard.welcome").replace("{0}", currentConfig.title) +
-        " " +
-        t("wizard.agentStart");
+    const currentConfig = getWizardFrameworkConfig(t, framework || "");
+    const initialMsg = getWizardOpeningMessage(t, currentConfig);
     setMessages([{ id: uuidv4(), role: "ai", content: initialMsg }]);
     setIsTyping(false);
   };

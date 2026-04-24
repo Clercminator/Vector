@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
@@ -111,6 +111,10 @@ export default defineConfig(() => {
           "./src/lib/polyfill-async-hooks.ts",
         ),
       },
+    },
+    test: {
+      include: ["src/**/*.{test,spec}.{ts,tsx}"],
+      exclude: ["tests/e2e/**", "test-results/**", "dist/**"],
     },
     build: {
       modulePreload: false,
