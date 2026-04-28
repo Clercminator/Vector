@@ -31,6 +31,20 @@ interface CheckpointWriteRow {
   value: unknown;
 }
 
+const WRITE_RETRY_DELAYS_MS = [150, 300];
+
+export class CheckpointPersistenceError extends Error {
+  override cause?: unknown;
+  operation: string;
+
+  constructor(operation: string, cause?: unknown) {
+    super(`SupabaseCheckpointer: ${operation} failed after ${WRITE_RETRY_DELAYS_MS.length + 1} attempts.`);
+    this.name = "CheckpointPersistenceError";
+    this.operation = operation;
+    this.cause = cause;
+  }
+}
+
 /**
  * A persistent checkpointer that saves to Supabase.
  */
@@ -162,29 +176,17 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
 
     if (!thread_id) throw new Error("Missing thread_id");
 
-    try {
-      const { error } = await this.client.from("checkpoints").upsert({
+    await this.retryWrite("checkpoint", () =>
+      this.client.from("checkpoints").upsert({
         owner_user_id,
         thread_id,
         checkpoint_id,
-        parent_checkpoint_id: config.configurable?.checkpoint_id, // The ID we branched FROM
+        parent_checkpoint_id: config.configurable?.checkpoint_id,
         type: "checkpoint",
-        checkpoint: checkpoint,
-        metadata: metadata,
-      });
-
-      if (error) {
-        console.warn(
-          `SupabaseCheckpointer: Failed to save checkpoint (non-fatal): ${error.message}`,
-        );
-        // We do NOT throw here, allowing the agent to continue even if persistence fails.
-      }
-    } catch (e: unknown) {
-      console.warn(
-        "SupabaseCheckpointer: Unexpected error saving checkpoint (non-fatal)",
-        e,
-      );
-    }
+        checkpoint,
+        metadata,
+      }),
+    );
 
     return { configurable: { thread_id, checkpoint_id } };
   }
@@ -211,21 +213,9 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
       value: w[1],
     }));
 
-    try {
-      const { error } = await this.client
-        .from("checkpoint_writes")
-        .upsert(rows);
-      if (error) {
-        console.warn(
-          `SupabaseCheckpointer: Failed to save writes (non-fatal): ${error.message}`,
-        );
-      }
-    } catch (e) {
-      console.warn(
-        "SupabaseCheckpointer: Unexpected error saving writes (non-fatal)",
-        e,
-      );
-    }
+    await this.retryWrite("checkpoint writes", () =>
+      this.client.from("checkpoint_writes").upsert(rows),
+    );
   }
 
   async deleteThread(threadId: string): Promise<void> {
@@ -287,5 +277,29 @@ export class SupabaseCheckpointer extends BaseCheckpointSaver {
         (row) =>
           [row.task_id, row.channel as string, row.value] as CheckpointPendingWrite,
       );
+  }
+
+  private async retryWrite(
+    operation: string,
+    persist: () => PromiseLike<{ error: { message: string } | null }>,
+  ): Promise<void> {
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt <= WRITE_RETRY_DELAYS_MS.length; attempt++) {
+      try {
+        const { error } = await persist();
+        if (!error) return;
+
+        lastError = new Error(error.message);
+      } catch (error) {
+        lastError = error;
+      }
+
+      if (attempt < WRITE_RETRY_DELAYS_MS.length) {
+        await new Promise((resolve) => setTimeout(resolve, WRITE_RETRY_DELAYS_MS[attempt]));
+      }
+    }
+
+    throw new CheckpointPersistenceError(operation, lastError);
   }
 }

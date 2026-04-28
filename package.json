@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build && node scripts/prerender.js",
+    "build:analyze": "vite build --mode analyze",
     "build:e2e": "vite build --mode e2e",
     "check": "npm run typecheck && npm run lint",
     "dev": "vite",
@@ -115,6 +116,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "globals": "^16.4.0",
     "puppeteer": "^24.36.1",
+    "rollup-plugin-visualizer": "^6.0.3",
     "sharp": "^0.34.5",
     "tailwindcss": "4.1.12",
     "typescript": "^5.9.3",

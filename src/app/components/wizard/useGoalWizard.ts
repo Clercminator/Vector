@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
-import confetti from "canvas-confetti";
 import { supabase } from "@/lib/supabase";
 import {
   Blueprint,
@@ -43,6 +41,16 @@ import {
   getWizardReopeningMessage,
 } from "./wizardFrameworkConfig";
 
+const createWizardId = () => crypto.randomUUID();
+
+const fireSaveConfetti = () => {
+  void import("canvas-confetti")
+    .then(({ default: confetti }) => {
+      confetti({ particleCount: 80, spread: 60, origin: { y: 0.75 } });
+    })
+    .catch(() => undefined);
+};
+
 export interface GoalWizardHookProps {
   framework?: FrameworkId;
   initialBlueprint?: Blueprint;
@@ -79,7 +87,7 @@ export const useGoalWizard = ({
     return raw
       .filter(Boolean)
       .map((m: any) => ({
-        id: m?.id ?? uuidv4(),
+        id: m?.id ?? createWizardId(),
         role: m?.role,
         content:
           typeof m?.content === "string" ? m.content : String(m?.content ?? ""),
@@ -112,7 +120,7 @@ export const useGoalWizard = ({
 
   // Agent State
   const [threadId, setThreadId] = useState<string>(() => {
-    if (typeof window === "undefined") return uuidv4();
+    if (typeof window === "undefined") return createWizardId();
     const saved = localStorage.getItem("vector_wizard_session");
     if (saved) {
       try {
@@ -125,7 +133,7 @@ export const useGoalWizard = ({
         }
       } catch (e) {}
     }
-    return uuidv4();
+    return createWizardId();
   });
   const [isAgentRunning, setIsAgentRunning] = useState(false);
   /** True when graph is paused at approval_gate—user must click "Generate my plan" or type to continue. */
@@ -295,18 +303,18 @@ export const useGoalWizard = ({
       const openingMsg = getWizardOpeningMessage(t, currentConfig);
       const baseMessages: Message[] = [
         {
-          id: uuidv4(),
+          id: createWizardId(),
           role: "system",
           content: getWizardReopeningMessage(t, currentConfig),
         },
-        { id: uuidv4(), role: "ai", content: openingMsg },
+        { id: createWizardId(), role: "ai", content: openingMsg },
         {
-          id: uuidv4(),
+          id: createWizardId(),
           role: "user",
           content: initialBlueprint.title,
           editedOnce: false,
         },
-        { id: uuidv4(), role: "system", content: t("wizard.loaded") },
+        { id: createWizardId(), role: "system", content: t("wizard.loaded") },
       ];
       setMessages(baseMessages);
       setResult(initialBlueprint.result);
@@ -359,12 +367,12 @@ export const useGoalWizard = ({
     if (framework) {
       setIsTyping(true);
       const tTimer = setTimeout(() => {
-        setMessages([{ id: uuidv4(), role: "ai", content: initialMsg }]);
+        setMessages([{ id: createWizardId(), role: "ai", content: initialMsg }]);
         setIsTyping(false);
       }, 1000);
       return () => clearTimeout(tTimer);
     } else {
-      setMessages([{ id: uuidv4(), role: "ai", content: t("fp.q1") }]);
+      setMessages([{ id: createWizardId(), role: "ai", content: t("fp.q1") }]);
       setIsTyping(false);
     }
   }, [framework, initialBlueprint, t]);
@@ -591,10 +599,10 @@ export const useGoalWizard = ({
     setDraftResult(null);
     setFinalAnswers([]);
     setSuggestionChips([]);
-    setThreadId(uuidv4());
+    setThreadId(createWizardId());
     const currentConfig = getWizardFrameworkConfig(t, framework || "");
     const initialMsg = getWizardOpeningMessage(t, currentConfig);
-    setMessages([{ id: uuidv4(), role: "ai", content: initialMsg }]);
+    setMessages([{ id: createWizardId(), role: "ai", content: initialMsg }]);
     setIsTyping(false);
   };
 
@@ -749,7 +757,7 @@ export const useGoalWizard = ({
         prev[prev.length - 1]?.content === content
       )
         return prev;
-      return [...prev, { id: uuidv4(), role: "ai", content }];
+      return [...prev, { id: createWizardId(), role: "ai", content }];
     });
   };
 
@@ -761,7 +769,7 @@ export const useGoalWizard = ({
     const transcript = appendUserMessage
       ? [
           ...messages,
-          { id: uuidv4(), role: "user" as const, content: userText },
+          { id: createWizardId(), role: "user" as const, content: userText },
         ]
       : [...messages];
     const userAnswers = transcript
@@ -771,7 +779,7 @@ export const useGoalWizard = ({
     if (appendUserMessage) {
       setMessages((prev) => [
         ...prev,
-        { id: uuidv4(), role: "user", content: userText, editedOnce: false },
+        { id: createWizardId(), role: "user", content: userText, editedOnce: false },
       ]);
     }
     setInputValue("");
@@ -817,7 +825,7 @@ export const useGoalWizard = ({
         ? [
             ...messages,
             {
-              id: uuidv4(),
+              id: createWizardId(),
               role: "user" as const,
               content: payload.userMessage,
             },
@@ -832,7 +840,7 @@ export const useGoalWizard = ({
       setMessages((prev) => [
         ...prev,
         {
-          id: uuidv4(),
+          id: createWizardId(),
           role: "user",
           content: payload.userMessage!,
           editedOnce: false,
@@ -905,7 +913,7 @@ export const useGoalWizard = ({
     if (appendUserMessage) {
       setMessages((prev) => [
         ...prev,
-        { id: uuidv4(), role: "user", content: userText, editedOnce: false },
+        { id: createWizardId(), role: "user", content: userText, editedOnce: false },
       ]);
     }
     setInputValue("");
@@ -1402,7 +1410,7 @@ export const useGoalWizard = ({
                 });
                 return [
                   ...prev,
-                  { id: uuidv4(), role: "ai", content: textToShow },
+                  { id: createWizardId(), role: "ai", content: textToShow },
                 ];
               });
             }
@@ -1462,7 +1470,7 @@ export const useGoalWizard = ({
         setMessages((prev) => [
           ...prev,
           {
-            id: uuidv4(),
+            id: createWizardId(),
             role: "ai",
             content:
               "⚠️ **Connection Error**: I couldn't complete that thought. Please try asking again.",
@@ -1506,7 +1514,7 @@ export const useGoalWizard = ({
       });
       setMessages((prev) => [
         ...prev,
-        { id: uuidv4(), role: "ai", content: `⚠️ **Error**: ${errorToastMsg}` },
+        { id: createWizardId(), role: "ai", content: `⚠️ **Error**: ${errorToastMsg}` },
       ]);
     } finally {
       isRunningRef.current = false;
@@ -1546,7 +1554,7 @@ export const useGoalWizard = ({
       setMessages((prev) => [
         ...prev,
         {
-          id: uuidv4(),
+          id: createWizardId(),
           role: "user",
           content: payload.userMessage!,
           editedOnce: false,
@@ -1797,7 +1805,7 @@ export const useGoalWizard = ({
                   return prev;
                 return [
                   ...prev,
-                  { id: uuidv4(), role: "ai", content: textToShow },
+                  { id: createWizardId(), role: "ai", content: textToShow },
                 ];
               });
               if (suggestions?.length) setSuggestionChips(suggestions);
@@ -1843,7 +1851,7 @@ export const useGoalWizard = ({
       });
       setMessages((prev) => [
         ...prev,
-        { id: uuidv4(), role: "ai", content: `⚠️ **Error**: ${errorMsg}` },
+        { id: createWizardId(), role: "ai", content: `⚠️ **Error**: ${errorMsg}` },
       ]);
     } finally {
       isRunningRef.current = false;
@@ -1892,7 +1900,7 @@ export const useGoalWizard = ({
           : new AIMessage(m.content),
       );
 
-    const newThreadId = uuidv4();
+    const newThreadId = createWizardId();
     setThreadId(newThreadId);
 
     // Rewind chat to edited prompt (everything after becomes invalid).
@@ -2089,7 +2097,7 @@ export const useGoalWizard = ({
         );
       }
       toast.success(t("wizard.saveSuccess"));
-      confetti({ particleCount: 80, spread: 60, origin: { y: 0.75 } });
+      fireSaveConfetti();
       onBack();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("common.error"));

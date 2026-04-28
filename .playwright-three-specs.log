@@ -1,0 +1,13 @@
+
+> vector@0.0.1 test:e2e
+> playwright test tests/e2e/framework-results.smoke.spec.ts tests/e2e/pdf-export.smoke.spec.ts tests/e2e/lemonsqueezy-return.pw.ts
+
+
+Running 4 tests using 3 workers
+
+  Γ£ô  1 [chromium] ΓÇ║ tests\e2e\lemonsqueezy-return.pw.ts:92:1 ΓÇ║ profile updates after a hosted LemonSqueezy return is processed (4.4s)
+  Γ£ô  3 [chromium] ΓÇ║ tests\e2e\pdf-export.smoke.spec.ts:33:1 ΓÇ║ dashboard can reopen a saved plan and export it as PDF (5.7s)
+  Γ£ô  4 [chromium] ΓÇ║ tests\e2e\lemonsqueezy-return.pw.ts:117:1 ΓÇ║ profile shows extra credits after a MercadoPago credit-pack return (2.8s)
+  Γ£ô  2 [chromium] ΓÇ║ tests\e2e\framework-results.smoke.spec.ts:190:1 ΓÇ║ dashboard opens every framework result branch after the recent result changes (26.3s)
+
+  4 passed (53.7s)

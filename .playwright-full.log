@@ -1,0 +1,56 @@
+
+> vector@0.0.1 test:e2e
+> playwright test
+
+
+Running 11 tests using 7 workers
+
+  Γ£ô   3 [chromium] ΓÇ║ tests\e2e\pdf-export.smoke.spec.ts:33:1 ΓÇ║ dashboard can reopen a saved plan and export it as PDF (13.7s)
+  Γ£ô   6 [chromium] ΓÇ║ tests\e2e\tracker-mobile.spec.ts:51:1 ΓÇ║ tracker view stays usable on mobile without horizontal overflow (25.6s)
+  Γ£ô   2 [chromium] ΓÇ║ tests\e2e\shared-plan-mobile.spec.ts:61:1 ΓÇ║ shared plan view stays readable on mobile without horizontal overflow (25.8s)
+  Γ£ô   7 [chromium] ΓÇ║ tests\e2e\wizard-result-mobile.spec.ts:42:1 ΓÇ║ wizard result stays usable on mobile without horizontal overflow (25.8s)
+  Γ£ô   4 [chromium] ΓÇ║ tests\e2e\execution-outcomes.spec.ts:62:1 ΓÇ║ wizard to tracker export and public share flow works in the browser (26.6s)
+  Γ£ÿ   5 [chromium] ΓÇ║ tests\e2e\lemonsqueezy-return.pw.ts:92:1 ΓÇ║ profile updates after a hosted LemonSqueezy return is processed (26.5s)
+  Γ£ô   9 [chromium] ΓÇ║ tests\e2e\lemonsqueezy-return.pw.ts:117:1 ΓÇ║ profile shows extra credits after a MercadoPago credit-pack return (3.1s)
+  Γ£ô   1 [chromium] ΓÇ║ tests\e2e\framework-results.smoke.spec.ts:190:1 ΓÇ║ dashboard opens every framework result branch after the recent result changes (39.5s)
+  Γ£ô   8 [chromium] ΓÇ║ tests\e2e\execution-outcomes.spec.ts:98:1 ΓÇ║ wizard can tighten diagnosis, proof, and recovery independently (25.4s)
+  Γ£ô  10 [chromium] ΓÇ║ tests\e2e\execution-outcomes.spec.ts:157:1 ΓÇ║ dashboard publish shows proof history in the community feed (13.6s)
+  Γ£ô  11 [chromium] ΓÇ║ tests\e2e\execution-outcomes.spec.ts:185:1 ΓÇ║ stalled tracker execution can trigger and apply a guided revision (15.5s)
+
+
+  1) [chromium] ΓÇ║ tests\e2e\lemonsqueezy-return.pw.ts:92:1 ΓÇ║ profile updates after a hosted LemonSqueezy return is processed 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByRole('heading', { name: /^Architect$/i })
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 15000ms[22m
+    [2m  - waiting for getByRole('heading', { name: /^Architect$/i })[22m
+
+
+      104 |   await expect(
+      105 |     page.getByRole("heading", { name: /^Architect$/i }),
+    > 106 |   ).toBeVisible({ timeout: 15_000 });
+          |     ^
+      107 |
+      108 |   await expect(page.getByRole("heading", { name: /^Builder$/i })).toBeVisible({
+      109 |     timeout: 8000,
+        at C:\Users\clerc\Documents\Vector Project\Vector\tests\e2e\lemonsqueezy-return.pw.ts:106:5
+
+    Error Context: test-results\lemonsqueezy-return.pw.ts--29908-Squeezy-return-is-processed-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    test-results\lemonsqueezy-return.pw.ts--29908-Squeezy-return-is-processed-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\lemonsqueezy-return.pw.ts--29908-Squeezy-return-is-processed-chromium\trace.zip
+
+    ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+  1 failed
+    [chromium] ΓÇ║ tests\e2e\lemonsqueezy-return.pw.ts:92:1 ΓÇ║ profile updates after a hosted LemonSqueezy return is processed 
+  10 passed (1.8m)

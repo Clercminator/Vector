@@ -1,11 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 import type {
+  ChannelVersions,
   Checkpoint,
   CheckpointMetadata,
   PendingWrite,
 } from "@langchain/langgraph-checkpoint";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { SupabaseCheckpointer } from "./supabaseCheckpointer";
+import {
+  CheckpointPersistenceError,
+  SupabaseCheckpointer,
+} from "./supabaseCheckpointer";
 
 interface QueryResult {
   data: unknown;
@@ -15,6 +19,7 @@ interface QueryResult {
 function createQueryBuilder(
   result: QueryResult,
   upsertSpy?: (payload: unknown) => void,
+  upsertResults?: QueryResult[],
 ) {
   const builder = {
     delete: vi.fn(),
@@ -30,7 +35,7 @@ function createQueryBuilder(
       | undefined,
     upsert: vi.fn(async (payload: unknown) => {
       upsertSpy?.(payload);
-      return { error: null };
+      return upsertResults?.shift() ?? { error: null };
     }),
   };
 
@@ -47,11 +52,15 @@ function createQueryBuilder(
 
 function createCheckpointerClient(options?: {
   checkpointResults?: QueryResult[];
+  checkpointUpsertResults?: QueryResult[];
   writeResults?: QueryResult[];
+  writeUpsertResults?: QueryResult[];
   userId?: string | null;
 }) {
   const checkpointResults = [...(options?.checkpointResults ?? [])];
+  const checkpointUpsertResults = [...(options?.checkpointUpsertResults ?? [])];
   const writeResults = [...(options?.writeResults ?? [])];
+  const writeUpsertResults = [...(options?.writeUpsertResults ?? [])];
   const checkpointUpsert = vi.fn();
   const writeUpsert = vi.fn();
   const builders = {
@@ -78,6 +87,7 @@ function createCheckpointerClient(options?: {
         const builder = createQueryBuilder(
           checkpointResults.shift() ?? { data: null, error: null },
           checkpointUpsert,
+          checkpointUpsertResults,
         );
         builders.checkpoints.push(builder);
         return builder;
@@ -87,6 +97,7 @@ function createCheckpointerClient(options?: {
         const builder = createQueryBuilder(
           writeResults.shift() ?? { data: null, error: null },
           writeUpsert,
+          writeUpsertResults,
         );
         builders.checkpoint_writes.push(builder);
         return builder;
@@ -212,6 +223,56 @@ describe("SupabaseCheckpointer", () => {
         value: { status: "done" },
       },
     ]);
+  });
+
+  it("retries checkpoint persistence and throws when every attempt fails", async () => {
+    const { builders, client } = createCheckpointerClient({
+      checkpointUpsertResults: [
+        { data: null, error: { message: "checkpoint write failed 1" } },
+        { data: null, error: { message: "checkpoint write failed 2" } },
+        { data: null, error: { message: "checkpoint write failed 3" } },
+      ],
+      userId: "user-1",
+    });
+    const checkpointer = new SupabaseCheckpointer(client);
+
+    await expect(
+      checkpointer.put(
+        { configurable: { thread_id: "thread-1" } },
+        { id: "checkpoint-1" } as Checkpoint,
+        { source: "unit-test" } as CheckpointMetadata,
+        {} as ChannelVersions,
+      ),
+    ).rejects.toBeInstanceOf(CheckpointPersistenceError);
+
+    expect(builders.checkpoints).toHaveLength(3);
+  });
+
+  it("retries pending write persistence and throws when every attempt fails", async () => {
+    const { builders, client } = createCheckpointerClient({
+      writeUpsertResults: [
+        { data: null, error: { message: "write failed 1" } },
+        { data: null, error: { message: "write failed 2" } },
+        { data: null, error: { message: "write failed 3" } },
+      ],
+      userId: "user-1",
+    });
+    const checkpointer = new SupabaseCheckpointer(client);
+
+    await expect(
+      checkpointer.putWrites(
+        {
+          configurable: {
+            checkpoint_id: "checkpoint-1",
+            thread_id: "thread-1",
+          },
+        },
+        [["messages", { text: "hello" }]] as PendingWrite[],
+        "task-42",
+      ),
+    ).rejects.toBeInstanceOf(CheckpointPersistenceError);
+
+    expect(builders.checkpoint_writes).toHaveLength(3);
   });
 
   it("scopes deleteThread to the current user when a session is present", async () => {

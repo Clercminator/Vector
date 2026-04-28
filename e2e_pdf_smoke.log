@@ -1,0 +1,4 @@
+
+> vector@0.0.1 test:e2e
+> playwright test tests/e2e/pdf-export.smoke.spec.ts
+

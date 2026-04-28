@@ -41,16 +41,10 @@ import { Switch } from "@/app/components/ui/switch";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import {
-  buildPaymentReturnUrls,
-  createCheckout,
-  createSubscription,
   isMercadoPagoConfigured,
   isMercadoPagoSubscriptionConfigured,
-} from "@/lib/mercadoPago";
-import {
-  createLemonSqueezyCheckout,
   isLemonSqueezyConfigured,
-} from "@/lib/lemonSqueezy";
+} from "@/lib/paymentProviderConfig";
 import { usePaymentRegion } from "@/hooks/usePaymentRegion";
 import { supabase } from "@/lib/supabase";
 import { ensureMyProfile } from "@/lib/ensureProfile";
@@ -804,6 +798,9 @@ export function Profile({
 
     try {
       if (useLemonSqueezy) {
+        const { createLemonSqueezyCheckout } = await import(
+          "@/lib/lemonSqueezy"
+        );
         await createLemonSqueezyCheckout(supabase, {
           tier: tierId as "builder" | "max",
           userId,
@@ -846,6 +843,11 @@ export function Profile({
 
     try {
       setBuyingCreditPackId(packId);
+      const [{ buildPaymentReturnUrls }, { createCheckout }] =
+        await Promise.all([
+          import("@/lib/paymentReturnUrls"),
+          import("@/lib/mercadoPago"),
+        ]);
       const returnUrls = buildPaymentReturnUrls({
         purchaseType: "extra_credits",
         provider: "mercadopago",
@@ -883,6 +885,11 @@ export function Profile({
       throw new Error("Failed to initiate checkout.");
     }
 
+    const [{ buildPaymentReturnUrls }, { createSubscription }] =
+      await Promise.all([
+        import("@/lib/paymentReturnUrls"),
+        import("@/lib/mercadoPago"),
+      ]);
     const returnUrls = buildPaymentReturnUrls({
       purchaseType: "tier",
       provider: "mercadopago",

@@ -1,0 +1,20 @@
+
+> vector@0.0.1 test:e2e
+> playwright test
+
+
+Running 11 tests using 7 workers
+
+  Γ£ô   1 [chromium] ΓÇ║ tests\e2e\lemonsqueezy-return.pw.ts:92:1 ΓÇ║ profile updates after a hosted LemonSqueezy return is processed (14.7s)
+  Γ£ô   7 [chromium] ΓÇ║ tests\e2e\pdf-export.smoke.spec.ts:33:1 ΓÇ║ dashboard can reopen a saved plan and export it as PDF (19.7s)
+  Γ£ô   8 [chromium] ΓÇ║ tests\e2e\lemonsqueezy-return.pw.ts:116:1 ΓÇ║ profile shows extra credits after a MercadoPago credit-pack return (5.8s)
+  Γ£ô   3 [chromium] ΓÇ║ tests\e2e\tracker-mobile.spec.ts:51:1 ΓÇ║ tracker view stays usable on mobile without horizontal overflow (28.0s)
+  Γ£ô   4 [chromium] ΓÇ║ tests\e2e\wizard-result-mobile.spec.ts:42:1 ΓÇ║ wizard result stays usable on mobile without horizontal overflow (28.3s)
+  Γ£ô   6 [chromium] ΓÇ║ tests\e2e\shared-plan-mobile.spec.ts:61:1 ΓÇ║ shared plan view stays readable on mobile without horizontal overflow (34.2s)
+  Γ£ô   5 [chromium] ΓÇ║ tests\e2e\execution-outcomes.spec.ts:62:1 ΓÇ║ wizard to tracker export and public share flow works in the browser (38.7s)
+  Γ£ô   2 [chromium] ΓÇ║ tests\e2e\framework-results.smoke.spec.ts:190:1 ΓÇ║ dashboard opens every framework result branch after the recent result changes (54.9s)
+  Γ£ô   9 [chromium] ΓÇ║ tests\e2e\execution-outcomes.spec.ts:98:1 ΓÇ║ wizard can tighten diagnosis, proof, and recovery independently (33.2s)
+  Γ£ô  10 [chromium] ΓÇ║ tests\e2e\execution-outcomes.spec.ts:157:1 ΓÇ║ dashboard publish shows proof history in the community feed (17.7s)
+  Γ£ô  11 [chromium] ΓÇ║ tests\e2e\execution-outcomes.spec.ts:185:1 ΓÇ║ stalled tracker execution can trigger and apply a guided revision (26.1s)
+
+  11 passed (3.6m)

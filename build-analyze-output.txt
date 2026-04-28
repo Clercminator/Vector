@@ -1,0 +1,93 @@
+
+> vector@0.0.1 build:analyze
+> vite build --mode analyze
+
+[36mvite v6.3.5 [32mbuilding for analyze...[36m[39m
+transforming...
+[32mΓ£ô[39m 4130 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                                     [39m[1m[2m  3.05 kB[22m[1m[22m[2m Γöé gzip:   0.92 kB[22m
+[2mdist/[22m[35massets/index-DbCRaJaj.css                      [39m[1m[2m334.83 kB[22m[1m[22m[2m Γöé gzip:  42.91 kB[22m
+[2mdist/[22m[36massets/index-BdQq_4o_.js                       [39m[1m[2m  0.06 kB[22m[1m[22m[2m Γöé gzip:   0.08 kB[22m
+[2mdist/[22m[36massets/index-DyTzF4yC.js                       [39m[1m[2m  0.23 kB[22m[1m[22m[2m Γöé gzip:   0.18 kB[22m
+[2mdist/[22m[36massets/chevron-left-BACEsqBt.js                [39m[1m[2m  0.30 kB[22m[1m[22m[2m Γöé gzip:   0.25 kB[22m
+[2mdist/[22m[36massets/chevron-right-CpESntRU.js               [39m[1m[2m  0.30 kB[22m[1m[22m[2m Γöé gzip:   0.25 kB[22m
+[2mdist/[22m[36massets/plus-BsvgISDk.js                        [39m[1m[2m  0.33 kB[22m[1m[22m[2m Γöé gzip:   0.26 kB[22m
+[2mdist/[22m[36massets/index-BamuRZC5.js                       [39m[1m[2m  0.34 kB[22m[1m[22m[2m Γöé gzip:   0.27 kB[22m
+[2mdist/[22m[36massets/search-DmsSoEEG.js                      [39m[1m[2m  0.34 kB[22m[1m[22m[2m Γöé gzip:   0.27 kB[22m
+[2mdist/[22m[36massets/clock-Bd5yp7XV.js                       [39m[1m[2m  0.35 kB[22m[1m[22m[2m Γöé gzip:   0.27 kB[22m
+[2mdist/[22m[36massets/clock-3-C5Z96JCx.js                     [39m[1m[2m  0.36 kB[22m[1m[22m[2m Γöé gzip:   0.28 kB[22m
+[2mdist/[22m[36massets/square-check-big-k6mPOUnl.js            [39m[1m[2m  0.40 kB[22m[1m[22m[2m Γöé gzip:   0.30 kB[22m
+[2mdist/[22m[36massets/panels-top-left-DC1QYXHO.js             [39m[1m[2m  0.40 kB[22m[1m[22m[2m Γöé gzip:   0.30 kB[22m
+[2mdist/[22m[36massets/eye-BY5EIrOL.js                         [39m[1m[2m  0.42 kB[22m[1m[22m[2m Γöé gzip:   0.30 kB[22m
+[2mdist/[22m[36massets/funnel-BPuAOB6v.js                      [39m[1m[2m  0.42 kB[22m[1m[22m[2m Γöé gzip:   0.31 kB[22m
+[2mdist/[22m[36massets/zap-DsIDZT8J.js                         [39m[1m[2m  0.44 kB[22m[1m[22m[2m Γöé gzip:   0.31 kB[22m
+[2mdist/[22m[36massets/award-DvQOqs9L.js                       [39m[1m[2m  0.44 kB[22m[1m[22m[2m Γöé gzip:   0.33 kB[22m
+[2mdist/[22m[36massets/save-DdvmPAct.js                        [39m[1m[2m  0.50 kB[22m[1m[22m[2m Γöé gzip:   0.33 kB[22m
+[2mdist/[22m[36massets/file-text-BRBpct5_.js                   [39m[1m[2m  0.51 kB[22m[1m[22m[2m Γöé gzip:   0.32 kB[22m
+[2mdist/[22m[36massets/layout-grid-4MW7h0QT.js                 [39m[1m[2m  0.52 kB[22m[1m[22m[2m Γöé gzip:   0.30 kB[22m
+[2mdist/[22m[36massets/trash-2-bnK8Cv-_.js                     [39m[1m[2m  0.53 kB[22m[1m[22m[2m Γöé gzip:   0.35 kB[22m
+[2mdist/[22m[36massets/trophy-Ba_j4_3m.js                      [39m[1m[2m  0.64 kB[22m[1m[22m[2m Γöé gzip:   0.39 kB[22m
+[2mdist/[22m[36massets/profileCompletion-BD2cQ-MP.js           [39m[1m[2m  0.64 kB[22m[1m[22m[2m Γöé gzip:   0.32 kB[22m
+[2mdist/[22m[36massets/TrackerHeatmap-IwEG05UC.js              [39m[1m[2m  0.70 kB[22m[1m[22m[2m Γöé gzip:   0.48 kB[22m
+[2mdist/[22m[36massets/card-D0uBtTBa.js                        [39m[1m[2m  0.87 kB[22m[1m[22m[2m Γöé gzip:   0.38 kB[22m
+[2mdist/[22m[36massets/settings-quNYoDwu.js                    [39m[1m[2m  0.90 kB[22m[1m[22m[2m Γöé gzip:   0.45 kB[22m
+[2mdist/[22m[36massets/table-CTjg8Jjt.js                       [39m[1m[2m  1.19 kB[22m[1m[22m[2m Γöé gzip:   0.47 kB[22m
+[2mdist/[22m[36massets/user-round-BzmzSkmg.js                  [39m[1m[2m  1.38 kB[22m[1m[22m[2m Γöé gzip:   0.54 kB[22m
+[2mdist/[22m[36massets/badge-BXrlv4iW.js                       [39m[1m[2m  1.91 kB[22m[1m[22m[2m Γöé gzip:   0.86 kB[22m
+[2mdist/[22m[36massets/trackerOffline-DpgLD8d0.js              [39m[1m[2m  2.23 kB[22m[1m[22m[2m Γöé gzip:   0.91 kB[22m
+[2mdist/[22m[36massets/index-DUwCHmYC.js                       [39m[1m[2m  2.42 kB[22m[1m[22m[2m Γöé gzip:   1.13 kB[22m
+[2mdist/[22m[36massets/LegalPage-CqyT_EtF.js                   [39m[1m[2m  2.42 kB[22m[1m[22m[2m Γöé gzip:   0.82 kB[22m
+[2mdist/[22m[36massets/index-COjgItKg.js                       [39m[1m[2m  2.82 kB[22m[1m[22m[2m Γöé gzip:   1.07 kB[22m
+[2mdist/[22m[36massets/FileSaver.min-Dypr8NWW.js               [39m[1m[2m  3.02 kB[22m[1m[22m[2m Γöé gzip:   1.47 kB[22m
+[2mdist/[22m[36massets/trackerSurface-Ct947hz0.js              [39m[1m[2m  3.48 kB[22m[1m[22m[2m Γöé gzip:   1.50 kB[22m
+[2mdist/[22m[36massets/openrouter-ByuyARFR.js                  [39m[1m[2m  3.58 kB[22m[1m[22m[2m Γöé gzip:   1.87 kB[22m
+[2mdist/[22m[36massets/alert-dialog-g1WxMlKs.js                [39m[1m[2m  4.56 kB[22m[1m[22m[2m Γöé gzip:   1.66 kB[22m
+[2mdist/[22m[36massets/AboutPage-c-SCZawl.js                   [39m[1m[2m  4.87 kB[22m[1m[22m[2m Γöé gzip:   1.70 kB[22m
+[2mdist/[22m[36massets/trackerStats-BPJr-_QE.js                [39m[1m[2m  5.18 kB[22m[1m[22m[2m Γöé gzip:   2.39 kB[22m
+[2mdist/[22m[36massets/workbox-window.prod.es5-BIl4cyR9.js     [39m[1m[2m  5.76 kB[22m[1m[22m[2m Γöé gzip:   2.37 kB[22m
+[2mdist/[22m[36massets/TrackerStreakCounter-x3IZ5qIA.js        [39m[1m[2m  7.89 kB[22m[1m[22m[2m Γöé gzip:   2.68 kB[22m
+[2mdist/[22m[36massets/TodayPage-Bdo8Ikcp.js                   [39m[1m[2m  8.47 kB[22m[1m[22m[2m Γöé gzip:   3.21 kB[22m
+[2mdist/[22m[36massets/CalendarExportConfirmModal-BXjJRdWY.js  [39m[1m[2m  8.83 kB[22m[1m[22m[2m Γöé gzip:   3.41 kB[22m
+[2mdist/[22m[36massets/InternalAdminGate-DUo4MwNv.js           [39m[1m[2m 11.06 kB[22m[1m[22m[2m Γöé gzip:   3.58 kB[22m
+[2mdist/[22m[36massets/HelpMeChooseModal-BnqgXFVY.js           [39m[1m[2m 11.87 kB[22m[1m[22m[2m Γöé gzip:   3.18 kB[22m
+[2mdist/[22m[36massets/PricingSection-CCiKesBx.js              [39m[1m[2m 13.52 kB[22m[1m[22m[2m Γöé gzip:   4.32 kB[22m
+[2mdist/[22m[36massets/AnalyticsPage-CqVQd8As.js               [39m[1m[2m 13.70 kB[22m[1m[22m[2m Γöé gzip:   5.24 kB[22m
+[2mdist/[22m[36massets/FrameworkPage-C35Plnfi.js               [39m[1m[2m 15.64 kB[22m[1m[22m[2m Γöé gzip:   4.42 kB[22m
+[2mdist/[22m[36massets/ArticlePage-65Q4O4DZ.js                 [39m[1m[2m 15.91 kB[22m[1m[22m[2m Γöé gzip:   4.07 kB[22m
+[2mdist/[22m[36massets/SharedPlanView-TDgo9WhF.js              [39m[1m[2m 15.92 kB[22m[1m[22m[2m Γöé gzip:   3.89 kB[22m
+[2mdist/[22m[36massets/Community-DJup7c5O.js                   [39m[1m[2m 16.09 kB[22m[1m[22m[2m Γöé gzip:   4.81 kB[22m
+[2mdist/[22m[36massets/GuidesPage-CnX4rYne.js                  [39m[1m[2m 19.11 kB[22m[1m[22m[2m Γöé gzip:   4.25 kB[22m
+[2mdist/[22m[36massets/purify.es-B9ZVCkUG.js                   [39m[1m[2m 22.64 kB[22m[1m[22m[2m Γöé gzip:   8.75 kB[22m
+[2mdist/[22m[36massets/pt-DSX1usK0.js                          [39m[1m[2m 38.28 kB[22m[1m[22m[2m Γöé gzip:  12.66 kB[22m
+[2mdist/[22m[36massets/de-r5EqtRYk.js                          [39m[1m[2m 38.46 kB[22m[1m[22m[2m Γöé gzip:  13.15 kB[22m
+[2mdist/[22m[36massets/fr-ViT6aYkq.js                          [39m[1m[2m 39.81 kB[22m[1m[22m[2m Γöé gzip:  13.12 kB[22m
+[2mdist/[22m[36massets/AdminDashboard-DdCnURIu.js              [39m[1m[2m 43.78 kB[22m[1m[22m[2m Γöé gzip:  12.55 kB[22m
+[2mdist/[22m[36massets/es-CiDVZa8e.js                          [39m[1m[2m 69.00 kB[22m[1m[22m[2m Γöé gzip:  22.63 kB[22m
+[2mdist/[22m[36massets/Profile-DbKYacaD.js                     [39m[1m[2m 85.34 kB[22m[1m[22m[2m Γöé gzip:  22.91 kB[22m
+[2mdist/[22m[36massets/editorialArticles-Ckt3jby8.js           [39m[1m[2m 97.69 kB[22m[1m[22m[2m Γöé gzip:  26.30 kB[22m
+[2mdist/[22m[36massets/TrackerPage-CQrQs-Lv.js                 [39m[1m[2m102.23 kB[22m[1m[22m[2m Γöé gzip:  26.54 kB[22m
+[2mdist/[22m[36massets/WizardResult-BrJYYMV2.js                [39m[1m[2m102.99 kB[22m[1m[22m[2m Γöé gzip:  22.13 kB[22m
+[2mdist/[22m[36massets/index-BQvvU1YV.js                       [39m[1m[2m117.58 kB[22m[1m[22m[2m Γöé gzip:  36.17 kB[22m
+[2mdist/[22m[36massets/Dashboard-Bww05Z88.js                   [39m[1m[2m126.15 kB[22m[1m[22m[2m Γöé gzip:  38.07 kB[22m
+[2mdist/[22m[36massets/index.es-C4QqdZy3.js                    [39m[1m[2m159.42 kB[22m[1m[22m[2m Γöé gzip:  53.45 kB[22m
+[2mdist/[22m[36massets/html2canvas.esm-QH1iLAAe.js             [39m[1m[2m202.38 kB[22m[1m[22m[2m Γöé gzip:  48.04 kB[22m
+
+(!) Some chunks are larger than 800 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[2mdist/[22m[36massets/BarChart-C2-XCbh7.js                    [39m[1m[2m379.32 kB[22m[1m[22m[2m Γöé gzip: 104.73 kB[22m
+[2mdist/[22m[36massets/pdfExport-DnH8t1Cb.js                   [39m[1m[2m410.17 kB[22m[1m[22m[2m Γöé gzip: 133.68 kB[22m
+[2mdist/[22m[36massets/GoalWizard-EymEHWc2.js                  [39m[1m[2m459.68 kB[22m[1m[22m[2m Γöé gzip: 142.02 kB[22m
+[2mdist/[22m[36massets/utils-DexNQSQk.js                       [39m[1m[2m783.26 kB[22m[1m[22m[2m Γöé gzip: 211.12 kB[22m
+[2mdist/[22m[36massets/index-CdWBduH6.js                       [39m[1m[33m980.95 kB[39m[22m[2m Γöé gzip: 303.61 kB[22m
+[32mΓ£ô built in 45.95s[39m
+
+PWA v1.2.0
+mode      generateSW
+precache  76 entries (6538.44 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-8c29f6e4.js

@@ -12,10 +12,12 @@ import { Button } from "@/app/components/ui/button";
 import {
   ensureMercadoPagoSecurityLoaded,
   getMercadoPagoDeviceId,
+} from "@/lib/mercadoPagoSecurity";
+import {
   getMercadoPagoPublicKey,
   isMercadoPagoSubscriptionConfigured,
   shouldUseMercadoPagoTestEnvironment,
-} from "@/lib/mercadoPago";
+} from "@/lib/paymentProviderConfig";
 import { useLanguage } from "@/app/components/language-provider";
 
 declare global {

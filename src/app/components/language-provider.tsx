@@ -7,9 +7,13 @@ import React, {
 } from "react";
 import { useLocation } from "react-router-dom";
 import {
-  translations,
+  defaultTranslations,
+  getCachedTranslations,
   Language,
   SUPPORTED_LANGUAGES,
+  isSupportedLanguage,
+  loadTranslations,
+  type TranslationDictionary,
 } from "@/lib/translations";
 import { getPathLanguage } from "@/lib/seo";
 
@@ -37,11 +41,10 @@ function getLanguageFromLocation(
   search: string,
 ): Language | null {
   const pathLang = getPathLanguage(pathname);
-  if (pathLang && Object.keys(translations).includes(pathLang))
-    return pathLang as Language;
+  if (isSupportedLanguage(pathLang)) return pathLang;
   const params = new URLSearchParams(search);
   const lang = params.get("lang")?.toLowerCase();
-  if (lang && Object.keys(translations).includes(lang)) return lang as Language;
+  if (isSupportedLanguage(lang)) return lang;
   return null;
 }
 
@@ -51,9 +54,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     const urlLang = getLanguageFromLocation(location.pathname, location.search);
     if (urlLang) return urlLang;
     const saved = localStorage.getItem("vector.language") as Language | null;
-    if (saved && Object.keys(translations).includes(saved)) return saved;
+    if (isSupportedLanguage(saved)) return saved;
     return getBrowserLanguage();
   });
+  const [translationMap, setTranslationMap] = useState<TranslationDictionary>(
+    () => getCachedTranslations(language) ?? defaultTranslations,
+  );
 
   useEffect(() => {
     const urlLang = getLanguageFromLocation(location.pathname, location.search);
@@ -63,10 +69,38 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       return;
     }
     const saved = localStorage.getItem("vector.language") as Language;
-    if (saved && Object.keys(translations).includes(saved)) {
+    if (isSupportedLanguage(saved)) {
       setLanguage(saved);
     }
   }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    const cachedTranslations = getCachedTranslations(language);
+    if (cachedTranslations) {
+      setTranslationMap(cachedTranslations);
+      return;
+    }
+
+    let cancelled = false;
+    setTranslationMap(defaultTranslations);
+
+    void loadTranslations(language)
+      .then((loadedTranslations) => {
+        if (!cancelled) {
+          setTranslationMap(loadedTranslations);
+        }
+      })
+      .catch((error) => {
+        console.error(`Failed to load translations for ${language}`, error);
+        if (!cancelled) {
+          setTranslationMap(defaultTranslations);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [language]);
 
   const handleSetLanguage = (lang: Language) => {
     setLanguage(lang);
@@ -74,10 +108,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   const t = (key: string): string => {
-    const current = translations[language] ?? translations.en;
+    const current = translationMap;
     const value = current?.[key];
     if (value != null && typeof value === "string") return value;
-    const en = translations.en as Record<string, string>;
+    const en = defaultTranslations;
     return en?.[key] ?? key;
   };
 

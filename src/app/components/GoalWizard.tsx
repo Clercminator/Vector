@@ -21,13 +21,8 @@ import {
   filterRealAnswers,
 } from "@/lib/blueprints";
 import {
-  blueprintToEvents,
-  downloadIcs,
-  exportEventsToGoogleCalendar,
-  getGoogleAccessToken,
   isBlueprintCalendarWorthy,
 } from "@/lib/calendarExport";
-import { exportToPdf } from "@/lib/pdfExport";
 import { TIER_CONFIGS, TierId, normalizeTierId } from "@/lib/tiers";
 import { useLanguage } from "@/app/components/language-provider";
 import { trackEvent } from "@/lib/analytics";
@@ -35,7 +30,6 @@ import {
   normalizeCanonicalPlanResult,
   validateCanonicalPlanResult,
 } from "@/lib/planContract";
-import { loadBlueprintExecutionContext } from "@/lib/executionData";
 
 import { cn } from "./ui/utils";
 import {
@@ -51,13 +45,26 @@ import {
 import { WizardHeader } from "./wizard/WizardHeader";
 import { WizardChat } from "./wizard/WizardChat";
 import { WizardInput } from "./wizard/WizardInput";
-import { WizardDraft } from "./wizard/WizardDraft";
-import { WizardResult } from "./wizard/WizardResult";
 import { useGoalWizard, GoalWizardHookProps } from "./wizard/useGoalWizard";
-import { CalendarExportConfirmModal } from "./CalendarExportConfirmModal";
 
 // Re-export interface for consumers
 export type { GoalWizardHookProps as GoalWizardProps };
+
+const CalendarExportConfirmModal = React.lazy(() =>
+  import("./CalendarExportConfirmModal").then((module) => ({
+    default: module.CalendarExportConfirmModal,
+  })),
+);
+const WizardResult = React.lazy(() =>
+  import("./wizard/WizardResult").then((module) => ({
+    default: module.WizardResult,
+  })),
+);
+const WizardDraft = React.lazy(() =>
+  import("./wizard/WizardDraft").then((module) => ({
+    default: module.WizardDraft,
+  })),
+);
 
 export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
   const { t, language } = useLanguage();
@@ -167,6 +174,9 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
   const handleExport = () => setIsCalendarExportOpen(true);
 
   const loadCalendarExportContext = React.useCallback(async () => {
+    const { loadBlueprintExecutionContext } = await import(
+      "@/lib/executionData"
+    );
     return loadBlueprintExecutionContext(
       buildValidatedBlueprint(),
       undefined,
@@ -177,13 +187,17 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
   const handlePdfExport = async () => {
     if (!result) return;
     toast.promise(
-      exportToPdf(buildValidatedBlueprint(), undefined, {
-        language: language || "en",
-        userName: userName || undefined,
-        messages: messages.map((m) => ({ role: m.role, content: m.content })),
-      }).then(() => {
-        trackEvent("export_pdf", { framework: props.framework });
-      }),
+      import("@/lib/pdfExport")
+        .then(({ exportToPdf }) =>
+          exportToPdf(buildValidatedBlueprint(), undefined, {
+            language: language || "en",
+            userName: userName || undefined,
+            messages: messages.map((m) => ({ role: m.role, content: m.content })),
+          }),
+        )
+        .then(() => {
+          trackEvent("export_pdf", { framework: props.framework });
+        }),
       {
         loading: t("wizard.pdfGenerating") || "Generating PDF…",
         success: t("wizard.pdfSuccess"),
@@ -222,16 +236,21 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {result && (
-        <CalendarExportConfirmModal
-          open={isCalendarExportOpen}
-          onOpenChange={setIsCalendarExportOpen}
-          blueprint={buildValidatedBlueprint()}
-          loadContext={loadCalendarExportContext}
-          onExported={(mode) =>
-            trackEvent("export_calendar", { framework: props.framework, mode })
-          }
-        />
+      {result && isCalendarExportOpen && (
+        <React.Suspense fallback={null}>
+          <CalendarExportConfirmModal
+            open={isCalendarExportOpen}
+            onOpenChange={setIsCalendarExportOpen}
+            blueprint={buildValidatedBlueprint()}
+            loadContext={loadCalendarExportContext}
+            onExported={(mode) =>
+              trackEvent("export_calendar", {
+                framework: props.framework,
+                mode,
+              })
+            }
+          />
+        </React.Suspense>
       )}
 
       {!fullscreenBlueprint && (
@@ -304,24 +323,28 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                 messagesEndRef={messagesEndRef}
                 onEditMessage={editUserMessageOnce}
               >
-                <WizardResult
-                  result={result}
-                  updateResult={updateResult}
-                  onRefineSection={refinePlanSection}
-                  refiningSection={refiningSection}
-                  onBack={props.onBack}
-                />
+                <React.Suspense fallback={null}>
+                  <WizardResult
+                    result={result}
+                    updateResult={updateResult}
+                    onRefineSection={refinePlanSection}
+                    refiningSection={refiningSection}
+                    onBack={props.onBack}
+                  />
+                </React.Suspense>
               </WizardChat>
             )}
             {fullscreenBlueprint && (
               <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-                <WizardResult
-                  result={result}
-                  updateResult={updateResult}
-                  onRefineSection={refinePlanSection}
-                  refiningSection={refiningSection}
-                  onBack={props.onBack}
-                />
+                <React.Suspense fallback={null}>
+                  <WizardResult
+                    result={result}
+                    updateResult={updateResult}
+                    onRefineSection={refinePlanSection}
+                    refiningSection={refiningSection}
+                    onBack={props.onBack}
+                  />
+                </React.Suspense>
               </div>
             )}
           </div>
@@ -338,15 +361,7 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
                 draftResult={draftResult}
                 messagesEndRef={messagesEndRef}
                 onEditMessage={editUserMessageOnce}
-              >
-                <WizardResult
-                  result={result}
-                  updateResult={updateResult}
-                  onRefineSection={refinePlanSection}
-                  refiningSection={refiningSection}
-                  onBack={props.onBack}
-                />
-              </WizardChat>
+              />
 
               <WizardInput
                 inputValue={inputValue}
@@ -428,17 +443,19 @@ export const GoalWizard: React.FC<GoalWizardHookProps> = (props) => {
             </div>
 
             {draftResult && (
-              <WizardDraft
-                draftResult={draftResult}
-                showMobileDraft={showMobileDraft}
-                setShowMobileDraft={setShowMobileDraft}
-                draftPulse={draftPulse}
-                onFinalize={promoteDraftToResult}
-                isTyping={isTyping}
-                isAgentRunning={isAgentRunning}
-                awaitingPlanConfirmation={awaitingPlanConfirmation}
-                goalMri={goalMri}
-              />
+              <React.Suspense fallback={null}>
+                <WizardDraft
+                  draftResult={draftResult}
+                  showMobileDraft={showMobileDraft}
+                  setShowMobileDraft={setShowMobileDraft}
+                  draftPulse={draftPulse}
+                  onFinalize={promoteDraftToResult}
+                  isTyping={isTyping}
+                  isAgentRunning={isAgentRunning}
+                  awaitingPlanConfirmation={awaitingPlanConfirmation}
+                  goalMri={goalMri}
+                />
+              </React.Suspense>
             )}
           </div>
         )}

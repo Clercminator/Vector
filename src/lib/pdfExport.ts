@@ -1,4 +1,4 @@
-import { jsPDF } from "jspdf";
+import type { jsPDF as JsPdfDocument } from "jspdf";
 import { Blueprint } from "@/lib/blueprints";
 import { normalizeCanonicalPlanResult } from "@/lib/planContract";
 
@@ -201,7 +201,8 @@ export const generatePdf = async (
   blueprint: Blueprint,
   branding?: PdfBranding,
   options?: PdfOptions,
-): Promise<jsPDF> => {
+): Promise<JsPdfDocument> => {
+  const { jsPDF } = await import("jspdf");
   const doc = new jsPDF();
   const lang = options?.language || "en";
   const userName = options?.userName?.trim();

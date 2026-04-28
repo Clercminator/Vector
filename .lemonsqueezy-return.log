@@ -1,0 +1,11 @@
+
+> vector@0.0.1 test:e2e
+> playwright test tests/e2e/lemonsqueezy-return.pw.ts
+
+
+Running 2 tests using 1 worker
+
+  Γ£ô  1 [chromium] ΓÇ║ tests\e2e\lemonsqueezy-return.pw.ts:92:1 ΓÇ║ profile updates after a hosted LemonSqueezy return is processed (5.4s)
+  Γ£ô  2 [chromium] ΓÇ║ tests\e2e\lemonsqueezy-return.pw.ts:116:1 ΓÇ║ profile shows extra credits after a MercadoPago credit-pack return (2.9s)
+
+  2 passed (1.3m)

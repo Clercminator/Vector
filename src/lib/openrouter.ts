@@ -10,15 +10,12 @@ import gpsPrompt from "@/lib/prompts/gps.txt?raw";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_MODEL = "deepseek/deepseek-v3.2";
+let hasWarnedProductionProxyRequirement = false;
 
-function getApiKey(): string {
+function getClientApiKey(): string {
   const key2 = (import.meta.env.VITE_OPENROUTER_API_KEY_2 as string | undefined)?.trim() ?? "";
   const key1 = (import.meta.env.VITE_OPENROUTER_API_KEY as string | undefined)?.trim() ?? "";
-  const key = key2 || key1;
-  if (key && import.meta.env.PROD && !import.meta.env.VITE_OPENROUTER_PROXY_URL) {
-      console.warn("Security Warning: Open Router API key is exposed in the client. Use VITE_OPENROUTER_PROXY_URL for production.");
-  }
-  return key;
+  return key2 || key1;
 }
 
 /** Proxy URL from your backend (e.g. Supabase Edge Function). When set, the app calls this instead of Open Router directly so the API key stays server-side. */
@@ -26,8 +23,28 @@ function getProxyUrl(): string {
   return (import.meta.env.VITE_OPENROUTER_PROXY_URL as string | undefined) ?? "";
 }
 
+function warnProductionProxyRequirement() {
+  if (hasWarnedProductionProxyRequirement) return;
+  hasWarnedProductionProxyRequirement = true;
+  console.warn(
+    "OpenRouter is disabled in production without VITE_OPENROUTER_PROXY_URL. Direct browser requests are blocked.",
+  );
+}
+
+function getDirectApiKey(): string {
+  if (import.meta.env.PROD) {
+    warnProductionProxyRequirement();
+    return "";
+  }
+
+  return getClientApiKey();
+}
+
 export function isOpenRouterConfigured(): boolean {
-  return Boolean(getProxyUrl().trim() || getApiKey().trim());
+  const proxyUrl = getProxyUrl().trim();
+  if (proxyUrl) return true;
+
+  return Boolean(getDirectApiKey().trim());
 }
 
 interface ChatMessage {
@@ -77,7 +94,13 @@ export async function chat(
         return content.trim();
       }
 
-      const key = getApiKey();
+      if (import.meta.env.PROD) {
+        throw new Error(
+          "OpenRouter is disabled in production until VITE_OPENROUTER_PROXY_URL is configured.",
+        );
+      }
+
+      const key = getDirectApiKey();
       if (!key) throw new Error("VITE_OPENROUTER_API_KEY or VITE_OPENROUTER_PROXY_URL is not set.");
 
       const res = await fetch(OPENROUTER_URL, {

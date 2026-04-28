@@ -39,7 +39,7 @@ if (import.meta.env.PROD) {
 
 if (import.meta.env.PROD && !import.meta.env.VITE_OPENROUTER_PROXY_URL) {
   console.warn(
-    "Security Warning: VITE_OPENROUTER_PROXY_URL is not set in production. App may be using client-side API key.",
+    "AI features are disabled in production until VITE_OPENROUTER_PROXY_URL is configured.",
   );
 }
 

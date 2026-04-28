@@ -170,9 +170,11 @@ const workflow = new StateGraph(AgentState)
       [END]: END
   });
 
-const checkpointer = isSupabaseConfigured && supabase 
-    ? new SupabaseCheckpointer(supabase) 
-    : new MemorySaver();
+const shouldUseMemoryCheckpointer = import.meta.env.MODE === "test";
+const checkpointer =
+    !shouldUseMemoryCheckpointer && isSupabaseConfigured && supabase
+        ? new SupabaseCheckpointer(supabase)
+        : new MemorySaver();
 
 // Use interruptBefore instead of interrupt() inside the node: interrupt() relies on
 // AsyncLocalStorage which is not reliably set in the browser, causing "Called interrupt()

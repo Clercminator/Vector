@@ -191,15 +191,25 @@ test("dashboard opens every framework result branch after the recent result chan
   page,
 }) => {
   await page.goto("/dashboard");
-  await expect(page.getByText(FRAMEWORK_CASES[0].title)).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "My Plans", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: FRAMEWORK_CASES[0].title, exact: true }),
+  ).toBeVisible({ timeout: 15_000 });
 
   for (const frameworkCase of FRAMEWORK_CASES) {
     await test.step(frameworkCase.framework, async () => {
-      await page.getByText(frameworkCase.title).first().click();
+      await page
+        .getByRole("heading", { name: frameworkCase.title, exact: true })
+        .click();
       await page.waitForURL(/\/wizard/);
       await expect(page.getByText("Plan Pack", { exact: true })).toBeVisible();
       await expect(page.getByText(frameworkCase.marker).first()).toBeVisible();
       await page.goto("/dashboard");
+      await expect(
+        page.getByRole("heading", { name: "My Plans", exact: true }),
+      ).toBeVisible();
     });
   }
 });

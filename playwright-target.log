@@ -1,0 +1,14 @@
+
+> vector@0.0.1 test:e2e
+> playwright test tests/e2e/framework-results.smoke.spec.ts tests/e2e/execution-outcomes.spec.ts
+
+
+Running 5 tests using 2 workers
+
+  Γ£ô  2 [chromium] ΓÇ║ tests\e2e\execution-outcomes.spec.ts:62:1 ΓÇ║ wizard to tracker export and public share flow works in the browser (38.1s)
+  Γ£ô  1 [chromium] ΓÇ║ tests\e2e\framework-results.smoke.spec.ts:190:1 ΓÇ║ dashboard opens every framework result branch after the recent result changes (1.0m)
+  Γ£ô  3 [chromium] ΓÇ║ tests\e2e\execution-outcomes.spec.ts:98:1 ΓÇ║ wizard can tighten diagnosis, proof, and recovery independently (48.7s)
+  Γ£ô  4 [chromium] ΓÇ║ tests\e2e\execution-outcomes.spec.ts:157:1 ΓÇ║ dashboard publish shows proof history in the community feed (40.3s)
+  Γ£ô  5 [chromium] ΓÇ║ tests\e2e\execution-outcomes.spec.ts:185:1 ΓÇ║ stalled tracker execution can trigger and apply a guided revision (54.8s)
+
+  5 passed (4.4m)

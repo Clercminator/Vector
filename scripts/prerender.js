@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { spawn } from "child_process";
+import { buildPublicRoutes } from "./publicRoutes.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.resolve(__dirname, "../dist");
@@ -15,72 +16,7 @@ function isMissingBrowserError(error) {
   );
 }
 
-const localizedLanguages = ["es", "pt", "fr", "de"];
-
-const baseRoutes = [
-  "/",
-  "/about",
-  "/pricing",
-  "/guides",
-  "/articles/how-to-choose-the-right-goal-framework",
-  "/articles/best-framework-for-career-change",
-  "/articles/best-framework-for-startup-planning",
-  "/articles/best-framework-for-studying",
-  "/articles/best-framework-for-fitness-goals",
-  "/articles/career-planning-system",
-  "/articles/personal-okr-system",
-  "/articles/goal-prioritization-system",
-  "/articles/study-planning-system",
-  "/articles/life-planning-framework",
-  "/articles/okr-generator",
-  "/articles/ikigai-template",
-  "/articles/eisenhower-matrix-tool",
-  "/articles/pareto-analysis-template",
-  "/articles/career-change-planner",
-  "/articles/goal-breakdown-tool",
-  "/articles/example-okr-for-career-change",
-  "/articles/example-study-plan-using-pareto",
-  "/articles/best-goal-setting-method",
-  "/articles/planning-system-for-personal-goals",
-  "/articles/decision-framework-for-complex-goals",
-  "/articles/life-planning-tool",
-  "/articles/personal-strategy-framework",
-  "/articles/priority-matrix-guide",
-  "/articles/ikigai-vs-okr",
-  "/articles/first-principles-vs-pareto",
-  "/articles/rpm-vs-okr",
-  "/articles/smart-goals-vs-eisenhower",
-  "/articles/pareto-vs-eisenhower-matrix",
-  "/articles/okr-vs-smart-goals",
-  "/articles/vector-vs-notion-goal-planning",
-  "/articles/vector-vs-trello-personal-planning",
-  "/articles/okrs-in-vector-vs-spreadsheet-tracking",
-  "/articles/how-to-use-pareto-for-studying",
-  "/articles/how-to-use-okrs-for-personal-goals",
-  "/articles/how-to-use-ikigai-for-career-clarity",
-  "/articles/how-to-stop-feeling-overwhelmed",
-  "/articles/how-to-prioritize-too-many-goals",
-  "/articles/how-to-turn-a-vague-goal-into-a-plan",
-  "/frameworks/first-principles",
-  "/frameworks/pareto",
-  "/frameworks/rpm",
-  "/frameworks/eisenhower",
-  "/frameworks/okr",
-  "/frameworks/dsss",
-  "/frameworks/mandalas",
-  "/frameworks/gps",
-  "/frameworks/misogi",
-  "/frameworks/ikigai",
-];
-
-const routes = [
-  ...baseRoutes,
-  ...localizedLanguages.flatMap((language) =>
-    baseRoutes.map((route) =>
-      route === "/" ? `/${language}` : `/${language}${route}`,
-    ),
-  ),
-];
+const routes = buildPublicRoutes();
 
 async function prerender() {
   console.log("Starting prerender...");

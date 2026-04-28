@@ -10,9 +10,7 @@ import {
 import { Button } from "@/app/components/ui/button";
 import { ParticleBackground } from "@/app/components/ParticleBackground";
 import { Toaster } from "@/app/components/ui/sonner";
-import { AuthModal } from "@/app/components/AuthModal";
 import { WifiOff } from "lucide-react";
-import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import {
@@ -28,25 +26,11 @@ import {
   processDeletedQueue,
 } from "@/lib/blueprints";
 import { supabase } from "@/lib/supabase";
-import { ensureMyProfile } from "@/lib/ensureProfile";
 import {
-  buildPaymentReturnUrls,
-  createCheckout,
-  createSubscription,
   isMercadoPagoConfigured,
   isMercadoPagoSubscriptionConfigured,
-} from "@/lib/mercadoPago";
-import {
-  createLemonSqueezyCheckout,
   isLemonSqueezyConfigured,
-} from "@/lib/lemonSqueezy";
-import {
-  clearPendingPaymentSyncRecord,
-  markPendingPaymentReturned,
-  resolvePaymentReturnPaths,
-} from "@/lib/paymentReturn";
-import { buildCommunityProofArtifacts } from "@/lib/communityProof";
-import { loadBlueprintExecutionContext } from "@/lib/executionData";
+} from "@/lib/paymentProviderConfig";
 import {
   getE2EUser,
   isE2EMode,
@@ -74,24 +58,18 @@ import { checkAndAwardAchievements } from "@/lib/gamification";
 import { useLanguage } from "@/app/components/language-provider";
 import { SeoHead } from "@/app/components/SeoHead";
 import { ShareButton } from "@/app/components/ShareButton";
-import { FrameworkDetail } from "@/app/components/FrameworkDetail";
-import { OnboardingModal } from "@/app/components/OnboardingModal";
-import { HelpMeChooseModal } from "@/app/components/HelpMeChooseModal";
-import { FeedbackButton } from "@/app/components/FeedbackButton";
 import { Logo } from "@/app/components/Logo";
-import { BinancePaymentModal } from "@/app/components/BinancePaymentModal";
-import {
-  MercadoPagoSubscriptionDialog,
-  type MercadoPagoSubscriptionSubmitData,
-} from "@/app/components/MercadoPagoSubscriptionDialog";
-import { ChatwootWidget, openChatwoot } from "@/app/components/ChatwootWidget";
-
-import { LandingPage } from "@/pages/LandingPage";
+import type { MercadoPagoSubscriptionSubmitData } from "@/app/components/MercadoPagoSubscriptionDialog";
 import { Header } from "@/app/components/layout/Header";
 import { MobileMenu } from "@/app/components/layout/MobileMenu";
 import { useIsMobileSync } from "@/app/components/ui/use-mobile";
 
 // Lazy load screens
+const LandingPage = React.lazy(() =>
+  import("@/pages/LandingPage").then((module) => ({
+    default: module.LandingPage,
+  })),
+);
 const GoalWizard = React.lazy(() =>
   import("@/app/components/GoalWizard").then((module) => ({
     default: module.GoalWizard,
@@ -166,6 +144,46 @@ const InternalAdminGate = React.lazy(() =>
     default: m.InternalAdminGate,
   })),
 );
+const ChatwootWidget = React.lazy(() =>
+  import("@/app/components/ChatwootWidget").then((module) => ({
+    default: module.ChatwootWidget,
+  })),
+);
+const AuthModal = React.lazy(() =>
+  import("@/app/components/AuthModal").then((module) => ({
+    default: module.AuthModal,
+  })),
+);
+const FrameworkDetail = React.lazy(() =>
+  import("@/app/components/FrameworkDetail").then((module) => ({
+    default: module.FrameworkDetail,
+  })),
+);
+const OnboardingModal = React.lazy(() =>
+  import("@/app/components/OnboardingModal").then((module) => ({
+    default: module.OnboardingModal,
+  })),
+);
+const FeedbackButton = React.lazy(() =>
+  import("@/app/components/FeedbackButton").then((module) => ({
+    default: module.FeedbackButton,
+  })),
+);
+const BinancePaymentModal = React.lazy(() =>
+  import("@/app/components/BinancePaymentModal").then((module) => ({
+    default: module.BinancePaymentModal,
+  })),
+);
+const MercadoPagoSubscriptionDialog = React.lazy(() =>
+  import("@/app/components/MercadoPagoSubscriptionDialog").then((module) => ({
+    default: module.MercadoPagoSubscriptionDialog,
+  })),
+);
+const HelpMeChooseModal = React.lazy(() =>
+  import("@/app/components/HelpMeChooseModal").then((module) => ({
+    default: module.HelpMeChooseModal,
+  })),
+);
 
 import { frameworks, Framework } from "@/lib/frameworks";
 import {
@@ -177,6 +195,12 @@ import {
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-[50vh]">
     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+  </div>
+);
+
+const OverlayLoadingFallback = () => (
+  <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-white"></div>
   </div>
 );
 
@@ -248,6 +272,20 @@ function App() {
 
   const effectiveUserId = impersonating?.userId ?? userId;
   const effectiveTier = impersonating?.tier ?? tier;
+  const ensureProfile = React.useCallback(async () => {
+    if (!supabase) return;
+    const { ensureMyProfile } = await import("@/lib/ensureProfile");
+    return ensureMyProfile(supabase);
+  }, []);
+  const triggerCelebration = React.useCallback(async () => {
+    const { default: confetti } = await import("canvas-confetti");
+    confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+  }, []);
+  const openSupportChat = React.useCallback(() => {
+    void import("@/app/components/ChatwootWidget").then(({ openChatwoot }) => {
+      void openChatwoot();
+    });
+  }, []);
   const [binanceModal, setBinanceModal] = useState<{
     open: boolean;
     tierId: string;
@@ -299,42 +337,66 @@ function App() {
     const purchaseType = params.get("purchase");
     const provider = params.get("provider");
     const tierId = params.get("tier");
-    const { successPath, failurePath } = resolvePaymentReturnPaths({
-      purchaseType,
-      provider,
-    });
+    if (!paymentStatus) return;
 
-    if (paymentStatus === "success") {
-      markPendingPaymentReturned({
-        purchaseType,
-        provider,
-        tier: tierId,
-      });
-      if (successPath !== "/profile") {
-        toast.success(t("pricing.paymentSuccessVerifying"));
-      }
-      confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
-      navigate(successPath, { replace: true });
-      scheduleProfileRefreshes([1500, 3500, 7000, 12000, 20000]);
-    } else if (paymentStatus === "failure") {
-      clearPendingPaymentSyncRecord();
-      toast.error(
-        t("pricing.paymentFailed") || "Payment failed or was cancelled.",
-      );
-      navigate(failurePath, { replace: true });
-    } else if (paymentStatus === "pending") {
-      markPendingPaymentReturned({
-        purchaseType,
-        provider,
-        tier: tierId,
-      });
-      if (successPath !== "/profile") {
-        toast.info(t("pricing.paymentPendingVerifying"));
-      }
-      navigate(successPath, { replace: true });
-      scheduleProfileRefreshes([2000, 5000, 9000, 14000, 22000, 30000]);
-    }
-  }, [location.search, navigate, t]);
+    let cancelled = false;
+
+    void import("@/lib/paymentReturn").then(
+      ({
+        clearPendingPaymentSyncRecord,
+        markPendingPaymentReturned,
+        resolvePaymentReturnPaths,
+      }) => {
+        if (cancelled) return;
+
+        const { successPath, failurePath } = resolvePaymentReturnPaths({
+          purchaseType,
+          provider,
+        });
+
+        if (paymentStatus === "success") {
+          markPendingPaymentReturned({
+            purchaseType,
+            provider,
+            tier: tierId,
+          });
+          if (successPath !== "/profile") {
+            toast.success(t("pricing.paymentSuccessVerifying"));
+          }
+          void triggerCelebration();
+          navigate(successPath, { replace: true });
+          scheduleProfileRefreshes([1500, 3500, 7000, 12000, 20000]);
+          return;
+        }
+
+        if (paymentStatus === "failure") {
+          clearPendingPaymentSyncRecord();
+          toast.error(
+            t("pricing.paymentFailed") || "Payment failed or was cancelled.",
+          );
+          navigate(failurePath, { replace: true });
+          return;
+        }
+
+        if (paymentStatus === "pending") {
+          markPendingPaymentReturned({
+            purchaseType,
+            provider,
+            tier: tierId,
+          });
+          if (successPath !== "/profile") {
+            toast.info(t("pricing.paymentPendingVerifying"));
+          }
+          navigate(successPath, { replace: true });
+          scheduleProfileRefreshes([2000, 5000, 9000, 14000, 22000, 30000]);
+        }
+      },
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location.search, navigate, t, triggerCelebration]);
 
   // Restore framework from session when landing on /wizard after reload (location.state is lost)
   useEffect(() => {
@@ -447,7 +509,7 @@ function App() {
         setUserId(session.user.id);
         setUserEmail(session.user.email || null);
 
-        await ensureMyProfile(supabase);
+        await ensureProfile();
 
         // Sync local blueprints if any
         syncLocalBlueprintsToRemote(supabase, session.user.id)
@@ -510,7 +572,7 @@ function App() {
         setAuthOpen(false); // Close modal if open
         setPage(0);
         setHasMore(true);
-        void ensureMyProfile(supabase!).then(() => {
+        void ensureProfile().then(() => {
           loadRemoteBlueprints(session.user.id, 0);
 
           // Load profile data (tier + is_admin + avatar)
@@ -549,7 +611,7 @@ function App() {
 
         if (refCode && !isExpired) {
           // Ensure profile row exists before reading/updating (same session as SIGNED_IN may race).
-          void ensureMyProfile(supabase!).then(() => {
+          void ensureProfile().then(() => {
             supabase!
               .from("profiles")
               .select("referrer_code")
@@ -681,7 +743,7 @@ function App() {
       .single()
       .then(async ({ data, error }) => {
         if (error?.code === "PGRST116" || !data) {
-          await ensureMyProfile(supabase);
+          await ensureProfile();
           const { data: d2 } = await supabase
             .from("profiles")
             .select("avatar_url, tier, credits, is_admin")
@@ -1056,6 +1118,9 @@ function App() {
       }
 
       if (useLemonSqueezy) {
+        const { createLemonSqueezyCheckout } = await import(
+          "@/lib/lemonSqueezy"
+        );
         await createLemonSqueezyCheckout(supabase!, {
           tier: tierId as "builder" | "max",
           userId,
@@ -1087,6 +1152,10 @@ function App() {
     if (!supabase || !mercadoPagoSubscriptionCheckout || !userId) {
       throw new Error("Authentication session missing. Please sign in again.");
     }
+
+    const { buildPaymentReturnUrls, createSubscription } = await import(
+      "@/lib/mercadoPago"
+    );
 
     const returnUrls = buildPaymentReturnUrls({
       purchaseType: "tier",
@@ -1145,6 +1214,12 @@ function App() {
     if (description === null) return;
 
     try {
+      const { buildCommunityProofArtifacts } = await import(
+        "@/lib/communityProof"
+      );
+      const { loadBlueprintExecutionContext } = await import(
+        "@/lib/executionData"
+      );
       const executionContext = await loadBlueprintExecutionContext(
         bp,
         userId,
@@ -1286,37 +1361,51 @@ function App() {
       </a>
       {isLandingRoute && !isMobile ? <ParticleBackground /> : null}
       <Toaster />
-      <ChatwootWidget />
-      <BinancePaymentModal
-        open={binanceModal.open}
-        onOpenChange={(open) => setBinanceModal((m) => ({ ...m, open }))}
-        tierId={binanceModal.tierId}
-        tierName={binanceModal.tierName}
-        amountUsd={binanceModal.amountUsd}
-        onOpenChat={openChatwoot}
-      />
-      <MercadoPagoSubscriptionDialog
-        open={Boolean(mercadoPagoSubscriptionCheckout)}
-        onOpenChange={(open) => {
-          if (!open) {
-            setMercadoPagoSubscriptionCheckout(null);
-          }
-        }}
-        tierId={mercadoPagoSubscriptionCheckout?.tierId ?? "builder"}
-        tierName={mercadoPagoSubscriptionCheckout?.tierName ?? "Builder"}
-        amountUsd={mercadoPagoSubscriptionCheckout?.amountUsd ?? 0}
-        billingInterval={mercadoPagoSubscriptionCheckout?.billingInterval}
-        userEmail={userEmail}
-        onConfirm={handleMercadoPagoSubscriptionConfirm}
-      />
-      <AuthModal
-        open={authOpen}
-        onOpenChange={(open) => {
-          setAuthOpen(open);
-          if (!open) setAuthReason(null);
-        }}
-        reason={authReason}
-      />
+      <Suspense fallback={null}>
+        <ChatwootWidget />
+      </Suspense>
+      {binanceModal.open && (
+        <Suspense fallback={<OverlayLoadingFallback />}>
+          <BinancePaymentModal
+            open={binanceModal.open}
+            onOpenChange={(open) => setBinanceModal((m) => ({ ...m, open }))}
+            tierId={binanceModal.tierId}
+            tierName={binanceModal.tierName}
+            amountUsd={binanceModal.amountUsd}
+            onOpenChat={openSupportChat}
+          />
+        </Suspense>
+      )}
+      {mercadoPagoSubscriptionCheckout && (
+        <Suspense fallback={<OverlayLoadingFallback />}>
+          <MercadoPagoSubscriptionDialog
+            open={Boolean(mercadoPagoSubscriptionCheckout)}
+            onOpenChange={(open) => {
+              if (!open) {
+                setMercadoPagoSubscriptionCheckout(null);
+              }
+            }}
+            tierId={mercadoPagoSubscriptionCheckout?.tierId ?? "builder"}
+            tierName={mercadoPagoSubscriptionCheckout?.tierName ?? "Builder"}
+            amountUsd={mercadoPagoSubscriptionCheckout?.amountUsd ?? 0}
+            billingInterval={mercadoPagoSubscriptionCheckout?.billingInterval}
+            userEmail={userEmail}
+            onConfirm={handleMercadoPagoSubscriptionConfirm}
+          />
+        </Suspense>
+      )}
+      {authOpen && (
+        <Suspense fallback={<OverlayLoadingFallback />}>
+          <AuthModal
+            open={authOpen}
+            onOpenChange={(open) => {
+              setAuthOpen(open);
+              if (!open) setAuthReason(null);
+            }}
+            reason={authReason}
+          />
+        </Suspense>
+      )}
 
       {isOffline && (
         <div className="fixed bottom-4 left-4 z-50 bg-red-500 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
@@ -1327,32 +1416,38 @@ function App() {
 
       <AnimatePresence>
         {viewingFramework && (
-          <FrameworkDetail
-            framework={viewingFramework}
-            onClose={() => setViewingFramework(null)}
-            onStart={() => {
-              setViewingFramework(null);
-              // handleStartWizard expects fwId
-              handleStartWizard(viewingFramework.id);
-            }}
-          />
+          <Suspense fallback={<OverlayLoadingFallback />}>
+            <FrameworkDetail
+              framework={viewingFramework}
+              onClose={() => setViewingFramework(null)}
+              onStart={() => {
+                setViewingFramework(null);
+                // handleStartWizard expects fwId
+                handleStartWizard(viewingFramework.id);
+              }}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {showOnboarding && (
-          <OnboardingModal onComplete={handleOnboardingComplete} />
+          <Suspense fallback={<OverlayLoadingFallback />}>
+            <OnboardingModal onComplete={handleOnboardingComplete} />
+          </Suspense>
         )}
         {showHelpChoose && (
-          <HelpMeChooseModal
-            userId={effectiveUserId}
-            onClose={() => setShowHelpChoose(false)}
-            onSelect={(fw, context) => {
-              setShowHelpChoose(false);
-              handleStartWizard(fw, context);
-            }}
-            onLearnMore={(fw) => setViewingFramework(fw)}
-          />
+          <Suspense fallback={<OverlayLoadingFallback />}>
+            <HelpMeChooseModal
+              userId={effectiveUserId}
+              onClose={() => setShowHelpChoose(false)}
+              onSelect={(fw, context) => {
+                setShowHelpChoose(false);
+                handleStartWizard(fw, context);
+              }}
+              onLearnMore={(fw) => setViewingFramework(fw)}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
 
@@ -1392,11 +1487,13 @@ function App() {
       />
 
       {!pathname.startsWith("/wizard") && (
-        <FeedbackButton
-          pageContext={location.pathname}
-          userEmail={userEmail}
-          userId={userId}
-        />
+        <Suspense fallback={null}>
+          <FeedbackButton
+            pageContext={location.pathname}
+            userEmail={userEmail}
+            userId={userId}
+          />
+        </Suspense>
       )}
 
       <main

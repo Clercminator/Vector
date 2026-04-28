@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Sparkles, ArrowRight, Loader2, X, X as XIcon, Target, AlertTriangle, Clock, Mountain, Trophy, Check, Quote, ExternalLink, TriangleAlert } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
-import { suggestFramework } from '@/lib/openrouter';
 import { FrameworkId } from '@/lib/blueprints';
 import { frameworks, type FrameworkDefinition } from '@/lib/frameworks';
 import { supabase } from '@/lib/supabase';
@@ -47,6 +46,7 @@ export function HelpMeChooseModal({ userId, onClose, onSelect, onLearnMore }: He
     setExplanation('');
     
     try {
+        const { suggestFramework } = await import('@/lib/openrouter');
         const extra = (obstacle.trim() || successLookLike.trim())
           ? { obstacle: obstacle.trim() || undefined, successLookLike: successLookLike.trim() || undefined }
           : undefined;

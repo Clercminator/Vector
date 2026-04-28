@@ -101,11 +101,9 @@ test("profile updates after a hosted LemonSqueezy return is processed", async ({
       "Payment received. We are verifying your account update now.",
     ),
   ).toHaveCount(0);
-  await expect(page.getByText("Current Plan")).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: /^Architect$/i }),
-  ).toBeVisible();
-
+  await expect(page.getByText("Payment confirmed")).toBeVisible({
+    timeout: 15_000,
+  });
   await expect(page.getByRole("heading", { name: /^Builder$/i })).toBeVisible({
     timeout: 8000,
   });

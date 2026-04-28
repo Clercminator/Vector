@@ -1,0 +1,4 @@
+
+> vector@0.0.1 typecheck
+> tsc -p tsconfig.quality.json --noEmit
+
